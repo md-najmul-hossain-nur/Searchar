@@ -1,13 +1,24 @@
-// Simple interaction for the Donate button
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelector('.donate-btn').addEventListener('click', () => {
-    alert('Thank you for choosing to donate!');
-  });
+// Simple JS for button animation and menu demo
 
-  const readMoreButtons = document.querySelectorAll('.card button');
-  readMoreButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      alert('More details coming soon...');
-    });
+// Donate button click
+document.querySelector('.navbar-donate').addEventListener('click', function() {
+  alert('Thank you for your interest in donating!');
+});
+
+// Search icon click
+document.querySelector('.navbar-search').addEventListener('click', function() {
+  alert('Search functionality coming soon!');
+});
+
+// Cart icon click
+document.querySelector('.navbar-cart').addEventListener('click', function() {
+  alert('Your cart is empty!');
+});
+
+// Read more buttons
+document.querySelectorAll('.card .btn-dark').forEach(btn => {
+  btn.addEventListener('click', function(e) {
+    e.preventDefault();
+    alert('More information coming soon!');
   });
 });
