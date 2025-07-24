@@ -10,13 +10,13 @@ body {
 /* Navbar */
 .navbar {
   width: 100vw;
-  background: #1a232a;
+  background: #dcdfe1;
   color: #fff;
   display: flex;
   align-items: center;
   padding: 0 32px;
-  height: 64px;
-  position: relative;
+  height: 104px;
+  position: fixed;
   z-index: 10;
 }
 .navbar-logo {
@@ -24,13 +24,18 @@ body {
   align-items: center;
   font-family: 'Montserrat', Arial, sans-serif;
   font-weight: 700;
-  font-size: 1.6rem;
+  font-size: 1.15rem;
   letter-spacing: 2px;
+  gap: 10px;
 }
-.navbar-heart {
-  color: #f75c3c;
-  font-size: 1.7em;
-  margin-right: 8px;
+
+.navbar-logo-img {
+  width: 362px;
+  height: 162px;
+  object-fit: contain;
+  margin-right: 6px;
+  display: inline-block;
+  vertical-align: middle;
 }
 .navbar-title {
   font-size: 1.15em;
