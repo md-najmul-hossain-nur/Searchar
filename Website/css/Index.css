@@ -10,14 +10,15 @@ body {
 /* Navbar */
 .navbar {
   width: 100vw;
-  background: #dcdfe1;
-  color: #fff;
+  background: #ffffff;
+  color: #ffffff;
   display: flex;
   align-items: center;
   padding: 0 32px;
   height: 104px;
   position: fixed;
   z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Added shadow */
 }
 .navbar-logo {
   display: flex;
