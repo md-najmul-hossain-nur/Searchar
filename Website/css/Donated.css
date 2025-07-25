@@ -85,3 +85,156 @@ body {
 .navbar-donate:hover {
   background: #e3471c;
 }
+
+
+
+/* ----------------------- */
+/* 🔝 Main Content Layout  */
+/* ----------------------- */
+main {
+  padding-top: 120px; /* for fixed navbar */
+  background-color: #f7f9fc;
+  min-height: 100vh;
+}
+
+/* ----------------------- */
+/* 🎯 Hero Section Styles  */
+/* ----------------------- */
+/* Hero Section */
+.donation-hero {
+  background: linear-gradient(135deg, #f75c3c, #00c6ff);
+  color: white;
+  padding: 80px 20px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.donation-title {
+  font-size: 48px;
+  margin-bottom: 20px;
+  animation: slideInTop 1s ease-out forwards;
+}
+
+.donation-desc {
+  font-size: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+  animation: fadeInUp 1.5s ease-out forwards;
+}
+
+/* Donation Form */
+.donation-form-section {
+  padding: 60px 20px;
+  display: flex;
+  justify-content: center;
+  background: #ffffff;
+}
+
+.donation-form-card {
+  background: #f9f9f9;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  width: 100%;
+  max-width: 1500px;
+  animation: popUp 0.9s ease-out forwards;
+}
+
+.donation-form h2 {
+  margin-bottom: 20px;
+  font-size: 28px;
+}
+
+.donation-form label {
+  display: block;
+  margin-top: 15px;
+  font-weight: 600;
+}
+
+.donation-form input,
+.donation-form textarea {
+  width: 100%;
+  padding: 12px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.donation-form input:focus,
+.donation-form textarea:focus {
+  border-color: #f75c3c;
+  outline: none;
+}
+
+.donate-btn {
+  margin-top: 25px;
+  padding: 14px 24px;
+  background: #f75c3c;
+  border: none;
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.3s ease;
+}
+
+.donate-btn:hover {
+  background: #f75c3c;
+  transform: translateY(-2px);
+}
+
+/* Animations */
+@keyframes slideInTop {
+  0% {
+    transform: translateY(-100px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  0% {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes popUp {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.payment-instruction {
+  background-color: #fff9ec;
+  border-left: 4px solid #f7c04a;
+  padding: 16px 20px;
+  margin-top: 24px;
+  margin-bottom: 24px;
+  font-size: 16px;
+  color: #444;
+  border-radius: 10px;
+  line-height: 1.6;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  animation: fadeInUp 1s ease-out both;
+}
+
+.payment-instruction strong {
+  color: #d48806;
+  font-weight: bold;
+}

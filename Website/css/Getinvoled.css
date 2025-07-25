@@ -1,0 +1,269 @@
+/* 🔹 Reset/Normalize */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 🔹 Base Styles */
+body {
+  font-family: 'Roboto', Arial, sans-serif;
+  background: #fff;
+  color: #1a232a;
+}
+
+/* 🔹 Navbar */
+.navbar {
+  width: 100%;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
+  height: 104px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.navbar-logo-img {
+  width: 280px;
+  height: auto;
+  object-fit: contain;
+  margin-right: 6px;
+}
+
+.navbar-menu {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  gap: 36px;
+  margin-left: 60px;
+}
+
+.navbar-menu a {
+  color: #333;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 1.08em;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 16px 6px 8px;
+  transition: color 0.2s;
+}
+
+.navbar-menu a:hover {
+  color: #f75c3c;
+}
+
+/* 🔹 Actions + Donate Button */
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.navbar-search,
+.navbar-cart {
+  font-size: 1.25em;
+  cursor: pointer;
+}
+
+.navbar-donate {
+  background: #f75c3c;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 1em;
+  padding: 10px 22px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.navbar-donate:hover {
+  background: #e3471c;
+}
+
+/* 🔹 Hero Section */
+.volunteer-hero {
+  background: linear-gradient(135deg, #f75c3c, #00c6ff);
+  color: white;
+  text-align: center;
+  padding: 6rem 2rem 4rem;
+  margin-top: 104px; /* account for fixed navbar */
+  position: relative;
+  overflow: hidden;
+}
+
+.volunteer-hero h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.volunteer-hero p {
+  max-width: 700px;
+  margin: 0 auto;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.volunteer-hero button {
+  margin-top: 2rem;
+  background: #ffcc00;
+  border: none;
+  padding: 0.9rem 2rem;
+  font-size: 1rem;
+  color: #1a1a1a;
+  cursor: pointer;
+  border-radius: 30px;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+
+.volunteer-hero button:hover {
+  background: #ffe173;
+}
+
+/* 🔹 Volunteer Info Section */
+#volunteer-info {
+  background: #f4f6f9;
+  padding: 5rem 2rem;
+  text-align: center;
+}
+
+#volunteer-info h2 {
+  font-size: 2.2rem;
+  margin-bottom: 2rem;
+  color: #1e3a8a;
+}
+
+.volunteer-reasons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.reason-card {
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  max-width: 300px;
+  transition: transform 0.3s ease;
+}
+
+.reason-card:hover {
+  transform: translateY(-10px);
+}
+
+.reason-card h3 {
+  color: #1e3a8a;
+  margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+}
+
+.reason-card p {
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* 🔹 Call to Action */
+.cta-download {
+  background: #f75c3c;
+  color: white;
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.cta-download h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.cta-download p {
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+.cta-download button {
+  background: #cdb468;
+  border: none;
+  padding: 0.9rem 2rem;
+  font-size: 1rem;
+  color: #1a1a1a;
+  cursor: pointer;
+  border-radius: 30px;
+  font-weight: bold;
+  transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.cta-download button:hover {
+  background: #cab26d;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+
+/* 🔹 Responsive */
+@media (max-width: 768px) {
+  .volunteer-reasons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .navbar {
+    flex-direction: column;
+    height: auto;
+    padding: 1rem;
+  }
+
+  .navbar-logo-img {
+    width: 200px;
+    height: auto;
+  }
+
+  .volunteer-hero h1 {
+    font-size: 2rem;
+  }
+
+  .volunteer-hero p {
+    font-size: 1rem;
+  }
+
+  #volunteer-info h2 {
+    font-size: 1.8rem;
+  }
+}
+@keyframes popUp {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0px) scale(1);
+  }
+}
+
+.animate-pop-up {
+  animation: popUp 0.8s ease-out forwards;
+}
+.volunteer-hero,
+.volunteer-hero h1,
+.volunteer-hero p,
+.volunteer-hero button,
+.reason-card,
+.cta-download {
+  opacity: 0; /* will animate from 0 to 1 */
+  transform: scale(0.8); /* start smaller */
+}

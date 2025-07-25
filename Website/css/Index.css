@@ -616,7 +616,30 @@ body {
   font-size: 0.96em;
   color: #636363;
 }
-
+.cause-news-nav {
+   display: flex;
+  gap: 12px;
+  margin-top: 6px;
+}
+.cause-news-arrow {
+  background: #fff;
+  color: #232e3a;
+  border: 1px solid #eee;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 1.15em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, border 0.2s;
+}
+.cause-news-arrow:hover {
+  background: #e34c3b;
+  border: 1px solid #e34c3b;
+  color: #fff;
+}
 @media (max-width: 1200px) {
   .causes-list {
     gap: 18px;
@@ -1046,6 +1069,7 @@ body {
   gap: 12px;
   margin-top: 6px;
 }
+
 .latest-news-arrow {
   background: #fff;
   color: #232e3a;
@@ -1090,7 +1114,6 @@ body {
   margin: 0;
   font-family: 'Roboto', Arial, sans-serif;
 }
-
 .footer-container {
   max-width: 1300px;
   margin: 0 auto;
@@ -1099,6 +1122,7 @@ body {
   align-items: flex-start;
   gap: 80px;
   padding: 0 48px;
+  flex-wrap: wrap; /* Added wrap for responsiveness */
 }
 
 .footer-col {
@@ -1116,55 +1140,74 @@ body {
   font-weight: 700;
   color: #fff;
   font-size: 1.08em;
-  letter-spacing: .5px;
+  letter-spacing: 0.5px;
   margin-bottom: 24px;
 }
 
 .footer-about {
-  font-size: .97em;
+  font-size: 0.97em;
   color: #cbd6dd;
   margin-bottom: 24px;
   line-height: 1.6;
+  font-family: 'Roboto', sans-serif; /* Add font for consistency */
 }
 
 .footer-contact {
-  font-size: .96em;
+  font-size: 0.96em;
   display: flex;
   flex-direction: column;
   gap: 7px;
   margin-bottom: 0;
-}
-.footer-contact i {
-  margin-right: 8px;
+  font-family: 'Roboto', sans-serif;
 }
 
+.footer-contact span {
+  display: block;
+  color: #ffffff;
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.footer-contact i {
+  margin-right: 8px;
+  color: #f75c3c; /* Theme color for icons */
+}
+
+/* Footer links */
 .footer-links {
   list-style: none;
   padding: 0;
   margin: 0;
 }
+
 .footer-links li {
   margin-bottom: 10px;
   border-bottom: 1px solid #29343c;
   padding-bottom: 6px;
 }
+
 .footer-links li:last-child {
   border-bottom: none;
 }
+
 .footer-links a {
   color: #cbd6dd;
   text-decoration: none;
-  font-size: .98em;
+  font-size: 0.98em;
   transition: color 0.17s;
 }
+
 .footer-links a:hover {
   color: #fff;
 }
 
+/* Calendar */
 .footer-calendar {
   color: #fff;
   min-width: 210px;
+  font-family: 'Roboto', sans-serif;
 }
+
 .footer-calendar-title {
   font-family: 'Montserrat', Arial, sans-serif;
   font-weight: 700;
@@ -1172,6 +1215,7 @@ body {
   margin-bottom: 24px;
   color: #fff;
 }
+
 .footer-calendar-table {
   width: 100%;
   background: transparent;
@@ -1179,29 +1223,34 @@ body {
   color: #fff;
   margin-bottom: 8px;
 }
+
 .footer-calendar-table th,
 .footer-calendar-table td {
   text-align: center;
-  font-size: .95em;
+  font-size: 0.95em;
   padding: 3px 6px;
   border: 1px solid #29343c;
   background: transparent;
 }
+
 .footer-calendar-table th {
   color: #fff;
   font-weight: 700;
   background: #222c34;
 }
+
 .footer-calendar-table td {
   color: #cbd6dd;
   font-weight: 400;
 }
+
 .footer-calendar-prev {
   color: #cbd6dd;
-  font-size: .97em;
+  font-size: 0.97em;
   text-decoration: none;
   margin-right: 4px;
 }
+
 .footer-calendar-prev:hover {
   text-decoration: underline;
 }
@@ -1216,11 +1265,11 @@ body {
 
 @media (max-width: 1100px) {
   .footer-container {
-    flex-wrap: wrap;
     gap: 32px;
     padding: 0 20px;
   }
-  .footer-col, .footer-calendar {
+  .footer-col,
+  .footer-calendar {
     min-width: 220px;
     margin-bottom: 32px;
   }
@@ -1232,7 +1281,8 @@ body {
     align-items: flex-start;
     gap: 18px;
   }
-  .footer-col, .footer-calendar {
+  .footer-col,
+  .footer-calendar {
     min-width: 0;
     width: 100%;
     margin-bottom: 18px;
@@ -1240,4 +1290,26 @@ body {
   .footer-bottom-line {
     width: 95vw;
   }
+}
+
+.footer-social {
+  margin-top: 10px;
+  display: flex;
+  gap: 16px; /* space between icons */
+}
+/* Social Icons */
+.footer-social a {
+  display: inline-block;
+  margin-top: 12px;
+  text-decoration: none;
+  transition: transform 0.3s ease;
+}
+
+.footer-social a:hover {
+  transform: scale(1.1);
+}
+
+.footer-social i {
+  font-size: 28px;
+  color: #4267B2;
 }
