@@ -8,3 +8,6 @@ toggle = () => {
 setTimeout(() => {
 	container.classList.add('sign-in')
 }, 200)
+  document.getElementById('logo').onclick = function() {
+    window.location.href = '../Html/index.html';
+  };
