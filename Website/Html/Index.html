@@ -19,37 +19,39 @@
     <div class="navbar-actions">
       
 
-<button class="navbar-donate" onclick="window.location.href = '../Html/loginAdmin.html';">LOG IN</button>    </div>
-  </header>
+<button class="navbar-donate" onclick="window.location.href = '../Html/loginAdmin.html';">
+  LOG IN
+<img src="../Images/import.gif" alt="Gift" style="height: 1.5em; vertical-align: middle; margin-left: 8px; border-radius: 6px;"></button>  </header>
   <main>
-    <section class="hero">
-      <div class="hero-overlay"></div>
-      <img src="../Images/pexels-kelly-1179532-33105757.jpg" alt="Charity background" class="hero-bg" />
-      <div class="hero-content">
-        <span class="hero-label">HOW YOU COULD HELP</span>
-        <h2 class="hero-petition">SIGN THE PETITION NOW</h2>
-        <h1 class="hero-title">DONATE & SUPPORT<br>OUR WORK TODAY</h1>
-        <div class="hero-buttons">
-          <a href="#" class="btn btn-outline">MAKE DONATION</a>
-          <a href="#" class="btn btn-outline">VIEW CAUSES</a>
-        </div>
-      </div>
+ <section class="hero">
+  <div class="hero-overlay"></div>
+  <img src="../Images/pexels-kelly-1179532-33105757.jpg" alt="Charity background" class="hero-bg" id="hero-bg" />
+  <div class="hero-content">
+    <span class="hero-label" id="hero-label">HOW YOU COULD HELP</span>
+    <h2 class="hero-petition" id="hero-petition">SIGN THE PETITION NOW</h2>
+    <h1 class="hero-title" id="hero-title">DONATE & SUPPORT<br>OUR WORK TODAY</h1>
+    <div class="hero-buttons">
+      <a href="../Html/Donated.Html" class="btn btn-outline">MAKE DONATION</a>
+      <a href="#" class="btn btn-outline" id="view-causes-btn">VIEW CAUSES</a>
+    </div>
+  </div>
+</section>
     </section>
     <section class="info-cards">
       <div class="card card-donate">
         <h3>DONATE NOW!</h3>
         <p>Cum sociis natoque penatibus et magnis dis parturient montesmus. Pro vel nibh et elit mollis commodo et nec augue tristique sed</p>
-        <a href="#" class="btn btn-dark">READ MORE</a>
+        <a href="../Html/Donated.Html" class="btn btn-dark">READ MORE</a>
       </div>
       <div class="card card-join">
         <h3>JOIN US NOW</h3>
         <p>Cum sociis natoque penatibus et magnis dis parturient montesmus. Pro vel nibh et elit mollis commodo et nec augue tristique sed</p>
-        <a href="#" class="btn btn-dark">READ MORE</a>
+        <a href="../Html/JoinUs.Html" class="btn btn-dark">READ MORE</a>
       </div>
       <div class="card card-involve">
         <h3>GET INVOLVED</h3>
         <p>Cum sociis natoque penatibus et magnis dis parturient montesmus. Pro vel nibh et elit mollis commodo et nec augue tristique sed</p>
-        <a href="#" class="btn btn-dark">READ MORE</a>
+        <a href="../Html/Getinvoled.html" class="btn btn-dark">READ MORE</a>
       </div>
     </section>
 
@@ -122,7 +124,7 @@
     </div>
   </div>
 </div>
-<div class="our-causes-section">
+<div class="our-causes-section" id="our-causes">
   <div class="causes-label">STORY ABOUT US</div>
   <div class="our-causes-title">OUR CAUSES</div>
   <div class="causes-list">
@@ -186,6 +188,10 @@
         <span class="cause-card-amount">$1300 to go</span>
       </div>
     </div>
+  </div>
+   <div class="cause-news-nav">
+    <button class="cause-news-arrow" aria-label="Previous">&#8592;</button>
+    <button class="cause-news-arrow" aria-label="Next">&#8594;</button>
   </div>
 </div>
 <div class="hero-involved-bg">
@@ -281,7 +287,6 @@
     </div>
   </div>
 </div>
-  <script src="../javascrpit/Index.js"></script>
   <footer class="site-footer">
   <div class="footer-container">
     <div class="footer-col">
@@ -333,7 +338,8 @@
             <td></td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td>
           </tr>
           <tr>
-            <
+              <script src="../javascrpit/Index.js"></script>
+
 
 </body>
 </html>

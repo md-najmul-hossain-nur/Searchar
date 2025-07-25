@@ -85,7 +85,6 @@ body {
 .navbar-donate:hover {
   background: #e3471c;
 }
-
 /* Hero Section */
 .hero {
   position: relative;
@@ -104,6 +103,8 @@ body {
   left: 0;
   top: 0;
   z-index: 1;
+  transition: opacity 0.5s;
+  background: #222; /* <-- Fix: add dark background to prevent white flash */
 }
 .hero-overlay {
   position: absolute;
@@ -129,12 +130,14 @@ body {
   font-size: 1em;
   display: inline-block;
   margin-bottom: 30px;
+  transition: opacity 0.5s;
 }
 .hero-petition {
   font-family: 'Montserrat', Arial, sans-serif;
   font-size: 1.2em;
   margin-bottom: 10px;
   letter-spacing: 1px;
+  transition: opacity 0.5s;
 }
 .hero-title {
   font-family: 'Montserrat', Arial, sans-serif;
@@ -143,6 +146,7 @@ body {
   margin-bottom: 36px;
   line-height: 1.13;
   letter-spacing: 1px;
+  transition: opacity 0.5s;
 }
 .hero-buttons {
   display: flex;
