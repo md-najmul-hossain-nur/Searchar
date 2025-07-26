@@ -3,24 +3,123 @@
 <head>
   <meta charset="UTF-8">
   <title>Charity NGO Donation Nonprofit Template</title>
-  <meta name="viewport" content="width=1644, initial-scale=1">
-  <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400|Roboto:400,700" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../css/JoinUs.css">
 </head>
 <body>
   <header class="navbar">
-  <div class="navbar-logo">
-  <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
-</div>
-    <nav class="navbar-menu">
-     
-        
-    </nav>
-    <div class="navbar-actions">
-    
+    <div class="navbar-logo">
+      <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
     </div>
+    
   </header>
-</body>
-    <script src="../javascrpit/JoinUs.js"></script>
 
+   <main class="joinus-main">
+    <section class="hero-section">
+      <div class="hero-text">
+        <h1>
+          <i class="fas fa-video hero-icon"></i>
+          Become a Camera Contributor
+        </h1>
+        <p class="hero-subtitle">
+          <span class="highlight">Make your neighborhood safer—one camera at a time.</span>
+        </p>
+<a href="#signup" class="cta-button" id="showRulesBtn">Join Now</a>
+      </div>
+      <div class="hero-image">
+        <img src="../Images/camera-community.png" alt="Community Camera Network" />
+      </div>
+    </section>
+
+    <section class="benefits-section">
+      <h2>
+        <i class="fas fa-gift"></i> Benefits of Joining
+      </h2>
+      <ul class="benefits-list">
+        <li>
+          <span class="benefit-icon"><i class="fas fa-hand-holding-usd"></i></span>
+          <span class="benefit-title">Monthly Honorarium</span>
+          <span class="benefit-desc">We value your support—get paid every month for your contribution.</span>
+        </li>
+        <li>
+          <span class="benefit-icon"><i class="fas fa-certificate"></i></span>
+          <span class="benefit-title">Official Digital Certificates</span>
+          <span class="benefit-desc">Receive digital recognition and badges you can share.</span>
+        </li>
+        <li>
+          <span class="benefit-icon"><i class="fas fa-heart"></i></span>
+          <span class="benefit-title">Life-Saving Impact</span>
+          <span class="benefit-desc">Your camera could help find missing persons or prevent crimes.</span>
+        </li>
+        <li>
+          <span class="benefit-icon"><i class="fas fa-users"></i></span>
+          <span class="benefit-title">Community Respect</span>
+          <span class="benefit-desc">Be recognized and appreciated by your neighbors.</span>
+        </li>
+        <li>
+          <span class="benefit-icon"><i class="fas fa-trophy"></i></span>
+          <span class="benefit-title">Exclusive Rewards</span>
+          <span class="benefit-desc">Get special event invites and top contributor perks.</span>
+        </li>
+        <li>
+          <span class="benefit-icon"><i class="fas fa-shield-alt"></i></span>
+          <span class="benefit-title">Safer Society</span>
+          <span class="benefit-desc">Help create a watchful, secure community for all.</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="why-help-section">
+      <h2>
+        <i class="fas fa-question-circle"></i> Why Your Help Matters
+      </h2>
+      <p class="why-help-desc">
+        <strong>No government or police force can be everywhere, but together—every street becomes safer.</strong>
+        <br>
+        As a camera contributor, you bridge the gap between authorities and the community. Today, you help someone else; tomorrow, someone might help your loved ones.
+      </p>
+      <blockquote class="impact-quote">
+        <i class="fas fa-star"></i>
+        <strong>Your small step creates a big difference!</strong>
+      </blockquote>
+      <a href="#signup" class="cta-button">I Want to Help  </a>
+    </section>
+
+    
+  </main>
+<div id="rulesModal" class="modal">
+  <div class="modal-content">
+    <!-- Icon at the top (example: info icon) -->
+    <div class="modal-icon">
+      <!-- Example: Info SVG icon -->
+      <svg width="52" height="52" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="12" fill="#1976d2" opacity="0.13"/>
+        <path d="M12 17v-5M12 7h.01" stroke="#1976d2" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="close" id="closeRulesModal">&times;</span>
+    <h2>Rules to Maintain</h2>
+    <ul>
+      <li>Be respectful to all members.</li>
+      <li>Follow the community guidelines at all times.</li>
+      <li>Do not share confidential information.</li>
+      <li>Participate actively and provide constructive feedback.</li>
+      <li>Report any inappropriate behavior to moderators.</li>
+    </ul>
+    <div style="margin: 22px 0 10px 0; text-align:left;">
+      <label style="display: flex; align-items: center; gap: 8px; font-size: 1rem; cursor:pointer;">
+        <input type="checkbox" id="rulesAgreeCheckbox" style="accent-color: #1976d2;" />
+        I have read and agree to the rules above.
+      </label>
+    </div>
+    <button id="installAppBtn" class="cta-button" style="width:100%; margin-top:12px;" disabled>
+      Install Our App
+    </button>
+  </div>
+</div>
+  <script src="../javascrpit/JoinUs.js"></script>
+  
+
+</body>
 </html>
