@@ -13,19 +13,29 @@ function delayedRedirect() {
 const slides = [
   {
     image: "../Images/pexels-kelly-1179532-33105757.jpg",
-    label: "HOW YOU COULD HELP",
-    petition: "SIGN THE PETITION NOW",
-    title: "DONATE & SUPPORT<br>OUR WORK TODAY"
+    label: "Be a Changemaker",
+    petition: "Sign the Petition Today",
+    title: "Support Our Cause Donate & Make a Difference"
   },
   {
     image: "../Images/pexels-omaralnahi-18495.jpg",
-    label: "HOW YOU COULD HELP",
-    petition: "SIGN THE PETITION NOW",
-    title: "TELL THE WORLD YOU STAND #WITHREFUGEES"
+    label: "💛 Reunite Families",
+    petition: "Watch Live CCTV Feeds Assist Investigations",
+    title: "Help Build a Safer, Brighter Future"
+  },
+  {
+    image: "../Images/pexels-omaralnahi-18495.jpg",
+    label: "💛 Every Clue Matters",
+    petition: "Upload Crime Evidence Remain Anonymous",
+    title: "Contribute to Justice Share What You Know"
+  },
+  {
+    image: "../Images/pexels-omaralnahi-18495.jpg",
+    label: "💛 Empower Your Community",
+    petition: "Earn by Sharing Evidence or Live Broadcasting",
+    title: "Turn Awareness Into Actionm Get Rewarded for Helping"
   }
-  // Add more slides as needed.
 ];
-
 let currentSlide = 0;
 const heroBg = document.getElementById('hero-bg');
 const heroLabel = document.getElementById('hero-label');

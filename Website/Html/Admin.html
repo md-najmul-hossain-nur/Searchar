@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Charity NGO Donation Nonprofit Template</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="../css/Admin.css">
+  <style>
+    .main-section { display:none; }
+    .main-section.active { display:block; }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="navbar-logo">
+        <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">ADMIN LAYOUT PAGES</div>
+      <ul>
+        <li class="active" data-section="dashboard"><span class="icon"><i class="fa-solid fa-chart-column"></i></span> Dashboard</li>
+        <li data-section="tables"><span class="icon"><i class="fa-solid fa-table-list"></i></span> Tables</li>
+        <li data-section="maps"><span class="icon"><i class="fa-solid fa-map-location-dot"></i></span> Maps</li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">ADMIN FEATURES</div>
+      <ul>
+        <li data-section="missing"><span class="icon"><i class="fa-solid fa-people-group"></i></span> Missing Persons</li>
+        <li data-section="volunteers"><span class="icon"><i class="fa-solid fa-user-shield"></i></span> Volunteers</li>
+        <li data-section="cctv"><span class="icon"><i class="fa-solid fa-camera"></i></span> CCTV Management</li>
+        <li data-section="ai"><span class="icon"><i class="fa-solid fa-robot"></i></span> AI Detection Logs</li>
+        <li data-section="crime"><span class="icon"><i class="fa-solid fa-video"></i></span> Crime Reporting</li>
+        <li data-section="donations"><span class="icon"><i class="fa-solid fa-hand-holding-dollar"></i></span> Donations Control</li>
+        <li data-section="broadcast"><span class="icon"><i class="fa-solid fa-bullhorn"></i></span> Broadcast & Notifications</li>
+        <li data-section="access"><span class="icon"><i class="fa-solid fa-user-lock"></i></span> User Access & Security</li>
+        <li data-section="controls"><span class="icon"><i class="fa-solid fa-screwdriver-wrench"></i></span> Website & App Controls</li>
+      </ul>
+    </div>
+  </div>
+  <div class="main-content">
+    <div class="navbar">
+      <div class="navbar-title"></div>
+      <div class="navbar-search">
+        <input type="text" placeholder="Search here...">
+        <img class="navbar-avatar" src="../Images/businessman.gif" alt="User Avatar">
+      </div>
+    </div>
+    <!-- Dashboard Section -->
+    <div id="dashboard" class="main-section active">
+      <div class="dashboard-cards">
+        <div class="card">
+          <div class="card-title">TRAFFIC</div>
+          <div class="card-value">350,897</div>
+          <div class="card-meta up">↑ 3.48% <span>Since last month</span></div>
+          <div class="card-icon card-icon-red"><i class="fa-solid fa-chart-line"></i></div>
+        </div>
+        <div class="card">
+          <div class="card-title">NEW USERS</div>
+          <div class="card-value">2,356</div>
+          <div class="card-meta down">↓ 3.48% <span>Since last week</span></div>
+          <div class="card-icon card-icon-orange"><i class="fa-solid fa-user-plus"></i></div>
+        </div>
+        <div class="card">
+          <div class="card-title">CAMERA CONNECTION</div>
+          <div class="card-value">924</div>
+          <div class="card-meta down">↓ 1.10% <span>Since yesterday</span></div>
+          <div class="card-icon card-icon-pink"><i class="fa-solid fa-video"></i></div>
+        </div>
+        <div class="card">
+          <div class="card-title">AI PERFORMANCE</div>
+          <div class="card-value">49,65%</div>
+          <div class="card-meta up">↑ 12% <span>Since last month</span></div>
+          <div class="card-icon card-icon-blue"><i class="fa-solid fa-brain"></i></div>
+        </div>
+      </div>
+      <div class="dashboard-main">
+        <div class="overview-card">
+          <div class="overview-title">OVERVIEW</div>
+          <div class="overview-subtitle">CAMERA CONNECTION </div>
+          <canvas id="salesChart" width="600" height="320"></canvas>
+          <div class="chart-legend">
+            <span class="legend-color legend-blue"></span>2025
+            <span class="legend-color legend-white"></span>2024
+          </div>
+        </div>
+        <div class="orders-card">
+          <div class="orders-title"> AI PERFORMANCE</div>
+          <div class="orders-subtitle">Total</div>
+          <canvas id="ordersChart" width="340" height="220"></canvas>
+          <div class="orders-legend">
+            <span class="legend-bar legend-pink"></span>2025
+            <span class="legend-bar legend-blue"></span>2024
+          </div>
+        </div>
+      </div>
+      <div class="dashboard-bottom">
+        <div class="page-visits-card">
+          <div class="pv-header">
+            <span>Page visits</span>
+            <button class="see-all-btn">SEE ALL</button>
+          </div>
+          <table class="pv-table">
+            <thead>
+              <tr>
+                <th>PAGE NAME</th>
+                <th>VISITORS</th>
+                <th>UNIQUE USERS</th>
+                <th>BOUNCE RATE</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>/argon/</td>
+                <td>4,569</td>
+                <td>340</td>
+                <td class="up">↑ 46,53%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="social-traffic-card">
+          <div class="st-header">
+            <span>Social traffic</span>
+            <button class="see-all-btn">SEE ALL</button>
+          </div>
+          <table class="st-table">
+            <thead>
+              <tr>
+                <th>REFERRAL</th>
+                <th>VISITORS</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Facebook</td>
+                <td>1,480</td>
+                <td>
+                  <div class="st-progress-bar">
+                    <div class="st-progress-inner" style="width:60%"></div>
+                  </div>
+                  60%
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- Tables Section -->
+    <div id="tables" class="main-section">
+      <h2>Tables Page</h2>
+      <p>Table content goes here.</p>
+    </div>
+    <!-- Maps Section -->
+    <div id="maps" class="main-section">
+      <h2>Maps Page</h2>
+      <div style="background:#eee;width:100%;height:400px;display:flex;align-items:center;justify-content:center;font-size:2em;color:#aaa;">
+        <span><i class="fa-solid fa-map-location-dot"></i> Map goes here</span>
+      </div>
+    </div>
+    <!-- Add more sections for each feature as desired -->
+    <div id="missing" class="main-section"><h2>Missing Persons</h2></div>
+    <div id="volunteers" class="main-section"><h2>Volunteers</h2></div>
+    <div id="cctv" class="main-section"><h2>CCTV Management</h2></div>
+    <div id="ai" class="main-section"><h2>AI Detection Logs</h2></div>
+    <div id="crime" class="main-section"><h2>Crime Reporting</h2></div>
+    <div id="donations" class="main-section"><h2>Donations Control</h2></div>
+    <div id="broadcast" class="main-section"><h2>Broadcast & Notifications</h2></div>
+    <div id="access" class="main-section"><h2>User Access & Security</h2></div>
+    <div id="controls" class="main-section"><h2>Website & App Controls</h2></div>
+  </div>
+  <!-- Chart.js CDN for demo chart drawing (remove if you use your own chart lib) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+      <script src="../javascrpit/Admin.js"></script>
+
+</body>
+</html>
