@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Charity NGO Donation Nonprofit Template</title>
+  <meta name="viewport" content="width=1644, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400|Roboto:400,700" rel="stylesheet">
+  <link rel="stylesheet" href="../css/Donated.css">
+</head>
+<body>
+  <header class="navbar">
+  <div class="navbar-logo">
+  <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
+</div>
+    <nav class="navbar-menu">
+     
+        
+    </nav>
+    <div class="navbar-actions">
+    
+    </div>
+  </header>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+
+  <div class="flex h-screen">
+
+    <!-- Sidebar: Divisions -->
+    <div class="w-1/4 bg-white p-6 shadow-md overflow-y-auto">
+      <h2 class="text-2xl font-bold mb-4">Select Location</h2>
+
+      <label class="block mb-2 text-sm font-medium">Division</label>
+      <select id="divisionSelect" class="w-full p-2 border rounded mb-4">
+        <option value="">-- Choose Division --</option>
+        <option value="Dhaka">Dhaka</option>
+        <option value="Chattogram">Chattogram</option>
+        <option value="Khulna">Khulna</option>
+        <option value="Rajshahi">Rajshahi</option>
+        <!-- Add other divisions -->
+      </select>
+
+      <label class="block mb-2 text-sm font-medium">District</label>
+      <select id="districtSelect" class="w-full p-2 border rounded mb-4">
+        <option value="">-- Choose District --</option>
+      </select>
+
+      <label class="block mb-2 text-sm font-medium">Area</label>
+      <select id="areaSelect" class="w-full p-2 border rounded">
+        <option value="">-- Choose Area --</option>
+      </select>
+    </div>
+
+    <!-- Main Broadcast Section -->
+    <div class="flex-1 p-8 overflow-y-auto">
+      <h2 class="text-2xl font-bold mb-4">📡 Live CCTV Broadcast</h2>
+
+      <!-- Camera Info -->
+      <div id="cameraInfo" class="mb-4 text-lg font-semibold text-gray-700 hidden">
+        Showing <span id="cameraCount">0</span> live cameras in <span id="areaName">...</span>
+      </div>
+
+      <!-- Streams Grid -->
+      <div id="cameraGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Thumbnails will go here dynamically -->
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Sample District and Area data (replace with dynamic fetch later)
+    const districtData = {
+      Dhaka: ["Dhaka City", "Narayanganj", "Gazipur"],
+      Chattogram: ["Chattogram City", "Cox's Bazar"],
+    };
+
+    const areaData = {
+      "Dhaka City": ["Dhanmondi", "Uttara", "Gulshan"],
+      "Narayanganj": ["Fatullah", "Shiddhirganj"],
+      "Chattogram City": ["Agrabad", "Pahartali"],
+    };
+
+    const divisionSelect = document.getElementById('divisionSelect');
+    const districtSelect = document.getElementById('districtSelect');
+    const areaSelect = document.getElementById('areaSelect');
+    const cameraGrid = document.getElementById('cameraGrid');
+    const cameraInfo = document.getElementById('cameraInfo');
+    const cameraCount = document.getElementById('cameraCount');
+    const areaName = document.getElementById('areaName');
+
+    divisionSelect.addEventListener('change', () => {
+      const division = divisionSelect.value;
+      districtSelect.innerHTML = '<option value="">-- Choose District --</option>';
+      areaSelect.innerHTML = '<option value="">-- Choose Area --</option>';
+      if (districtData[division]) {
+        districtData[division].forEach(d => {
+          const option = document.createElement('option');
+          option.value = d;
+          option.textContent = d;
+          districtSelect.appendChild(option);
+        });
+      }
+    });
+
+    districtSelect.addEventListener('change', () => {
+      const district = districtSelect.value;
+      areaSelect.innerHTML = '<option value="">-- Choose Area --</option>';
+      if (areaData[district]) {
+        areaData[district].forEach(a => {
+          const option = document.createElement('option');
+          option.value = a;
+          option.textContent = a;
+          areaSelect.appendChild(option);
+        });
+      }
+    });
+
+    areaSelect.addEventListener('change', () => {
+      const area = areaSelect.value;
+      if (area) {
+        cameraInfo.classList.remove("hidden");
+        areaName.textContent = area;
+        const randomCount = Math.floor(Math.random() * 5) + 1;
+        cameraCount.textContent = randomCount;
+        cameraGrid.innerHTML = "";
+        for (let i = 0; i < randomCount; i++) {
+          const video = document.createElement("div");
+          video.className = "bg-black rounded shadow p-2";
+          video.innerHTML = `
+            <div class="aspect-video bg-gray-700 rounded mb-2"></div>
+            <p class="text-white text-sm">Camera ${i + 1} - ${area}</p>
+          `;
+          cameraGrid.appendChild(video);
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>

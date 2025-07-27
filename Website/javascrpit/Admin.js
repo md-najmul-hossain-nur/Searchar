@@ -75,3 +75,97 @@
         }
       });
     });
+
+var mymap = L.map('mapid').setView([40.7128, -74.0060], 12);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors'
+}).addTo(mymap);
+
+function searchLocation() {
+  var location = document.getElementById('locationInput').value;
+  if (location) {
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`)
+      .then(response => response.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          var lat = data[0].lat;
+          var lon = data[0].lon;
+          mymap.setView([lat, lon], 13);
+          // Always add a new marker without removing previous ones
+          L.marker([lat, lon]).addTo(mymap)
+            .bindPopup(location).openPopup();
+        } else {
+          alert("Location not found!");
+        }
+      });
+  }
+}
+
+function getCurrentLocation() {
+  if ('geolocation' in navigator) {
+    navigator.geolocation.getCurrentPosition(function(position) {
+      var lat = position.coords.latitude;
+      var lon = position.coords.longitude;
+      mymap.setView([lat, lon], 13);
+      // Add marker for current location, do not remove previous markers
+      L.marker([lat, lon]).addTo(mymap)
+        .bindPopup("You are here!").openPopup();
+    });
+  } else {
+    alert("Geolocation is not supported by your browser.");
+  }
+}
+
+function getCurrentLocation() {
+  if ('geolocation' in navigator) {
+    navigator.geolocation.getCurrentPosition(function(position) {
+      var lat = position.coords.latitude;
+      var lon = position.coords.longitude;
+      mymap.setView([lat, lon], 13);
+      L.marker([lat, lon]).addTo(mymap)
+        .bindPopup("You are here!").openPopup();
+    });
+  } else {
+    alert("Geolocation is not supported by your browser.");
+  }
+}
+function confirmDelete(name) {
+  if (confirm("Are you sure you want to delete " + name + "?")) {
+    alert("Deleted " + name);
+    // Optionally remove row from table here
+  }
+}
+function warnUser(name) {
+  alert("Warning sent to " + name);
+}
+// MODAL LOGIC (simple example, expand as needed)
+function openVolunteerProfileModal(name) {
+  document.getElementById('volunteerProfileModal').style.display = 'flex';
+  document.getElementById('volunteerName').innerText = name;
+  // Fill other fields dynamically if you have data
+}
+function closeVolunteerProfileModal() {
+  document.getElementById('volunteerProfileModal').style.display = 'none';
+}
+
+function openAILogModal(id) {
+  document.getElementById('aiLogModal').style.display = 'flex';
+  // Fill modal with log info based on id if needed
+}
+function closeAILogModal() {
+  document.getElementById('aiLogModal').style.display = 'none';
+}
+
+// Confidence slider display
+const aiConfidence = document.getElementById('aiConfidence');
+const confidenceValue = document.getElementById('confidenceValue');
+if (aiConfidence && confidenceValue) {
+  aiConfidence.addEventListener('input', function() {
+    confidenceValue.innerText = aiConfidence.value + '%';
+  });
+}
+
+// Add Volunteer Modal logic placeholder
+function openAddVolunteerModal() {
+  alert("Add/Invite Volunteer form/modal goes here.");
+}
