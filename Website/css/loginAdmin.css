@@ -87,8 +87,8 @@ body {
   background: #e3471c;
 }
 :root {
-    --primary-color: #cdb468;
-    --secondary-color: #cdb468;
+    --primary-color: #f75c3c;
+    --secondary-color: #f75c3c;
     --black: #000000;
     --white: #ffffff;
     --gray: #efefef;
@@ -316,7 +316,7 @@ body {
 .text.sign-in h2,
 .text.sign-in p,
 .img.sign-in img {
-    transform: translateX(-250%);
+    transform: translateX(-220%);
 }
 
 .text.sign-up h2,
@@ -438,7 +438,7 @@ body {
   padding: .6rem 0;
   border-radius: .7rem;
   border: none;
-  background: #cdb468;
+  background: #f75c3c;
   color: #fff;
   font-size: 1.2rem;
   font-weight: 600;
@@ -456,7 +456,7 @@ body {
 .form button:hover,
 .form button:focus-visible {
   transform: scale(1.07);
-  background: #cdb468;
+  background: #f75c3c;
   box-shadow:
       0 6px 24px rgba(205,180,104,0.19),
       0 2px 10px rgba(0,0,0,0.11);
