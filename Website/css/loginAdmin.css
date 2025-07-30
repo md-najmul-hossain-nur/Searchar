@@ -461,3 +461,122 @@ body {
       0 6px 24px rgba(205,180,104,0.19),
       0 2px 10px rgba(0,0,0,0.11);
 }
+
+/* Input Group */
+.input-group {
+  position: relative;
+  width: 100%;
+  margin: 1rem 0;
+  display: flex;
+  flex-direction: column;
+}
+.input-group label {
+  font-size: 1.04em;
+  font-weight: 500;
+  margin-bottom: 3px;
+  color: #1976d2;
+  text-align: left;
+}
+.input-group select,
+.input-group input {
+  width: 100%;
+  padding: 0.9rem 1.1rem;
+  font-size: 1rem;
+  background-color: #efefef;
+  border-radius: .5rem;
+  border: 1.5px solid #fff;
+  outline: none;
+  margin-bottom: 0.1rem;
+  transition: border 0.18s, background 0.15s;
+}
+.input-group select:focus,
+.input-group input:focus {
+  border-color: #f75c3c;
+  background: #fff;
+}
+
+/* Dynamic Form Container (where your JS injects more inputs) */
+#dynamicForm {
+  margin: 16px 0 0 0;
+}
+#dynamicForm h3 {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 1.13rem;
+  color: #f75c3c;
+  margin-bottom: 10px;
+  margin-top: 0;
+  font-weight: 700;
+}
+#dynamicForm input,
+#dynamicForm select {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  font-size: 1em;
+  padding: 0.9rem 1.1rem;
+  border-radius: .5rem;
+  border: 1.5px solid #efefef;
+  background: #efefef;
+  transition: border 0.18s, background 0.15s;
+}
+#dynamicForm input:focus,
+#dynamicForm select:focus {
+  border-color: #f75c3c;
+  background: #fff;
+}
+#dynamicForm button {
+  background: #f75c3c;
+  color: #fff;
+  border: none;
+  border-radius: .5rem;
+  font-size: 1.08em;
+  font-weight: 600;
+  padding: 0.8rem 0;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 8px;
+  transition: background 0.18s, box-shadow 0.18s, transform 0.18s;
+  box-shadow: 0 1.5px 6px rgba(25, 118, 210, 0.08);
+}
+#dynamicForm button:hover {
+  background: #e3471c;
+  transform: scale(1.04);
+}
+
+/* Back Link */
+.pointer {
+  cursor: pointer;
+  color: #1976d2;
+  text-decoration: underline;
+  font-weight: 600;
+  font-size: 1.08em;
+  transition: color 0.18s;
+}
+.pointer:hover {
+  color: #f75c3c;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .col.sign-up {
+    min-width: 0;
+    padding: 3vw 2vw;
+    border-radius: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .col.sign-up {
+    width: 100%;
+    padding: 1rem 2vw;
+    border-radius: 0;
+    min-width: 0;
+  }
+  .form-wrapper.align-items-center {
+    max-width: 98vw;
+    padding: 0;
+  }
+  .form.sign-up {
+    padding: 1rem 0.3rem;
+  }
+}

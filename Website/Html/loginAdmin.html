@@ -20,36 +20,43 @@
     
     </div>
   </header>
+ <!-- MAIN CONTAINER -->
   <div id="container" class="container">
-		<!-- FORM SECTION -->
-		<div class="row">
-			<!-- SIGN UP -->
-			<div class="col align-items-center flex-col sign-up">
-				<div class="form-wrapper align-items-center">
-					<div class="form sign-up">
-						<div class="input-group">
-				  <p style="text-align: center; font-size: 18px; padding: 20px;">
-    If you want to be a part of us,<br>
-    please install our app and join our community.
-  </p>
-						</div>
-						<button>
-							Install App
-						</button>
-						<p>
-							
-							<b onclick="toggle()" class="pointer">
-    <span style="display:inline-block;vertical-align:middle;">
-        &#8592; <!-- Unicode left arrow -->
-    </span>
-    Back
-</b>
-						</p>
-					</div>
-				</div>
 
-			</div>
-			<!-- END SIGN UP -->
+    <!-- FORM SECTION -->
+    <div class="row">
+
+      <!-- SIGN UP -->
+      <div class="col align-items-center flex-col sign-up">
+        <div class="form-wrapper align-items-center">
+          <div class="form sign-up">
+
+            <!-- Role Selection -->
+            <div class="input-group">
+              <label for="role">Select Your Role:</label>
+              <select id="role" onchange="showForm()">
+                <option value="">-- Select Role --</option>
+                <option value="user">User</option>
+                <option value="police">Police</option>
+                <option value="volunteer">Volunteer</option>
+                <option value="contributor">Camera Contributor</option>
+              </select>
+            </div>
+
+            <!-- Dynamic Forms Container -->
+            <div id="dynamicForm"></div>
+
+            <p>
+              <b onclick="toggle()" class="pointer">
+                <span style="display:inline-block;vertical-align:middle;">&#8592;</span>
+                Back
+              </b>
+            </p>
+          </div>
+        </div>
+      </div>
+	  <style></style>
+      <!-- END SIGN UP -->
 			<!-- SIGN IN -->
 			<div class="col align-items-center flex-col sign-in">
      
