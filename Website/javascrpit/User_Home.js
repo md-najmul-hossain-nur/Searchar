@@ -91,3 +91,19 @@ function createPost() {
   feed.prepend(post);
   closeModal();
 }
+
+function openMissingForm() {
+  document.getElementById("missingFormModal").style.display = "flex";
+}
+
+function closeMissingForm() {
+  document.getElementById("missingFormModal").style.display = "none";
+}
+
+// Close when clicking outside the form
+window.onclick = function(event) {
+  const modal = document.getElementById("missingFormModal");
+  if (event.target === modal) {
+    modal.style.display = "none";
+  }
+};

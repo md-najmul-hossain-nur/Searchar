@@ -856,4 +856,440 @@ body {
   font-size: 14px;
   color: #333;
 }
+/* Modal Background */
+.missing-modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  z-index: 1001;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: auto;
+  background: rgba(32, 42, 61, 0.7); /* Deep blue overlay */
+}
 
+/* Modal Content Box */
+.missing-modal-content {
+  background: #fff; /* switched from #f5f8fa to pure white for cleaner look */
+  margin: 4% auto;
+  padding: 2.5em 2.5em 1.5em 2.5em;
+  border-radius: 8px; /* same radius as volunteer-section */
+  border: 1px solid #dbeafe;
+  width: 95%;
+  max-width: 80%;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15); /* softer shadow similar to volunteer */
+  position: relative;
+  animation: modalFadeIn 0.35s ease-out;
+  max-height: 86vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #5694d6 #e5edfa;
+}
+
+/* Scrollbar (Webkit) */
+.missing-modal-content::-webkit-scrollbar {
+  width: 9px;
+}
+.missing-modal-content::-webkit-scrollbar-thumb {
+  background: #f05454; /* use volunteer button red for highlight */
+  border-radius: 8px;
+}
+.missing-modal-content::-webkit-scrollbar-track {
+  background: #ffeaea; /* lighter red tint track */
+  border-radius: 8px;
+}
+
+/* Fade-in Animation */
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: translateY(-32px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Close Button */
+.missing-close {
+  color: #7a8ca4;
+  position: absolute;
+  right: 24px;
+  top: 18px;
+  font-size: 2.1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.2s;
+  z-index: 2;
+}
+.missing-close:hover,
+.missing-close:focus {
+  color: #f05454; /* use volunteer button hover red */
+  text-decoration: none;
+}
+
+/* Headings */
+.missing-modal-content h2 {
+  margin-top: 0;
+  color: #1a232a; /* match volunteer section heading color */
+  text-align: center;
+  font-size: 1.7em;
+  letter-spacing: 0.01em;
+  margin-bottom: 1.1em;
+}
+.missing-modal-content h3 {
+  margin-top: 2em;
+  font-size: 1.15em;
+  color: #3b537a;
+  border-left: 4px solid #f05454; /* volunteer red highlight */
+  padding-left: 0.6em;
+  margin-bottom: 0.7em;
+  font-weight: 600;
+  background: linear-gradient(90deg, #fceaea 80%, transparent 100%);
+}
+
+/* Form Labels */
+#missingForm label {
+  display: block;
+  margin-bottom: 0.23em;
+  color: #425a78;
+  font-size: 1.01em;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* Inputs and Selects */
+#missingForm input[type="text"],
+#missingForm input[type="number"],
+#missingForm input[type="date"],
+#missingForm input[type="file"],
+#missingForm input[type="tel"],
+#missingForm select {
+  width: 100%;
+  padding: 0.54em 1.05em;
+  margin-bottom: 1.15em;
+  border: 1.6px solid #dbeafe;
+  border-radius: 7px;
+  font-size: 1em;
+  background: #fafdff;
+  color: #314060;
+  transition: border 0.18s, box-shadow 0.18s;
+  box-sizing: border-box;
+  outline: none;
+}
+#missingForm input[type="file"] {
+  padding: 0.22em 0.7em;
+  font-size: 0.99em;
+  background: #f0f7ff;
+}
+#missingForm input:focus,
+#missingForm select:focus {
+  border-color: #f05454; /* volunteer red */
+  box-shadow: 0 0 0 2px #ffeaea; /* subtle red glow */
+}
+#missingForm input[type="checkbox"] {
+  margin-right: 10px;
+  accent-color: #f05454; /* volunteer red */
+  transform: scale(1.15);
+}
+
+/* Consent Label */
+#missingForm label[for="consent"] {
+  font-weight: 500;
+  color: #1a232a;
+  margin-top: 1.2em;
+}
+
+/* Placeholder Styling */
+#missingForm input::placeholder {
+  color: #8ba1c3;
+  opacity: 1;
+  font-size: 0.98em;
+}
+
+/* Modal Actions */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1em;
+  margin-top: 2.2em;
+}
+.cancel-btn,
+.submit-btn {
+  border: none;
+  border-radius: 25px; /* same pill shape as volunteer-btn */
+  padding: 8px 18px; /* match volunteer-btn */
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3); /* volunteer btn shadow */
+  transition: background 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+.cancel-btn {
+  background: #fff;
+  color: #f05454;
+  border: 1.6px solid #f05454;
+}
+.cancel-btn:hover {
+  background: #f05454;
+  color: #fff;
+}
+.submit-btn {
+  background: #f05454;
+  color: #fff;
+  border: none;
+}
+.submit-btn:hover {
+  background: #e3471c;
+  box-shadow: 0 2px 8px rgba(227, 71, 28, 0.5);
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .missing-modal-content {
+    padding: 1.1em 0.7em 0.8em 0.7em;
+    width: 99%;
+    min-width: 0;
+    max-height: 95vh;
+  }
+  .missing-close {
+    right: 13px;
+    top: 10px;
+    font-size: 1.7em;
+  }
+  .modal-actions {
+    flex-direction: column;
+    gap: 0.7em;
+  }
+}
+
+/* Optional: slightly brighten input on hover */
+#missingForm input[type="text"]:hover,
+#missingForm input[type="number"]:hover,
+#missingForm input[type="date"]:hover,
+#missingForm input[type="file"]:hover,
+#missingForm input[type="tel"]:hover,
+#missingForm select:hover {
+  background: #fff0f0;
+}
+
+/* Subtle animation for button clicks */
+.cancel-btn:active,
+.submit-btn:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+/* Modal Background */
+.missing-modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  z-index: 1001;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: auto;
+background: rgba(0, 0, 0, 0.7); /* Semi-transparent black overlay */
+}
+
+/* Modal Content Box */
+.missing-modal-content {
+  background: #fff; /* switched from #f5f8fa to pure white for cleaner look */
+  margin: 4% auto;
+  padding: 2.5em 2.5em 1.5em 2.5em;
+  border-radius: 8px; /* same radius as volunteer-section */
+  border: 1px solid #dbeafe;
+  width: 95%;
+  max-width: 70%;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15); /* softer shadow similar to volunteer */
+  position: relative;
+  animation: modalFadeIn 0.35s ease-out;
+  max-height: 86vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #f8f8f8 #e5edfa;
+}
+
+/* Scrollbar (Webkit) */
+.missing-modal-content::-webkit-scrollbar {
+  width: 9px;
+}
+.missing-modal-content::-webkit-scrollbar-thumb {
+  background: #f05454; /* use volunteer button red for highlight */
+  border-radius: 8px;
+}
+.missing-modal-content::-webkit-scrollbar-track {
+  background: #ffeaea; /* lighter red tint track */
+  border-radius: 8px;
+}
+
+/* Fade-in Animation */
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: translateY(-32px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Close Button */
+.missing-close {
+  color: #7a8ca4;
+  position: absolute;
+  right: 24px;
+  top: 18px;
+  font-size: 2.1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.2s;
+  z-index: 2;
+}
+.missing-close:hover,
+.missing-close:focus {
+  color: #f05454; /* use volunteer button hover red */
+  text-decoration: none;
+}
+
+/* Headings */
+.missing-modal-content h2 {
+  margin-top: 0;
+  color: #1a232a; /* match volunteer section heading color */
+  text-align: center;
+  font-size: 1.7em;
+  letter-spacing: 0.01em;
+  margin-bottom: 1.1em;
+}
+.missing-modal-content h3 {
+  margin-top: 2em;
+  font-size: 1.15em;
+  color: #3b537a;
+  border-left: 4px solid #f05454; /* volunteer red highlight */
+  padding-left: 0.6em;
+  margin-bottom: 0.7em;
+  font-weight: 600;
+  background: linear-gradient(90deg, #fceaea 80%, transparent 100%);
+}
+
+/* Form Labels */
+#missingForm label {
+  display: block;
+  margin-bottom: 0.23em;
+  color: #425a78;
+  font-size: 1.01em;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* Inputs and Selects */
+#missingForm input[type="text"],
+#missingForm input[type="number"],
+#missingForm input[type="date"],
+#missingForm input[type="file"],
+#missingForm input[type="tel"],
+#missingForm select {
+  width: 100%;
+  padding: 0.54em 1.05em;
+  margin-bottom: 1.15em;
+  border: 1.6px solid #dbeafe;
+  border-radius: 7px;
+  font-size: 1em;
+  background: #fafdff;
+  color: #314060;
+  transition: border 0.18s, box-shadow 0.18s;
+  box-sizing: border-box;
+  outline: none;
+}
+#missingForm input[type="file"] {
+  padding: 0.22em 0.7em;
+  font-size: 0.99em;
+  background: #f0f7ff;
+}
+#missingForm input:focus,
+#missingForm select:focus {
+  border-color: #f05454; /* volunteer red */
+  box-shadow: 0 0 0 2px #ffeaea; /* subtle red glow */
+}
+#missingForm input[type="checkbox"] {
+  margin-right: 10px;
+  accent-color: #f05454; /* volunteer red */
+  transform: scale(1.15);
+}
+
+/* Consent Label */
+#missingForm label[for="consent"] {
+  font-weight: 500;
+  color: #1a232a;
+  margin-top: 1.2em;
+}
+
+/* Placeholder Styling */
+#missingForm input::placeholder {
+  color: #8ba1c3;
+  opacity: 1;
+  font-size: 0.98em;
+}
+
+/* Modal Actions */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1em;
+  margin-top: 2.2em;
+}
+.cancel-btn,
+.submit-btn {
+  border: none;
+  border-radius: 25px; /* same pill shape as volunteer-btn */
+  padding: 8px 18px; /* match volunteer-btn */
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3); /* volunteer btn shadow */
+  transition: background 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+.cancel-btn {
+  background: #fff;
+  color: #f05454;
+  border: 1.6px solid #f05454;
+}
+.cancel-btn:hover {
+  background: #f05454;
+  color: #fff;
+}
+.submit-btn {
+  background: #f05454;
+  color: #fff;
+  border: none;
+}
+.submit-btn:hover {
+  background: #e3471c;
+  box-shadow: 0 2px 8px rgba(227, 71, 28, 0.5);
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .missing-modal-content {
+    padding: 1.1em 0.7em 0.8em 0.7em;
+    width: 99%;
+    min-width: 0;
+    max-height: 95vh;
+  }
+  .missing-close {
+    right: 13px;
+    top: 10px;
+    font-size: 1.7em;
+  }
+  .modal-actions {
+    flex-direction: column;
+    gap: 0.7em;
+  }
+}
+
+/* Optional: slightly brighten input on hover */
+#missingForm input[type="text"]:hover,
+#missingForm input[type="number"]:hover,
+#missingForm input[type="date"]:hover,
+#missingForm input[type="file"]:hover,
+#missingForm input[type="tel"]:hover,
+#missingForm select:hover {
+  background: #fff0f0;
+}
+
+/* Subtle animation for button clicks */
+.cancel-btn:active,
+.submit-btn:active {
+  transform: translateY(1px) scale(0.98);
+}

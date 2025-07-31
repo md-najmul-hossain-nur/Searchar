@@ -239,9 +239,78 @@
 </div>
 
 <div class="find-love-simple">
-  <h4>Find Your Love One</h4>
-  <button type="button">
-  <img src="../Images/search.gif" alt="Love Icon" class="love-image" /> </button>
+  <h4>Find Your Loved One</h4>
+  <button type="button" onclick="openMissingForm()">
+    <img src="../Images/search.gif" alt="Love Icon" class="love-image" />
+  </button>
+</div>
+
+<!-- Missing Person Report Popup -->
+<div id="missingFormModal" class="missing-modal">
+  <div class="missing-modal-content">
+    <span class="missing-close" onclick="closeMissingForm()">&times;</span>
+    <h2>Missing Person Report Form</h2>
+
+    <form id="missingForm">
+      <!-- Section 1: Personal Details -->
+      <h3>Personal Details</h3>
+      <label>Full Name</label>
+      <input type="text" required>
+      
+      <label>Nickname / Alias</label>
+      <input type="text">
+
+      <label>Gender</label>
+      <select>
+        <option>Male</option>
+        <option>Female</option>
+        <option>Other</option>
+      </select>
+
+      <label>Age</label>
+      <input type="number" min="1">
+
+      <label>Photo Upload</label>
+      <input type="file" accept="image/*" required>
+
+      <!-- Section 2: Last Seen Info -->
+      <h3>Last Seen Information</h3>
+      <label>Last Seen Date</label>
+      <input type="date">
+      
+      <label>Last Seen Location</label>
+      <input type="text" placeholder="E.g., Dhanmondi 27, Dhaka">
+
+      <!-- Section 3: Health -->
+      <h3>Health & Mental Condition</h3>
+      <label>Mental Condition</label>
+      <select>
+        <option>Stable</option>
+        <option>Depression</option>
+        <option>Autism</option>
+        <option>Memory Loss</option>
+      </select>
+
+      <!-- Section 4: Reporter Contact -->
+      <h3>Your Contact Details</h3>
+      <label>Your Name</label>
+      <input type="text" required>
+      
+      <label>Mobile Number</label>
+      <input type="tel" required>
+
+      <!-- Section 5: Consent -->
+      <h3>Consent</h3>
+      <label>
+        <input type="checkbox" required> I give permission to share this data publicly.
+      </label>
+      
+      <div class="modal-actions">
+        <button type="button" onclick="closeMissingForm()" class="cancel-btn">Cancel</button>
+        <button type="submit" class="submit-btn">Submit Report</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <div class="group-chat-section">
