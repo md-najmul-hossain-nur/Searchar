@@ -2039,231 +2039,49 @@ body {
 }
 
 
-
-.group-chat-section {
+/* Broadcast Section (Same Style) */
+.broadcast-section {
   background: #fff;
   padding: 15px;
   border-radius: 8px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  max-width: 400px;
-  margin: 20px auto;
-  display: flex;
-  flex-direction: column;
+  text-align: center;
+  margin-top: 20px;
 }
 
-.group-chat-section h4 {
+.broadcast-section h4 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  color: #1a232a;
+}
+
+.broadcast-section p {
+  font-size: 0.95rem;
+  color: #555;
   margin-bottom: 12px;
-  color: #1a232a;
-  font-size: 1.2rem;
 }
 
-.chat-window {
-  background: #f7f7f7;
-  height: 250px;
-  border-radius: 8px;
-  padding: 10px;
-  overflow-y: auto;
-  margin-bottom: 12px;
-  font-size: 0.95rem;
-  color: #333;
-  box-sizing: border-box;
-}
-
-.message {
-  margin-bottom: 8px;
-  padding: 6px 10px;
-  border-radius: 12px;
-  max-width: 80%;
-  clear: both;
-}
-
-.message.received {
-  background-color: #e0e0e0;
-  float: left;
-}
-
-.message.sent {
-  background-color: #f05454;
-  color: white;
-  float: right;
-}
-
-.chat-input-area {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.chat-input-area input {
-  flex-grow: 1;
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 25px;
-  font-size: 1rem;
-  outline: none;
-  transition: border-color 0.2s ease-in-out;
-}
-
-.chat-input-area input:focus {
-  border-color: #f05454;
-}
-
-.chat-input-area button {
-  background: transparent;   /* no background */
-  border: none;              /* no border */
-  padding: 8px 15px;
-  border-radius: 25px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.2s ease-in-out;
-}
-
-.chat-input-area button:hover {
-  opacity: 0.7;              /* subtle hover effect */
-}
-
-/* Keep the icon size */
-.send-icon {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-  pointer-events: none;      /* clicks pass to button */
-}
-
-.chat-icon {
-  width: 24px;
-  height: 24px;
-  cursor: pointer;
-}
-
-/* Hospital Section */
-.hospital-section {
-  background: #fff;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  text-align: center;
-  margin-top: 20px;
-}
-
-.hospital-section h4 {
-  font-size: 1.1rem;
-  margin-bottom: 8px;
-  color: #1a232a;
-}
-
-.hospital-section ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.hospital-section li {
-  font-size: 0.95rem;
-  color: #555;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.hospital-section li img {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  margin-right: 8px;
-}
-
-/* Firefighter Section */
-.firefighter-section {
-  background: #fff;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  text-align: center;
-  margin-top: 20px;
-}
-
-.firefighter-section h4 {
-  font-size: 1.1rem;
-  margin-bottom: 8px;
-  color: #1a232a;
-}
-
-.firefighter-section ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.firefighter-section li {
-  font-size: 0.95rem;
-  color: #555;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.firefighter-section li img {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  margin-right: 8px;
-}
-
-/* Police Section */
-.police-section {
-  background: #fff;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  text-align: center;
-  margin-top: 20px;
-}
-
-.police-section h4 {
-  font-size: 1.1rem;
-  margin-bottom: 8px;
-  color: #1a232a;
-}
-
-.police-section ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.police-section li {
-  font-size: 0.95rem;
-  color: #555;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.police-section li img {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  margin-right: 8px;
-}
-
-/* Call Button (Same Style Concept) */
-.call-btn {
+.broadcast-btn,
+.broadcast-request-btn {
   background: #f05454;
   color: #fff;
   border: none;
-  padding: 4px 12px;
-  font-size: 0.85rem;
-  border-radius: 20px;
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  border-radius: 25px;
   cursor: pointer;
   transition: background 0.2s ease-in-out;
+  text-decoration: none; /* For link buttons */
+  display: inline-block;
 }
 
-.call-btn:hover {
+.broadcast-btn:hover,
+.broadcast-request-btn:hover {
   background: #e3471c;
 }
+
+#broadcastStatus {
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
