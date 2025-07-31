@@ -77,13 +77,57 @@
 
     </div>
 
-    <!-- Main Feed -->
+     <!-- Main Feed -->
     <div class="main-feed">
-      <div class="post-box">
+      <!-- Post Box -->
+      <div class="post-box" onclick="openModal()">
         <img src="../Images/post.gif" class="user">
-        <input type="text" placeholder="Say Something">
-        <button>Share</button>
+        <input type="text" placeholder="What's on your mind?" readonly>
       </div>
+
+ <!-- Popup Modal -->
+<div id="postModal" class="post-modal">
+  <div class="post-modal-content">
+    <span class="post-modal-close" onclick="closeModal()">&times;</span>
+    <h2 class="post-modal-title">Share Your Mood</h2>
+
+    <!-- Facebook Toggle -->
+    <div class="facebook-toggle">
+      <label class="facebook-toggle-switch">
+        <input type="checkbox" id="facebookShareToggle">
+        <span class="facebook-toggle-slider">
+          <i class="fab fa-facebook"></i>
+        </span>
+      </label>
+      <span class="facebook-toggle-label">Share to Facebook</span>
+    </div>
+
+    <!-- Textarea -->
+    <textarea id="postText" class="post-modal-textarea" placeholder="Say Something..."></textarea>
+
+    <!-- Media Options -->
+    <div class="post-media-options">
+      <label>
+        <input type="file" id="imageUpload" accept="image/*" hidden>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
+      </label>
+      <label>
+        <input type="file" id="videoUpload" accept="video/*" hidden>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
+      </label>
+    </div>
+
+    <!-- Media Preview -->
+    <div id="mediaPreview" class="post-media-preview"></div>
+
+    <!-- Actions -->
+    <div class="post-modal-actions">
+      <button class="post-cancel-btn" onclick="closeModal()">Cancel</button>
+      <button class="post-submit-btn" onclick="createPost()">Post</button>
+    </div>
+  </div>
+</div>
+
 
       <div class="post">
         <div class="post-header">
@@ -216,6 +260,6 @@
 
 
     </body>
-       <script src="../javascrpit/User_Home.js"></script>
+       <script src="../javascrpit/Volunteer_Home.js"></script>
 
 </html>
