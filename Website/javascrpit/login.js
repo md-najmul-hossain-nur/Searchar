@@ -8,56 +8,510 @@ toggle = () => {
 setTimeout(() => {
 	container.classList.add('sign-in')
 }, 200)
-  document.getElementById('logo').onclick = function() {
-    window.location.href = '../Html/index.html';
-  };
-  function showForm() {
-    const role = document.getElementById('role').value;
-    const formContainer = document.getElementById('dynamicForm');
-    let formHTML = '';
 
-    if (role === 'user') {
-        formHTML = `
-            <h3>User Sign Up</h3>
-            <input type="text" placeholder="Full Name" required>
-            <input type="email" placeholder="Email" required>
-            <input type="text" placeholder="Phone" required>
-            <input type="password" placeholder="Password" required>
-            <button>Register as User</button>
-        `;
-    } 
-    else if (role === 'police') {
-        formHTML = `
-            <h3>Police Sign Up</h3>
-            <input type="text" placeholder="Officer Name" required>
-            <input type="text" placeholder="Badge ID" required>
-            <input type="email" placeholder="Official Email" required>
-            <input type="password" placeholder="Password" required>
-            <button>Register as Police</button>
-        `;
-    }
-    else if (role === 'volunteer') {
-        formHTML = `
-            <h3>Volunteer Sign Up</h3>
-            <input type="text" placeholder="Full Name" required>
-            <input type="email" placeholder="Email" required>
-            <input type="text" placeholder="Phone" required>
-            <input type="text" placeholder="Area of Service" required>
-            <input type="password" placeholder="Password" required>
-            <button>Register as Volunteer</button>
-        `;
-    }
-    else if (role === 'contributor') {
-        formHTML = `
-            <h3>Camera Contributor Sign Up</h3>
-            <input type="text" placeholder="Full Name" required>
-            <input type="email" placeholder="Email" required>
-            <input type="text" placeholder="Phone" required>
-            <input type="text" placeholder="Camera Location" required>
-            <input type="password" placeholder="Password" required>
-            <button>Register as Contributor</button>
-        `;
-    }
+// Logo click redirects to home page
+document.getElementById('logo').onclick = function() {
+  window.location.href = '../Html/index.html';
+};
 
-    formContainer.innerHTML = formHTML;
+// Show role-based sign-up form with animation
+function showForm() {
+  const role = document.getElementById('role').value;
+  const formContainer = document.getElementById('dynamicForm');
+  let formHTML = '';
+
+  if (role === 'user') {
+    formHTML = `
+      <h3>User Sign Up</h3>
+      <!-- Social Login Buttons -->
+<div class="social-login-buttons">
+  <button type="button" class="social-btn fb-btn">
+    <img src="../Images/facebook.png" alt="Facebook" class="social-icon" /> Sign in with Facebook
+  </button>
+  <button type="button" class="social-btn google-btn">
+    <img src="../Images/google.png" alt="Google" class="social-icon" /> Sign in with Google
+  </button>
+</div>
+
+
+      
+      <h5 class="form-section-title">🔐 General Information</h5>
+      
+      <div class="mb-3">
+        <label for="fullname" class="form-label">Full Name </label>
+        <input type="text" class="form-control" id="fullname" name="fullname" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="email" class="form-label">Email Address </label>
+        <input type="email" class="form-control" id="email" name="email" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="mobile" class="form-label">Mobile Number </label>
+        <input type="tel" class="form-control" id="mobile" name="mobile" pattern="01[3-9]\d{8}" placeholder="e.g. 017xxxxxxxx" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="nid" class="form-label">NID Number </label>
+        <input type="text" class="form-control" id="nid" name="nid" pattern="\d{10}|\d{17}" placeholder="10 or 17 digits" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="nid_photo" class="form-label">Upload NID Photo </label>
+        <input type="file" class="form-control" id="nid_photo" name="nid_photo" accept=".jpg,.jpeg,.png" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="profile_photo" class="form-label">Profile Photo </label>
+        <input type="file" class="form-control" id="profile_photo" name="profile_photo" accept=".jpg,.jpeg,.png">
+      </div>
+
+      <div class="mb-3">
+        <label for="dob" class="form-label">Date of Birth </label>
+        <input type="date" class="form-control" id="dob" name="dob" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="gender" class="form-label">Gender </label>
+        <select class="form-select" id="gender" name="gender" required>
+          <option value="">-- Select Gender --</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="address" class="form-label">Address </label>
+        <textarea class="form-control" id="address" name="address" rows="2" required></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label for="password" class="form-label">Password </label>
+        <input type="password" class="form-control" id="password" name="password" minlength="6" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="confirm_password" class="form-label">Confirm Password </label>
+        <input type="password" class="form-control" id="confirm_password" name="confirm_password" minlength="6" required>
+      </div>
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="terms" required>
+        <label class="form-check-label" for="terms">
+          I agree to the <a href="#">Terms & Privacy Policy</a>
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+    `;
+  } else if (role === 'police') {
+    formHTML = `
+      <h3 class="text-center mb-3">👮 Policeman / Authority Sign Up</h3>
+    <!-- Social Login Buttons -->
+     <div class="social-login-buttons">
+  <button type="button" class="social-btn fb-btn">
+    <img src="../Images/facebook.png" alt="Facebook" class="social-icon" /> Sign in with Facebook
+  </button>
+  <button type="button" class="social-btn google-btn">
+    <img src="../Images/google.png" alt="Google" class="social-icon" /> Sign in with Google
+  </button>
+</div>
+
+
+      <form id="policeSignupForm" enctype="multipart/form-data" method="post" action="police_signup.php">
+
+      <!-- 🔐 Common Fields -->
+      <h5 class="form-section-title">🔐 General Information</h5>
+      <div class="mb-3">
+        <label for="fullname" class="form-label">Full Name </label>
+        <input type="text" class="form-control" id="fullname" name="fullname" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="email" class="form-label">Official Email Address </label>
+        <input type="email" class="form-control" id="email" name="email" placeholder="example@police.gov.bd" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="mobile" class="form-label">Mobile Number </label>
+        <input type="tel" class="form-control" id="mobile" name="mobile" pattern="01[3-9]\d{8}" placeholder="e.g. 017xxxxxxxx" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="nid" class="form-label">NID Number </label>
+        <input type="text" class="form-control" id="nid" name="nid" pattern="\d{10}|\d{17}" placeholder="10 or 17 digits" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="nid_photo" class="form-label">Upload NID Photo </label>
+        <input type="file" class="form-control" id="nid_photo" name="nid_photo" accept=".jpg,.jpeg,.png" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="profile_photo" class="form-label">Profile Photo </label>
+        <input type="file" class="form-control" id="profile_photo" name="profile_photo" accept=".jpg,.jpeg,.png">
+      </div>
+
+      <div class="mb-3">
+        <label for="dob" class="form-label">Date of Birth </label>
+        <input type="date" class="form-control" id="dob" name="dob" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="gender" class="form-label">Gender </label>
+        <select class="form-select" id="gender" name="gender" required>
+          <option value="">-- Select Gender --</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="address" class="form-label">Address </label>
+        <textarea class="form-control" id="address" name="address" rows="2" required></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label for="password" class="form-label">Password </label>
+        <input type="password" class="form-control" id="password" name="password" minlength="6" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="confirm_password" class="form-label">Confirm Password </label>
+        <input type="password" class="form-control" id="confirm_password" name="confirm_password" minlength="6" required>
+      </div>
+
+      <!-- 👮 Policeman / Authority Specific Fields -->
+      <h5 class="form-section-title">👮 Authority Details</h5>
+
+      <div class="mb-3">
+        <label for="badge_id" class="form-label">Badge ID / Police ID Number </label>
+        <input type="text" class="form-control" id="badge_id" name="badge_id" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="designation" class="form-label">Designation </label>
+        <select class="form-select" id="designation" name="designation" required>
+          <option value="">-- Select Designation --</option>
+          <option value="si">Sub Inspector (SI)</option>
+          <option value="asi">Assistant Sub Inspector (ASI)</option>
+          <option value="inspector">Inspector</option>
+          <option value="officer">Officer</option>
+          <option value="fire_service">Fire Service Official</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="station" class="form-label">Station Name </label>
+        <input type="text" class="form-control" id="station" name="station" placeholder="e.g. Dhanmondi Police Station" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="official_id" class="form-label">Official Letter / Appointment ID (PDF) </label>
+        <input type="file" class="form-control" id="official_id" name="official_id" accept=".pdf" required>
+      </div>
+
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="terms" required>
+        <label class="form-check-label" for="terms">
+          I agree to the <a href="#">Terms & Privacy Policy</a>
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100">Register as Authority</button>
+    `;
+  } else if (role === 'volunteer') {
+    formHTML = `
+       <div class="signup-container">
+    <h3 class="text-center mb-3">🚨 Volunteer Sign Up</h3>
+     <!-- Social Login Buttons -->
+<div class="social-login-buttons">
+  <button type="button" class="social-btn fb-btn">
+    <img src="../Images/facebook.png" alt="Facebook" class="social-icon" /> Sign in with Facebook
+  </button>
+  <button type="button" class="social-btn google-btn">
+    <img src="../Images/google.png" alt="Google" class="social-icon" /> Sign in with Google
+  </button>
+</div>
+
+    <form id="volunteerSignupForm" enctype="multipart/form-data" method="post" action="volunteer_signup.php">
+
+      <!-- 🔐 Common Fields -->
+      <h5 class="form-section-title">🔐 General Information</h5>
+      <div class="mb-3">
+        <label for="fullname" class="form-label">Full Name </label>
+        <input type="text" class="form-control" id="fullname" name="fullname" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="email" class="form-label">Email Address </label>
+        <input type="email" class="form-control" id="email" name="email" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="mobile" class="form-label">Mobile Number </label>
+        <input type="tel" class="form-control" id="mobile" name="mobile" pattern="01[3-9]\d{8}" placeholder="e.g. 017xxxxxxxx" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="nid" class="form-label">NID Number </label>
+        <input type="text" class="form-control" id="nid" name="nid" pattern="\d{10}|\d{17}" placeholder="10 or 17 digits" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="nid_photo" class="form-label">Upload NID Photo </label>
+        <input type="file" class="form-control" id="nid_photo" name="nid_photo" accept=".jpg,.jpeg,.png" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="profile_photo" class="form-label">Profile Photo </label>
+        <input type="file" class="form-control" id="profile_photo" name="profile_photo" accept=".jpg,.jpeg,.png">
+      </div>
+
+      <div class="mb-3">
+        <label for="dob" class="form-label">Date of Birth </label>
+        <input type="date" class="form-control" id="dob" name="dob" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="gender" class="form-label">Gender </label>
+        <select class="form-select" id="gender" name="gender" required>
+          <option value="">-- Select Gender --</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="address" class="form-label">Address </label>
+        <textarea class="form-control" id="address" name="address" rows="2" required></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label for="password" class="form-label">Password </label>
+        <input type="password" class="form-control" id="password" name="password" minlength="6" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="confirm_password" class="form-label">Confirm Password </label>
+        <input type="password" class="form-control" id="confirm_password" name="confirm_password" minlength="6" required>
+      </div>
+       <div class="mb-3">
+        <label for="occupation" class="form-label">Occupation </label>
+        <select class="form-select" id="occupation" name="occupation" required>
+          <option value="">-- Select Occupation --</option>
+          <option value="student">Student</option>
+          <option value="job_holder">Job Holder</option>
+          <option value="business">Business</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="availability" class="form-label">Availability </label>
+        <select class="form-select" id="availability" name="availability" required>
+          <option value="">-- Select Availability --</option>
+          <option value="full_time">Full-Time</option>
+          <option value="part_time">Part-Time</option>
+          <option value="on_call">On Call</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Transport Availability </label><br>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" name="transport[]" value="bike"> Bike
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" name="transport[]" value="car"> Car
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" name="transport[]" value="foot"> On Foot
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="police_clearance" class="form-label">Police Clearance Certificate (Optional)</label>
+        <input type="file" class="form-control" id="police_clearance" name="police_clearance" accept=".jpg,.jpeg,.png,.pdf">
+      </div>
+
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="geo_permission" name="geo_permission" value="yes" required>
+        <label class="form-check-label" for="geo_permission">I agree to share my geo-location during missions.</label>
+      </div>
+
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="terms" required>
+        <label class="form-check-label" for="terms">
+          I agree to the <a href="#">Terms & Privacy Policy</a>
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-danger w-100">Join as Volunteer</button>
+
+    `;
+  } else if (role === 'contributor') {
+    formHTML = `
+       <h3 class="text-center mb-3">🎥 Camera Contributor Sign Up</h3>
+      <!-- Social Login Buttons -->
+<div class="social-login-buttons">
+  <button type="button" class="social-btn fb-btn">
+    <img src="../Images/facebook.png" alt="Facebook" class="social-icon" /> Sign in with Facebook
+  </button>
+  <button type="button" class="social-btn google-btn">
+    <img src="../Images/google.png" alt="Google" class="social-icon" /> Sign in with Google
+  </button>
+</div>
+
+       <form id="cameraSignupForm" enctype="multipart/form-data" method="post" action="camera_signup.php">
+
+      <!-- 🔐 Common Fields -->
+      <h5 class="form-section-title">🔐 General Information</h5>
+      <div class="mb-3">
+        <label for="fullname" class="form-label">Full Name </label>
+        <input type="text" class="form-control" id="fullname" name="fullname" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="email" class="form-label">Email Address </label>
+        <input type="email" class="form-control" id="email" name="email" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="mobile" class="form-label">Mobile Number </label>
+        <input type="tel" class="form-control" id="mobile" name="mobile" pattern="01[3-9]\d{8}" placeholder="e.g. 017xxxxxxxx" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="nid" class="form-label">NID Number </label>
+        <input type="text" class="form-control" id="nid" name="nid" pattern="\d{10}|\d{17}" placeholder="10 or 17 digits" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="nid_photo" class="form-label">Upload NID Photo </label>
+        <input type="file" class="form-control" id="nid_photo" name="nid_photo" accept=".jpg,.jpeg,.png" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="profile_photo" class="form-label">Profile Photo (Optional)</label>
+        <input type="file" class="form-control" id="profile_photo" name="profile_photo" accept=".jpg,.jpeg,.png">
+      </div>
+
+      <div class="mb-3">
+        <label for="dob" class="form-label">Date of Birth </label>
+        <input type="date" class="form-control" id="dob" name="dob" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="gender" class="form-label">Gender </label>
+        <select class="form-select" id="gender" name="gender" required>
+          <option value="">-- Select Gender --</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="address" class="form-label">Address </label>
+        <textarea class="form-control" id="address" name="address" rows="2" required></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label for="password" class="form-label">Password </label>
+        <input type="password" class="form-control" id="password" name="password" minlength="6" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="confirm_password" class="form-label">Confirm Password </label>
+        <input type="password" class="form-control" id="confirm_password" name="confirm_password" minlength="6" required>
+      </div>
+
+      <!-- 🎥 Camera Contributor Specific Fields -->
+      <h5 class="form-section-title">🎥 Camera Information</h5>
+
+      <div class="mb-3">
+        <label for="camera_location" class="form-label">Camera Location (GPS Address) </label>
+        <input type="text" class="form-control" id="camera_location" name="camera_location" placeholder="Enter GPS or full address" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="camera_type" class="form-label">Camera Type </label>
+        <select class="form-select" id="camera_type" name="camera_type" required>
+          <option value="">-- Select Camera Type --</option>
+          <option value="indoor">Indoor</option>
+          <option value="outdoor">Outdoor</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="stream_type" class="form-label">Camera Stream Type </label>
+        <select class="form-select" id="stream_type" name="stream_type" required>
+          <option value="">-- Select Stream Type --</option>
+          <option value="rtsp">RTSP Stream</option>
+          <option value="ip_camera">IP Camera</option>
+          <option value="recorded">Recorded Video Upload</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="bandwidth" class="form-label">Monthly Bandwidth Limit (GB) </label>
+        <input type="number" class="form-control" id="bandwidth" name="bandwidth" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="payment_number" class="form-label">Bkash/Nagad Number (Payment Receiving) </label>
+        <input type="tel" class="form-control" id="payment_number" name="payment_number" pattern="01[3-9]\d{8}" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="agreement" class="form-label">Contract Agreement (PDF) </label>
+        <input type="file" class="form-control" id="agreement" name="agreement" accept=".pdf" required>
+      </div>
+
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="terms" required>
+        <label class="form-check-label" for="terms">
+          I agree to the <a href="#">Terms & Privacy Policy</a>
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-success w-100">Join as Camera Contributor</button>
+    `;
+  }
+
+  // Set HTML and animate in
+  formContainer.innerHTML = formHTML;
+  formContainer.classList.remove('show-role-form');
+  setTimeout(() => {
+    if (role) {
+      formContainer.classList.add('show-role-form');
+    }
+  }, 10);
+
+  // If no role, clear the form and remove animation
+  if (!role) {
+    formContainer.innerHTML = '';
+    formContainer.classList.remove('show-role-form');
+  }
 }
+
+// Bubble animation script (larger bubbles)
+document.addEventListener('DOMContentLoaded', () => {
+  const bubbleContainer = document.querySelector('.bubble-background');
+  for (let i = 0; i < 18; i++) {
+    const bubble = document.createElement('div');
+    bubble.classList.add('bubble');
+    // Increase bubble size: min 80px, max 180px
+    const size = Math.random() * (180 - 80) + 80; // px
+    bubble.style.width = `${size}px`;
+    bubble.style.height = `${size}px`;
+    bubble.style.left = `${Math.random() * 100}vw`;
+    bubble.style.animationDuration = `${Math.random() * (19 - 9) + 9}s`;
+    bubble.style.animationDelay = `-${Math.random() * 19}s`;
+    bubbleContainer.appendChild(bubble);
+  }
+}); 

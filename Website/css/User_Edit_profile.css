@@ -377,6 +377,7 @@ body {
 #currentLocationBtn:hover, #saveLocationBtn:hover {
   background: #e3471c;
 }
+
 /* Bubbles background */
 .bubble-background {
   position: fixed;

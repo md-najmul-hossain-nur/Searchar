@@ -471,7 +471,7 @@ body {
   flex-direction: column;
 }
 .input-group label {
-  font-size: 1.04em;
+  font-size: 16px;
   font-weight: 500;
   margin-bottom: 3px;
   color: #1976d2;
@@ -494,11 +494,56 @@ body {
   border-color: #f75c3c;
   background: #fff;
 }
-
 /* Dynamic Form Container (where your JS injects more inputs) */
 #dynamicForm {
   margin: 16px 0 0 0;
+  max-height: 60vh; 
+       /* Limit height for scroll */
+  overflow-y: auto;         /* Scroll if content overflows */
+  opacity: 0;
+  transform: translateY(40px) scale(0.97);
+  transition: opacity 0.5s, transform 0.5s;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border-radius: 1rem;
+  padding: 1rem;
 }
+
+/* Custom scrollbar styling (Chrome, Edge, Safari) */
+#dynamicForm::-webkit-scrollbar {
+  width: 10px;
+  background: #f0f0f0;
+}
+#dynamicForm::-webkit-scrollbar-thumb {
+  background: #f75c3c;
+  border-radius: 6px;
+}
+#dynamicForm::-webkit-scrollbar-thumb:hover {
+  background: #e3471c;
+}
+
+/* Custom scrollbar styling (Firefox) */
+#dynamicForm {
+  scrollbar-width: thin;
+  scrollbar-color: #f75c3c #f0f0f0;
+}
+
+/* Show animation for role form */
+#dynamicForm.show-role-form {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Section titles for forms */
+.form-section-title {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 1.07rem;
+  color: #f75c3c;
+  margin-bottom: 7px;
+  margin-top: 15px;
+  font-weight: 700;
+}
+
 #dynamicForm h3 {
   font-family: 'Montserrat', Arial, sans-serif;
   font-size: 1.13rem;
@@ -508,7 +553,8 @@ body {
   font-weight: 700;
 }
 #dynamicForm input,
-#dynamicForm select {
+#dynamicForm select,
+#dynamicForm textarea {
   display: block;
   width: 100%;
   margin-bottom: 10px;
@@ -520,7 +566,8 @@ body {
   transition: border 0.18s, background 0.15s;
 }
 #dynamicForm input:focus,
-#dynamicForm select:focus {
+#dynamicForm select:focus,
+#dynamicForm textarea:focus {
   border-color: #f75c3c;
   background: #fff;
 }
@@ -543,6 +590,18 @@ body {
   transform: scale(1.04);
 }
 
+/* Checkbox, radio, etc. tweaks for neatness */
+#dynamicForm .form-check-input {
+  accent-color: #f75c3c;
+}
+#dynamicForm .form-check-label a {
+  color: #1976d2;
+  text-decoration: underline;
+}
+#dynamicForm .form-check-label a:hover {
+  color: #f75c3c;
+}
+
 /* Back Link */
 .pointer {
   cursor: pointer;
@@ -563,6 +622,10 @@ body {
     padding: 3vw 2vw;
     border-radius: 0;
   }
+  #dynamicForm {
+    max-height: 55vh;
+    padding: 0.6rem;
+  }
 }
 
 @media (max-width: 600px) {
@@ -579,4 +642,162 @@ body {
   .form.sign-up {
     padding: 1rem 0.3rem;
   }
+  #dynamicForm {
+    max-height: 40vh;
+    padding: 0.4rem;
+  }
+}
+.form.sign-up {
+  background: #fff;
+  border-radius: 1.5rem;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+  padding: 2rem 1.5rem;
+  width: 100%;
+  max-width: 1500px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  transform: scale(0);
+  transition: transform 0.5s ease-in-out, box-shadow 0.25s;
+  transition-delay: 0.6s;
+  margin-top: 120px;
+}
+/* When active, scale in for animation (used with JS toggle) */
+.container.sign-up .form.sign-up {
+  transform: scale(1);
+}
+
+/* Responsive for mobile */
+@media (max-width: 600px) {
+  .form.sign-up {
+    padding: 1rem 0.3rem;
+    max-width: 99vw;
+    border-radius: 1rem;
+  }
+}
+/* Bubbles background */
+.bubble-background {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+
+.bubble {
+  position: absolute;
+  bottom: -120px;
+  border-radius: 50%;
+  opacity: 0.37;
+  background: linear-gradient(135deg, #cdb468 60%, #ffffff 100%);
+  animation: bubbleUp 15s linear infinite;
+}
+
+@keyframes bubbleUp {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0.48;
+  }
+  80% {
+    opacity: 0.31;
+  }
+  100% {
+    transform: translateY(-110vh) scale(1.2);
+    opacity: 0;
+  }
+}
+/* Spacing for form groups */
+.mb-3 {
+  margin-bottom: 1.1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Label styling */
+.mb-3 .form-label {
+  font-size: 1.02em;
+  font-weight: 500;
+  color: #1976d2;
+  margin-bottom: 5px;
+  text-align: left;
+  letter-spacing: 0.01em;
+}
+
+/* Input, select, textarea styling */
+.mb-3 .form-control,
+.mb-3 .form-select,
+.mb-3 textarea {
+  padding: 0.9rem 1.1rem;
+  font-size: 1em;
+  border-radius: .5rem;
+  border: 1.5px solid #efefef;
+  background: #efefef;
+  transition: border 0.18s, background 0.15s;
+}
+
+.mb-3 .form-control:focus,
+.mb-3 .form-select:focus,
+.mb-3 textarea:focus {
+  border-color: #f75c3c;
+  background: #fff;
+}
+
+
+/* Social Login Button Container (Scoped to dynamic form) */
+#dynamicForm .social-login-buttons {
+  display: flex;
+  flex-direction: column; /* Stack buttons vertically */
+  gap: 10px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+/* Common Button Style */
+#dynamicForm .social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  font-size: 1em;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  font-weight: 500;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+/* Facebook Button */
+#dynamicForm .fb-btn {
+  background-color: #1877f2;
+}
+
+#dynamicForm .fb-btn:hover {
+  background-color: #145dbf;
+  transform: translateY(-2px);
+}
+
+/* Google Button */
+#dynamicForm .google-btn {
+  background-color: #db4437;
+}
+
+#dynamicForm .google-btn:hover {
+  background-color: #b33629;
+  transform: translateY(-2px);
+}
+
+/* Icon Styling */
+#dynamicForm .social-btn i {
+  margin-right: 8px;
+  font-size: 1.2em;
+}
+
+
+#dynamicForm .social-icon {
+  width: 20px;    /* or your preferred size */
+  height: 20px;
+  margin-right: 8px;
+  object-fit: contain;
 }
