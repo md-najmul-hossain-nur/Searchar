@@ -320,18 +320,7 @@ function showForm() {
         </select>
       </div>
 
-      <div class="mb-3">
-        <label class="form-label">Transport Availability </label><br>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" name="transport[]" value="bike"> Bike
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" name="transport[]" value="car"> Car
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" name="transport[]" value="foot"> On Foot
-        </div>
-      </div>
+     
 
       <div class="mb-3">
         <label for="police_clearance" class="form-label">Police Clearance Certificate (Optional)</label>
