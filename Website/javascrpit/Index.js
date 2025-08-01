@@ -12,13 +12,13 @@ function delayedRedirect() {
 });
 const slides = [
   {
-    image: "../Images/pexels-kelly-1179532-33105757.jpg",
+    image: "../Images/makeachange.jpg",
     label: "Be a Changemaker",
     petition: "Sign the Petition Today",
     title: "Support Our Cause Donate & Make a Difference"
   },
   {
-    image: "../Images/pexels-omaralnahi-18495.jpg",
+    image: "../Images/missing.jpeg",
     label: "💛 Reunite Families",
     petition: "Watch Live CCTV Feeds Assist Investigations",
     title: "Help Build a Safer, Brighter Future"
@@ -30,7 +30,7 @@ const slides = [
     title: "Contribute to Justice Share What You Know"
   },
   {
-    image: "../Images/pexels-omaralnahi-18495.jpg",
+    image: "../Images/together.jpg",
     label: "💛 Empower Your Community",
     petition: "Earn by Sharing Evidence or Live Broadcasting",
     title: "Turn Awareness Into Actionm Get Rewarded for Helping"

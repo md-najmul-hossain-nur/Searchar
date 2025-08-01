@@ -89,13 +89,15 @@ body {
 .hero {
   position: relative;
   width: 100vw;
-  height: 650px;
+  height: 750px;
   display: flex;
   align-items: flex-end;
   justify-content: flex-start;
   overflow: hidden;
 }
+
 .hero-bg {
+  margin-top:100px;
   width: 100vw;
   height: 100%;
   object-fit: cover;
@@ -104,6 +106,7 @@ body {
   top: 0;
   z-index: 1;
   transition: opacity 0.5s;
+  margin-bottom: 50px;
   background: #222; /* <-- Fix: add dark background to prevent white flash */
 }
 .hero-overlay {
