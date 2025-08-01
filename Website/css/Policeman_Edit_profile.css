@@ -11,15 +11,17 @@ body {
 .navbar {
   width: 100vw;
   background: #ffffff;
-  color: #ffffff;
+  color: #1a232a; /* Fixed: Navbar text now dark for visibility on white background */
   display: flex;
   align-items: center;
   padding: 0 32px;
   height: 104px;
   position: fixed;
+  top: 0;
   z-index: 10;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Added shadow */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
+
 .navbar-logo {
   display: flex;
   align-items: center;
@@ -38,9 +40,11 @@ body {
   display: inline-block;
   vertical-align: middle;
 }
+
 .navbar-title {
   font-size: 1.15em;
 }
+
 .navbar-menu {
   display: flex;
   flex: 1;
@@ -48,8 +52,9 @@ body {
   gap: 36px;
   margin-left: 60px;
 }
+
 .navbar-menu a {
-  color: #fff;
+  color: #1a232a; /* Fixed: Dark color to match light navbar background */
   font-family: 'Montserrat', Arial, sans-serif;
   font-size: 1.08em;
   font-weight: 700;
@@ -57,23 +62,28 @@ body {
   padding: 16px 6px 8px 6px;
   transition: color 0.2s;
 }
+
 .navbar-menu a:hover {
   color: #f75c3c;
 }
+
 .navbar-actions {
   display: flex;
   align-items: center;
   gap: 24px;
 }
+
 .navbar-search, .navbar-cart {
   font-size: 1.25em;
   cursor: pointer;
+  color: #1a232a;
 }
+
 .navbar-donate {
   background: #f75c3c;
   color: #fff;
   border: none;
-  border-radius: 2px;
+  border-radius: 4px;
   font-weight: bold;
   font-family: 'Montserrat', Arial, sans-serif;
   font-size: 1em;
@@ -82,6 +92,318 @@ body {
   cursor: pointer;
   transition: background 0.2s;
 }
+
 .navbar-donate:hover {
   background: #e3471c;
+}
+
+/* Main Container */
+.edit-profile-container {
+  max-width: 70%;
+  margin: 180px auto 2.5em auto;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.13);
+  padding: 2.5em 2.5em 2em 2.5em;
+  border: 1.5px solid #dbeafe;
+  animation: modalFadeIn 0.38s ease-out;
+  position: relative;
+}
+
+/* Heading */
+.edit-profile-container h2 {
+  margin-top: 0;
+  color: #1a232a;
+  text-align: center;
+  font-size: 1.2em;
+  letter-spacing: 0.15em;
+  margin-bottom: 1.6em;
+}
+
+.edit-profile-header-vertical {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6em;
+  margin-bottom: 1em;
+}
+
+.edit-profile-icon-vertical {
+  width: 88px;
+  height: 88px;
+  object-fit: contain;
+}
+
+.edit-profile-header-vertical h2 {
+  margin: 0;
+}
+/* Form Styles */
+.edit-profile-form label {
+  display: block;
+  margin-bottom: 0.50em;
+  color: #425a78;
+  font-size: 1.01em;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.edit-profile-form input[type="text"],
+.edit-profile-form input[type="email"],
+.edit-profile-form input[type="password"],
+.edit-profile-form input[type="tel"],
+.edit-profile-form input[type="file"],
+.edit-profile-form textarea {
+  width: 100%;
+  padding: 0.54em 1.05em;
+  margin-bottom: 1.15em;
+  border: 1.6px solid #dbeafe;
+  border-radius: 7px;
+  font-size: 1em;
+  background: #fafdff;
+  color: #314060;
+  transition: border 0.18s, box-shadow 0.18s;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.edit-profile-form input[type="file"] {
+  padding: 0.22em 0.7em;
+  font-size: 0.99em;
+  background: #f0f7ff;
+}
+
+.edit-profile-form input:focus,
+.edit-profile-form textarea:focus {
+  border-color: #f05454;
+  box-shadow: 0 0 0 2px #ffeaea;
+}
+
+.edit-profile-form input[type="text"]:hover,
+.edit-profile-form input[type="email"]:hover,
+.edit-profile-form input[type="password"]:hover,
+.edit-profile-form input[type="tel"]:hover,
+.edit-profile-form textarea:hover {
+  background: #fff0f0;
+}
+
+.edit-profile-form input::placeholder,
+.edit-profile-form textarea::placeholder {
+  color: #8ba1c3;
+  opacity: 1;
+  font-size: 0.98em;
+}
+
+/* Section Styles */
+.cover-photo-section,
+.profile-photo-section {
+  margin-bottom: 1.2em;
+}
+
+.cover-label, .profile-label {
+  font-weight: 500;
+  color: #425a78;
+  margin-bottom: 0.3em;
+  display: block;
+}
+
+.cover-preview,
+.profile-preview {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 0.7em;
+}
+
+.cover-preview img,
+.profile-preview img {
+  width: 100%;
+  max-width: 120px;
+  height: 120px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1.5px solid #dbeafe;
+  background: #fafdff;
+  margin-left: 45%;
+  box-shadow: 0 2px 8px rgba(240, 84, 84, 0.12);
+}
+
+
+.profile-preview img {
+  max-width: 95px;
+  height: 95px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 1em;
+  border: 2px solid #ffeaea;
+}
+
+/* Bio & Address */
+.edit-profile-form textarea {
+  min-height: 70px;
+  max-height: 170px;
+  resize: vertical;
+}
+
+/* Actions (Save & Cancel buttons) */
+.profile-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1em;
+  margin-top: 2.2em;
+}
+
+/* Save Button */
+.save-btn {
+  background: #f05454;
+  color: #fff;
+  border: none;
+  border-radius: 25px;
+  padding: 10px 28px;
+  font-size: 1.01em;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.23);
+  transition: background 0.2s, color 0.2s, box-shadow 0.22s;
+}
+
+.save-btn:hover {
+  background: #e3471c;
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(227, 71, 28, 0.18);
+}
+
+.save-btn:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+/* Cancel Button */
+.cancel-btn {
+  background: #fff;
+  color: #f05454;
+  border: 1.6px solid #f05454;
+  border-radius: 25px;
+  padding: 10px 28px;
+  font-size: 1.01em;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.23);
+  transition: background 0.2s, color 0.2s, box-shadow 0.22s;
+}
+
+.cancel-btn:hover {
+  background: #f05454;
+  color: #fff;
+}
+
+.cancel-btn:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+/* Responsive Design */
+@media (max-width: 700px) {
+  .edit-profile-container {
+    padding: 1.1em 0.7em 0.8em 0.7em;
+    width: 99%;
+    min-width: 0;
+  }
+  .cover-preview img,
+  .profile-preview img {
+    max-width: 100%;
+    height: auto;
+  }
+  .profile-actions {
+    flex-direction: column;
+    gap: 0.7em;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 480px) {
+  .edit-profile-container {
+    padding: 0.7em 0.3em 0.6em 0.3em;
+    margin: 1.1em auto;
+  }
+  .edit-profile-container h2 {
+    font-size: 1.25em;
+  }
+  .cover-preview img,
+  .profile-preview img {
+    max-width: 90vw;
+    height: auto;
+  }
+}
+
+/* Subtle fade-in animation */
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: translateY(-32px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+.map-select-btn {
+  display: inline-block;
+  margin-bottom: 1em;
+  background: #f05454;
+  color: #fff;
+  border: none;
+  border-radius: 25px;
+  padding: 8px 22px;
+  font-size: 0.98em;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+  transition: background 0.2s, color 0.2s, box-shadow 0.22s;
+}
+.map-select-btn:hover {
+  background: #e3471c;
+  color: #fff;
+}
+.map-select-btn:active {
+  transform: translateY(1px) scale(0.98);
+}
+.map-modal {
+  position: fixed; left: 0; top: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.7); z-index: 2000; display: flex; align-items: center; justify-content: center;
+}
+.map-modal-content {
+  background: #fff; padding: 2em; border-radius: 8px; position: relative; width: 95%; max-width: 500px;
+}
+.map-close {
+  position: absolute; right: 18px; top: 12px; font-size: 2em; cursor: pointer;
+}
+#currentLocationBtn, #saveLocationBtn {
+  margin-top: 1em; margin-right: 1em;
+  background: #f05454; color: #fff; border: none; border-radius: 22px; padding: 8px 20px; font-weight: 500;
+  cursor: pointer; transition: background 0.2s;
+}
+#currentLocationBtn:hover, #saveLocationBtn:hover {
+  background: #e3471c;
+}
+/* Bubbles background */
+.bubble-background {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bubble {
+  position: absolute;
+  bottom: -120px;
+  border-radius: 50%;
+  opacity: 0.37;
+  background: linear-gradient(135deg, #cdb468 60%, #ffffff 100%);
+  animation: bubbleUp 15s linear infinite;
+}
+
+@keyframes bubbleUp {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0.48;
+  }
+  80% {
+    opacity: 0.31;
+  }
+  100% {
+    transform: translateY(-110vh) scale(1.2);
+    opacity: 0;
+  }
 }
