@@ -320,3 +320,196 @@ body {
   display: block;
   object-fit: contain;
 }
+/* Overlay Background */
+.post-modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+/* Modal Content */
+.post-modal-content {
+  background: #fff;
+  width: 450px;
+  max-width: 95%;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  position: relative;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Close Button (X) */
+.post-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 22px;
+  color: #555;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.post-modal-close:hover {
+  color: #000;
+}
+
+/* Title */
+.post-modal-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  text-align: center;
+  color: #333;
+}
+
+/* Textarea */
+.post-modal-textarea {
+  width: 100%;
+  height: 100px;
+  border: 1px solid #f05454;
+  border-radius: 8px;
+  resize: none;
+  padding: 10px;
+  font-size: 15px;
+  margin-bottom: 15px;
+  outline: none;
+  transition: border 0.3s;
+}
+
+.post-modal-textarea:focus {
+  border-color: #f05454;
+}
+
+/* Media Buttons */
+.post-media-options {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  justify-content: center;
+}
+
+.post-media-btn {
+  background: #f5f5f5;
+  border: 1px solid #ccc;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s;
+}
+
+.post-media-btn:hover {
+  background: #e8e8e8;
+}
+
+/* Media Preview (Image/Video) */
+.post-media-preview img,
+.post-media-preview video {
+  width: 100%;
+  max-height: 250px;
+  margin-top: 10px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+/* Action Buttons */
+.post-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.post-cancel-btn,
+.post-submit-btn {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s;
+}
+
+.post-cancel-btn {
+  background: #ccc;
+  color: #333;
+}
+
+.post-cancel-btn:hover {
+  background: #bbb;
+}
+
+.post-submit-btn {
+  background: #f05454;
+  color: #fff;
+}
+
+.post-submit-btn:hover {
+  background: #f05454;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.facebook-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 10px;
+  margin-bottom: 32px;
+}
+
+.facebook-toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+}
+
+.facebook-toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.facebook-toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  border-radius: 30px;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 5px;
+  font-size: 16px;
+  color: white;
+}
+
+.facebook-toggle-switch input:checked + .facebook-toggle-slider {
+  background-color: #1877f2;
+  justify-content: flex-end;
+}
+
+.facebook-toggle-slider i {
+  transition: transform 0.3s;
+}
+
+.facebook-toggle-label {
+  font-size: 14px;
+  color: #333;
+}

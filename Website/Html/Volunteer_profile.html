@@ -36,25 +36,68 @@
       </div>
     </div>
     <div class="center-panel">
-      <div class="card share-box">
-        <img class="mini-profile" src="https://randomuser.me/api/portraits/men/20.jpg" alt="Profile">
-        <input type="text" placeholder="Say Something">
-        <button class="share-btn">SHARE</button>
-      </div>
-      <div class="card post">
-        <div class="post-header">
-          <img class="mini-profile" src="https://randomuser.me/api/portraits/men/20.jpg" alt="Profile">
-          <div>
-            <div class="username">Erik Jhonson</div>
-            <div class="post-time">35 min ago</div>
-          </div>
-        </div>
-        <p>Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy.</p>
-        <div class="post-image">
-          <img src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=700&q=80" alt="Post Image">
-        </div>
+  <div class="card share-box">
+    <img class="mini-profile" src="../Images/post.gif" alt="Profile">
+    <input type="text" placeholder="Say Something" onclick="openModal()">
+  </div>
+
+  <div class="card post">
+    <div class="post-header">
+      <img class="mini-profile" src="https://randomuser.me/api/portraits/men/20.jpg" alt="Profile">
+      <div>
+        <div class="username">Erik Jhonson</div>
+        <div class="post-time">35 min ago</div>
       </div>
     </div>
+    <p>Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text.</p>
+    <div class="post-image">
+      <img src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=700&q=80" alt="Post Image">
+    </div>
+  </div>
+</div>
+
+<!-- Popup Modal -->
+<div id="postModal" class="post-modal">
+  <div class="post-modal-content">
+    <span class="post-modal-close" onclick="closeModal()">&times;</span>
+    <h2 class="post-modal-title">Share Your Mood</h2>
+
+    <!-- Facebook Toggle -->
+    <div class="facebook-toggle">
+      <label class="facebook-toggle-switch">
+        <input type="checkbox" id="facebookShareToggle">
+        <span class="facebook-toggle-slider">
+          <i class="fab fa-facebook"></i>
+        </span>
+      </label>
+      <span class="facebook-toggle-label">Share to Facebook</span>
+    </div>
+
+    <!-- Textarea -->
+    <textarea id="postText" class="post-modal-textarea" placeholder="Say Something..."></textarea>
+
+    <!-- Media Options -->
+    <div class="post-media-options">
+      <label>
+        <input type="file" id="imageUpload" accept="image/*" hidden>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
+      </label>
+      <label>
+        <input type="file" id="videoUpload" accept="video/*" hidden>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
+      </label>
+    </div>
+
+    <!-- Media Preview -->
+    <div id="mediaPreview" class="post-media-preview"></div>
+
+    <!-- Actions -->
+    <div class="post-modal-actions">
+      <button class="post-cancel-btn" onclick="closeModal()">Cancel</button>
+      <button class="post-submit-btn" onclick="createPost()">Post</button>
+    </div>
+  </div>
+</div>
     <div class="right-panel">
       <div class="card notifications">
         <h3>Recent Notifications</h3>
