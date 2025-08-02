@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <title>Searchar</title>
   <meta name="viewport" content="width=1644, initial-scale=1">
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
   <link rel="stylesheet" href="../css/login.css">
 </head>
@@ -44,10 +46,16 @@
                 <option value="contributor">Camera Contributor</option>
               </select>
             </div>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
             <!-- Dynamic Forms Container -->
             <div id="dynamicForm"></div>
+<!-- Map Modal -->
+<div id="mapModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:9999;">
+  <div style="position:relative; width:90%; max-width:600px; height:400px; background:white; padding:10px; border-radius:10px;">
+    <div id="map" style="height:100%;"></div>
+    <button onclick="closeMap()" style="position:absolute; top:10px; right:10px;">Close</button>
+  </div>
+</div>
 
             <p>
               <b onclick="toggle()" class="pointer">

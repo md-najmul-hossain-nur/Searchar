@@ -82,10 +82,50 @@ function showForm() {
         </select>
       </div>
 
-      <div class="mb-3">
-        <label for="address" class="form-label">Address </label>
-        <textarea class="form-control" id="address" name="address" rows="2" required></textarea>
-      </div>
+         <!-- Helper Instruction -->
+<p class="map-helper-text" style="margin:12px 0 8px 0; color:#425a78; font-size:1em;">
+  Please select your location by clicking the <b>Select location from map</b> button below.
+</p>
+
+<!-- Address Fields -->
+<div class="mb-3">
+  <label for="street" class="form-label">Street Address</label>
+  <input type="text" id="street" name="street" class="form-control" placeholder="Enter street address" disabled>
+</div>
+
+<div class="mb-3">
+  <label for="city" class="form-label">City</label>
+  <input type="text" id="city" name="city" class="form-control" placeholder="Enter city" disabled>
+</div>
+
+<div class="mb-3">
+  <label for="postal" class="form-label">Postal Code</label>
+  <input type="text" id="postal" name="postal" class="form-control" placeholder="Enter postal code" disabled>
+</div>
+
+<div class="mb-3">
+  <label for="country" class="form-label">Country</label>
+  <input type="text" id="country" name="country" class="form-control" placeholder="Enter country" disabled>
+</div>
+
+<!-- Hidden Latitude & Longitude -->
+<input type="hidden" id="latitude" name="latitude">
+<input type="hidden" id="longitude" name="longitude">
+
+<!-- Map Select Button -->
+<button type="button" class="btn btn-primary map-select-btn" onclick="selectLocationFromMap()">Select location from map</button>
+
+<!-- Map Modal -->
+<div id="mapModal" class="map-modal" style="display:none;">
+  <div class="map-modal-content" style="background:#fff; padding:15px; border-radius:8px; position:relative;">
+    <span class="map-close" onclick="closeMapModal()" 
+          style="position:absolute; top:8px; right:12px; cursor:pointer; font-size:20px;">&times;</span>
+    <div id="map" style="width:100%;height:320px; margin-bottom:10px;"></div>
+    <button id="currentLocationBtn" type="button" class="btn btn-secondary" onclick="getCurrentLocation()">Use Current Location</button>
+    <button id="saveLocationBtn" type="button" class="btn btn-success" onclick="saveMapLocation()">Save Location</button>
+  </div>
+</div>
+
 
       <div class="mb-3">
         <label for="password" class="form-label">Password </label>
@@ -99,7 +139,7 @@ function showForm() {
       <div class="form-check mb-3">
         <input class="form-check-input" type="checkbox" id="terms" required>
         <label class="form-check-label" for="terms">
-          I agree to the <a href="#">Terms & Privacy Policy</a>
+          I agree to the <a href="../Html/User_Terms_&_Privacy.html">Terms & Privacy Policy</a>
         </label>
       </div>
 
@@ -168,10 +208,50 @@ function showForm() {
         </select>
       </div>
 
-      <div class="mb-3">
-        <label for="address" class="form-label">Address </label>
-        <textarea class="form-control" id="address" name="address" rows="2" required></textarea>
-      </div>
+      <!-- Helper Instruction -->
+<p class="map-helper-text" style="margin:12px 0 8px 0; color:#425a78; font-size:1em;">
+  Please select your location by clicking the <b>Select location from map</b> button below.
+</p>
+
+<!-- Address Fields -->
+<div class="mb-3">
+  <label for="street" class="form-label">Street Address</label>
+  <input type="text" id="street" name="street" class="form-control" placeholder="Enter street address" disabled>
+</div>
+
+<div class="mb-3">
+  <label for="city" class="form-label">City</label>
+  <input type="text" id="city" name="city" class="form-control" placeholder="Enter city" disabled>
+</div>
+
+<div class="mb-3">
+  <label for="postal" class="form-label">Postal Code</label>
+  <input type="text" id="postal" name="postal" class="form-control" placeholder="Enter postal code" disabled>
+</div>
+
+<div class="mb-3">
+  <label for="country" class="form-label">Country</label>
+  <input type="text" id="country" name="country" class="form-control" placeholder="Enter country" disabled>
+</div>
+
+<!-- Hidden Latitude & Longitude -->
+<input type="hidden" id="latitude" name="latitude">
+<input type="hidden" id="longitude" name="longitude">
+
+<!-- Map Select Button -->
+<button type="button" class="btn btn-primary map-select-btn" onclick="selectLocationFromMap()">Select location from map</button>
+
+<!-- Map Modal -->
+<div id="mapModal" class="map-modal" style="display:none;">
+  <div class="map-modal-content" style="background:#fff; padding:15px; border-radius:8px; position:relative;">
+    <span class="map-close" onclick="closeMapModal()" 
+          style="position:absolute; top:8px; right:12px; cursor:pointer; font-size:20px;">&times;</span>
+    <div id="map" style="width:100%;height:320px; margin-bottom:10px;"></div>
+    <button id="currentLocationBtn" type="button" class="btn btn-secondary" onclick="getCurrentLocation()">Use Current Location</button>
+    <button id="saveLocationBtn" type="button" class="btn btn-success" onclick="saveMapLocation()">Save Location</button>
+  </div>
+</div>
+
 
       <div class="mb-3">
         <label for="password" class="form-label">Password </label>
@@ -216,7 +296,7 @@ function showForm() {
       <div class="form-check mb-3">
         <input class="form-check-input" type="checkbox" id="terms" required>
         <label class="form-check-label" for="terms">
-          I agree to the <a href="#">Terms & Privacy Policy</a>
+          I agree to the <a href="../Html/Policeman_Terms_&_Privacy.html">Terms & Privacy Policy</a>
         </label>
       </div>
 
@@ -285,10 +365,50 @@ function showForm() {
         </select>
       </div>
 
-      <div class="mb-3">
-        <label for="address" class="form-label">Address </label>
-        <textarea class="form-control" id="address" name="address" rows="2" required></textarea>
-      </div>
+    <!-- Helper Instruction -->
+<p class="map-helper-text" style="margin:12px 0 8px 0; color:#425a78; font-size:1em;">
+  Please select your location by clicking the <b>Select location from map</b> button below.
+</p>
+
+<!-- Address Fields -->
+<div class="mb-3">
+  <label for="street" class="form-label">Street Address</label>
+  <input type="text" id="street" name="street" class="form-control" placeholder="Enter street address" disabled>
+</div>
+
+<div class="mb-3">
+  <label for="city" class="form-label">City</label>
+  <input type="text" id="city" name="city" class="form-control" placeholder="Enter city" disabled>
+</div>
+
+<div class="mb-3">
+  <label for="postal" class="form-label">Postal Code</label>
+  <input type="text" id="postal" name="postal" class="form-control" placeholder="Enter postal code" disabled>
+</div>
+
+<div class="mb-3">
+  <label for="country" class="form-label">Country</label>
+  <input type="text" id="country" name="country" class="form-control" placeholder="Enter country" disabled>
+</div>
+
+<!-- Hidden Latitude & Longitude -->
+<input type="hidden" id="latitude" name="latitude">
+<input type="hidden" id="longitude" name="longitude">
+
+<!-- Map Select Button -->
+<button type="button" class="btn btn-primary map-select-btn" onclick="selectLocationFromMap()">Select location from map</button>
+
+<!-- Map Modal -->
+<div id="mapModal" class="map-modal" style="display:none;">
+  <div class="map-modal-content" style="background:#fff; padding:15px; border-radius:8px; position:relative;">
+    <span class="map-close" onclick="closeMapModal()" 
+          style="position:absolute; top:8px; right:12px; cursor:pointer; font-size:20px;">&times;</span>
+    <div id="map" style="width:100%;height:320px; margin-bottom:10px;"></div>
+    <button id="currentLocationBtn" type="button" class="btn btn-secondary" onclick="getCurrentLocation()">Use Current Location</button>
+    <button id="saveLocationBtn" type="button" class="btn btn-success" onclick="saveMapLocation()">Save Location</button>
+  </div>
+</div>
+
 
       <div class="mb-3">
         <label for="password" class="form-label">Password </label>
@@ -335,7 +455,7 @@ function showForm() {
       <div class="form-check mb-3">
         <input class="form-check-input" type="checkbox" id="terms" required>
         <label class="form-check-label" for="terms">
-          I agree to the <a href="#">Terms & Privacy Policy</a>
+          I agree to the <a href="../Html/Volunteer_Terms_&_Privacy.html">Terms & Privacy Policy</a>
         </label>
       </div>
 
@@ -404,10 +524,50 @@ function showForm() {
         </select>
       </div>
 
-      <div class="mb-3">
-        <label for="address" class="form-label">Address </label>
-        <textarea class="form-control" id="address" name="address" rows="2" required></textarea>
-      </div>
+         <!-- Helper Instruction -->
+<p class="map-helper-text" style="margin:12px 0 8px 0; color:#425a78; font-size:1em;">
+  Please select your location by clicking the <b>Select location from map</b> button below.
+</p>
+
+<!-- Address Fields -->
+<div class="mb-3">
+  <label for="street" class="form-label">Street Address</label>
+  <input type="text" id="street" name="street" class="form-control" placeholder="Enter street address" disabled>
+</div>
+
+<div class="mb-3">
+  <label for="city" class="form-label">City</label>
+  <input type="text" id="city" name="city" class="form-control" placeholder="Enter city" disabled>
+</div>
+
+<div class="mb-3">
+  <label for="postal" class="form-label">Postal Code</label>
+  <input type="text" id="postal" name="postal" class="form-control" placeholder="Enter postal code" disabled>
+</div>
+
+<div class="mb-3">
+  <label for="country" class="form-label">Country</label>
+  <input type="text" id="country" name="country" class="form-control" placeholder="Enter country" disabled>
+</div>
+
+<!-- Hidden Latitude & Longitude -->
+<input type="hidden" id="latitude" name="latitude">
+<input type="hidden" id="longitude" name="longitude">
+
+<!-- Map Select Button -->
+<button type="button" class="btn btn-primary map-select-btn" onclick="selectLocationFromMap()">Select location from map</button>
+
+<!-- Map Modal -->
+<div id="mapModal" class="map-modal" style="display:none;">
+  <div class="map-modal-content" style="background:#fff; padding:15px; border-radius:8px; position:relative;">
+    <span class="map-close" onclick="closeMapModal()" 
+          style="position:absolute; top:8px; right:12px; cursor:pointer; font-size:20px;">&times;</span>
+    <div id="map" style="width:100%;height:320px; margin-bottom:10px;"></div>
+    <button id="currentLocationBtn" type="button" class="btn btn-secondary" onclick="getCurrentLocation()">Use Current Location</button>
+    <button id="saveLocationBtn" type="button" class="btn btn-success" onclick="saveMapLocation()">Save Location</button>
+  </div>
+</div>
+
 
       <div class="mb-3">
         <label for="password" class="form-label">Password </label>
@@ -464,7 +624,7 @@ function showForm() {
       <div class="form-check mb-3">
         <input class="form-check-input" type="checkbox" id="terms" required>
         <label class="form-check-label" for="terms">
-          I agree to the <a href="#">Terms & Privacy Policy</a>
+          I agree to the <a href="../Html/Camera_Contribution_Terms_&_Privacy.html">Terms & Privacy Policy</a>
         </label>
       </div>
 
@@ -504,3 +664,77 @@ document.addEventListener('DOMContentLoaded', () => {
     bubbleContainer.appendChild(bubble);
   }
 }); 
+let map, marker;
+
+// Open Map Modal
+function selectLocationFromMap() {
+  document.getElementById('mapModal').style.display = 'flex';
+
+  // Initialize map if not created yet
+  if (!map) {
+    map = L.map('map').setView([23.8103, 90.4125], 13); // Default: Dhaka
+
+    // Add tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+    }).addTo(map);
+
+    // Click to set marker
+    map.on('click', function (e) {
+      setMarker(e.latlng);
+    });
+  }
+  setTimeout(() => { map.invalidateSize(); }, 200); // Fix map sizing
+}
+
+// Set marker and save coordinates
+function setMarker(latlng) {
+  if (marker) map.removeLayer(marker);
+  marker = L.marker(latlng).addTo(map);
+
+  document.getElementById('latitude').value = latlng.lat;
+  document.getElementById('longitude').value = latlng.lng;
+
+  fetchAddress(latlng.lat, latlng.lng);
+}
+
+// Get current location
+function getCurrentLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition((pos) => {
+      const latlng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      map.setView(latlng, 15);
+      setMarker(latlng);
+    }, () => alert("Unable to fetch location!"));
+  } else {
+    alert("Geolocation not supported by your browser.");
+  }
+}
+
+// Fetch address from coordinates (Reverse Geocoding using Nominatim)
+function fetchAddress(lat, lng) {
+  fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.address) {
+        document.getElementById('street').value = data.address.road || '';
+        document.getElementById('city').value = data.address.city || data.address.town || data.address.village || '';
+        document.getElementById('postal').value = data.address.postcode || '';
+        document.getElementById('country').value = data.address.country || '';
+      }
+    });
+}
+
+// Save location and close modal
+function saveMapLocation() {
+  if (!document.getElementById('latitude').value) {
+    alert("Please select a location on the map.");
+    return;
+  }
+  closeMapModal();
+}
+
+// Close Map Modal
+function closeMapModal() {
+  document.getElementById('mapModal').style.display = 'none';
+}
