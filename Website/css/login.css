@@ -744,62 +744,49 @@ body {
 }
 
 
-/* Social Login Button Container (Scoped to dynamic form) */
-#dynamicForm .social-login-buttons {
-  display: flex;
-  flex-direction: column; /* Stack buttons vertically */
-  gap: 10px;
-  margin-bottom: 15px;
-  text-align: center;
-}
-
-/* Common Button Style */
-#dynamicForm .social-btn {
+/* Facebook Button Style */
+#dynamicForm .social-btn.fb-btn {
+  background-color: #3b5998;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 15px;
+  font-weight: bold;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 10px;
-  font-size: 1em;
-  border-radius: 6px;
-  border: none;
+  gap: 10px;
+  margin-bottom: 10px;
   cursor: pointer;
-  color: #fff;
-  font-weight: 500;
-  transition: background 0.3s ease, transform 0.2s ease;
+  transition: background 0.3s ease;
 }
 
-/* Facebook Button */
-#dynamicForm .fb-btn {
-  background-color: #1877f2;
+#dynamicForm .social-btn.fb-btn:hover {
+  background-color: #2d4373;
 }
 
-#dynamicForm .fb-btn:hover {
-  background-color: #145dbf;
-  transform: translateY(-2px);
+/* Google Button Style */
+#dynamicForm .social-btn.google-btn {
+  background-color: #ffffff;
+  color: #444;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 10px 15px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: background 0.3s ease;
 }
 
-/* Google Button */
-#dynamicForm .google-btn {
-  background-color: #db4437;
+#dynamicForm .social-btn.google-btn:hover {
+  background-color: #f7f7f7;
 }
 
-#dynamicForm .google-btn:hover {
-  background-color: #b33629;
-  transform: translateY(-2px);
-}
-
-/* Icon Styling */
-#dynamicForm .social-btn i {
-  margin-right: 8px;
-  font-size: 1.2em;
-}
-
-
+/* Icon Style */
 #dynamicForm .social-icon {
-  width: 20px;    /* or your preferred size */
+  width: 20px;
   height: 20px;
-  margin-right: 8px;
-  object-fit: contain;
 }
 
 /* Map Modal Background */
@@ -840,7 +827,7 @@ body {
 }
 
 /* Buttons Inside Modal */
-#currentLocationBtn, 
+ #currentLocationBtn, 
 #saveLocationBtn {
   width: 48%;
   margin: 4px 1%;
@@ -850,4 +837,48 @@ body {
 @keyframes fadeIn {
   from {opacity: 0; transform: scale(0.9);}
   to {opacity: 1; transform: scale(1);}
+}
+/* Facebook Button Style */
+.form.sign-in .social-btn.fb-btn {
+  background-color: #3b5998;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 15px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.form.sign-in .social-btn.fb-btn:hover {
+  background-color: #2d4373;
+}
+
+/* Google Button Style */
+.form.sign-in .social-btn.google-btn {
+  background-color: #ffffff;
+  color: #444;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 10px 15px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.form.sign-in .social-btn.google-btn:hover {
+  background-color: #f7f7f7;
+}
+
+/* Icon Style */
+.form.sign-in .social-icon {
+  width: 20px;
+  height: 20px;
 }

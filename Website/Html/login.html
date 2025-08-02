@@ -69,40 +69,55 @@
 	  <style></style>
       <!-- END SIGN UP -->
 			<!-- SIGN IN -->
-			<div class="col align-items-center flex-col sign-in">
-     
-				<div class="form-wrapper align-items-center">
-          
-					<div class="form sign-in">
-            
-						<div class="input-group">
-							<i class='bx bxs-user'></i>
-							<input type="text" placeholder="Email or Phone number">
-						</div>
-						<div class="input-group">
-							<i class='bx bxs-lock-alt'></i>
-							<input type="password" placeholder="Password">
-						</div>
-						<button>
-							Sign in
-						</button>
-						<p>
-							
-						</p>
-						<p>
-							<span>
-								Don't have an account?
-							</span>
-							<b onclick="toggle()" class="pointer">
-								Sign up here
-							</b>
-						</p>
-					</div>
-				</div>
-				<div class="form-wrapper">
-		
-				</div>
-			</div>
+<!-- SIGN IN -->
+<div class="col align-items-center flex-col sign-in">
+  <div class="form-wrapper align-items-center">
+
+    <div class="form sign-in">
+
+      <!-- Social Login Buttons -->
+      <div class="social-login-buttons" style="margin-bottom: 20px;">
+        <button type="button" class="social-btn fb-btn" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+          <img src="../Images/facebook.png" alt="Facebook" class="social-icon" style="width: 20px; height: 20px;" />
+          Sign in with Facebook
+        </button>
+        <button type="button" class="social-btn google-btn" style="display: flex; align-items: center; gap: 10px;">
+          <img src="../Images/google.png" alt="Google" class="social-icon" style="width: 20px; height: 20px;" />
+          Sign in with Google
+        </button>
+      </div>
+
+      <!-- Input Fields -->
+      <div class="input-group">
+        <i class='bx bxs-user'></i>
+        <input type="text" placeholder="Email or Phone number">
+      </div>
+      <div class="input-group">
+        <i class='bx bxs-lock-alt'></i>
+        <input type="password" placeholder="Password">
+      </div>
+
+      <!-- Sign In Button -->
+      <button>
+        Sign in
+      </button>
+
+      <!-- Sign Up Prompt -->
+      <p></p>
+      <p>
+        <span>Don't have an account?</span>
+        <b onclick="toggle()" class="pointer">Sign up here</b>
+      </p>
+
+    </div>
+  </div>
+
+  <div class="form-wrapper">
+    <!-- Additional content (if needed) -->
+  </div>
+</div>
+
+
 			<!-- END SIGN IN -->
 		</div>
 		<!-- END FORM SECTION -->
