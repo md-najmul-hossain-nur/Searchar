@@ -308,11 +308,12 @@ function showForm() {
     <h3 class="text-center mb-3">🚨 Volunteer Sign Up</h3>
      <!-- Social Login Buttons -->
 <div class="social-login-buttons">
-  <button type="button" class="social-btn fb-btn">
-    <img src="../Images/facebook.png" alt="Facebook" class="social-icon" /> Sign in with Facebook
-  </button>
+ 
   <button type="button" class="social-btn google-btn">
     <img src="../Images/google.png" alt="Google" class="social-icon" /> Sign in with Google
+  </button>
+   <button type="button" class="social-btn fb-btn">
+    <img src="../Images/facebook.png" alt="Facebook" class="social-icon" /> Sign in with Facebook
   </button>
 </div>
 
