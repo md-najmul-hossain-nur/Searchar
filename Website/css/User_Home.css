@@ -482,10 +482,12 @@ body {
   display: flex;
   justify-content: space-between;
   font-size: 0.9rem;
-  color: #666;
-  padding-top: 8px;
-  border-top: 1px solid #eee;
+  color: #fff; /* white text for contrast */
+  padding: 8px 12px;
+  background: linear-gradient(80deg,  #f1d37a , #eae8e8);
+  border-radius: 0 0 8px 8px; /* rounded bottom corners */
 }
+
 
 .post-actions i {
   margin-right: 6px;
@@ -1074,4 +1076,20 @@ background: rgba(0, 0, 0, 0.7); /* Semi-transparent black overlay */
 .cancel-btn:active,
 .submit-btn:active {
   transform: translateY(1px) scale(0.98);
+}
+ .donate-btn {
+  background: #f05454;
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  border-radius: 25px;
+  cursor: pointer;
+  margin-top: 5px;
+  transition: background 0.2s ease-in-out;
+
+}
+
+.donate-btn:hover {
+  background: #e3471c;
 }
