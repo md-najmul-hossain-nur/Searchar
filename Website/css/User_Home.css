@@ -484,7 +484,8 @@ body {
   font-size: 0.9rem;
   color: #fff; /* white text for contrast */
   padding: 8px 12px;
-  background: linear-gradient(80deg,  #f1d37a , #eae8e8);
+background: linear-gradient(80deg, #d1b75a);
+
   border-radius: 0 0 8px 8px; /* rounded bottom corners */
 }
 
@@ -1092,4 +1093,18 @@ background: rgba(0, 0, 0, 0.7); /* Semi-transparent black overlay */
 
 .donate-btn:hover {
   background: #e3471c;
+}
+.route-btn {
+  background-color: #007bff;      
+  color: white;                   
+  border: none;                   
+  padding: 6px 12px;              
+  border-radius: 5px;             
+  cursor: pointer;                
+  font-size: 0.9rem;              
+  transition: background-color 0.3s ease; 
+}
+
+.route-btn:hover {
+  background-color: #0056b3;      
 }

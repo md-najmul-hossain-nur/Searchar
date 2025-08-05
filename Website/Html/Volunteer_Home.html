@@ -49,32 +49,29 @@
 
 <!-- Hospital Section -->
 <div class="hospital-section">
-  <h4>Nearby Hospitals</h4>
-  <ul>
-    <li><img src="https://via.placeholder.com/30"> City Medical Center <span>1.2 km</span> <button class="call-btn">Call</button></li>
-    <li><img src="https://via.placeholder.com/30"> Green Valley Hospital <span>2.5 km</span> <button class="call-btn">Call</button></li>
-    <li><img src="https://via.placeholder.com/30"> Sunrise Health Care <span>3.0 km</span> <button class="call-btn">Call</button></li>
-  </ul>
-</div>
+  <!-- Header -->
+  <h2 style="text-align: center; color: #333; margin-bottom: 15px; font-weight: 700;">
+    Emergency Services Locator
+  </h2>
+  <!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
-<!-- Firefighter Station Section -->
-<div class="firefighter-section">
-  <h4>Firefighter Stations</h4>
-  <ul>
-    <li><img src="https://via.placeholder.com/30"> Central Fire Station <span>2.1 km</span> <button class="call-btn">Call</button></li>
-    <li><img src="https://via.placeholder.com/30"> Eastside Fire Dept <span>4.0 km</span> <button class="call-btn">Call</button></li>
-  </ul>
-</div>
+<!-- Routing Machine CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
 
-<!-- Police Station Section -->
-<div class="police-section">
-  <h4>Police Stations</h4>
-  <ul>
-    <li><img src="https://via.placeholder.com/30"> Downtown Police HQ <span>1.8 km</span> <button class="call-btn">Call</button></li>
-    <li><img src="https://via.placeholder.com/30"> Westside Police Dept <span>3.6 km</span> <button class="call-btn">Call</button></li>
-  </ul>
-</div>
+<!-- Buttons -->
+<button id="find-hospitals" style="padding:8px 15px;background:#f05454;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">🏥 Show Nearby Hospitals</button>
+<button id="find-fire" style="padding:8px 15px;background:#ff7f11;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">🚒 Show Fire Stations</button>
+<button id="find-police" style="padding:8px 15px;background:#0077b6;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:10px;">👮 Show Police Stations</button>
 
+<!-- Map Container -->
+<div id="emergency-map" style="height: 400px; border-radius: 8px;"></div>
+
+<!-- JS Libraries -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+
+</div>
     </div>
 
      <!-- Main Feed -->

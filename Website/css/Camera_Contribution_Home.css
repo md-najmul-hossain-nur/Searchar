@@ -440,9 +440,11 @@ body {
   display: flex;
   justify-content: space-between;
   font-size: 0.9rem;
-  color: #666;
-  padding-top: 8px;
-  border-top: 1px solid #eee;
+  color: #fff; /* white text for contrast */
+  padding: 8px 12px;
+background: linear-gradient(80deg, #d1b75a);
+
+  border-radius: 0 0 8px 8px; /* rounded bottom corners */
 }
 
 .post-actions i {
@@ -1164,3 +1166,17 @@ background: rgba(0, 0, 0, 0.7); /* Semi-transparent black overlay */
   transform: translateY(1px) scale(0.98);
 }
 
+.route-btn {
+  background-color: #007bff;      
+  color: white;                   
+  border: none;                   
+  padding: 6px 12px;              
+  border-radius: 5px;             
+  cursor: pointer;                
+  font-size: 0.9rem;              
+  transition: background-color 0.3s ease; 
+}
+
+.route-btn:hover {
+  background-color: #0056b3;      
+}
