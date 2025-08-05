@@ -1079,6 +1079,7 @@ background: rgba(0, 0, 0, 0.7); /* Semi-transparent black overlay */
   transform: translateY(1px) scale(0.98);
 }
  .donate-btn {
+  position: relative;
   background: #f05454;
   color: #fff;
   border: none;
@@ -1087,13 +1088,39 @@ background: rgba(0, 0, 0, 0.7); /* Semi-transparent black overlay */
   border-radius: 25px;
   cursor: pointer;
   margin-top: 5px;
-  transition: background 0.2s ease-in-out;
+  overflow: hidden;
+}
 
+.donate-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -75px;
+  width: 50px;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.6),
+    transparent
+  );
+  transform: skewX(-25deg);
+  animation: youtube-shine 2s ease-in-out infinite;
+}
+
+@keyframes youtube-shine {
+  0% {
+    left: -75px;
+  }
+  100% {
+    left: 125%;
+  }
 }
 
 .donate-btn:hover {
   background: #e3471c;
 }
+
 .route-btn {
   background-color: #007bff;      
   color: white;                   
