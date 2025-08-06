@@ -192,3 +192,73 @@ var policeIcon = L.icon({
         locateAndShow("police station", policeIcon);
     });
 });
+
+// Comment Show/Hide Toggle
+document.querySelectorAll('.comment-btn').forEach(btn => {
+  btn.addEventListener('click', function () {
+    const post = this.closest('.post');
+    const commentSection = post.querySelector('.comment-module');
+    if (commentSection.style.display === "none" || commentSection.style.display === "") {
+      commentSection.style.display = "block"; // Show comments
+    } else {
+      commentSection.style.display = "none"; // Hide comments
+    }
+  });
+});
+
+// Likes & Dislikes Count
+let likesUpParent = document.getElementsByClassName("comment-likes-up");
+let likesDownParent = document.getElementsByClassName("comment-likes-down");
+
+let likesEl = [];
+for (let i = 0; i < likesUpParent.length; i++) {
+  let likesUp = likesUpParent[i].getElementsByTagName("img")[0];
+  let likesDown = likesDownParent[i].getElementsByTagName("img")[0];
+  likesEl.push(likesUp, likesDown);
+}
+
+likesEl.forEach(el => {
+  el.addEventListener("click", function () {
+    let likesCountEl = this.parentElement.querySelector("span");
+    let likesCount = likesCountEl ? parseInt(likesCountEl.innerText) || 0 : 0;
+    likesCountEl.innerText = likesCount + 1;
+  });
+});
+document.querySelectorAll('.comment-reply a').forEach(replyBtn => {
+  replyBtn.addEventListener('click', function (e) {
+    e.preventDefault();
+
+    // পুরানো reply box রিমুভ
+    document.querySelectorAll('.reply-input-area').forEach(box => box.remove());
+
+    // নতুন reply box
+    let replyBox = document.createElement('div');
+    replyBox.classList.add('reply-input-area');
+    replyBox.innerHTML = `
+      <div class="comment-editor" contenteditable="true" data-placeholder="Write a reply..."></div>
+<button class="comment-send-btn">
+  <img src="../Images/send.png" alt="Send">
+</button>    `;
+
+    // `.comment` এর নিচে বসানো
+    let commentLi = this.closest('li');
+    commentLi.appendChild(replyBox); // এখন এটা নিচে দেখাবে
+
+    // Auto resize
+    const editor = replyBox.querySelector('.comment-editor');
+    editor.addEventListener('input', function () {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+    });
+
+    // Reply send
+    replyBox.querySelector('.comment-send-btn').addEventListener('click', function () {
+      let replyText = editor.innerText.trim();
+      if (replyText) {
+        alert("Reply sent: " + replyText); // এখানে AJAX দিয়ে সার্ভারে পাঠানো যাবে
+        replyBox.remove();
+      }
+    });
+  });
+});
+

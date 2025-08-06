@@ -113,7 +113,11 @@ function showForm() {
 <input type="hidden" id="longitude" name="longitude">
 
 <!-- Map Select Button -->
-<button type="button" class="btn btn-primary map-select-btn" onclick="selectLocationFromMap()">Select location from map</button>
+<button type="button" class="btn btn-primary map-select-btn" 
+        onclick="selectLocationFromMap()" 
+        style="margin-bottom: 15px;">
+    Select location from map
+</button>
 
 <!-- Map Modal -->
 <div id="mapModal" class="map-modal" style="display:none;">
@@ -239,7 +243,11 @@ function showForm() {
 <input type="hidden" id="longitude" name="longitude">
 
 <!-- Map Select Button -->
-<button type="button" class="btn btn-primary map-select-btn" onclick="selectLocationFromMap()">Select location from map</button>
+<button type="button" class="btn btn-primary map-select-btn" 
+        onclick="selectLocationFromMap()" 
+        style="margin-bottom: 15px;">
+    Select location from map
+</button>
 
 <!-- Map Modal -->
 <div id="mapModal" class="map-modal" style="display:none;">
@@ -398,7 +406,11 @@ function showForm() {
 <input type="hidden" id="longitude" name="longitude">
 
 <!-- Map Select Button -->
-<button type="button" class="btn btn-primary map-select-btn" onclick="selectLocationFromMap()">Select location from map</button>
+<button type="button" class="btn btn-primary map-select-btn" 
+        onclick="selectLocationFromMap()" 
+        style="margin-bottom: 15px;">
+    Select location from map
+</button>
 
 <!-- Map Modal -->
 <div id="mapModal" class="map-modal" style="display:none;">
@@ -557,8 +569,11 @@ function showForm() {
 <input type="hidden" id="longitude" name="longitude">
 
 <!-- Map Select Button -->
-<button type="button" class="btn btn-primary map-select-btn" onclick="selectLocationFromMap()">Select location from map</button>
-
+<button type="button" class="btn btn-primary map-select-btn" 
+        onclick="selectLocationFromMap()" 
+        style="margin-bottom: 15px;">
+    Select location from map
+</button>
 <!-- Map Modal -->
 <div id="mapModal" class="map-modal" style="display:none;">
   <div class="map-modal-content" style="background:#fff; padding:15px; border-radius:8px; position:relative;">
@@ -569,8 +584,6 @@ function showForm() {
     <button id="saveLocationBtn" type="button" class="btn btn-success" onclick="saveMapLocation()">Save Location</button>
   </div>
 </div>
-
-
       <div class="mb-3">
         <label for="password" class="form-label">Password </label>
         <input type="password" class="form-control" id="password" name="password" minlength="6" required>
