@@ -81,14 +81,17 @@
         <img src="../Images/post.gif" class="user">
         <input type="text" placeholder="What's on your mind?" readonly>
       </div>
-
- <!-- Popup Modal -->
+<!-- ✅ Popup Modal -->
 <div id="postModal" class="post-modal">
   <div class="post-modal-content">
+    
+    <!-- Close Button -->
     <span class="post-modal-close" onclick="closeModal()">&times;</span>
+
+    <!-- Title -->
     <h2 class="post-modal-title">Share Your Mood</h2>
 
-    <!-- Facebook Toggle -->
+    <!-- ✅ Facebook Toggle -->
     <div class="facebook-toggle">
       <label class="facebook-toggle-switch">
         <input type="checkbox" id="facebookShareToggle">
@@ -99,10 +102,16 @@
       <span class="facebook-toggle-label">Share to Facebook</span>
     </div>
 
-    <!-- Textarea -->
+    <!-- ✅ Textarea -->
     <textarea id="postText" class="post-modal-textarea" placeholder="Say Something..."></textarea>
 
-    <!-- Media Options -->
+    <!-- ✅ Post Preview (Auto-filled from clicked post) -->
+    <div class="post-modal-preview">
+      <p id="sharedPostText" class="preview-text"></p>
+      <img id="sharedPostImage" class="preview-img" src="" alt="" />
+    </div>
+
+    <!-- ✅ Media Upload Buttons -->
     <div class="post-media-options">
       <label>
         <input type="file" id="imageUpload" accept="image/*" hidden>
@@ -114,16 +123,71 @@
       </label>
     </div>
 
-    <!-- Media Preview -->
+    <!-- ✅ Media Preview (optional preview for uploaded file) -->
     <div id="mediaPreview" class="post-media-preview"></div>
 
-    <!-- Actions -->
+    <!-- ✅ Action Buttons -->
     <div class="post-modal-actions">
       <button class="post-cancel-btn" onclick="closeModal()">Cancel</button>
       <button class="post-submit-btn" onclick="createPost()">Post</button>
     </div>
+    
   </div>
 </div>
+<!-- ✅ Popup Modal -->
+<div id="postModal" class="post-modal">
+  <div class="post-modal-content">
+    
+    <!-- Close Button -->
+    <span class="post-modal-close" onclick="closeModal()">&times;</span>
+
+    <!-- Title -->
+    <h2 class="post-modal-title">Share Your Mood</h2>
+
+    <!-- ✅ Facebook Toggle -->
+    <div class="facebook-toggle">
+      <label class="facebook-toggle-switch">
+        <input type="checkbox" id="facebookShareToggle">
+        <span class="facebook-toggle-slider">
+          <i class="fab fa-facebook"></i>
+        </span>
+      </label>
+      <span class="facebook-toggle-label">Share to Facebook</span>
+    </div>
+
+    <!-- ✅ Textarea -->
+    <textarea id="postText" class="post-modal-textarea" placeholder="Say Something..."></textarea>
+
+    <!-- ✅ Post Preview (Auto-filled from clicked post) -->
+    <div class="post-modal-preview">
+      <p id="sharedPostText" class="preview-text"></p>
+      <img id="sharedPostImage" class="preview-img" src="" alt="" />
+    </div>
+
+    <!-- ✅ Media Upload Buttons -->
+    <div class="post-media-options">
+      <label>
+        <input type="file" id="imageUpload" accept="image/*" hidden>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
+      </label>
+      <label>
+        <input type="file" id="videoUpload" accept="video/*" hidden>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
+      </label>
+    </div>
+
+    <!-- ✅ Media Preview (optional preview for uploaded file) -->
+    <div id="mediaPreview" class="post-media-preview"></div>
+
+    <!-- ✅ Action Buttons -->
+    <div class="post-modal-actions">
+      <button class="post-cancel-btn" onclick="closeModal()">Cancel</button>
+      <button class="post-submit-btn" onclick="createPost()">Post</button>
+    </div>
+    
+  </div>
+</div>
+
 
 
       <div class="post">

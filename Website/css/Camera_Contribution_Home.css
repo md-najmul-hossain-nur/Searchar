@@ -471,7 +471,25 @@ background: linear-gradient(80deg, #d1b75a);
 }
 
 
+.post-modal-preview {
+  margin-top: 10px;
+  background: #f3f3f3;
+  padding: 10px;
+  border-radius: 8px;
+}
 
+.preview-text {
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.preview-img {
+  max-width: 100px;
+  max-height: 200px;
+  height: auto;
+  border-radius: 6px;
+}
 /* Responsive Design */
 @media screen and (max-width: 992px) {
   .container {
