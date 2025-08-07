@@ -291,3 +291,44 @@ document.getElementById('anonToggle').addEventListener('change', function () {
     // Revert changes
   }
 });
+
+const openBtn = document.getElementById('openWithdrawBtn');
+const withdrawModal = document.getElementById('withdrawModal');
+const closeBtn = document.getElementById('closeModalBtn');
+const withdrawForm = document.getElementById('withdrawForm');
+
+openBtn.addEventListener('click', () => {
+  withdrawModal.style.display = 'flex';
+});
+
+closeBtn.addEventListener('click', () => {
+  withdrawModal.style.display = 'none';
+});
+
+window.addEventListener('click', (e) => {
+  if (e.target === withdrawModal) {
+    withdrawModal.style.display = 'none';
+  }
+});
+
+withdrawForm.addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const amount = Number(this.amount.value);
+  const availableBalance = 1000;
+  const minWithdrawal = 5;
+
+  if (amount < minWithdrawal) {
+    alert(`Minimum withdrawal amount is $${minWithdrawal}.`);
+    return;
+  }
+
+  if (amount > availableBalance) {
+    alert('Amount cannot exceed available balance.');
+    return;
+  }
+
+  alert('Withdrawal request submitted!');
+  withdrawModal.style.display = 'none';
+  this.reset();
+});

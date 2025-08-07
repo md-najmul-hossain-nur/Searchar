@@ -1318,40 +1318,69 @@ background: linear-gradient(80deg, #d1b75a);
   background-color: #0056b3;      
 }
 
-.money-Withdarawl {
+.money-withdrawal {
   background: #fff;
   padding: 15px;
   border-radius: 8px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
   text-align: center;
   margin-bottom: 20px;
-}
-
-
-.money-Withdarawl h4 {
-  font-size: 1.1rem;
-  margin-bottom: 8px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #1a232a;
 }
 
-.money-Withdarawl p {
-  font-size: 0.95rem;
-  color: #555;
-  margin-bottom: 12px;
+/* Heading */
+.money-withdrawal h2 {
+  font-size: 1.4rem;
+  margin-bottom: 10px;
+  color: #1a232a;
 }
 
+/* Paragraph */
+.money-withdrawal p {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+/* Streamer info list */
+.streamer-info {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px 0;
+  color: #555;
+  font-size: 1rem;
+  text-align: left;
+  max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.streamer-info li {
+  margin-bottom: 8px;
+}
+
+.streamer-info strong {
+  color: #1a232a;
+}
+
+/* Withdraw button with shine effect */
 .withdraw-btn {
   position: relative;
   background: #f05454;
   color: #fff;
   border: none;
-  padding: 8px 18px;
-  font-size: 0.9rem;
+  padding: 10px 24px;
+  font-size: 1rem;
   border-radius: 25px;
   cursor: pointer;
   overflow: hidden;
   z-index: 0;
-  margin-top: 5px;
+  transition: background 0.3s ease;
+  margin: 0 auto;
+  display: inline-block;
+  font-weight: 600;
 }
 
 .withdraw-btn::before {
@@ -1386,3 +1415,151 @@ background: linear-gradient(80deg, #d1b75a);
   background: #e3471c;
 }
 
+
+/* Withdrawal Modal Overlay */
+.withdrawal-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: none; /* Hidden by default */
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+/* Modal Content Box */
+.withdrawal-modal-content {
+  background: #fff;
+  padding: 30px 25px;
+  border-radius: 12px;
+  width: 900px;
+  max-width: 95%;
+  box-shadow: 0 10px 35px rgba(0,0,0,0.15);
+  position: relative;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+/* Close Button (×) */
+.withdrawal-close {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 28px;
+  font-weight: bold;
+  color: #aaa;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.withdrawal-close:hover {
+  color: #f05454;
+}
+
+/* Modal Heading */
+.withdrawal-modal-content h3 {
+  margin-bottom: 20px;
+  color: #f05454;
+  text-align: center;
+}
+
+/* Form Styles */
+.withdrawal-form label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #555;
+}
+
+.withdrawal-form select,
+.withdrawal-form input[type="text"],
+.withdrawal-form input[type="number"] {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 18px;
+  border: 1.5px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.withdrawal-form select:focus,
+.withdrawal-form input[type="text"]:focus,
+.withdrawal-form input[type="number"]:focus {
+  border-color: #f05454;
+  outline: none;
+}
+
+.confirm-btn {
+  position: relative;
+  width: 100%;
+  padding: 12px 0;
+  background: #f05454;
+  color: white;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: background-color 0.3s ease;
+  z-index: 0;
+  margin-bottom: 20px;
+}
+
+.confirm-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -75px;
+  width: 50px;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.6),
+    transparent
+  );
+  transform: skewX(-25deg);
+  animation: youtube-shine 2s ease-in-out infinite;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.confirm-btn:hover {
+  background: #e3471c;
+}
+
+/* Keep your existing youtube-shine animation */
+@keyframes youtube-shine {
+  0% {
+    left: -75px;
+  }
+  100% {
+    left: 125%;
+  }
+}
+
+/* Transaction History Table */
+.transaction-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 25px;
+  font-size: 0.9rem;
+}
+
+.transaction-table th,
+.transaction-table td {
+  border: 1px solid #eee;
+  padding: 10px 12px;
+  text-align: center;
+}
+
+.transaction-table th {
+  background-color: #f9f9f9;
+  color: #f05454;
+  font-weight: 700;
+}

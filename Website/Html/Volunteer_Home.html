@@ -37,15 +37,63 @@
         <p>Any one can join with but Social network us if you want Any one can join with us if you want</p>
       </div>
     
-      <div class="page-like">
-  <h4>Page You May Like</h4>
-  <ul>
-    <li><img src="https://via.placeholder.com/30"> Travel The World <span>Adventure</span> <i class="fa fa-heart"></i></li>
-    <li><img src="https://via.placeholder.com/30"> Foodcourt Nirala <span>Food</span> <i class="fa fa-heart"></i></li>
-    <li><img src="https://via.placeholder.com/30"> Rolin Theitar <span>Drama</span> <i class="fa fa-heart"></i></li>
-    <li><img src="https://via.placeholder.com/30"> Active Mind <span>Fitness</span> <i class="fa fa-heart"></i></li>
-  </ul>
+ <!-- 🎖️ Volunteer Missions Panel -->
+<div class="Volunteer-rank">
+  <h2>Volunteer Rank & Missions</h2>
+
+  <div class="volunteer-rank-box">
+    <h3>🎖️ Real-Life Missions</h3>
+
+    <div class="rank-info">
+      <p>🔰 <strong>Rank:</strong> Bronze Volunteer</p>
+      <p>⭐ <strong>Points:</strong> 120 XP</p>
+      <p>🎯 <strong>Next Rank:</strong> Silver Responder (Needs 200 XP)</p>
+    </div>
+
+    <button class="view-missions-btn" onclick="openMissionModal()">📋 View Missions</button>
+
+    <!-- Certificate Display -->
+    <div id="certificate-unlock" class="certificate-box hidden" aria-live="polite">
+      <p>🎉 Congratulations! You’ve reached <strong>Silver Responder</strong>!</p>
+      <button class="view-certificate-btn">🏅 View & Download Certificate</button>
+    </div>
+  </div>
 </div>
+
+<!-- 🧭 Volunteer Mission Modal -->
+<div id="volunteerMissionModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="missionModalTitle" tabindex="-1">
+  <div class="modal-content">
+    <button class="close" onclick="closeMissionModal()" aria-label="Close modal">&times;</button>
+    <h3 id="missionModalTitle">🧭 Missions for Your Rank</h3>
+
+    <ul class="mission-list">
+      <li>
+        <strong>📍 Locate a missing person</strong><br>
+        🎯 Verify alert visually<br>
+        🎁 50 XP<br><br>
+        <label>
+          📤 Submit Photo/Video:
+          <input type="file" accept="image/*,video/*" />
+        </label><br><br>
+        <button class="submit-proof-btn">✅ Submit Proof</button>
+      </li>
+
+      <li>
+        <strong>👮 Assist police with report</strong><br>
+        🎯 Identify suspects<br>
+        🎁 40 XP<br><br>
+        <label>
+          📤 Submit Confirmation:
+          <input type="file" accept="image/*,application/pdf" />
+        </label><br><br>
+        <button class="submit-proof-btn">✅ Submit Proof</button>
+      </li>
+    </ul>
+  </div>
+</div>
+
+
+
 
 <!-- Hospital Section -->
 <div class="hospital-section">

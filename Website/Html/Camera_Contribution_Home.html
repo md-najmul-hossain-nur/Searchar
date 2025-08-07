@@ -32,12 +32,76 @@
         <p>Any one can join with but Social network us if you want Any one can join with us if you want</p>
       </div>
       
-      <div class="money-Withdarawl">
-        <h4>Money Withdrawal</h4>
-        <p>Available Balance: $1000</p>
-        <button class="withdraw-btn">Withdraw Now</button>
- 
+     <!-- Streamer Info Section -->
+<div class="money-withdrawal">
+  <h2>Withdraw Your Stream Earnings</h2>
+  <p>You’ve earned money by helping the community through live CCTV streaming. You can withdraw your balance anytime using your preferred method.</p>
+
+  <ul class="streamer-info">
+    <li><strong>Name:</strong> Erik Jhonson</li>
+    <li><strong>Total Streams:</strong> 45</li>
+    <li><strong>Total Earned:</strong> $1000</li>
+    <li><strong>Available Balance:</strong> $1000</li>
+    <li><strong>Pending Transactions:</strong> $0</li>
+    <li><strong>Last Withdrawal Date:</strong> July 24, 2025</li>
+  </ul>
+
+  <button id="openWithdrawBtn" class="withdraw-btn">Withdraw Now</button>
 </div>
+
+<!-- Withdrawal Modal -->
+<div id="withdrawModal" class="withdrawal-modal" style="display:none;">
+  <div class="withdrawal-modal-content">
+    <span id="closeModalBtn" class="withdrawal-close">&times;</span>
+    <h3>Withdrawal Form</h3>
+    <form id="withdrawForm" class="withdrawal-form">
+      <label for="method">Withdrawal Method:</label>
+      <select id="method" name="method" required>
+        <option value="">Select Method</option>
+        <option value="bkash">bKash</option>
+        <option value="nagad">Nagad</option>
+        <option value="bank">Bank Transfer</option>
+        <option value="paypal">PayPal</option>
+      </select>
+
+      <label for="accountNumber">Account Number:</label>
+      <input type="text" id="accountNumber" name="accountNumber" placeholder="Enter your account number" required>
+
+      <label for="amount">Amount to Withdraw:</label>
+      <input type="number" id="amount" name="amount" min="5" max="1000" placeholder="Enter amount" required>
+
+      <button type="submit" class="confirm-btn">Confirm Withdrawal</button>
+    </form>
+
+    <!-- Transaction History -->
+    <h4>Transaction History</h4>
+    <table class="transaction-table" border="1" cellpadding="8" cellspacing="0">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Method</th>
+          <th>Amount</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>July 20, 2025</td>
+          <td>bKash</td>
+          <td>$200</td>
+          <td>Completed</td>
+        </tr>
+        <tr>
+          <td>July 15, 2025</td>
+          <td>PayPal</td>
+          <td>$300</td>
+          <td>Pending</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
 
 
 

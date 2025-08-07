@@ -285,3 +285,44 @@ function closeModal() {
   document.getElementById('facebookShareToggle').checked = false;
 }
 
+// Get modal element
+const volunteerMissionModal = document.getElementById('volunteerMissionModal');
+
+// Get the button that opens the modal
+const openMissionBtn = document.querySelector('.view-missions-btn');
+
+// Get all close buttons (modal close & any other)
+const closeButtons = volunteerMissionModal.querySelectorAll('.close');
+
+// Function to open the modal
+function openMissionModal() {
+  volunteerMissionModal.classList.remove('hidden');
+  volunteerMissionModal.focus(); // for accessibility, focus modal
+}
+
+// Function to close the modal
+function closeMissionModal() {
+  volunteerMissionModal.classList.add('hidden');
+}
+
+// Event listener to open modal on button click
+openMissionBtn.addEventListener('click', openMissionModal);
+
+// Event listeners to close modal on close button click
+closeButtons.forEach(btn => {
+  btn.addEventListener('click', closeMissionModal);
+});
+
+// Optional: close modal on clicking outside modal-content
+volunteerMissionModal.addEventListener('click', (e) => {
+  if (e.target === volunteerMissionModal) {
+    closeMissionModal();
+  }
+});
+
+// Optional: close modal on pressing Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !volunteerMissionModal.classList.contains('hidden')) {
+    closeMissionModal();
+  }
+});

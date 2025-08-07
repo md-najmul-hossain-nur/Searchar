@@ -1670,3 +1670,6 @@ body {
   font-size: 14px;
   color: #333;
 }
+.anon-toggle-switch input:checked + .facebook-toggle-slider {
+  background-color: #444; /* or any color you want */
+}

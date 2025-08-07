@@ -64,3 +64,12 @@ function createPost() {
   document.getElementById("post-feed").prepend(post);
   closeModal();
 }
+document.getElementById('anonToggle').addEventListener('change', function () {
+  if (this.checked) {
+    console.log("Anonymous mode enabled");
+    // Hide user's name or change UI if needed
+  } else {
+    console.log("Anonymous mode disabled");
+    // Revert changes
+  }
+});
