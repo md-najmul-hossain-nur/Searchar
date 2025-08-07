@@ -1431,3 +1431,46 @@ background: rgba(0, 0, 0, 0.7); /* Semi-transparent black overlay */
 .route-btn:hover {
   background-color: #0056b3;      
 }
+
+.page-like .category {
+  background-color: #f05454;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 12px;
+  margin-left: auto;
+}
+
+.page-like i.fa-heart {
+  color: #f05454;
+  cursor: pointer;
+  font-size: 16px;
+  margin-left: 10px;
+}
+
+/* Progress Bar Container */
+.progress-bar {
+  width: 100%;
+  background-color: #eee;
+  height: 6px;
+  border-radius: 4px;
+  margin-top: 8px;
+  flex-basis: 100%;
+}
+
+/* Progress Fill */
+.progress {
+  background-color: #f05454;
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+/* Status Text */
+.status-text {
+  font-size: 12px;
+  color: #555;
+  margin-top: 4px;
+  flex-basis: 100%;
+  text-align: right;
+}

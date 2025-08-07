@@ -300,3 +300,10 @@ document.querySelectorAll('.share-btn').forEach(btn => {
     document.getElementById('postModal').style.display = 'flex';
   });
 });
+function closeModal() {
+  document.getElementById('postModal').style.display = 'none';
+  document.getElementById('postText').value = '';
+  document.getElementById('sharedPostText').innerText = '';  // ❌ এই লাইন
+  document.getElementById('sharedPostImage').src = '';       // ❌ এই লাইন
+  document.getElementById('facebookShareToggle').checked = false;
+}
