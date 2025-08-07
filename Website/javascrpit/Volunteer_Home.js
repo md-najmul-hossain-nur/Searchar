@@ -284,3 +284,4 @@ function closeModal() {
   document.getElementById('sharedPostImage').src = '';       // ❌ এই লাইন
   document.getElementById('facebookShareToggle').checked = false;
 }
+

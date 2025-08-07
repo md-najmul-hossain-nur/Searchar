@@ -1474,3 +1474,43 @@ background: rgba(0, 0, 0, 0.7); /* Semi-transparent black overlay */
   flex-basis: 100%;
   text-align: right;
 }
+.mission-progress {
+  border: 1px solid #ccc;
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 600px;
+  font-family: Arial, sans-serif;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.mission-progress .step {
+  padding: 10px;
+  margin-bottom: 12px;
+  background: #fff;
+  border-radius: 5px;
+  border-left: 5px solid #2196f3;
+  cursor: pointer;
+}
+
+.mission-progress .step.locked {
+  border-color: #ccc;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.mission-progress .step.completed {
+  border-color: #4caf50;
+  color: #2e7d32;
+  font-weight: bold;
+}
+
+.mission-progress .certificate {
+  text-align: center;
+  margin-top: 20px;
+  background: #ffeb3b;
+  padding: 15px;
+  font-weight: bold;
+  border-radius: 6px;
+  display: none;
+}
