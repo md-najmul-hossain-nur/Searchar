@@ -282,3 +282,12 @@ function closeModal() {
   document.getElementById('sharedPostImage').src = '';       // ❌ এই লাইন
   document.getElementById('facebookShareToggle').checked = false;
 }
+document.getElementById('anonToggle').addEventListener('change', function () {
+  if (this.checked) {
+    console.log("Anonymous mode enabled");
+    // Hide user's name or change UI if needed
+  } else {
+    console.log("Anonymous mode disabled");
+    // Revert changes
+  }
+});
