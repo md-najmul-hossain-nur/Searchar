@@ -361,13 +361,17 @@ body {
 }
 .donation-progress-bg {
   width: 100vw;
-  background: #25343b;
   min-height: 320px;
+  background: #25343b url('../Images/donation.jpg')no-repeat center center;
+
+  background-size: cover; 
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 48px 0;
   box-sizing: border-box;
+  position: relative; 
+  overflow: hidden;   
 }
 
 .donation-progress-card {
@@ -669,7 +673,7 @@ body {
 .hero-involved-bg {
   width: 100vw;
   min-height: 430px;
-  background: url('your-bg-image.jpg') center center/cover no-repeat;
+  background: url('../Images/help.jpg') center center/cover no-repeat;
   position: relative;
   display: flex;
   align-items: center;
