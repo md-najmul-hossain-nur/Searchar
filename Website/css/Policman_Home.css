@@ -2876,11 +2876,11 @@ body {
 
 /* Highlight today's date */
 .calendar-day.today {
-  background: #f05454 !important;
+  background: #cdb468 !important;
   color: white !important;
   font-weight: bold;
-  border-radius: 50%;
-  box-shadow: 0 0 6px rgba(240, 84, 84, 0.6);
+
+  box-shadow: 0 0 6px #cdb468;
 }
 
 /* Modal Overlay */
