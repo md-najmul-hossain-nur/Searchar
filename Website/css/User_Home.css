@@ -1433,6 +1433,7 @@ background: rgba(0, 0, 0, 0.7); /* Semi-transparent black overlay */
 .submit-btn:active {
   transform: translateY(1px) scale(0.98);
 }
+
 .page-like {
   text-align: center;       /* Center contents inside */
   padding: 40px 20px;
@@ -1512,8 +1513,9 @@ background: rgba(0, 0, 0, 0.7); /* Semi-transparent black overlay */
   mask-image: var(--m-i), var(--m-i);
   -webkit-mask-origin: var(--m-o);
   mask-origin: var(--m-o);
-  -webkit-mask-clip: var(--m-o);
   mask-composite: exclude;
+    -webkit-mask-clip: var(--m-o);
+
   -webkit-mask-composite: destination-out;
   filter: hue-rotate(0);
   animation: rotate-hue linear 500ms infinite;
