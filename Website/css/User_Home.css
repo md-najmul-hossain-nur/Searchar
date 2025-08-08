@@ -1490,6 +1490,7 @@ background: rgba(0, 0, 0, 0.7); /* Semi-transparent black overlay */
     left: 125%;
   }
 }
+
 .donate-btn::after {
   --m-i: linear-gradient(#000, #000);
   --m-o: content-box, padding-box;
@@ -1513,15 +1514,18 @@ background: rgba(0, 0, 0, 0.7); /* Semi-transparent black overlay */
   mask-image: var(--m-i), var(--m-i);
   -webkit-mask-origin: var(--m-o);
   mask-origin: var(--m-o);
-  mask-composite: exclude;
-    -webkit-mask-clip: var(--m-o);
-
   -webkit-mask-composite: destination-out;
-  filter: hue-rotate(0);
-  animation: rotate-hue linear 500ms infinite;
+  mask-composite: exclude;
+  -webkit-mask-clip: var(--m-o);
+  mask-clip: var(--m-o);
+
+  filter: hue-rotate(0deg);
+  animation: rotate-hue 500ms linear infinite;
   animation-play-state: paused;
   pointer-events: none;
+  z-index: 1;
 }
+
 
 .donate-btn:hover::after {
   animation-play-state: running;
