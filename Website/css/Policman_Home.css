@@ -2629,3 +2629,132 @@ body {
 .route-btn:hover {
   background-color: #0056b3;      
 }
+/* Hospital Section */
+.hospital-section {
+  background: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  text-align: center;
+  margin-top: 20px;
+}
+
+.hospital-section h4 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  color: #1a232a;
+}
+
+.hospital-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.hospital-section li {
+  font-size: 0.95rem;
+  color: #555;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hospital-section li img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+/* Firefighter Section */
+.firefighter-section {
+  background: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  text-align: center;
+  margin-top: 20px;
+}
+
+.firefighter-section h4 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  color: #1a232a;
+}
+
+.firefighter-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.firefighter-section li {
+  font-size: 0.95rem;
+  color: #555;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.firefighter-section li img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+/* Police Section */
+.police-section {
+  background: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  text-align: center;
+  margin-top: 20px;
+}
+
+.police-section h4 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  color: #1a232a;
+}
+
+.police-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.police-section li {
+  font-size: 0.95rem;
+  color: #555;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.police-section li img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+/* Call Button (Same Style Concept) */
+.call-btn {
+  background: #f05454;
+  color: #fff;
+  border: none;
+  padding: 4px 12px;
+  font-size: 0.85rem;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+}
+
+.call-btn:hover {
+  background: #e3471c;
+}
