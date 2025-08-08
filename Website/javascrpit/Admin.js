@@ -101,20 +101,6 @@ function searchLocation() {
   }
 }
 
-function getCurrentLocation() {
-  if ('geolocation' in navigator) {
-    navigator.geolocation.getCurrentPosition(function(position) {
-      var lat = position.coords.latitude;
-      var lon = position.coords.longitude;
-      mymap.setView([lat, lon], 13);
-      // Add marker for current location, do not remove previous markers
-      L.marker([lat, lon]).addTo(mymap)
-        .bindPopup("You are here!").openPopup();
-    });
-  } else {
-    alert("Geolocation is not supported by your browser.");
-  }
-}
 
 function getCurrentLocation() {
   if ('geolocation' in navigator) {

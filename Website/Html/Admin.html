@@ -30,15 +30,33 @@
     </div>
     <div class="sidebar-section">
       <div class="sidebar-title">ADMIN FEATURES</div>
-      <ul>
-        <li data-section="missing"><span class="icon"><i class="fa-solid fa-people-group"></i></span> Missing Persons</li>
-        <li data-section="ai"><span class="icon"><i class="fa-solid fa-robot"></i></span> AI Detection Logs</li>
-        <li data-section="crime"><span class="icon"><i class="fa-solid fa-video"></i></span> Crime Reporting</li>
-        <li data-section="donations"><span class="icon"><i class="fa-solid fa-hand-holding-dollar"></i></span> Donations Control</li>
-        <li data-section="broadcast"><span class="icon"><i class="fa-solid fa-bullhorn"></i></span> Broadcast & Notifications</li>
-        <li data-section="access"><span class="icon"><i class="fa-solid fa-user-lock"></i></span> User Access & Security</li>
-        <li data-section="controls"><span class="icon"><i class="fa-solid fa-screwdriver-wrench"></i></span> Website & App Controls</li>
-      </ul>
+     <ul>
+  <li data-section="missing">
+    <span class="icon"><i class="fa-solid fa-people-group"></i></span> Missing Persons
+  </li>
+  <li data-section="ai">
+    <span class="icon"><i class="fa-solid fa-robot"></i></span> AI Detection Logs
+  </li>
+  <li data-section="crime">
+    <span class="icon"><i class="fa-solid fa-video"></i></span> Crime Reporting
+  </li>
+  <li data-section="donations">
+    <span class="icon"><i class="fa-solid fa-hand-holding-dollar"></i></span> Donations Control
+  </li>
+  <li data-section="broadcast">
+    <span class="icon"><i class="fa-solid fa-bullhorn"></i></span> Broadcast & Notifications
+  </li>
+  <li data-section="access">
+    <span class="icon"><i class="fa-solid fa-user-lock"></i></span> User Access & Security
+  </li>
+  <li data-section="volunteer">
+    <span class="icon"><i class="fa-solid fa-handshake-angle"></i></span> Volunteer Mission Complete Table
+  </li>
+  <li data-section="withdraw">
+    <span class="icon"><i class="fa-solid fa-money-bill-transfer"></i></span> Withdraw Control
+  </li>
+</ul>
+
     </div>
   </div>
   <div class="main-content">
@@ -469,6 +487,71 @@
     <button>Generate Report</button>
   </div>
 </div>
+<div id="volunteer" class="main-section">
+  <h2>Volunteer Mission Complete Table</h2>
+  <table class="styled-table">
+    <thead>
+      <tr>
+        <th>Volunteer Name</th>
+        <th>Mission Title</th>
+        <th>Date Completed</th>
+        <th>Location</th>
+        <th>Status</th>
+        <th>Remarks</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Rafiq A.</td>
+        <td>Missing Child Assistance</td>
+        <td>2025-08-03</td>
+        <td>Dhaka</td>
+        <td><span class="status-approved">Completed</span></td>
+        <td>Efficient and timely</td>
+      </tr>
+      <!-- More rows... -->
+    </tbody>
+  </table>
+  <div class="widget-bar">
+    <div class="widget">Total Missions: <span>152</span></div>
+    <div class="widget">This Month: <span>12</span></div>
+  </div>
+</div>
+<div id="withdraw" class="main-section">
+  <h2>Withdraw Control</h2>
+  <table class="styled-table">
+    <thead>
+      <tr>
+        <th>Volunteer Name</th>
+        <th>Withdrawal Amount</th>
+        <th>Status</th>
+        <th>Request Date</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Arif Hasan</td>
+        <td>৳500</td>
+        <td><span class="status-pending">Pending</span></td>
+        <td>2025-08-09</td>
+        <td>
+          <button>Approve</button>
+          <button>Reject</button>
+        </td>
+      </tr>
+      <!-- More rows... -->
+    </tbody>
+  </table>
+  <div class="widget-bar">
+    <div class="widget">Total Withdrawals: <span>৳12,500</span></div>
+    <div class="widget">Pending Requests: <span>3</span></div>
+  </div>
+  <div>
+    <button>Process All</button>
+    <button>Export Report</button>
+  </div>
+</div>
 
 <div id="broadcast" class="main-section">
   <h2>Broadcast & Notifications</h2>
@@ -553,6 +636,9 @@
   </div>
 </div>
   </div>
+
+
+
   <!-- Chart.js CDN for demo chart drawing (remove if you use your own chart lib) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
       <script src="../javascrpit/Admin.js"></script>
