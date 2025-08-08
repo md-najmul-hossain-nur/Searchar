@@ -80,36 +80,67 @@ setInterval(() => {
       behavior: 'smooth'
     });
   });
-   // Set the month/year you are displaying:
-  const displayYear = 2025;
-  const displayMonth = 6; // July is 6 because months are zero-indexed in JS (Jan=0)
+  
+function generateCalendar(year, month) {
+    const calendarHeader = document.getElementById("calendarHeader");
+    const calendarBody = document.querySelector("#calendar tbody");
 
-  // Get today's date:
-  const today = new Date();
-  const todayYear = today.getFullYear();
-  const todayMonth = today.getMonth();
-  const todayDate = today.getDate();
+    // Month and year header
+    const monthNames = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+    calendarHeader.textContent = `${monthNames[month]} ${year}`;
 
-  // Only proceed if calendar is showing this month and year
-  if(todayYear === displayYear && todayMonth === displayMonth) {
-    const calendar = document.getElementById('calendar');
-    // Get all <td> inside tbody
-    const tds = calendar.querySelectorAll('tbody td');
+    // First day of the month
+    const firstDay = new Date(year, month, 1).getDay(); // 0 = Sunday
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    tds.forEach(td => {
-      const day = parseInt(td.textContent);
-      if (!isNaN(day)) {
-        if(day === todayDate) {
-          // Highlight today's date: white background, black text
-          td.style.backgroundColor = 'white';
-          td.style.color = 'black';
-          td.style.fontWeight = 'bold';
-        } 
-        else if(day === todayDate + 1) {
-          // Tomorrow - optional styling or leave default
-          td.style.backgroundColor = ''; // default
-          td.style.color = ''; 
+    // Convert to Monday-first format (calendar starts from Monday)
+    const startingDay = firstDay === 0 ? 6 : firstDay - 1;
+
+    // Clear existing rows
+    calendarBody.innerHTML = "";
+
+    let date = 1;
+    for (let i = 0; i < 6; i++) {
+      const row = document.createElement("tr");
+
+      for (let j = 0; j < 7; j++) {
+        const cell = document.createElement("td");
+
+        if (i === 0 && j < startingDay) {
+          cell.textContent = "";
+        } else if (date <= daysInMonth) {
+          cell.textContent = date;
+
+          // Highlight today's date
+          const today = new Date();
+          if (
+            date === today.getDate() &&
+            year === today.getFullYear() &&
+            month === today.getMonth()
+          ) {
+            cell.style.backgroundColor = "white";
+            cell.style.color = "black";
+            cell.style.fontWeight = "bold";
+          }
+
+          date++;
+        } else {
+          cell.textContent = "";
         }
+
+        row.appendChild(cell);
       }
-    });
+
+      calendarBody.appendChild(row);
+
+      // Stop adding rows if all dates are added
+      if (date > daysInMonth) break;
+    }
   }
+
+  // Auto-generate calendar for today
+  const today = new Date();
+  generateCalendar(today.getFullYear(), today.getMonth());
