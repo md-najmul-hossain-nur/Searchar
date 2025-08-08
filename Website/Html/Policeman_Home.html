@@ -31,33 +31,13 @@
         <h3>Erik Jhonson</h3>
         <p>Any one can join with but Social network us if you want Any one can join with us if you want</p>
       </div>
-      
-  <div class="page-like">
-  <h4>Page You May Like</h4>
-  <ul>
-    <li>
-      <img src="https://via.placeholder.com/30" alt="Travel The World">
-      Travel The World
-      <span class="category">Adventure</span>
-      <i class="fa fa-heart"></i>
-      <div class="progress-bar">
-        <div class="progress" style="width: 75%;"></div>
-      </div>
-      <span class="status-text">Mission 75% Complete</span>
-    </li>
-    <li>
-      <img src="https://via.placeholder.com/30" alt="Foodcourt Nirala">
-      Foodcourt Nirala
-      <span class="category">Food</span>
-      <i class="fa fa-heart"></i>
-      <div class="progress-bar">
-        <div class="progress" style="width: 40%;"></div>
-      </div>
-      <span class="status-text">Mission 40% Complete</span>
-    </li>
-    <!-- আরও আইটেম এভাবে যুক্ত করো -->
-  </ul>
-</div>
+    
+       
+
+
+
+
+
 
 <!-- Broadcast Request Section -->
 <div class="broadcast-section">
@@ -845,7 +825,33 @@
     </div>
   </div>
 </div>
+<div class="Calender-section">
+  <div class="calendar-container">
+    <h2 class="calendar-title">Calendar</h2>
+    <p class="calendar-info">Select a date to add your events. Use the arrows to navigate months.</p>
+  </div>
+  <div class="calendar-header">
+    <button id="prevMonth">&lt;</button>
+    <h2 id="monthYear"></h2>
+    <button id="nextMonth">&gt;</button>
+  </div>
 
+  <div class="calendar-weekdays"></div>  <!-- Add this -->
+
+  <div class="calendar-grid" id="calendarGrid"></div>
+</div>
+
+
+<!-- Event Modal -->
+<div id="myEventModal" class="my-event-modal" style="display:none;">
+  <div class="event-modal-content">
+    <span id="closeMyModal" style="cursor:pointer;float:right;font-size:20px;">&times;</span>
+    <h3>Add Event</h3>
+    <p id="selectedDateText"></p>
+    <input type="text" id="eventInput" placeholder="Enter event here" style="width: 100%; padding: 8px; margin: 10px 0;">
+    <button id="saveEventBtn" style="background:#f05454; color:white; border:none; padding:8px 20px; border-radius:25px; cursor:pointer;">Save</button>
+  </div>
+</div>
 
     </body>
        <script src="../javascrpit/Policeman_Home.js"></script>
