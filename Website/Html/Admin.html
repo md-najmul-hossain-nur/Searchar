@@ -4,14 +4,17 @@
   <meta charset="UTF-8">
   <title>Searchar</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Font Awesome for icons -->
+<!-- Font Awesome (if you need icons later) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- Main CSS -->
   <link rel="stylesheet" href="../css/Admin.css">
-  <style>
-    .main-section { display:none; }
-    .main-section.active { display:block; }
-  </style>
+  
 </head>
 <body>
   <div class="sidebar">
@@ -331,21 +334,21 @@
   </table>
 </div>
 
-   <!-- Maps Section -->
-    <!-- Leaflet CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <div id="maps" class="main-section">
   <h2>Maps Page</h2>
-  <div style="margin-bottom:10px;">
-    <input type="text" id="locationInput" placeholder="Search location..." style="padding:8px;width:220px;">
-<button onclick="searchLocation()" style="padding:8px; background-color: #0d2845; color: white;">Search</button>
-    <button onclick="getCurrentLocation()" style="padding:8px;background-color: #0d2845; color: white;">Current Location</button>
+
+  <div class="search-container">
+    <input type="text" id="searchInput" placeholder="Enter a location..." />
+    <button onclick="searchLocation()"> Search</button>
+    <button onclick="goToCurrentLocation()"> Current Location</button>
   </div>
-  <div id="mapid" style="width: 100%; height: 600px;"></div>
-  
+
+  <div id="map"></div>
 </div>
+
   <!-- Admin Dashboard Sections Skeleton -->
 <div id="missing" class="main-section">
   <h2>Missing Persons</h2>

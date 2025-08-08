@@ -76,45 +76,73 @@
       });
     });
 
-var mymap = L.map('mapid').setView([40.7128, -74.0060], 12);
+// Initialize the map
+const map = L.map('map').setView([23.8103, 90.4125], 13); // Dhaka default
+
+// Add OpenStreetMap tiles
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '© OpenStreetMap contributors'
-}).addTo(mymap);
+  maxZoom: 16,
+  attribution: '© OpenStreetMap'
+}).addTo(map);
 
+let marker;
+
+// Create consistent popup style
+const popupOptions = {
+  maxWidth: 200,
+  className: 'custom-popup'
+};
+
+// Search location function
 function searchLocation() {
-  var location = document.getElementById('locationInput').value;
-  if (location) {
-    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`)
-      .then(response => response.json())
-      .then(data => {
-        if (data && data.length > 0) {
-          var lat = data[0].lat;
-          var lon = data[0].lon;
-          mymap.setView([lat, lon], 13);
-          // Always add a new marker without removing previous ones
-          L.marker([lat, lon]).addTo(mymap)
-            .bindPopup(location).openPopup();
-        } else {
-          alert("Location not found!");
-        }
-      });
+  const query = document.getElementById('searchInput').value.trim();
+  if (!query) {
+    alert("Please enter a location.");
+    return;
   }
-}
 
+  fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.length === 0) {
+        alert("Location not found.");
+        return;
+      }
 
-function getCurrentLocation() {
-  if ('geolocation' in navigator) {
-    navigator.geolocation.getCurrentPosition(function(position) {
-      var lat = position.coords.latitude;
-      var lon = position.coords.longitude;
-      mymap.setView([lat, lon], 13);
-      L.marker([lat, lon]).addTo(mymap)
-        .bindPopup("You are here!").openPopup();
+      const { lat, lon, display_name } = data[0];
+      const latLng = [parseFloat(lat), parseFloat(lon)];
+      map.setView(latLng, 18);
+
+      if (marker) map.removeLayer(marker);
+      marker = L.marker(latLng).addTo(map)
+        .bindPopup(`<div>${display_name}</div>`, popupOptions)
+        .openPopup();
+    })
+    .catch(() => {
+      alert("Error fetching location.");
     });
-  } else {
-    alert("Geolocation is not supported by your browser.");
-  }
 }
+
+// Go to current location
+function goToCurrentLocation() {
+  if (!navigator.geolocation) {
+    alert("Geolocation is not supported.");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(pos => {
+    const latLng = [pos.coords.latitude, pos.coords.longitude];
+    map.setView(latLng, 18);
+
+    if (marker) map.removeLayer(marker);
+    marker = L.marker(latLng).addTo(map)
+      .bindPopup(`<div>You are here</div>`, popupOptions)
+      .openPopup();
+  }, () => {
+    alert("Unable to retrieve your location.");
+  });
+}
+
 function confirmDelete(name) {
   if (confirm("Are you sure you want to delete " + name + "?")) {
     alert("Deleted " + name);
