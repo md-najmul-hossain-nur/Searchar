@@ -407,3 +407,26 @@ body {
     opacity: 0;
   }
 }
+.back-button-container {
+  margin-top: 1.5em;
+  text-align: right; 
+}
+
+.back-btn {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #ffffff;
+  color: #f05454;
+  border: 1.5px solid #f05454;
+  border-radius: 5px;
+  font-size: 1em;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.25s, color 0.25s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.back-btn:hover {
+  background-color: #f05454;
+  color: #fff;
+}

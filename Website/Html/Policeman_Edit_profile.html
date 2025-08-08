@@ -22,7 +22,10 @@
  <div class="edit-profile-header-vertical">
     <img src="../Images/edit-profile.gif" alt="Edit Icon" class="edit-profile-icon-vertical">
     <h2>EDIT YOUR PROFILE</h2>
-  </div>
+  </div>       <!-- Back Button -->
+      <div class="back-button-container">
+        <a href="../Html/Policeman_profile.html" class="back-btn">← Back</a>
+      </div>
   </div>
     <form class="edit-profile-form" method="POST" enctype="multipart/form-data">
       
@@ -60,13 +63,7 @@
       <label for="phone">Phone Number</label>
       <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" pattern="[0-9]{10,15}" required>
 
-      <!-- Current Password -->
-    <label for="currentPassword">Current Password</label>
-    <input type="password" id="currentPassword" name="currentPassword" placeholder="Enter current password" required>
-
-    <!-- New Password -->
-    <label for="newPassword">New Password</label>
-    <input type="password" id="newPassword" name="newPassword" placeholder="Enter new password">
+      
 <!-- Helper Instruction -->
 <p class="map-helper-text" style="margin:12px 0 8px 0; color:#425a78; font-size:1em;">
   Please select your location by clicking the <b>Select location from map</b> button below.
