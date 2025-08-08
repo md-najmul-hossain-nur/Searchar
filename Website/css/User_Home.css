@@ -1433,46 +1433,111 @@ background: rgba(0, 0, 0, 0.7); /* Semi-transparent black overlay */
 .submit-btn:active {
   transform: translateY(1px) scale(0.98);
 }
- .donate-btn {
-  position: relative;
-  background: #f05454;
-  color: #fff;
-  border: none;
-  padding: 8px 18px;
-  font-size: 0.9rem;
-  border-radius: 25px;
-  cursor: pointer;
-  margin-top: 5px;
-  overflow: hidden;
+.page-like {
+  text-align: center;       /* Center contents inside */
+  padding: 40px 20px;
+  border-radius: 10px;
 }
 
+.page-like h4 {
+  margin-bottom: 20px;
+  font-size: 20px;
+  color: #333;
+}
+.donate-btn {
+  --border-radius: 15px;
+  --border-width: 4px;
+  appearance: none;
+  position: relative;
+  padding: 1em 2em;
+  border: 0;
+  background-color: #454040;
+  font-size: 16px;
+  font-weight:400;
+  color: #fff;
+  z-index: 2;
+  cursor: pointer;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  position: relative; 
+}
+/* Shine effect */
 .donate-btn::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
-  left: -75px;
-  width: 50px;
+  left: -75%;           /* Start off to the left */
+  width: 50%;           /* Width of the shine */
   height: 100%;
   background: linear-gradient(
     120deg,
-    transparent,
-    rgba(255, 255, 255, 0.6),
-    transparent
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0) 100%
   );
-  transform: skewX(-25deg);
-  animation: youtube-shine 2s ease-in-out infinite;
+  transform: skewX(-20deg);
+  animation: shine 3s linear infinite;
+  pointer-events: none;  /* So it doesn't block button clicks */
+  border-radius: var(--border-radius);
 }
 
-@keyframes youtube-shine {
+@keyframes shine {
   0% {
-    left: -75px;
+    left: -75%;
   }
   100% {
     left: 125%;
   }
 }
-.donate-btn:hover {
-  background: #e3471c;
+.donate-btn::after {
+  --m-i: linear-gradient(#000, #000);
+  --m-o: content-box, padding-box;
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  padding: var(--border-width);
+  border-radius: var(--border-radius);
+  background-image: conic-gradient(
+    #488cfb,
+    #29dbbc,
+    #ddf505,
+    #ff9f0e,
+    #655adc,
+    #488cfb
+  );
+  -webkit-mask-image: var(--m-i), var(--m-i);
+  mask-image: var(--m-i), var(--m-i);
+  -webkit-mask-origin: var(--m-o);
+  mask-origin: var(--m-o);
+  -webkit-mask-clip: var(--m-o);
+  mask-composite: exclude;
+  -webkit-mask-composite: destination-out;
+  filter: hue-rotate(0);
+  animation: rotate-hue linear 500ms infinite;
+  animation-play-state: paused;
+  pointer-events: none;
+}
+
+.donate-btn:hover::after {
+  animation-play-state: running;
+}
+
+@keyframes rotate-hue {
+  to {
+    filter: hue-rotate(1turn);
+  }
+}
+
+.donate-btn,
+.donate-btn::after {
+  box-sizing: border-box;
+}
+
+.donate-btn:active {
+  --border-width: 5px;
 }
 
 .route-btn {
