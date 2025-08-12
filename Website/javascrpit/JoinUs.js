@@ -1,7 +1,10 @@
-  document.getElementById('logo').onclick = function() {
-    window.location.href = '../Html/Index.html';
-  };
-  document.addEventListener('DOMContentLoaded', () => {
+// Logo click redirects to home
+document.getElementById('logo').onclick = function() {
+  window.location.href = '../Html/Index.html';
+};
+
+// Animate sections on scroll (one-time pop-up)
+document.addEventListener('DOMContentLoaded', () => {
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -16,37 +19,58 @@
   document
     .querySelectorAll('.hero-section, .benefits-section, .why-help-section')
     .forEach((el) => observer.observe(el));
-});
-document.getElementById('showRulesBtn').addEventListener('click', function(e) {
-  e.preventDefault();
-  document.getElementById('rulesModal').style.display = 'block';
-});
-document.getElementById('closeRulesModal').addEventListener('click', function() {
-  document.getElementById('rulesModal').style.display = 'none';
-});
-window.addEventListener('click', function(event) {
-  const modal = document.getElementById('rulesModal');
-  if (event.target === modal) {
-    modal.style.display = 'none';
+  
+  // Modal logic
+  const showRulesBtn = document.getElementById('showRulesBtn');
+  const rulesModal = document.getElementById('rulesModal');
+  const closeRulesModal = document.getElementById('closeRulesModal');
+  const rulesAgreeCheckbox = document.getElementById('rulesAgreeCheckbox');
+  const joinNowBtn = document.getElementById('joinNowBtn'); // Use joinNowBtn, not installAppBtn
+
+  // Show modal on "Join Now"
+  if (showRulesBtn && rulesModal) {
+    showRulesBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      rulesModal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    });
   }
-});
-// Enable the "Install Our App" button only if the checkbox is checked
-document.getElementById('rulesAgreeCheckbox').addEventListener('change', function() {
-  document.getElementById('installAppBtn').disabled = !this.checked;
-});
 
-document.getElementById('installAppBtn').addEventListener('click', function() {
-  alert('Redirecting you to install the app!');
-  window.location.href = "index.html";
-});
+  // Close modal on close button
+  if (closeRulesModal && rulesModal) {
+    closeRulesModal.addEventListener('click', function() {
+      rulesModal.style.display = 'none';
+      document.body.style.overflow = '';
+      if (rulesAgreeCheckbox) rulesAgreeCheckbox.checked = false;
+      if (joinNowBtn) joinNowBtn.disabled = true;
+    });
+  }
 
-// Modal close logic
-document.getElementById('closeRulesModal').addEventListener('click', function() {
-  document.getElementById('rulesModal').style.display = 'none';
-});
-window.addEventListener('click', function(event) {
-  const modal = document.getElementById('rulesModal');
-  if (event.target === modal) {
-    modal.style.display = 'none';
+  // Close modal when clicking outside modal content
+  if (rulesModal) {
+    window.addEventListener('click', function(event) {
+      if (event.target === rulesModal) {
+        rulesModal.style.display = 'none';
+        document.body.style.overflow = '';
+        if (rulesAgreeCheckbox) rulesAgreeCheckbox.checked = false;
+        if (joinNowBtn) joinNowBtn.disabled = true;
+      }
+    });
+  }
+
+  // Enable the "Join Now" button only if the checkbox is checked
+  if (rulesAgreeCheckbox && joinNowBtn) {
+    rulesAgreeCheckbox.addEventListener('change', function() {
+      joinNowBtn.disabled = !this.checked;
+    });
+  }
+
+  // On "Join Now" modal button click: redirect to login
+  if (joinNowBtn) {
+    joinNowBtn.addEventListener('click', function() {
+      if (!joinNowBtn.disabled) {
+        window.location.href = '../Html/login.html';
+      }
+    });
   }
 });

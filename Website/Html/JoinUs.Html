@@ -12,10 +12,9 @@
     <div class="navbar-logo">
       <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
     </div>
-    
   </header>
 
-   <main class="joinus-main">
+  <main class="joinus-main">
     <section class="hero-section">
       <div class="hero-text">
         <h1>
@@ -25,9 +24,8 @@
         <p class="hero-subtitle">
           <span class="highlight">Make your neighborhood safer—one camera at a time.</span>
         </p>
-<a href="../Html/login.html" class="cta-button" id="showRulesBtn">Join Now</a>
+        <a href="javascript:void(0);" class="cta-button" id="showRulesBtn">Join Now</a>
       </div>
-      
     </section>
 
     <section class="benefits-section">
@@ -81,43 +79,81 @@
         <i class="fas fa-star"></i>
         <strong>Your small step creates a big difference!</strong>
       </blockquote>
-      <a href="#signup" class="cta-button">I Want to Help  </a>
     </section>
-
-    
   </main>
-<div id="rulesModal" class="modal">
-  <div class="modal-content">
-    <!-- Icon at the top (example: info icon) -->
-    <div class="modal-icon">
-      <!-- Example: Info SVG icon -->
-      <svg width="52" height="52" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="12" fill="#1976d2" opacity="0.13"/>
-        <path d="M12 17v-5M12 7h.01" stroke="#1976d2" stroke-width="2" stroke-linecap="round"/>
-      </svg>
+  
+  <div id="rulesModal" class="modal" style="display:none;">
+  <div class="modal-content enhanced-modal">
+    <!-- Illustration on left (desktop), hidden on mobile -->
+    <div class="modal-illustration" aria-hidden="true">
+      <img src="../Images/guidelines.gif" alt="Rules Icon" style="width:72px; height:72px; display:block; margin:auto;" />
     </div>
-    <span class="close" id="closeRulesModal">&times;</span>
-    <h2>Rules to Maintain</h2>
-    <ul>
-      <li>Be respectful to all members.</li>
-      <li>Follow the community guidelines at all times.</li>
-      <li>Do not share confidential information.</li>
-      <li>Participate actively and provide constructive feedback.</li>
-      <li>Report any inappropriate behavior to moderators.</li>
-    </ul>
-    <div style="margin: 22px 0 10px 0; text-align:left;">
-      <label style="display: flex; align-items: center; gap: 8px; font-size: 1rem; cursor:pointer;">
-        <input type="checkbox" id="rulesAgreeCheckbox" style="accent-color: #1976d2;" />
-        I have read and agree to the rules above.
-      </label>
+    <div class="modal-main">
+     
+     
+          <span class="guidelines-modal-close" id="closeRulesModal" tabindex="0" aria-label="Close">&times;</span>
+          <h2 class="guidelines-modal-title">
+            <img src="../Images/clipboard-gear.gif" alt="Rules Icon" style="width:32px; height:32px; vertical-align:middle; margin-right:10px;" />
+            Community Rules
+          </h2>
+          <ul class="guidelines-list">
+            <li>
+              <span class="guidelines-list-icon" aria-hidden="true">🤝</span>
+              <div>
+                <strong>Respect Everyone</strong>
+                <div>Treat all members with kindness and patience.</div>
+              </div>
+            </li>
+            <li>
+              <span class="guidelines-list-icon" aria-hidden="true">🛡️</span>
+              <div>
+                <strong>Community Safety</strong>
+                <div>Follow our platform’s safety and conduct policies.</div>
+              </div>
+            </li>
+            <li>
+              <span class="guidelines-list-icon" aria-hidden="true">🔒</span>
+              <div>
+                <strong>Protect Privacy</strong>
+                <div>Never post or share anyone’s personal details without permission.</div>
+              </div>
+            </li>
+            <li>
+              <span class="guidelines-list-icon" aria-hidden="true">💡</span>
+              <div>
+                <strong>Be Helpful & Active</strong>
+                <div>Participate, share alerts, and help improve safety.</div>
+              </div>
+            </li>
+            <li>
+              <span class="guidelines-list-icon" aria-hidden="true">🚩</span>
+              <div>
+                <strong>Report Concerns</strong>
+                <div>Immediately report suspicious or harmful activity to moderators.</div>
+              </div>
+            </li>
+            <li>
+              <span class="guidelines-list-icon" aria-hidden="true">🌟</span>
+              <div>
+                <strong>Support the Mission</strong>
+                <div>Help make neighborhoods safer for all.</div>
+              </div>
+            </li>
+          </ul>
+          <div class="guidelines-agree-row">
+            <label class="guidelines-checkbox-label">
+              <input type="checkbox" id="rulesAgreeCheckbox" />
+              I have read and agree to the rules above.
+            </label>
+          </div>
+          <button id="joinNowBtn" class="guidelines-cta-button" disabled>
+            Join Now
+          </button>
+        </div>
+      </div>
     </div>
-    <button id="installAppBtn" class="cta-button" style="width:100%; margin-top:12px;" disabled>
-      Install Our App
-    </button>
   </div>
 </div>
   <script src="../javascrpit/JoinUs.js"></script>
-  
-
 </body>
 </html>
