@@ -114,6 +114,22 @@
       <span class="facebook-toggle-label">Share to Facebook</span>
     </div>
 
+    <!-- Category Label -->
+<p class="category-label">Select Category:</p>
+
+<div class="category-toggle">
+  <label class="category-option">
+    <input type="radio" name="category" value="mission" checked>
+    <img src="../Images/mission-icon.gif" alt="Mission Icon" class="category-icon" />
+    Mission Person
+  </label>
+  <label class="category-option">
+    <input type="radio" name="category" value="disaster">
+    <img src="../Images/disaster-icon.gif" alt="Disaster Icon" class="category-icon" />
+    Disaster
+  </label>
+</div>
+
     <!-- ✅ Textarea -->
     <textarea id="postText" class="post-modal-textarea" placeholder="Say Something..."></textarea>
 
@@ -135,6 +151,7 @@
       </label>
     </div>
 
+
     <!-- ✅ Media Preview (optional preview for uploaded file) -->
     <div id="mediaPreview" class="post-media-preview"></div>
 
@@ -145,6 +162,19 @@
     </div>
     
   </div>
+</div>
+
+<div class="filter-bar-section">
+  <p class="filter-bar-title">Filter by Category:</p>
+  <nav class="post-filter-bar" aria-label="Post Category Filters">
+    <button class="filter-btn active" type="button" onclick="filterPosts('all')">All</button>
+    <button class="filter-btn" type="button" onclick="filterPosts('mission')">
+      <img src="../Images/mission-icon.gif" alt="Mission Icon" class="filter-icon" /> Mission Person
+    </button>
+    <button class="filter-btn" type="button" onclick="filterPosts('disaster')">
+      <img src="../Images/disaster-icon.gif" alt="Disaster Icon" class="filter-icon" /> Disaster
+    </button>
+  </nav>
 </div>
 
 

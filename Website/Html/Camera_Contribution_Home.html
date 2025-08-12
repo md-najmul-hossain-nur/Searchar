@@ -132,7 +132,7 @@
 </div>
     </div>
 
-     <!-- Main Feed -->
+      <!-- Main Feed -->
     <div class="main-feed">
       <!-- Post Box -->
       <div class="post-box" onclick="openModal()">
@@ -160,16 +160,23 @@
       </label>
       <span class="facebook-toggle-label">Share to Facebook</span>
     </div>
-<!-- ✅ Anonymous Mode Toggle -->
-<div class="facebook-toggle">
-  <label class="facebook-toggle-switch">
-    <input type="checkbox" id="anonToggle">
-    <span class="facebook-toggle-slider">
-      <i class="fas fa-user-secret"></i> <!-- example icon -->
-    </span>
+
+    <!-- Category Label -->
+<p class="category-label">Select Category:</p>
+
+<div class="category-toggle">
+  <label class="category-option">
+    <input type="radio" name="category" value="mission" checked>
+    <img src="../Images/mission-icon.gif" alt="Mission Icon" class="category-icon" />
+    Mission Person
   </label>
-  <span class="facebook-toggle-label">Post Anonymously</span>
+  <label class="category-option">
+    <input type="radio" name="category" value="disaster">
+    <img src="../Images/disaster-icon.gif" alt="Disaster Icon" class="category-icon" />
+    Disaster
+  </label>
 </div>
+
     <!-- ✅ Textarea -->
     <textarea id="postText" class="post-modal-textarea" placeholder="Say Something..."></textarea>
 
@@ -191,6 +198,7 @@
       </label>
     </div>
 
+
     <!-- ✅ Media Preview (optional preview for uploaded file) -->
     <div id="mediaPreview" class="post-media-preview"></div>
 
@@ -201,6 +209,19 @@
     </div>
     
   </div>
+</div>
+
+<div class="filter-bar-section">
+  <p class="filter-bar-title">Filter by Category:</p>
+  <nav class="post-filter-bar" aria-label="Post Category Filters">
+    <button class="filter-btn active" type="button" onclick="filterPosts('all')">All</button>
+    <button class="filter-btn" type="button" onclick="filterPosts('mission')">
+      <img src="../Images/mission-icon.gif" alt="Mission Icon" class="filter-icon" /> Mission Person
+    </button>
+    <button class="filter-btn" type="button" onclick="filterPosts('disaster')">
+      <img src="../Images/disaster-icon.gif" alt="Disaster Icon" class="filter-icon" /> Disaster
+    </button>
+  </nav>
 </div>
 
 
@@ -884,19 +905,48 @@
 
 
 
-<div class="group-chat-section">
-  <h4>Group Chat</h4>
-  <div class="chat-window" id="chatWindow">
-    <!-- Messages will appear here -->
-    <div class="message received">Welcome to the group chat!</div>
-  </div>
- <div class="chat-input-area">
-  <input type="text" id="chatInput" placeholder="Type your message..." />
-  <img src="../Images/smile.png" alt="Emoji" class="chat-icon" />
-<button id="sendBtn">
-    <img src="../Images/send.png" alt="Send" class="send-icon" />
-  </button></div>
+<div class="camera-contributor-panel">
+  <h4>Camera Contributor Panel</h4>
+  
+<button id="startFeedBtn" class="camera-btn">📷 Start Live / Upload Recorded Feed</button>
+<button id="viewFeedBtn" class="camera-btn">👀 View Feed</button>
 
+</div>
+
+<!-- Feed Popup -->
+<div id="feedModal" class="feed-popup">
+  <div class="feed-popup-content">
+    <span class="feed-popup-close">&times;</span>
+    <h3>Live / Recorded Feed</h3>
+    <video id="videoFeed" width="100%" autoplay controls></video>
+  </div>
+</div>
+
+<!-- Feed Form Popup -->
+<div id="feedFormModal" class="feed-form-popup">
+  <div class="feed-form-content">
+    <span class="feed-form-close">&times;</span>
+    <h3>Upload or Start Live Feed</h3>
+
+    <form id="feedForm">
+      <label for="liveOption">
+        <input type="radio" name="feedType" value="live" id="liveOption" required>
+        Start Live Feed
+      </label>
+      <br>
+      <label for="recordedOption">
+        <input type="radio" name="feedType" value="recorded" id="recordedOption" required>
+        Upload Recorded Video
+      </label>
+
+      <div id="uploadSection" style="display:none; margin-top:10px;">
+        <input type="file" accept="video/*">
+      </div>
+
+      <button type="submit" class="feed-submit-btn">Submit</button>
+    </form>
+  </div>
+</div>
 
 
   

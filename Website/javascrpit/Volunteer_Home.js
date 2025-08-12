@@ -326,3 +326,17 @@ document.addEventListener('keydown', (e) => {
     closeMissionModal();
   }
 });
+function filterPosts(category) {
+  // Remove .active from all filter buttons
+  document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+  // Add .active to the clicked button
+  event.target.classList.add('active');
+  // Show/hide posts
+  document.querySelectorAll('.post').forEach(post => {
+    if (category === 'all' || post.dataset.category === category) {
+      post.style.display = '';
+    } else {
+      post.style.display = 'none';
+    }
+  });
+}

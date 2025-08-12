@@ -332,3 +332,66 @@ withdrawForm.addEventListener('submit', function(e) {
   withdrawModal.style.display = 'none';
   this.reset();
 });
+// Open feed popup
+document.getElementById("viewFeedBtn").addEventListener("click", function() {
+  document.getElementById("feedModal").style.display = "block";
+});
+
+// Close popup
+document.querySelector(".feed-popup-close").addEventListener("click", function() {
+  document.getElementById("feedModal").style.display = "none";
+});
+
+// Optional: Close on outside click
+window.onclick = function(event) {
+  if (event.target == document.getElementById("feedModal")) {
+    document.getElementById("feedModal").style.display = "none";
+  }
+}
+// Elements
+const feedFormModal = document.querySelector(".feed-form-popup");
+const feedFormClose = document.querySelector(".feed-form-close");
+const startFeedBtn = document.getElementById("startFeedBtn");
+const liveOption = document.getElementById("liveOption");
+const recordedOption = document.getElementById("recordedOption");
+const uploadSection = document.getElementById("uploadSection");
+
+// Open popup modal on button click
+startFeedBtn.addEventListener("click", () => {
+  feedFormModal.style.display = "block";
+});
+
+// Close modal when clicking close button
+feedFormClose.addEventListener("click", () => {
+  feedFormModal.style.display = "none";
+});
+
+// Close modal when clicking outside content area
+window.addEventListener("click", (event) => {
+  if (event.target === feedFormModal) {
+    feedFormModal.style.display = "none";
+  }
+});
+
+// Show/hide upload section based on selected radio
+recordedOption.addEventListener("change", () => {
+  uploadSection.style.display = "block";
+});
+
+liveOption.addEventListener("change", () => {
+  uploadSection.style.display = "none";
+});
+function filterPosts(category) {
+  // Remove .active from all filter buttons
+  document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+  // Add .active to the clicked button
+  event.target.classList.add('active');
+  // Show/hide posts
+  document.querySelectorAll('.post').forEach(post => {
+    if (category === 'all' || post.dataset.category === category) {
+      post.style.display = '';
+    } else {
+      post.style.display = 'none';
+    }
+  });
+}

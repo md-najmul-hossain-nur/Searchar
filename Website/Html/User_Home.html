@@ -108,6 +108,22 @@
       <span class="facebook-toggle-label">Share to Facebook</span>
     </div>
 
+    <!-- Category Label -->
+<p class="category-label">Select Category:</p>
+
+<div class="category-toggle">
+  <label class="category-option">
+    <input type="radio" name="category" value="mission" checked>
+    <img src="../Images/mission-icon.gif" alt="Mission Icon" class="category-icon" />
+    Mission Person
+  </label>
+  <label class="category-option">
+    <input type="radio" name="category" value="disaster">
+    <img src="../Images/disaster-icon.gif" alt="Disaster Icon" class="category-icon" />
+    Disaster
+  </label>
+</div>
+
     <!-- ✅ Textarea -->
     <textarea id="postText" class="post-modal-textarea" placeholder="Say Something..."></textarea>
 
@@ -129,6 +145,7 @@
       </label>
     </div>
 
+
     <!-- ✅ Media Preview (optional preview for uploaded file) -->
     <div id="mediaPreview" class="post-media-preview"></div>
 
@@ -141,8 +158,21 @@
   </div>
 </div>
 
-    
-  <div class="post">
+<div class="filter-bar-section">
+  <p class="filter-bar-title">Filter by Category:</p>
+  <nav class="post-filter-bar" aria-label="Post Category Filters">
+    <button class="filter-btn active" type="button" onclick="filterPosts('all')">All</button>
+    <button class="filter-btn" type="button" onclick="filterPosts('mission')">
+      <img src="../Images/mission-icon.gif" alt="Mission Icon" class="filter-icon" /> Mission Person
+    </button>
+    <button class="filter-btn" type="button" onclick="filterPosts('disaster')">
+      <img src="../Images/disaster-icon.gif" alt="Disaster Icon" class="filter-icon" /> Disaster
+    </button>
+  </nav>
+</div>
+  <!-- Only ONE post block should exist, not repeated. Comment modules should be closed properly and IDs/classes should be unique per post. Here is a cleaned-up, non-repeated example of a single post: -->
+
+<div class="post">
   <div class="post-header">
     <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg">
     <div>
@@ -159,1074 +189,193 @@
     <span class="share-btn"><i class="fa fa-share"></i> 7</span>
   </div>
 
-<section class="comment-module" style="display:none;">
-
-<!-- Comment Input Area (Top) -->
-  <div class="comment-input-area">
-  <div class="comment-editor" contenteditable="true" data-placeholder="Write a comment..."></div>
-<button class="comment-send-btn">
-  <img src="../Images/send.png" alt="Send">
-</button>
-</div>
-
-
-  <!-- Heading below input -->
-  <h4 class="comments-title">All Comments</h4>
-
-  <ul>
-    
-    <!-- First Comment -->
-    <li>
-      
-      <div class="comment">
-        <div class="comment-img">
-          <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar.png" alt="">
-        </div>
-        <div class="comment-content">
-          <div class="comment-details">
-            <h4 class="comment-name">Adamsdavid</h4>
-            <span class="comment-log">20 hours ago</span>
-          </div>
-          <div class="comment-desc">
-            <p>I genuinely think that Codewell's community is AMAZING...</p>
-          </div>
-          <div class="comment-data">
-            <div class="comment-likes">
-              <div class="comment-likes-up">
-                <img src="../Images/like.gif" alt="">
-                <span>2</span>
-              </div>
-              <div class="comment-likes-down">
-                <img src="../Images/dislike.gif" alt="">
-              </div>
-            </div>
-            <div class="comment-reply">
-              <a href="#!">Reply</a>
-            </div>
-            <div class="comment-report">
-              <a href="#!">Report</a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Nested Replies to First Comment -->
-      <ul>
-        <li>
-          <div class="comment">
-            <div class="comment-img">
-              <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar-1.png" alt="">
-            </div>
-            <div class="comment-content">
-              <div class="comment-details">
-                <h4 class="comment-name">saramay</h4>
-                <span class="comment-log">16 hours ago</span>
-              </div>
-              <div class="comment-desc">
-                <p>I agree. I've been coding really well (pun intended) ever since I started practicing on their templates hehe.</p>
-              </div>
-              <div class="comment-data">
-                <div class="comment-likes">
-                  <div class="comment-likes-up">
-                <img src="../Images/like.gif" alt="">
-                    <span>5</span>
-                  </div>
-                  <div class="comment-likes-down">
-                <img src="../Images/dislike.gif" alt="">
-                  </div>
-                </div>
-                <div class="comment-reply">
-                  <a href="#!">Reply</a>
-                </div>
-                <div class="comment-report">
-                  <a href="#!">Report</a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Nested Reply to Second Comment -->
-          <ul>
-            <li>
-              <div class="comment">
-                <div class="comment-img">
-                  <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar-2.png" alt="">
-                </div>
-                <div class="comment-content">
-                  <div class="comment-details">
-                    <h4 class="comment-name">Jessica21</h4>
-                    <span class="comment-log">14 hours ago</span>
-                  </div>
-                  <div class="comment-desc">
-                    <p>Okay, this comment wins.</p>
-                  </div>
-                  <div class="comment-data">
-                    <div class="comment-likes">
-                      <div class="comment-likes-up">
-                <img src="../Images/like.gif" alt="">
-                        <span>5</span>
-                      </div>
-                      <div class="comment-likes-down">
-                <img src="../Images/dislike.gif" alt="">
-                      </div>
-                    </div>
-                    <div class="comment-reply">
-                      <a href="#!">Reply</a>
-                    </div>
-                    <div class="comment-report">
-                      <a href="#!">Report</a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </li>
-          </ul>
-        </li>
-      </ul>
-    </li>
-
-    <!-- Second Top-level Comment -->
-    <li>
-      <div class="comment">
-        <div class="comment-img">
-          <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar-3.png" alt="">
-        </div>
-        <div class="comment-content">
-          <div class="comment-details">
-            <h4 class="comment-name">andrew231</h4>
-            <span class="comment-log">20 hours ago</span>
-          </div>
-          <div class="comment-desc">
-            <p>Thanks for making this, super helpful.</p>
-          </div>
-          <div class="comment-data">
-            <div class="comment-likes">
-              <div class="comment-likes-up">
-                <img src="../Images/like.gif" alt="">
-                <span>2</span>
-              </div>
-              <div class="comment-likes-down">
-                <img src="../Images/dislike.gif" alt="">
-              </div>
-            </div>
-            <div class="comment-reply">
-              <a href="#!">Reply</a>
-            </div>
-            <div class="comment-report">
-              <a href="#!">Report</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </li>
-
-    <!-- Third Top-level Comment -->
-    <li>
-      <div class="comment">
-        <div class="comment-img">
-          <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar-4.png" alt="">
-        </div>
-        <div class="comment-content">
-          <div class="comment-details">
-            <h4 class="comment-name">maria_k</h4>
-            <span class="comment-log">18 hours ago</span>
-          </div>
-          <div class="comment-desc">
-            <p>This platform really helped me improve my coding skills.</p>
-          </div>
-          <div class="comment-data">
-            <div class="comment-likes">
-              <div class="comment-likes-up">
-                <img src="../Images/like.gif" alt="">
-                <span>4</span>
-              </div>
-              <div class="comment-likes-down">
-                <img src="../Images/dislike.gif" alt="">
-              </div>
-            </div>
-            <div class="comment-reply">
-              <a href="#!">Reply</a>
-            </div>
-            <div class="comment-report">
-              <a href="#!">Report</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </li>
-
-  </ul>
-</section>
-
-</div>
-
-        <div class="post">
-  <div class="post-header">
-    <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg">
-    <div>
-      <h5>Merry Watson</h5>
-      <small>20 min ago</small>
+  <section class="comment-module" style="display:none;">
+    <!-- Comment Input Area (Top) -->
+    <div class="comment-input-area">
+      <div class="comment-editor" contenteditable="true" data-placeholder="Write a comment..."></div>
+      <button class="comment-send-btn">
+        <img src="../Images/send.png" alt="Send">
+      </button>
     </div>
-  </div>
-  <p>Many desktop publishing packages and web page editors now use Lorem Ipsum...</p>
-  <img src="../Images/demo.jpg" class="post-img">
-
-  <div class="post-actions">
-    <span class="like-btn"><i class="fa fa-heart"></i> 201 Likes</span>
-    <span class="comment-btn"><i class="fa fa-comment"></i> 41</span>
-    <span class="share-btn"><i class="fa fa-share"></i> 7</span>
-  </div>
-
-<section class="comment-module" style="display:none;">
-
-<!-- Comment Input Area (Top) -->
-  <div class="comment-input-area">
-  <div class="comment-editor" contenteditable="true" data-placeholder="Write a comment..."></div>
-<button class="comment-send-btn">
-  <img src="../Images/send.png" alt="Send">
-</button>
-</div>
-
-
-  <!-- Heading below input -->
-  <h4 class="comments-title">All Comments</h4>
-
-  <ul>
-    
-    <!-- First Comment -->
-    <li>
-      
-      <div class="comment">
-        <div class="comment-img">
-          <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar.png" alt="">
-        </div>
-        <div class="comment-content">
-          <div class="comment-details">
-            <h4 class="comment-name">Adamsdavid</h4>
-            <span class="comment-log">20 hours ago</span>
+    <!-- Heading below input -->
+    <h4 class="comments-title">All Comments</h4>
+    <ul>
+      <!-- First Comment -->
+      <li>
+        <div class="comment">
+          <div class="comment-img">
+            <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar.png" alt="">
           </div>
-          <div class="comment-desc">
-            <p>I genuinely think that Codewell's community is AMAZING...</p>
-          </div>
-          <div class="comment-data">
-            <div class="comment-likes">
-              <div class="comment-likes-up">
-                <img src="../Images/like.gif" alt="">
-                <span>2</span>
-              </div>
-              <div class="comment-likes-down">
-                <img src="../Images/dislike.gif" alt="">
-              </div>
+          <div class="comment-content">
+            <div class="comment-details">
+              <h4 class="comment-name">Adamsdavid</h4>
+              <span class="comment-log">20 hours ago</span>
             </div>
-            <div class="comment-reply">
-              <a href="#!">Reply</a>
+            <div class="comment-desc">
+              <p>I genuinely think that Codewell's community is AMAZING...</p>
             </div>
-            <div class="comment-report">
-              <a href="#!">Report</a>
+            <div class="comment-data">
+              <div class="comment-likes">
+                <div class="comment-likes-up">
+                  <img src="../Images/like.gif" alt="">
+                  <span>2</span>
+                </div>
+                <div class="comment-likes-down">
+                  <img src="../Images/dislike.gif" alt="">
+                </div>
+              </div>
+              <div class="comment-reply">
+                <a href="#!">Reply</a>
+              </div>
+              <div class="comment-report">
+                <a href="#!">Report</a>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Nested Replies to First Comment -->
-      <ul>
-        <li>
-          <div class="comment">
-            <div class="comment-img">
-              <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar-1.png" alt="">
+        <!-- Nested Replies to First Comment -->
+        <ul>
+          <li>
+            <div class="comment">
+              <div class="comment-img">
+                <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar-1.png" alt="">
+              </div>
+              <div class="comment-content">
+                <div class="comment-details">
+                  <h4 class="comment-name">saramay</h4>
+                  <span class="comment-log">16 hours ago</span>
+                </div>
+                <div class="comment-desc">
+                  <p>I agree. I've been coding really well (pun intended) ever since I started practicing on their templates hehe.</p>
+                </div>
+                <div class="comment-data">
+                  <div class="comment-likes">
+                    <div class="comment-likes-up">
+                      <img src="../Images/like.gif" alt="">
+                      <span>5</span>
+                    </div>
+                    <div class="comment-likes-down">
+                      <img src="../Images/dislike.gif" alt="">
+                    </div>
+                  </div>
+                  <div class="comment-reply">
+                    <a href="#!">Reply</a>
+                  </div>
+                  <div class="comment-report">
+                    <a href="#!">Report</a>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="comment-content">
-              <div class="comment-details">
-                <h4 class="comment-name">saramay</h4>
-                <span class="comment-log">16 hours ago</span>
-              </div>
-              <div class="comment-desc">
-                <p>I agree. I've been coding really well (pun intended) ever since I started practicing on their templates hehe.</p>
-              </div>
-              <div class="comment-data">
-                <div class="comment-likes">
-                  <div class="comment-likes-up">
-                <img src="../Images/like.gif" alt="">
-                    <span>5</span>
+            <!-- Nested Reply to Second Comment -->
+            <ul>
+              <li>
+                <div class="comment">
+                  <div class="comment-img">
+                    <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar-2.png" alt="">
                   </div>
-                  <div class="comment-likes-down">
-                <img src="../Images/dislike.gif" alt="">
-                  </div>
-                </div>
-                <div class="comment-reply">
-                  <a href="#!">Reply</a>
-                </div>
-                <div class="comment-report">
-                  <a href="#!">Report</a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Nested Reply to Second Comment -->
-          <ul>
-            <li>
-              <div class="comment">
-                <div class="comment-img">
-                  <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar-2.png" alt="">
-                </div>
-                <div class="comment-content">
-                  <div class="comment-details">
-                    <h4 class="comment-name">Jessica21</h4>
-                    <span class="comment-log">14 hours ago</span>
-                  </div>
-                  <div class="comment-desc">
-                    <p>Okay, this comment wins.</p>
-                  </div>
-                  <div class="comment-data">
-                    <div class="comment-likes">
-                      <div class="comment-likes-up">
-                <img src="../Images/like.gif" alt="">
-                        <span>5</span>
+                  <div class="comment-content">
+                    <div class="comment-details">
+                      <h4 class="comment-name">Jessica21</h4>
+                      <span class="comment-log">14 hours ago</span>
+                    </div>
+                    <div class="comment-desc">
+                      <p>Okay, this comment wins.</p>
+                    </div>
+                    <div class="comment-data">
+                      <div class="comment-likes">
+                        <div class="comment-likes-up">
+                          <img src="../Images/like.gif" alt="">
+                          <span>5</span>
+                        </div>
+                        <div class="comment-likes-down">
+                          <img src="../Images/dislike.gif" alt="">
+                        </div>
                       </div>
-                      <div class="comment-likes-down">
-                <img src="../Images/dislike.gif" alt="">
+                      <div class="comment-reply">
+                        <a href="#!">Reply</a>
+                      </div>
+                      <div class="comment-report">
+                        <a href="#!">Report</a>
                       </div>
                     </div>
-                    <div class="comment-reply">
-                      <a href="#!">Reply</a>
-                    </div>
-                    <div class="comment-report">
-                      <a href="#!">Report</a>
-                    </div>
                   </div>
                 </div>
-              </div>
-            </li>
-          </ul>
-        </li>
-      </ul>
-    </li>
-
-    <!-- Second Top-level Comment -->
-    <li>
-      <div class="comment">
-        <div class="comment-img">
-          <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar-3.png" alt="">
-        </div>
-        <div class="comment-content">
-          <div class="comment-details">
-            <h4 class="comment-name">andrew231</h4>
-            <span class="comment-log">20 hours ago</span>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <!-- Second Top-level Comment -->
+      <li>
+        <div class="comment">
+          <div class="comment-img">
+            <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar-3.png" alt="">
           </div>
-          <div class="comment-desc">
-            <p>Thanks for making this, super helpful.</p>
-          </div>
-          <div class="comment-data">
-            <div class="comment-likes">
-              <div class="comment-likes-up">
-                <img src="../Images/like.gif" alt="">
-                <span>2</span>
-              </div>
-              <div class="comment-likes-down">
-                <img src="../Images/dislike.gif" alt="">
-              </div>
+          <div class="comment-content">
+            <div class="comment-details">
+              <h4 class="comment-name">andrew231</h4>
+              <span class="comment-log">20 hours ago</span>
             </div>
-            <div class="comment-reply">
-              <a href="#!">Reply</a>
+            <div class="comment-desc">
+              <p>Thanks for making this, super helpful.</p>
             </div>
-            <div class="comment-report">
-              <a href="#!">Report</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </li>
-
-    <!-- Third Top-level Comment -->
-    <li>
-      <div class="comment">
-        <div class="comment-img">
-          <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar-4.png" alt="">
-        </div>
-        <div class="comment-content">
-          <div class="comment-details">
-            <h4 class="comment-name">maria_k</h4>
-            <span class="comment-log">18 hours ago</span>
-          </div>
-          <div class="comment-desc">
-            <p>This platform really helped me improve my coding skills.</p>
-          </div>
-          <div class="comment-data">
-            <div class="comment-likes">
-              <div class="comment-likes-up">
-                <img src="../Images/like.gif" alt="">
-                <span>4</span>
-              </div>
-              <div class="comment-likes-down">
-                <img src="../Images/dislike.gif" alt="">
-              </div>
-            </div>
-            <div class="comment-reply">
-              <a href="#!">Reply</a>
-            </div>
-            <div class="comment-report">
-              <a href="#!">Report</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </li>
-
-  </ul>
-</section>
-
-</div>
-         <div class="post">
-  <div class="post-header">
-    <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg">
-    <div>
-      <h5>Merry Watson</h5>
-      <small>20 min ago</small>
-    </div>
-  </div>
-  <p>Many desktop publishing packages and web page editors now use Lorem Ipsum...</p>
-  <img src="../Images/demo.jpg" class="post-img">
-
-  <div class="post-actions">
-    <span class="like-btn"><i class="fa fa-heart"></i> 201 Likes</span>
-    <span class="comment-btn"><i class="fa fa-comment"></i> 41</span>
-    <span class="share-btn"><i class="fa fa-share"></i> 7</span>
-  </div>
-
-<section class="comment-module" style="display:none;">
-
-<!-- Comment Input Area (Top) -->
-  <div class="comment-input-area">
-  <div class="comment-editor" contenteditable="true" data-placeholder="Write a comment..."></div>
-<button class="comment-send-btn">
-  <img src="../Images/send.png" alt="Send">
-</button>
-</div>
-
-
-  <!-- Heading below input -->
-  <h4 class="comments-title">All Comments</h4>
-
-  <ul>
-    
-    <!-- First Comment -->
-    <li>
-      
-      <div class="comment">
-        <div class="comment-img">
-          <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar.png" alt="">
-        </div>
-        <div class="comment-content">
-          <div class="comment-details">
-            <h4 class="comment-name">Adamsdavid</h4>
-            <span class="comment-log">20 hours ago</span>
-          </div>
-          <div class="comment-desc">
-            <p>I genuinely think that Codewell's community is AMAZING...</p>
-          </div>
-          <div class="comment-data">
-            <div class="comment-likes">
-              <div class="comment-likes-up">
-                <img src="../Images/like.gif" alt="">
-                <span>2</span>
-              </div>
-              <div class="comment-likes-down">
-                <img src="../Images/dislike.gif" alt="">
-              </div>
-            </div>
-            <div class="comment-reply">
-              <a href="#!">Reply</a>
-            </div>
-            <div class="comment-report">
-              <a href="#!">Report</a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Nested Replies to First Comment -->
-      <ul>
-        <li>
-          <div class="comment">
-            <div class="comment-img">
-              <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar-1.png" alt="">
-            </div>
-            <div class="comment-content">
-              <div class="comment-details">
-                <h4 class="comment-name">saramay</h4>
-                <span class="comment-log">16 hours ago</span>
-              </div>
-              <div class="comment-desc">
-                <p>I agree. I've been coding really well (pun intended) ever since I started practicing on their templates hehe.</p>
-              </div>
-              <div class="comment-data">
-                <div class="comment-likes">
-                  <div class="comment-likes-up">
-                <img src="../Images/like.gif" alt="">
-                    <span>5</span>
-                  </div>
-                  <div class="comment-likes-down">
-                <img src="../Images/dislike.gif" alt="">
-                  </div>
+            <div class="comment-data">
+              <div class="comment-likes">
+                <div class="comment-likes-up">
+                  <img src="../Images/like.gif" alt="">
+                  <span>2</span>
                 </div>
-                <div class="comment-reply">
-                  <a href="#!">Reply</a>
-                </div>
-                <div class="comment-report">
-                  <a href="#!">Report</a>
+                <div class="comment-likes-down">
+                  <img src="../Images/dislike.gif" alt="">
                 </div>
               </div>
+              <div class="comment-reply">
+                <a href="#!">Reply</a>
+              </div>
+              <div class="comment-report">
+                <a href="#!">Report</a>
+              </div>
             </div>
           </div>
-
-          <!-- Nested Reply to Second Comment -->
-          <ul>
-            <li>
-              <div class="comment">
-                <div class="comment-img">
-                  <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar-2.png" alt="">
+        </div>
+      </li>
+      <!-- Third Top-level Comment -->
+      <li>
+        <div class="comment">
+          <div class="comment-img">
+            <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar-4.png" alt="">
+          </div>
+          <div class="comment-content">
+            <div class="comment-details">
+              <h4 class="comment-name">maria_k</h4>
+              <span class="comment-log">18 hours ago</span>
+            </div>
+            <div class="comment-desc">
+              <p>This platform really helped me improve my coding skills.</p>
+            </div>
+            <div class="comment-data">
+              <div class="comment-likes">
+                <div class="comment-likes-up">
+                  <img src="../Images/like.gif" alt="">
+                  <span>4</span>
                 </div>
-                <div class="comment-content">
-                  <div class="comment-details">
-                    <h4 class="comment-name">Jessica21</h4>
-                    <span class="comment-log">14 hours ago</span>
-                  </div>
-                  <div class="comment-desc">
-                    <p>Okay, this comment wins.</p>
-                  </div>
-                  <div class="comment-data">
-                    <div class="comment-likes">
-                      <div class="comment-likes-up">
-                <img src="../Images/like.gif" alt="">
-                        <span>5</span>
-                      </div>
-                      <div class="comment-likes-down">
-                <img src="../Images/dislike.gif" alt="">
-                      </div>
-                    </div>
-                    <div class="comment-reply">
-                      <a href="#!">Reply</a>
-                    </div>
-                    <div class="comment-report">
-                      <a href="#!">Report</a>
-                    </div>
-                  </div>
+                <div class="comment-likes-down">
+                  <img src="../Images/dislike.gif" alt="">
                 </div>
               </div>
-            </li>
-          </ul>
-        </li>
-      </ul>
-    </li>
-
-    <!-- Second Top-level Comment -->
-    <li>
-      <div class="comment">
-        <div class="comment-img">
-          <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar-3.png" alt="">
-        </div>
-        <div class="comment-content">
-          <div class="comment-details">
-            <h4 class="comment-name">andrew231</h4>
-            <span class="comment-log">20 hours ago</span>
-          </div>
-          <div class="comment-desc">
-            <p>Thanks for making this, super helpful.</p>
-          </div>
-          <div class="comment-data">
-            <div class="comment-likes">
-              <div class="comment-likes-up">
-                <img src="../Images/like.gif" alt="">
-                <span>2</span>
+              <div class="comment-reply">
+                <a href="#!">Reply</a>
               </div>
-              <div class="comment-likes-down">
-                <img src="../Images/dislike.gif" alt="">
+              <div class="comment-report">
+                <a href="#!">Report</a>
               </div>
-            </div>
-            <div class="comment-reply">
-              <a href="#!">Reply</a>
-            </div>
-            <div class="comment-report">
-              <a href="#!">Report</a>
             </div>
           </div>
         </div>
-      </div>
-    </li>
-
-    <!-- Third Top-level Comment -->
-    <li>
-      <div class="comment">
-        <div class="comment-img">
-          <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar-4.png" alt="">
-        </div>
-        <div class="comment-content">
-          <div class="comment-details">
-            <h4 class="comment-name">maria_k</h4>
-            <span class="comment-log">18 hours ago</span>
-          </div>
-          <div class="comment-desc">
-            <p>This platform really helped me improve my coding skills.</p>
-          </div>
-          <div class="comment-data">
-            <div class="comment-likes">
-              <div class="comment-likes-up">
-                <img src="../Images/like.gif" alt="">
-                <span>4</span>
-              </div>
-              <div class="comment-likes-down">
-                <img src="../Images/dislike.gif" alt="">
-              </div>
-            </div>
-            <div class="comment-reply">
-              <a href="#!">Reply</a>
-            </div>
-            <div class="comment-report">
-              <a href="#!">Report</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </li>
-
-  </ul>
-</section>
-
-</div>
-          <div class="post">
-  <div class="post-header">
-    <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg">
-    <div>
-      <h5>Merry Watson</h5>
-      <small>20 min ago</small>
-    </div>
-  </div>
-  <p>Many desktop publishing packages and web page editors now use Lorem Ipsum...</p>
-  <img src="../Images/demo.jpg" class="post-img">
-
-  <div class="post-actions">
-    <span class="like-btn"><i class="fa fa-heart"></i> 201 Likes</span>
-    <span class="comment-btn"><i class="fa fa-comment"></i> 41</span>
-    <span class="share-btn"><i class="fa fa-share"></i> 7</span>
-  </div>
-
-<section class="comment-module" style="display:none;">
-
-<!-- Comment Input Area (Top) -->
-  <div class="comment-input-area">
-  <div class="comment-editor" contenteditable="true" data-placeholder="Write a comment..."></div>
-<button class="comment-send-btn">
-  <img src="../Images/send.png" alt="Send">
-</button>
-</div>
-
-
-  <!-- Heading below input -->
-  <h4 class="comments-title">All Comments</h4>
-
-  <ul>
-    
-    <!-- First Comment -->
-    <li>
-      
-      <div class="comment">
-        <div class="comment-img">
-          <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar.png" alt="">
-        </div>
-        <div class="comment-content">
-          <div class="comment-details">
-            <h4 class="comment-name">Adamsdavid</h4>
-            <span class="comment-log">20 hours ago</span>
-          </div>
-          <div class="comment-desc">
-            <p>I genuinely think that Codewell's community is AMAZING...</p>
-          </div>
-          <div class="comment-data">
-            <div class="comment-likes">
-              <div class="comment-likes-up">
-                <img src="../Images/like.gif" alt="">
-                <span>2</span>
-              </div>
-              <div class="comment-likes-down">
-                <img src="../Images/dislike.gif" alt="">
-              </div>
-            </div>
-            <div class="comment-reply">
-              <a href="#!">Reply</a>
-            </div>
-            <div class="comment-report">
-              <a href="#!">Report</a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Nested Replies to First Comment -->
-      <ul>
-        <li>
-          <div class="comment">
-            <div class="comment-img">
-              <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar-1.png" alt="">
-            </div>
-            <div class="comment-content">
-              <div class="comment-details">
-                <h4 class="comment-name">saramay</h4>
-                <span class="comment-log">16 hours ago</span>
-              </div>
-              <div class="comment-desc">
-                <p>I agree. I've been coding really well (pun intended) ever since I started practicing on their templates hehe.</p>
-              </div>
-              <div class="comment-data">
-                <div class="comment-likes">
-                  <div class="comment-likes-up">
-                <img src="../Images/like.gif" alt="">
-                    <span>5</span>
-                  </div>
-                  <div class="comment-likes-down">
-                <img src="../Images/dislike.gif" alt="">
-                  </div>
-                </div>
-                <div class="comment-reply">
-                  <a href="#!">Reply</a>
-                </div>
-                <div class="comment-report">
-                  <a href="#!">Report</a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Nested Reply to Second Comment -->
-          <ul>
-            <li>
-              <div class="comment">
-                <div class="comment-img">
-                  <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar-2.png" alt="">
-                </div>
-                <div class="comment-content">
-                  <div class="comment-details">
-                    <h4 class="comment-name">Jessica21</h4>
-                    <span class="comment-log">14 hours ago</span>
-                  </div>
-                  <div class="comment-desc">
-                    <p>Okay, this comment wins.</p>
-                  </div>
-                  <div class="comment-data">
-                    <div class="comment-likes">
-                      <div class="comment-likes-up">
-                <img src="../Images/like.gif" alt="">
-                        <span>5</span>
-                      </div>
-                      <div class="comment-likes-down">
-                <img src="../Images/dislike.gif" alt="">
-                      </div>
-                    </div>
-                    <div class="comment-reply">
-                      <a href="#!">Reply</a>
-                    </div>
-                    <div class="comment-report">
-                      <a href="#!">Report</a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </li>
-          </ul>
-        </li>
-      </ul>
-    </li>
-
-    <!-- Second Top-level Comment -->
-    <li>
-      <div class="comment">
-        <div class="comment-img">
-          <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar-3.png" alt="">
-        </div>
-        <div class="comment-content">
-          <div class="comment-details">
-            <h4 class="comment-name">andrew231</h4>
-            <span class="comment-log">20 hours ago</span>
-          </div>
-          <div class="comment-desc">
-            <p>Thanks for making this, super helpful.</p>
-          </div>
-          <div class="comment-data">
-            <div class="comment-likes">
-              <div class="comment-likes-up">
-                <img src="../Images/like.gif" alt="">
-                <span>2</span>
-              </div>
-              <div class="comment-likes-down">
-                <img src="../Images/dislike.gif" alt="">
-              </div>
-            </div>
-            <div class="comment-reply">
-              <a href="#!">Reply</a>
-            </div>
-            <div class="comment-report">
-              <a href="#!">Report</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </li>
-
-    <!-- Third Top-level Comment -->
-    <li>
-      <div class="comment">
-        <div class="comment-img">
-          <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar-4.png" alt="">
-        </div>
-        <div class="comment-content">
-          <div class="comment-details">
-            <h4 class="comment-name">maria_k</h4>
-            <span class="comment-log">18 hours ago</span>
-          </div>
-          <div class="comment-desc">
-            <p>This platform really helped me improve my coding skills.</p>
-          </div>
-          <div class="comment-data">
-            <div class="comment-likes">
-              <div class="comment-likes-up">
-                <img src="../Images/like.gif" alt="">
-                <span>4</span>
-              </div>
-              <div class="comment-likes-down">
-                <img src="../Images/dislike.gif" alt="">
-              </div>
-            </div>
-            <div class="comment-reply">
-              <a href="#!">Reply</a>
-            </div>
-            <div class="comment-report">
-              <a href="#!">Report</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </li>
-
-  </ul>
-</section>
-
-</div>
-          <div class="post">
-  <div class="post-header">
-    <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg">
-    <div>
-      <h5>Merry Watson</h5>
-      <small>20 min ago</small>
-    </div>
-  </div>
-  <p>Many desktop publishing packages and web page editors now use Lorem Ipsum...</p>
-  <img src="../Images/demo.jpg" class="post-img">
-
-  <div class="post-actions">
-    <span class="like-btn"><i class="fa fa-heart"></i> 201 Likes</span>
-    <span class="comment-btn"><i class="fa fa-comment"></i> 41</span>
-    <span class="share-btn"><i class="fa fa-share"></i> 7</span>
-  </div>
-
-<section class="comment-module" style="display:none;">
-
-<!-- Comment Input Area (Top) -->
-  <div class="comment-input-area">
-  <div class="comment-editor" contenteditable="true" data-placeholder="Write a comment..."></div>
-<button class="comment-send-btn">
-  <img src="../Images/send.png" alt="Send">
-</button>
-</div>
-
-
-  <!-- Heading below input -->
-  <h4 class="comments-title">All Comments</h4>
-
-  <ul>
-    
-    <!-- First Comment -->
-    <li>
-      
-      <div class="comment">
-        <div class="comment-img">
-          <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar.png" alt="">
-        </div>
-        <div class="comment-content">
-          <div class="comment-details">
-            <h4 class="comment-name">Adamsdavid</h4>
-            <span class="comment-log">20 hours ago</span>
-          </div>
-          <div class="comment-desc">
-            <p>I genuinely think that Codewell's community is AMAZING...</p>
-          </div>
-          <div class="comment-data">
-            <div class="comment-likes">
-              <div class="comment-likes-up">
-                <img src="../Images/like.gif" alt="">
-                <span>2</span>
-              </div>
-              <div class="comment-likes-down">
-                <img src="../Images/dislike.gif" alt="">
-              </div>
-            </div>
-            <div class="comment-reply">
-              <a href="#!">Reply</a>
-            </div>
-            <div class="comment-report">
-              <a href="#!">Report</a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Nested Replies to First Comment -->
-      <ul>
-        <li>
-          <div class="comment">
-            <div class="comment-img">
-              <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar-1.png" alt="">
-            </div>
-            <div class="comment-content">
-              <div class="comment-details">
-                <h4 class="comment-name">saramay</h4>
-                <span class="comment-log">16 hours ago</span>
-              </div>
-              <div class="comment-desc">
-                <p>I agree. I've been coding really well (pun intended) ever since I started practicing on their templates hehe.</p>
-              </div>
-              <div class="comment-data">
-                <div class="comment-likes">
-                  <div class="comment-likes-up">
-                <img src="../Images/like.gif" alt="">
-                    <span>5</span>
-                  </div>
-                  <div class="comment-likes-down">
-                <img src="../Images/dislike.gif" alt="">
-                  </div>
-                </div>
-                <div class="comment-reply">
-                  <a href="#!">Reply</a>
-                </div>
-                <div class="comment-report">
-                  <a href="#!">Report</a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Nested Reply to Second Comment -->
-          <ul>
-            <li>
-              <div class="comment">
-                <div class="comment-img">
-                  <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar-2.png" alt="">
-                </div>
-                <div class="comment-content">
-                  <div class="comment-details">
-                    <h4 class="comment-name">Jessica21</h4>
-                    <span class="comment-log">14 hours ago</span>
-                  </div>
-                  <div class="comment-desc">
-                    <p>Okay, this comment wins.</p>
-                  </div>
-                  <div class="comment-data">
-                    <div class="comment-likes">
-                      <div class="comment-likes-up">
-                <img src="../Images/like.gif" alt="">
-                        <span>5</span>
-                      </div>
-                      <div class="comment-likes-down">
-                <img src="../Images/dislike.gif" alt="">
-                      </div>
-                    </div>
-                    <div class="comment-reply">
-                      <a href="#!">Reply</a>
-                    </div>
-                    <div class="comment-report">
-                      <a href="#!">Report</a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </li>
-          </ul>
-        </li>
-      </ul>
-    </li>
-
-    <!-- Second Top-level Comment -->
-    <li>
-      <div class="comment">
-        <div class="comment-img">
-          <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar-3.png" alt="">
-        </div>
-        <div class="comment-content">
-          <div class="comment-details">
-            <h4 class="comment-name">andrew231</h4>
-            <span class="comment-log">20 hours ago</span>
-          </div>
-          <div class="comment-desc">
-            <p>Thanks for making this, super helpful.</p>
-          </div>
-          <div class="comment-data">
-            <div class="comment-likes">
-              <div class="comment-likes-up">
-                <img src="../Images/like.gif" alt="">
-                <span>2</span>
-              </div>
-              <div class="comment-likes-down">
-                <img src="../Images/dislike.gif" alt="">
-              </div>
-            </div>
-            <div class="comment-reply">
-              <a href="#!">Reply</a>
-            </div>
-            <div class="comment-report">
-              <a href="#!">Report</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </li>
-
-    <!-- Third Top-level Comment -->
-    <li>
-      <div class="comment">
-        <div class="comment-img">
-          <img src="https://rvs-comment-module.vercel.app/Assets/User Avatar-4.png" alt="">
-        </div>
-        <div class="comment-content">
-          <div class="comment-details">
-            <h4 class="comment-name">maria_k</h4>
-            <span class="comment-log">18 hours ago</span>
-          </div>
-          <div class="comment-desc">
-            <p>This platform really helped me improve my coding skills.</p>
-          </div>
-          <div class="comment-data">
-            <div class="comment-likes">
-              <div class="comment-likes-up">
-                <img src="../Images/like.gif" alt="">
-                <span>4</span>
-              </div>
-              <div class="comment-likes-down">
-                <img src="../Images/dislike.gif" alt="">
-              </div>
-            </div>
-            <div class="comment-reply">
-              <a href="#!">Reply</a>
-            </div>
-            <div class="comment-report">
-              <a href="#!">Report</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </li>
-
-  </ul>
-</section>
-
+      </li>
+    </ul>
+  </section>
 </div>
 
     </div>
