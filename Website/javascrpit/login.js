@@ -33,8 +33,7 @@ function showForm() {
   </button>
 </div>
 
-
-      
+      <form id="userSignupForm" enctype="multipart/form-data" method="post" action="user_signup.php">      
       <h5 class="form-section-title">🔐 General Information</h5>
       
       <div class="mb-3">
@@ -147,7 +146,8 @@ function showForm() {
         </label>
       </div>
 
-      <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+      <button type="submit" class="btn btn-primary w-100">Sign Up</button>  
+
     `;
   } else if (role === 'police') {
     formHTML = `
