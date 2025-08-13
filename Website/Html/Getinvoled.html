@@ -18,44 +18,45 @@
     
     </div>
   </header>
- <!-- 🔶 Hero Section -->
-<section class="volunteer-hero">
-  <h1>Be the Light in Someone's Darkness</h1>
-  <p>
-    In Bangladesh, hundreds of people go missing every year. Many never return to their families. When accidents, fires, or crimes occur, immediate help can save lives — but only if someone is there to act.
-  </p>
-  <button onclick="document.getElementById('volunteer-info').scrollIntoView({ behavior: 'smooth' })">
-    How You Can Help
-  </button>
-</section>
-
-<!-- 🔶 Volunteer Info Section -->
-<section id="volunteer-info">
-  <h2>Why We Need Volunteers</h2>
-  <div class="volunteer-reasons">
-    <div class="reason-card">
-      <h3>📢 Report Cases</h3>
-      <p>Submit missing person data fast and accurately using our app.</p>
+<section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <h1 class="fade-in">Be the Light in Someone’s Darkness</h1>
+      <p class="fade-in delay-1">
+        In Bangladesh, hundreds of people go missing every year.<br>
+        Many never return to their families. When accidents, fires, or crimes occur, immediate help can save lives — but only if someone is there to act.
+      </p>
+<button class="cta-btn scale-in" onclick="window.location.href='../Html/login.html'">Become a Volunteer</button>    </div>
+    <img src="person.jpg" alt="" class="hero-img slide-in-right"> <!-- Use your image path -->
+  </section>
+  <section class="info">
+    <h2 class="fade-in">Why We Need Volunteers</h2>
+    <div class="cards">
+      <div class="card zoom-in delay-1">
+        <div class="icon-bg"><img src="icon-report.svg" alt="Report"></div>
+        <h3>Report Cases</h3>
+        <p>Submit missing person data fast and accurately using our app.</p>
+      </div>
+      <div class="card zoom-in delay-2">
+        <div class="icon-bg"><img src="icon-assist.svg" alt="Assist"></div>
+        <h3>Assist on Site</h3>
+        <p>Be part of emergency rescue and provide first-hand help.</p>
+      </div>
+      <div class="card zoom-in delay-3">
+        <div class="icon-bg"><img src="icon-share.svg" alt="Share"></div>
+        <h3>Share Info</h3>
+        <p>Broadcast vital alerts through your community and social media.</p>
+      </div>
     </div>
-    <div class="reason-card">
-      <h3>🚑 Assist on Site</h3>
-      <p>Be part of emergency rescue and provide first-hand help.</p>
+    <div class="impact-bar slide-in-up">
+      <img src="avatar.jpg" alt="" class="impact-avatar"> <!-- Use your image path -->
+      <span class="impact-text">Your efforts saved my life. Thank you.</span>
+      <span class="impact-numbers count-up" data-count="1200">0</span>+
+      <span class="impact-label">Lives Saved</span>
     </div>
-    <div class="reason-card">
-      <h3>📡 Share Info</h3>
-      <p>Broadcast vital alerts through your community and social media.</p>
-    </div>
-  </div>
-</section>
-
-<!-- 🔶 Call to Action -->
-<section class="cta-download">
-  <h2>Be a Real-Life Hero</h2>
-  <p>Join the movement. Your action can bring someone back home.</p>
-  <button>Download & Install Our App Now</button>
-</section>
+  </section>
+      <script src="../javascrpit/Getinvolved.js"></script>
 
   </body>
-    <script src="../javascrpit/Getinvolved.js"></script>
 
 </html>
