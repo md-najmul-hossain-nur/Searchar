@@ -332,55 +332,6 @@ withdrawForm.addEventListener('submit', function(e) {
   withdrawModal.style.display = 'none';
   this.reset();
 });
-// Open feed popup
-document.getElementById("viewFeedBtn").addEventListener("click", function() {
-  document.getElementById("feedModal").style.display = "block";
-});
-
-// Close popup
-document.querySelector(".feed-popup-close").addEventListener("click", function() {
-  document.getElementById("feedModal").style.display = "none";
-});
-
-// Optional: Close on outside click
-window.onclick = function(event) {
-  if (event.target == document.getElementById("feedModal")) {
-    document.getElementById("feedModal").style.display = "none";
-  }
-}
-// Elements
-const feedFormModal = document.querySelector(".feed-form-popup");
-const feedFormClose = document.querySelector(".feed-form-close");
-const startFeedBtn = document.getElementById("startFeedBtn");
-const liveOption = document.getElementById("liveOption");
-const recordedOption = document.getElementById("recordedOption");
-const uploadSection = document.getElementById("uploadSection");
-
-// Open popup modal on button click
-startFeedBtn.addEventListener("click", () => {
-  feedFormModal.style.display = "block";
-});
-
-// Close modal when clicking close button
-feedFormClose.addEventListener("click", () => {
-  feedFormModal.style.display = "none";
-});
-
-// Close modal when clicking outside content area
-window.addEventListener("click", (event) => {
-  if (event.target === feedFormModal) {
-    feedFormModal.style.display = "none";
-  }
-});
-
-// Show/hide upload section based on selected radio
-recordedOption.addEventListener("change", () => {
-  uploadSection.style.display = "block";
-});
-
-liveOption.addEventListener("change", () => {
-  uploadSection.style.display = "none";
-});
 function filterPosts(category) {
   // Remove .active from all filter buttons
   document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
@@ -395,3 +346,78 @@ function filterPosts(category) {
     }
   });
 }
+document.addEventListener("DOMContentLoaded", () => {
+  // Elements
+  const feedForm = document.getElementById("camFeedForm");
+  const uploadSection = document.getElementById("camUploadSection");
+  const liveInputSection = document.getElementById("camLiveInputSection");
+  const fileInput = document.getElementById("camFileInput");
+  const liveURLInput = document.getElementById("camLiveURL");
+
+  const feedFormModal = document.getElementById("camFeedFormModal");
+  const feedFormClose = feedFormModal.querySelector(".cam-form-close");
+
+  const startFeedBtn = document.getElementById("startFeedBtn");
+
+  // Helpers
+  const openModal = () => feedFormModal.classList.add("show");
+  const closeModal = () => {
+    feedFormModal.classList.remove("show");
+    // Reset form and hide sections
+    feedForm.reset();
+    uploadSection.style.display = "none";
+    liveInputSection.style.display = "none";
+  };
+
+  // Open feed form modal
+  startFeedBtn.addEventListener("click", openModal);
+
+  // Toggle input sections based on radio selection
+  feedForm.addEventListener("change", (e) => {
+    const type = feedForm.feedType?.value;
+    if (type === "live") {
+      liveInputSection.style.display = "block";
+      uploadSection.style.display = "none";
+    } else if (type === "recorded") {
+      uploadSection.style.display = "block";
+      liveInputSection.style.display = "none";
+    }
+  });
+
+  // Form submit
+  feedForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const type = feedForm.feedType?.value;
+
+    if (type === "live") {
+      const url = liveURLInput.value.trim();
+      if (url) {
+        alert("Video link has been submitted!");
+      } else {
+        try {
+          await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+          alert("Live feed has started!");
+        } catch (err) {
+          alert("Camera/Mic permission denied or unavailable.\n" + err);
+        }
+      }
+    } else if (type === "recorded") {
+      const file = fileInput.files[0];
+      if (file) {
+        alert("Video file has been uploaded!");
+      } else {
+        alert("Please select a video file.");
+      }
+    }
+
+    closeModal();
+  });
+
+  // Close button
+  feedFormClose.addEventListener("click", closeModal);
+
+  // Close modal on outside click
+  window.addEventListener("click", (e) => {
+    if (e.target === feedFormModal) closeModal();
+  });
+});

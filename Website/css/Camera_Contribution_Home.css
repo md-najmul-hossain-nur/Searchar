@@ -874,36 +874,6 @@ background: linear-gradient(80deg, #d1b75a);
 }
 
 
-/* Camera Contributor Panel (Matching Volunteer Section Style) */
-.camera-contributor-panel {
-  background: #fff;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  text-align: center;
-}
-
-.camera-contributor-panel h4 {
-  font-size: 1.1rem;
-  margin-bottom: 8px;
-  color: #1a232a;
-}
-
-.camera-btn {
-  background: #f05454;  /* Same red as volunteer button */
-  color: #fff;
-  border: none;
-  padding: 8px 18px;
-  font-size: 0.9rem;
-  border-radius: 25px;
-  cursor: pointer;
-  transition: background 0.2s ease-in-out;
-  margin: 5px;
-}
-
-.camera-btn:hover {
-  background: #e3471c; /* Hover color */
-}
 
 
 /* Feed Popup */
@@ -1719,4 +1689,321 @@ background: linear-gradient(80deg, #d1b75a);
   vertical-align: middle;
   filter: drop-shadow(0 1px 2px rgba(0,0,0,0.05));
   margin-right: 2px;
+}
+/* --- General Modal Styles --- */
+.cam-form-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  overflow-y: auto;
+  transition: opacity 0.3s ease;
+}
+
+.cam-form-content {
+  background: #fff;
+  width: 100%;
+  max-width: 480px;
+  padding: 25px 30px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+  position: relative;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  0% { transform: translateY(-50px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+/* Close Button */
+.cam-form-close {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 24px;
+  color: #333;
+  font-weight: bold;
+  transition: color 0.2s;
+}
+
+.cam-form-close:hover {
+  color: #e74c3c;
+}
+
+/* Headings */
+.cam-form-content h3 {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 1.5rem;
+  color: #222;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Radio Buttons */
+.cam-form-content label {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 1rem;
+  color: #333;
+  display: block;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.cam-form-content input[type="radio"] {
+  margin-right: 8px;
+}
+
+/* Input Fields */
+#camLiveInputSection input,
+#camUploadSection input,
+.cam-form-content select {
+  width: 100%;
+  padding: 8px 10px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+#camLiveInputSection input:focus,
+#camUploadSection input:focus,
+.cam-form-content select:focus {
+  border-color: #3498db;
+}
+
+/* Fieldset Styling */
+.cam-form-content fieldset {
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  padding: 15px 12px;
+  margin-top: 20px;
+}
+
+.cam-form-content legend {
+  font-weight: bold;
+  color: #555;
+}
+
+/* Checkboxes */
+.cam-form-content input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+/* Submit Button */
+.cam-submit-btn {
+  width: 100%;
+  background-color: #3498db;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 10px 0;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.cam-submit-btn:hover {
+  background-color: #2980b9;
+}
+
+/* Responsive */
+@media (max-width: 520px) {
+  .cam-form-content {
+    padding: 20px 15px;
+  }
+
+  .cam-form-content h3 {
+    font-size: 1.3rem;
+  }
+
+  .cam-submit-btn {
+    font-size: 0.95rem;
+    padding: 8px 0;
+  }
+}
+/* Camera Contributor Panel (Matching Volunteer Section Style) */
+.camera-contributor-panel {
+  background: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  text-align: center;
+}
+
+.camera-contributor-panel h4 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  color: #1a232a;
+}
+
+.camera-btn {
+  background: #f05454;  /* Same red as volunteer button */
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+  margin: 5px;
+}
+
+.camera-btn:hover {
+  background: #e3471c; /* Hover color */
+}
+
+/* =========================
+   Feed Form Popup
+========================= */
+.cam-form-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.cam-form-popup.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.cam-form-content {
+  background: #fff;
+  padding: 20px 25px;
+  border-radius: 12px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  position: relative;
+  animation: popupFade 0.3s ease;
+}
+
+/* Close Button */
+.cam-form-close {
+  position: absolute;
+  top: 12px;
+  right: 15px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #555;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.cam-form-close:hover {
+  color: #f05454;
+}
+
+/* Form Heading */
+#camFeedForm h3 {
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+  color: #1a232a;
+  text-align: center;
+}
+
+/* Form Inputs */
+#camFeedForm input[type="text"],
+#camFeedForm input[type="file"],
+#camFeedForm select {
+  width: 100%;
+  padding: 8px 10px;
+  margin-top: 5px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#camFeedForm input[type="text"]:focus,
+#camFeedForm input[type="file"]:focus,
+#camFeedForm select:focus {
+  border-color: #f05454;
+  box-shadow: 0 0 5px rgba(240,84,84,0.3);
+}
+
+/* Checkbox Styling */
+#camFeedForm input[type="checkbox"] {
+  margin-right: 6px;
+}
+
+/* Fieldset */
+fieldset {
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  padding: 12px;
+  background-color: #fafafa;
+  margin-top: 12px;
+}
+
+legend {
+  font-weight: 600;
+  color: #f05454;
+  padding: 0 5px;
+}
+
+/* Submit Button */
+.cam-submit-btn {
+  background: #f05454;
+  color: #fff;
+  border: none;
+  border-radius: 25px;
+  padding: 10px 16px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 10px;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.cam-submit-btn:hover {
+  background: #e3471c;
+  transform: translateY(-2px);
+}
+
+/* Input Sections for Live/Recorded */
+#camLiveInputSection,
+#camUploadSection {
+  display: none;
+  margin-top: 10px;
+}
+
+/* Popup Animation */
+@keyframes popupFade {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .cam-form-content {
+    width: 90%;
+    padding: 15px 20px;
+  }
+
+  .camera-btn {
+    padding: 7px 14px;
+    font-size: 0.85rem;
+  }
 }

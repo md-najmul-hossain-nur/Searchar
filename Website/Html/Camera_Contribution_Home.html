@@ -8,7 +8,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Main CSS -->
   <link rel="stylesheet" href="../css/Camera_Contribution_Home.css">
- 
+   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
 </head>
 <body>
  <header class="navbar">
@@ -914,45 +915,80 @@
 
 
 
+<!-- Camera Contributor Panel -->
 <div class="camera-contributor-panel">
   <h4>Camera Contributor Panel</h4>
   
-<button id="startFeedBtn" class="camera-btn">📷 Start Live / Upload Recorded Feed</button>
-<button id="viewFeedBtn" class="camera-btn">👀 View Feed</button>
-
-</div>
-
-<!-- Feed Popup -->
-<div id="feedModal" class="feed-popup">
-  <div class="feed-popup-content">
-    <span class="feed-popup-close">&times;</span>
-    <h3>Live / Recorded Feed</h3>
-    <video id="videoFeed" width="100%" autoplay controls></video>
-  </div>
+  <button id="startFeedBtn" class="camera-btn">
+    📷 Start Live / Upload Recorded Feed
+  </button>
+  <button id="viewFeedBtn" class="camera-btn">
+    👀 View Feed
+  </button>
 </div>
 
 <!-- Feed Form Popup -->
-<div id="feedFormModal" class="feed-form-popup">
-  <div class="feed-form-content">
-    <span class="feed-form-close">&times;</span>
+<div id="camFeedFormModal" class="cam-form-popup">
+  <div class="cam-form-content">
+    <span class="cam-form-close">&times;</span>
     <h3>Upload or Start Live Feed</h3>
 
-    <form id="feedForm">
-      <label for="liveOption">
-        <input type="radio" name="feedType" value="live" id="liveOption" required>
+    <form id="camFeedForm">
+      <!-- Live / Recorded Selection -->
+      <label>
+        <input type="radio" name="feedType" value="live" required>
         Start Live Feed
       </label>
-      <br>
-      <label for="recordedOption">
-        <input type="radio" name="feedType" value="recorded" id="recordedOption" required>
+      <label>
+        <input type="radio" name="feedType" value="recorded" required>
         Upload Recorded Video
       </label>
 
-      <div id="uploadSection" style="display:none; margin-top:10px;">
-        <input type="file" accept="video/*">
+      <!-- URL input for Live -->
+      <div id="camLiveInputSection">
+        <input type="text" id="camLiveURL" placeholder="Enter live video URL (MP4/HLS)">
       </div>
 
-      <button type="submit" class="feed-submit-btn">Submit</button>
+      <!-- File Upload Section for Recorded -->
+      <div id="camUploadSection">
+        <input type="file" accept="video/*" id="camFileInput">
+      </div>
+
+      <!-- Permissions & Agreement -->
+      <fieldset>
+        <legend>Permissions & Agreement</legend>
+
+        <label>Streaming Hours:
+          <select>
+            <option>Continuous</option>
+            <option>Scheduled</option>
+          </select>
+        </label>
+
+        <label>
+          <input type="checkbox"> Allow AI Detection
+        </label>
+
+        <label>
+          <input type="checkbox"> Allow Public Viewing
+        </label>
+
+        <label>
+          <input type="checkbox"> AI Alerts to Volunteers
+        </label>
+
+        <label>
+          <input type="checkbox" required> Agree to Terms & Conditions
+        </label>
+
+        <label>
+          <input type="checkbox" required> Confirm Ownership of camera/footage
+        </label>
+      </fieldset>
+
+      <button type="submit" class="cam-submit-btn">
+        Submit
+      </button>
     </form>
   </div>
 </div>
