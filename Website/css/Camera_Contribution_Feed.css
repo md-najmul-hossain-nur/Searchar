@@ -11,7 +11,7 @@ body {
 .navbar {
   width: 100vw;
   background: #ffffff;
-  color: #1a232a; /* Fixed: Navbar text now dark for visibility on white background */
+  color: #1a232a;
   display: flex;
   align-items: center;
   padding: 0 32px;
@@ -41,6 +41,13 @@ body {
   vertical-align: middle;
 }
 
+@media (max-width: 700px) {
+  .navbar-logo-img {
+    width: 140px;
+    height: 60px;
+  }
+}
+
 .navbar-title {
   font-size: 1.15em;
 }
@@ -54,7 +61,7 @@ body {
 }
 
 .navbar-menu a {
-  color: #1a232a; /* Fixed: Dark color to match light navbar background */
+  color: #1a232a;
   font-family: 'Montserrat', Arial, sans-serif;
   font-size: 1.08em;
   font-weight: 700;
@@ -96,11 +103,12 @@ body {
 .navbar-donate:hover {
   background: #e3471c;
 }
+
 /* Main container */
 .container {
-  max-width: 1280px;                /* <-- Increased width from 900px */
-  margin: 130px auto 0 auto;        /* For navbar */
-  padding: 32px 24px 0 24px;        /* More horizontal padding for larger width */
+  max-width: 1280px;
+  margin: 116px auto 0 auto; /* Offset for navbar height + gap */
+  padding: 32px 24px 0 24px;
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 4px 24px rgba(44,62,80,0.08);
@@ -127,7 +135,7 @@ header {
 /* Cameras */
 .cameras {
   display: flex;
-  gap: 24px;                        /* Increased gap for larger layout */
+  gap: 24px;
   margin-bottom: 28px;
   justify-content: center;
   flex-wrap: wrap;
@@ -135,7 +143,7 @@ header {
 .camera-card {
   background: #fff;
   border-radius: 14px;
-  width: 260px;                     /* Slightly larger card width */
+  width: 260px;
   overflow: hidden;
   position: relative;
   box-shadow: 0 2px 12px rgba(44,62,80,0.07);
@@ -146,7 +154,7 @@ header {
 }
 .camera-img {
   width: 100%;
-  height: 140px;                    /* Taller image for larger card */
+  height: 140px;
   object-fit: cover;
   background: #eaeaea;
 }
@@ -172,7 +180,7 @@ header {
   display: inline-block;
 }
 .camera-info {
-  padding: 14px 16px 16px 16px;     /* More padding for larger card */
+  padding: 14px 16px 16px 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -258,7 +266,7 @@ header {
 /* Broadcast */
 .broadcast {
   display: flex;
-  gap: 28px;                        /* Larger gap for bigger layout */
+  gap: 28px;
   justify-content: stretch;
   margin-bottom: 18px;
   flex-wrap: wrap;
@@ -268,7 +276,7 @@ header {
   border-radius: 14px;
   padding: 20px 20px 24px 20px;
   width: 98%;
-  max-width: 560px;                 /* Larger video card */
+  max-width: 560px;
   display: flex;
   flex-direction: column;
   margin: 0 auto;
@@ -285,7 +293,7 @@ header {
 .video-player {
   position: relative;
   width: 100%;
-  height: 180px;                    /* Larger video area */
+  height: 180px;
   background: #eaeaea;
   border-radius: 12px;
   display: flex;
@@ -359,22 +367,33 @@ header {
   .user-card { flex-direction: column; gap: 12px; }
   .broadcast-video { max-width: 98vw; }
 }
-.bubble-background {
-  position: fixed;
-  top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0;
-  pointer-events: none;
-  overflow: hidden;
+
+
+
+/* Header Top */
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
-.bubble {
-  position: absolute;
-  bottom: -120px;
-  border-radius: 50%;
-  opacity: 0.37;
-  background: linear-gradient(135deg, #cdb468 60%, #ffffff 100%);
-  animation: bubbleUp 15s linear infinite;
+
+/* Back Button */
+.back-btn {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #ffffff;
+  color: #f05454;
+  border: 1.5px solid #f05454;
+  border-radius: 5px;
+  font-size: 1em;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.25s, color 0.25s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  cursor: pointer;
 }
-@keyframes bubbleUp {
-  0% { transform: translateY(0) scale(1); opacity: 0.48; }
-  80% { opacity: 0.31; }
-  100% { transform: translateY(-110vh) scale(1.2); opacity: 0; }
+
+.back-btn:hover {
+  background-color: #f05454;
+  color: #fff;
 }
