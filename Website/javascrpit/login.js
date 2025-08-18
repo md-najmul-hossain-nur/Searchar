@@ -794,3 +794,51 @@ document.addEventListener('click', function(e) {
     google.accounts.id.prompt();
   }
 });
+document.addEventListener('click', function(e) {
+  const fbBtn = e.target.closest('.facebook-btn');
+  if (fbBtn) {
+    let selectedRole = document.getElementById('role')?.value || '';
+    if (!selectedRole) {
+      alert('Please select your role first!');
+      return;
+    }
+
+    // Facebook Login Flow
+    FB.login(function(response) {
+      if (response.authResponse) {
+        FB.api('/me', {fields: 'id,name,email,picture'}, function(userInfo) {
+          fetch('../Php/facebook-signup.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+              fb_id: userInfo.id,
+              name: userInfo.name,
+              email: userInfo.email,
+              picture: userInfo.picture?.data?.url || '',
+              role: selectedRole
+            })
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              // Role-wise page mapping
+              const roleToPage = {
+                user: '../Html/User_Home.html',
+                volunteer: '../Html/Volunteer_Home.html',
+                police: '../Html/Policeman_Home.html',
+                contributor: '../Html/Camera_Contribution_Home.html'
+              };
+              const goTo = roleToPage[data.role || selectedRole] || '../Html/User_Home.html';
+              alert('Sign up successful as ' + (data.role || selectedRole) + '!');
+              window.location.href = goTo;
+            } else {
+              alert('Facebook sign up failed! ' + (data.error || ''));
+            }
+          });
+        });
+      } else {
+        alert('Facebook login cancelled or failed!');
+      }
+    }, {scope: 'public_profile,email'});
+  }
+});
