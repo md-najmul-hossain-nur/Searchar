@@ -7,8 +7,10 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
-<link rel="stylesheet" href="../css/login.css">
+ <!-- Facebook SDK -->
+  <script async defer crossorigin="anonymous"
+    src="https://connect.facebook.net/en_US/sdk.js"></script>
+    <link rel="stylesheet" href="../css/login.css">
 </head>
 <body>
   <header class="navbar">
@@ -42,7 +44,7 @@
               <select id="role" onchange="showForm()">
                 <option value="">-- Select Role --</option>
                 <option value="user">User</option>
-                <option value="police">Police</option>
+                <option value="police">Policeman</option>
                 <option value="volunteer">Volunteer</option>
                 <option value="contributor">Camera Contributor</option>
               </select>
@@ -76,41 +78,53 @@
 
     <div class="form sign-in">
 
-      <!-- Social Login Buttons -->
-      <div class="social-login-buttons" style="margin-bottom: 20px;">
-        <button type="button" class="social-btn fb-btn" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-          <img src="../Images/facebook.png" alt="Facebook" class="social-icon" style="width: 20px; height: 20px;" />
-          Sign in with Facebook
-        </button>
-        <button type="button" class="social-btn google-btn" style="display: flex; align-items: center; gap: 10px;">
-          <img src="../Images/google.png" alt="Google" class="social-icon" style="width: 20px; height: 20px;" />
-          Sign in with Google
-        </button>
-      </div>
+  <!-- Social Login Buttons -->
+  <div class="social-login-buttons" style="margin-bottom: 20px;">
+    <button type="button" class="social-btn fb-btn" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+      <img src="../Images/facebook.png" alt="Facebook" class="social-icon" style="width: 20px; height: 20px;" />
+      Sign in with Facebook
+    </button>
+    <button type="button" class="google" style="display: flex; align-items: center; gap: 10px;">
+      <img src="../Images/google.png" alt="Google" class="social-icon" style="width: 20px; height: 20px;" />
+      Sign in with Google
+    </button>
+  </div>
+ <!-- Role Selection -->
+  <div class="input-group">
+    <label for="role" style="margin-bottom: 6px;">Select Your Role:</label>
+    <select id="role" onchange="showForm()">
+      <option value="">-- Select Role --</option>
+      <option value="user">User</option>
+      <option value="police">Policeman</option>
+      <option value="volunteer">Volunteer</option>
+      <option value="contributor">Camera Contributor</option>
+    </select>
+  </div>
+  <!-- Input Fields -->
+  <div class="input-group">
+    <i class='bx bxs-user'></i>
+    <input type="text" placeholder="Email or Phone number">
+  </div>
+  <div class="input-group">
+    <i class='bx bxs-lock-alt'></i>
+    <input type="password" placeholder="Password">
+  </div>
 
-      <!-- Input Fields -->
-      <div class="input-group">
-        <i class='bx bxs-user'></i>
-        <input type="text" placeholder="Email or Phone number">
-      </div>
-      <div class="input-group">
-        <i class='bx bxs-lock-alt'></i>
-        <input type="password" placeholder="Password">
-      </div>
+ 
 
-      <!-- Sign In Button -->
-      <button>
-        Sign in
-      </button>
+  <!-- Sign In Button -->
+  <button>
+    Sign in
+  </button>
 
-      <!-- Sign Up Prompt -->
-      <p></p>
-      <p>
-        <span>Don't have an account?</span>
-        <b onclick="toggle()" class="pointer">Sign up here</b>
-      </p>
+  <!-- Sign Up Prompt -->
+  <p></p>
+  <p>
+    <span>Don't have an account?</span>
+    <b onclick="toggle()" class="pointer">Sign up here</b>
+  </p>
 
-    </div>
+</div>
   </div>
 
   <div class="form-wrapper">
@@ -156,6 +170,7 @@
 		</div>
 		<!-- END CONTENT SECTION -->
 	</div>
+
     <script src="../javascrpit/login.js"></script>
 </body>
 
