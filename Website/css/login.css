@@ -882,3 +882,21 @@ body {
   width: 20px;
   height: 20px;
 }
+/* Google Button Style */
+.form.sign-in .google {
+  background-color: #ffffff;
+  color: #444;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 10px 15px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.form.sign-in .google:hover {
+  background-color: #f7f7f7;
+}
