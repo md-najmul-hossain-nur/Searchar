@@ -753,6 +753,47 @@ function saveMapLocation() {
 function closeMapModal() {
   document.getElementById('mapModal').style.display = 'none';
 }
+document.addEventListener('click', function(e) {
+  const googleBtn = e.target.closest('.google-btn');
+  if (googleBtn) {
+    let selectedRole = document.getElementById('role')?.value || '';
+    if (!selectedRole) {
+      alert('Please select your role first!');
+      return;
+    }
+    google.accounts.id.initialize({
+      client_id: '469478841301-arnhu8ocbr8pfji2fhochn3bbqrf5ivf.apps.googleusercontent.com',
+      callback: function(response) {
+        fetch('../Php/google-signup.php', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            credential: response.credential,
+            role: selectedRole
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            // Role-wise page mapping
+            const roleToPage = {
+              user: '../Html/User_Home.html',
+              volunteer: '../Html/Volunteer_Home.html',
+              police: '../Html/Policeman_Home.html',
+              contributor: '../Html/Camera_Contribution_Home.html'
+            };
+            const goTo = roleToPage[data.role || selectedRole] || '../Html/User_Home.html';
+            alert('Sign up successful as ' + (data.role || selectedRole) + '!');
+            window.location.href = goTo;
+          } else {
+            alert('Google sign up failed! ' + (data.error || ''));
+          }
+        });
+      }
+    });
+    google.accounts.id.prompt();
+  }
+});
 
 document.addEventListener('click', function(e) {
   const fbBtn = e.target.closest('.facebook-btn');
