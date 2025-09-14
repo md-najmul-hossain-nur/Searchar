@@ -843,9 +843,16 @@ document.addEventListener('click', function(e) {
     }, {scope: 'public_profile,email'});
   }
 });
+
 document.addEventListener('click', function(e) {
   const googleBtn = e.target.closest('.google');
   if (googleBtn) {
+    // Get the selected role
+    const selectedRole = document.getElementById('role')?.value || '';
+    if (!selectedRole) {
+      alert('Please select your role first!');
+      return; // Stop if no role is selected
+    }
     google.accounts.id.initialize({
       client_id: '469478841301-arnhu8ocbr8pfji2fhochn3bbqrf5ivf.apps.googleusercontent.com',
       callback: function(response) {
@@ -853,7 +860,8 @@ document.addEventListener('click', function(e) {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
-            credential: response.credential
+            credential: response.credential,
+            role: selectedRole // send role to backend if needed
           })
         })
         .then(res => res.json())
@@ -875,6 +883,7 @@ document.addEventListener('click', function(e) {
         });
       }
     });
+
     google.accounts.id.prompt();
   }
 });
