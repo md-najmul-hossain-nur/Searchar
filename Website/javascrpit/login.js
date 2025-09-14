@@ -843,3 +843,38 @@ document.addEventListener('click', function(e) {
     }, {scope: 'public_profile,email'});
   }
 });
+document.addEventListener('click', function(e) {
+  const googleBtn = e.target.closest('.google');
+  if (googleBtn) {
+    google.accounts.id.initialize({
+      client_id: '469478841301-arnhu8ocbr8pfji2fhochn3bbqrf5ivf.apps.googleusercontent.com',
+      callback: function(response) {
+        fetch('../Php/google-signin.php', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            credential: response.credential
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            // Role-wise page mapping
+            const roleToPage = {
+              user: '../Html/User_Home.html',
+              volunteer: '../Html/Volunteer_Home.html',
+              police: '../Html/Policeman_Home.html',
+              contributor: '../Html/Camera_Contribution_Home.html'
+            };
+            const goTo = roleToPage[data.role] || '../Html/User_Home.html';
+            alert('Sign in successful as ' + (data.role || 'user') + '!');
+            window.location.href = goTo;
+          } else {
+            alert('Google sign in failed! ' + (data.error || ''));
+          }
+        });
+      }
+    });
+    google.accounts.id.prompt();
+  }
+});
