@@ -74,58 +74,59 @@
 			<!-- SIGN IN -->
 <!-- SIGN IN -->
 <div class="col align-items-center flex-col sign-in">
-  <div class="form-wrapper align-items-center">
+<div class="form-wrapper align-items-center" style="margin-top: 130px;">
 
-    <div class="form sign-in">
+    <form class="form sign-in" action="../Php/login.php" method="POST">
 
-  <!-- Social Login Buttons -->
-  <div class="social-login-buttons" style="margin-bottom: 20px;">
-    <button type="button" class="social-btn fb-btn" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-      <img src="../Images/facebook.png" alt="Facebook" class="social-icon" style="width: 20px; height: 20px;" />
-      Sign in with Facebook
-    </button>
-    <button type="button" class="google" style="display: flex; align-items: center; gap: 10px;">
-      <img src="../Images/google.png" alt="Google" class="social-icon" style="width: 20px; height: 20px;" />
-      Sign in with Google
-    </button>
+      <!-- Social Login Buttons -->
+      <div class="social-login-buttons" style="margin-bottom: 20px;">
+        <button type="button" class="social-btn fb-btn" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+          <img src="../Images/facebook.png" alt="Facebook" class="social-icon" style="width: 20px; height: 20px;" />
+          Sign in with Facebook
+        </button>
+        <button type="button" class="google" style="display: flex; align-items: center; gap: 10px;">
+          <img src="../Images/google.png" alt="Google" class="social-icon" style="width: 20px; height: 20px;" />
+          Sign in with Google
+        </button>
+      </div>
+
+      <!-- Role Selection -->
+      <div class="input-group">
+        <label for="role" style="margin-bottom: 6px;">Select Your Role:</label>
+        <select id="role" name="role" required>
+          <option value="">-- Select Role --</option>
+          <option value="user">User</option>
+          <option value="police">Policeman</option>
+          <option value="volunteer">Volunteer</option>
+          <option value="contributor">Camera Contributor</option>
+        </select>
+      </div>
+
+      <!-- Input Fields -->
+      <div class="input-group">
+        <i class='bx bxs-user'></i>
+        <input type="text" name="emailOrPhone" placeholder="Email or Phone number" required>
+      </div>
+      <div class="input-group">
+        <i class='bx bxs-lock-alt'></i>
+        <input type="password" name="password" placeholder="Password" required>
+      </div>
+
+      <!-- Sign In Button -->
+      <button type="submit">
+        Sign in
+      </button>
+
+      <!-- Sign Up Prompt -->
+      <p></p>
+      <p>
+        <span>Don't have an account?</span>
+        <b onclick="toggle()" class="pointer">Sign up here</b>
+      </p>
+    </form>
   </div>
- <!-- Role Selection -->
-  <div class="input-group">
-    <label for="role" style="margin-bottom: 6px;">Select Your Role:</label>
-    <select id="role" onchange="showForm()">
-      <option value="">-- Select Role --</option>
-      <option value="user">User</option>
-      <option value="police">Policeman</option>
-      <option value="volunteer">Volunteer</option>
-      <option value="contributor">Camera Contributor</option>
-    </select>
-  </div>
-  <!-- Input Fields -->
-  <div class="input-group">
-    <i class='bx bxs-user'></i>
-    <input type="text" placeholder="Email or Phone number">
-  </div>
-  <div class="input-group">
-    <i class='bx bxs-lock-alt'></i>
-    <input type="password" placeholder="Password">
-  </div>
-
- 
-
-  <!-- Sign In Button -->
-  <button>
-    Sign in
-  </button>
-
-  <!-- Sign Up Prompt -->
-  <p></p>
-  <p>
-    <span>Don't have an account?</span>
-    <b onclick="toggle()" class="pointer">Sign up here</b>
-  </p>
-
 </div>
-  </div>
+
 
   <div class="form-wrapper">
     <!-- Additional content (if needed) -->
@@ -174,5 +175,26 @@
     <script src="../javascrpit/login.js"></script>
 </body>
 
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+
+// Error messages
+if(urlParams.get('error') === 'empty') {
+    alert("Please fill in all fields!");
+} else if(urlParams.get('error') === 'role') {
+    alert("Invalid role selected!");
+} else if(urlParams.get('error') === 'no_account') {
+    alert("No account found! Please sign up.");
+} else if(urlParams.get('error') === 'wrong_password') {
+    alert("Password is incorrect!");
+} else if(urlParams.get('error') === 'db') {
+    alert("Database error! Please try again later.");
+}
+
+// Success message (for redirect after login)
+if(urlParams.get('login') === 'success') {
+    alert("Login successful!");
+}
+</script>
 
 </html>
