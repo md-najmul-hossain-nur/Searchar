@@ -59,6 +59,11 @@ function showForm() {
           <input type="file" class="form-control" id="profile_photo" name="profile_photo" accept=".jpg,.jpeg,.png">
         </div>
         <div class="mb-3">
+  <label for="cover_photo" class="form-label">Cover Photo</label>
+  <input type="file" class="form-control" id="cover_photo" name="cover_photo" accept=".jpg,.jpeg,.png">
+</div>
+
+        <div class="mb-3">
           <label for="dob" class="form-label">Date of Birth </label>
           <input type="date" class="form-control" id="dob" name="dob" required>
         </div>

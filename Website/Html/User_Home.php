@@ -1,3 +1,94 @@
+<?php
+// user_home.php
+// Server-side user home page that validates session role + user_id
+// Additionally checks session email (if present) matches DB record.
+// Replace paths as needed and ensure ../Php/db.php defines $pdo (PDO instance).
+
+declare(strict_types=1);
+session_start();
+
+require_once __DIR__ . '/../Php/db.php'; // adjust path if necessary
+
+// If not authenticated, redirect to login
+if (empty($_SESSION['role']) || empty($_SESSION['user_id'])) {
+    header('Location: ../Html/login.html');
+    exit();
+}
+
+$role = (string) $_SESSION['role'];
+$user_id = (int) $_SESSION['user_id'];
+
+// Role => table mapping (whitelist)
+$roleTableMap = [
+    'user'        => ['table' => 'users', 'id_col' => 'user_id'],
+    'police'      => ['table' => 'policemen', 'id_col' => 'police_id'],
+    'volunteer'   => ['table' => 'volunteers', 'id_col' => 'volunteer_id'],
+    'contributor' => ['table' => 'camera_contributors', 'id_col' => 'camera_id'],
+];
+
+if (!isset($roleTableMap[$role])) {
+    // invalid role in session: destroy session and force login
+    session_unset();
+    session_destroy();
+    header('Location: ../Html/login.html?error=invalid_role');
+    exit();
+}
+
+$table = $roleTableMap[$role]['table'];
+$id_col = $roleTableMap[$role]['id_col'];
+
+try {
+    // Fetch the user row by id. Use whitelist for table/column interpolation.
+    $sql = "SELECT {$id_col}, full_name, email, mobile, profile_photo,bio, cover_photo, date_of_birth, gender, street, city, country
+            FROM {$table} WHERE {$id_col} = :id LIMIT 1";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute(['id' => $user_id]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    // On DB error, redirect to login (or show an error page)
+    header('Location: ../Html/login.html?error=db');
+    exit();
+}
+
+if (!$user) {
+    // No user found for this session id -> logout
+    session_unset();
+    session_destroy();
+    header('Location: ../Html/login.html?error=no_user');
+    exit();
+}
+
+// Optional extra check: if session has email, ensure it matches DB record.
+// This defends against session tampering where role/user_id pair is inconsistent with email.
+if (!empty($_SESSION['email'])) {
+    $sessionEmail = (string) $_SESSION['email'];
+    if (strcasecmp($sessionEmail, (string)$user['email']) !== 0) {
+        // mismatch: destroy session and force login
+        session_unset();
+        session_destroy();
+        header('Location: ../Html/login.html?error=email_mismatch');
+        exit();
+    }
+}
+
+// compute age from date_of_birth if available
+$age = null;
+if (!empty($user['date_of_birth'])) {
+    try {
+        $dob = new DateTime($user['date_of_birth']);
+        $age = (new DateTime())->diff($dob)->y;
+    } catch (Exception $e) {
+        $age = null;
+    }
+}
+
+// safe output helper
+function e($v) {
+    return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
+// Now render a minimal HTML page — integrate this into your full template as needed.
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,26 +102,54 @@
 
 </head>
 <body>
- <header class="navbar">
-    <div class="navbar-logo">
-      <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
-    </div>
-    
-  </header>
+<header class="navbar" style="display:flex; align-items:center; justify-content:space-between; padding:10px;">
+  <!-- Left: Logo -->
+  <div class="navbar-logo">
+    <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
+  </div>
+  
+  <!-- Right: Email + Logout -->
+  <div style="display:flex; align-items:center; gap:10px; margin-right:40px;">
+    <span><?= e($user['email'] ?? 'Guest') ?></span>
+    <button class="navbar-donate" onclick="window.location.href='../Php/logout.php';" style="display:flex; align-items:center; gap:5px;">
+      LOG OUT
+      <img src="../Images/import.gif" alt="Gift" style="height:1.5em; border-radius:6px;">
+    </button>
+  </div>
+</header>
+
+
+
+
     <div class="container">
     <!-- Left Sidebar -->
     <div class="sidebar-left">
       <div class="profile-card">
-        <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_0c691462.jpg" class="cover">
-        <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg" class="profile-pic">
-        <!-- Edit button as image icon -->
-        <button class="edit-btn" title="Edit Profile" onclick="location.href='../Html/User_profile.html'">
+<img src="<?= isset($user['cover_photo']) 
+              ? '../uploads/user/' . e($user['cover_photo']) 
+              : '../Images/cover_default.jpg' ?>" 
+       class="cover" alt="Cover Photo">
+         <!-- Profile image dynamic from DB -->
+ <img src="<?= isset($user['profile_photo']) 
+            ? '../uploads/user/' . e($user['profile_photo']) 
+            : '../Images/default_profile.png' ?>" 
+     class="profile-pic" 
+     alt="Profile Photo">
+     <?php $user_id = (int)$user['user_id']; ?>
+      <!-- Edit button as image icon -->
+        <button class="edit-btn" title="Edit Profile" onclick="location.href='../Html/User_profile.html?user_id=<?= $user_id ?>'">
   <img src="../Images/pencil.gif" alt="Edit" />
 </button>
 
-        <h3>Erik Jhonson</h3>
-        <p>Any one can join with but Social network us if you want Any one can join with us if you want</p>
-      </div>
+<h3><?= e($user['full_name'] ?? '—') ?></h3>
+<p class="user-bio">
+    <?= !empty($user['bio']) 
+        ? e($user['bio']) 
+        : "💬 Add your bio in your profile so everyone knows a little about you!" ?>
+</p>
+
+
+</div>
       
     <div class="page-like">
   <h4>Make a Contribution</h4>

@@ -5,7 +5,7 @@ function save_upload($file, $prefix = '') {
     if (!isset($file) || $file['error'] !== UPLOAD_ERR_OK) return false;
     $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
     $filename = $prefix . uniqid('_', true) . '.' . $ext;
-    $dest = '../uploads/camera' . $filename;
+    $dest = '../uploads/camera/' . $filename;
     if (!move_uploaded_file($file['tmp_name'], $dest)) return false;
     return $filename;
 }
@@ -43,7 +43,7 @@ try {
     $agreement = save_upload($_FILES['agreement'], 'agreement_');
     if (!$agreement) throw new Exception("Agreement upload failed!");
 
-    // Address fields
+    // Address fields (postal → postal_code fix)
     $fields = ['street', 'city', 'postal', 'country', 'latitude', 'longitude'];
     $addr = [];
     foreach ($fields as $f) $addr[$f] = $_POST[$f] ?? null;
@@ -66,7 +66,7 @@ try {
         $_POST['gender'],
         $addr['street'],
         $addr['city'],
-        $addr['postal'],
+        $addr['postal'],   // form field → goes to `postal_code` column
         $addr['country'],
         $addr['latitude'],
         $addr['longitude'],
@@ -79,7 +79,6 @@ try {
         $agreement
     ]);
 
-    // Success → alert + redirect
     echo "<script>
         alert('✅ Signup Successful!');
         window.location.href = '../Html/login.html';
@@ -87,7 +86,6 @@ try {
     exit;
 
 } catch (Exception $ex) {
-    // Error → alert + go back
     echo "<script>
         alert('❌ " . addslashes($ex->getMessage()) . "');
         window.history.back();

@@ -5,7 +5,7 @@ function save_upload($file, $prefix = '') {
     if (!isset($file) || $file['error'] !== UPLOAD_ERR_OK) return false;
     $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
     $filename = $prefix . uniqid('_', true) . '.' . $ext;
-    $dest = '../uploads/police' . $filename;
+    $dest = '../uploads/police/' . $filename;
     if (!move_uploaded_file($file['tmp_name'], $dest)) return false;
     return $filename;
 }
@@ -41,7 +41,7 @@ try {
     $official_id = save_upload($_FILES['official_id'], 'official_');
     if (!$official_id) throw new Exception("Official letter upload failed!");
 
-    // Address fields
+    // Address fields (postal → postal_code fix)
     $fields = ['street', 'city', 'postal', 'country', 'latitude', 'longitude'];
     $addr = [];
     foreach ($fields as $f) $addr[$f] = $_POST[$f] ?? null;
@@ -64,7 +64,7 @@ try {
         $_POST['gender'],
         $addr['street'],
         $addr['city'],
-        $addr['postal'],
+        $addr['postal'],   // ← goes into postal_code column
         $addr['country'],
         $addr['latitude'],
         $addr['longitude'],
