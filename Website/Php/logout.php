@@ -8,5 +8,5 @@ session_destroy();
 alert("You have been logged out.");
 setTimeout(() => {
     window.location.href = '../Html/login.html';
-}, 1000);
+}, 500);
 </script>
