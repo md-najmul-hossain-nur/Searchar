@@ -1,3 +1,28 @@
+<?php
+session_start();
+require_once __DIR__ . '/../Php/db.php';
+
+if (empty($_SESSION['role']) || $_SESSION['role'] !== 'user' || empty($_SESSION['user_id'])) {
+    header('Location: ../Html/login.html');
+    exit();
+}
+
+$user_id = (int) $_SESSION['user_id'];
+
+// Fetch user data
+$stmt = $pdo->prepare("SELECT full_name, email, profile_photo, cover_photo, street,email, city, country, bio FROM users WHERE user_id=:id LIMIT 1");
+$stmt->execute(['id' => $user_id]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+function e($v) {
+    return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
+// Fallback images
+$profile_pic = !empty($user['profile_photo']) ? '../uploads/user/' . $user['profile_photo'] : '../Images/default_profile.png';
+$cover_pic = !empty($user['cover_photo']) ? '../uploads/user/' . $user['cover_photo'] : '../Images/default_cover.jpg';
+$bio_text = !empty($user['bio']) ? e($user['bio']) : "💬 Bio not added yet. Go to <a href='../Html/User_Edit_profile.html'>edit profile</a> to add your bio!";
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,30 +38,41 @@
 <body>
   <header class="navbar">
     <div class="navbar-logo">
-      <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
-    </div>
+    <a href="../Html/User_Home.php">
+        <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
+    </a>
+</div>
+
   </header>
-  <div class="cover-photo">
-    <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_9b24e7f5.jpg" alt="Cover" class="cover-img">
+  <!-- Cover & Profile Photo -->
+<div class="cover-photo">
+    <img src="<?= !empty($user['cover_photo']) ? '../uploads/user/' . e($user['cover_photo']) : '../Images/cover_default.jpg' ?>" 
+         alt="Cover" class="cover-img">
     <div class="profile-pic-container">
-      <img class="profile-pic" src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg" alt="Profile">
+        <img src="<?= !empty($user['profile_photo']) ? '../uploads/user/' . e($user['profile_photo']) : '../Images/default_profile.png' ?>" 
+             class="profile-pic" 
+             alt="Profile">
     </div>
+
+
   <div class="main-content">
    <div class="left-panel">
   <div class="card user-info" style="position: relative;">
-    <button class="edit-btn" title="Edit Profile" onclick="location.href='../Html/User_Edit_profile.html'">
+        <button class="edit-btn" title="Edit Profile" onclick="location.href='../Html/User_Edit_profile.php?user_id=<?= $user_id ?>'">
       <img src="../Images/pencil.gif" alt="Edit" />
     </button>
-    <h2>Erik Jhonson</h2>
-    <div class="divider"></div>
-    <p class="user-bio">
+     <h2><?= e($user['full_name'] ?? 'User Name') ?></h2>
+            <div class="divider"></div>
+            
+            <p class="user-bio">
+                <?= !empty($user['bio']) ? e($user['bio']) : ' 💬 Add your bio in your profile so everyone knows a little about you' ?>
+            </p>
 
-      I Don’t know how? But i believe that it is possible one day if i stay with my dream all time</p>
-    <ul class="info-list">
-      <li><span class="icon">&#128187;</span> Web Developer</li>
-      <li><span class="icon">&#127758;</span> Melbourne, Australia</li>
-      <li><span class="icon">&#127968;</span> Pulshar, Melbourne</li>
-    </ul>
+            <ul class="info-list">
+<li><span class="icon">&#128187;</span> <?= !empty($user['email']) ? e($user['email']) : 'No email provided' ?></li>
+                <li><span class="icon">&#127758;</span> <?= e($user['city'] ?? 'City') ?>, <?= e($user['country'] ?? 'Country') ?></li>
+                <li><span class="icon">&#127968;</span> <?= e($user['street'] ?? 'Address') ?></li>
+            </ul>
 
    
   </div>
@@ -44,7 +80,7 @@
     <div class="password-change-section">
       <h3>Password Change</h3>
       <p>For your account security, please change your password regularly.</p>
-      <button class="change-pass-btn" onclick="location.href='../Html/User_Passchagned.html'">Change Password</button>
+      <button class="change-pass-btn" onclick="location.href='../Html/User_Passchagned.php?user_id=<?= $user_id ?>'">Change Password</button>
     </div>
 </div>
 
@@ -56,9 +92,12 @@
 
   <div class="card post">
     <div class="post-header">
-      <img class="mini-profile" src="https://randomuser.me/api/portraits/men/20.jpg" alt="Profile">
+        <img src="<?= !empty($user['profile_photo']) ? '../uploads/user/' . e($user['profile_photo']) : '../Images/default_profile.png' ?>" 
+             class="mini-profile"
+             alt="Profile">
+      
       <div>
-        <div class="username">Erik Jhonson</div>
+     <h2><?= e($user['full_name'] ?? 'User Name') ?></h2>
         <div class="post-time">35 min ago</div>
       </div>
     </div>

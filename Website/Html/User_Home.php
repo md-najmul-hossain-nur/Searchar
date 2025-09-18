@@ -1,8 +1,5 @@
 <?php
-// user_home.php
-// Server-side user home page that validates session role + user_id
-// Additionally checks session email (if present) matches DB record.
-// Replace paths as needed and ensure ../Php/db.php defines $pdo (PDO instance).
+
 
 declare(strict_types=1);
 session_start();
@@ -137,7 +134,7 @@ function e($v) {
      alt="Profile Photo">
      <?php $user_id = (int)$user['user_id']; ?>
       <!-- Edit button as image icon -->
-        <button class="edit-btn" title="Edit Profile" onclick="location.href='../Html/User_profile.html?user_id=<?= $user_id ?>'">
+        <button class="edit-btn" title="Edit Profile" onclick="location.href='../Html/User_profile.php?user_id=<?= $user_id ?>'">
   <img src="../Images/pencil.gif" alt="Edit" />
 </button>
 
