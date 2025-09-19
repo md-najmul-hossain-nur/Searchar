@@ -70,8 +70,9 @@ $bio_text = !empty($user['bio']) ? e($user['bio']) : "💬 Bio not added yet. Go
 
             <ul class="info-list">
 <li><span class="icon">&#128187;</span> <?= !empty($user['email']) ? e($user['email']) : 'No email provided' ?></li>
-                <li><span class="icon">&#127758;</span> <?= e($user['city'] ?? 'City') ?>, <?= e($user['country'] ?? 'Country') ?></li>
                 <li><span class="icon">&#127968;</span> <?= e($user['street'] ?? 'Address') ?></li>
+               <li><span class="icon">&#127758;</span> <?= e($user['city'] ?? 'City') ?>, <?= e($user['country'] ?? 'Country') ?></li>
+
             </ul>
 
    
