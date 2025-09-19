@@ -2,32 +2,34 @@
 require_once "../Php/db.php";
 
 function save_upload($file, $prefix = '') {
-    if (!isset($file) || $file['error'] !== UPLOAD_ERR_OK) return false;
+    if (!isset($file) || $file['error'] !== UPLOAD_ERR_OK) return null;
     $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
     $filename = $prefix . uniqid('_', true) . '.' . $ext;
     $dest = '../uploads/camera/' . $filename;
-    if (!move_uploaded_file($file['tmp_name'], $dest)) return false;
+    if (!move_uploaded_file($file['tmp_name'], $dest)) return null;
     return $filename;
 }
 
 try {
     $required = [
-        'fullname', 'email', 'mobile', 'nid', 'dob', 'gender', 'password', 'confirm_password',
-        'camera_location', 'camera_type', 'stream_type', 'bandwidth', 'payment_number'
+        'fullname', 'email', 'mobile', 'nid', 'dob', 'gender',
+        'password', 'confirm_password', 'camera_location',
+        'camera_type', 'stream_type', 'bandwidth', 'payment_number'
     ];
     foreach ($required as $k) {
         if (empty($_POST[$k])) throw new Exception("Missing field: $k");
     }
 
-    $email = $_POST['email'];
+    $email  = $_POST['email'];
     $mobile = $_POST['mobile'];
-    $nid = $_POST['nid'];
+    $nid    = $_POST['nid'];
 
     // Check uniqueness
     $exists = $pdo->prepare("SELECT 1 FROM camera_contributors WHERE email=? OR mobile=? OR nid_number=?");
     $exists->execute([$email, $mobile, $nid]);
     if ($exists->fetch()) throw new Exception("This Email, Mobile, or NID is already registered!");
 
+    // Password checks
     if ($_POST['password'] !== $_POST['confirm_password']) throw new Exception("Passwords do not match!");
     if (strlen($_POST['password']) < 6) throw new Exception("Password must be at least 6 characters!");
 
@@ -36,24 +38,28 @@ try {
     // File uploads
     $nid_photo = save_upload($_FILES['nid_photo'], 'nid_');
     if (!$nid_photo) throw new Exception("NID photo upload failed!");
-    
-    $profile_photo = (isset($_FILES['profile_photo']) && $_FILES['profile_photo']['error'] === UPLOAD_ERR_OK)
+
+    $profile_photo = (!empty($_FILES['profile_photo']) && $_FILES['profile_photo']['error'] === UPLOAD_ERR_OK)
         ? save_upload($_FILES['profile_photo'], 'profile_') : null;
-    
+
+    $cover_photo = (!empty($_FILES['cover_photo']) && $_FILES['cover_photo']['error'] === UPLOAD_ERR_OK)
+        ? save_upload($_FILES['cover_photo'], 'cover_') : null;
+    if (!$cover_photo) throw new Exception("Cover photo upload failed!"); // required
+
     $agreement = save_upload($_FILES['agreement'], 'agreement_');
     if (!$agreement) throw new Exception("Agreement upload failed!");
 
-    // Address fields (postal → postal_code fix)
+    // Address fields
     $fields = ['street', 'city', 'postal', 'country', 'latitude', 'longitude'];
     $addr = [];
     foreach ($fields as $f) $addr[$f] = $_POST[$f] ?? null;
 
-    // Insert into database
+    // Insert into DB (bio removed, cover_photo included)
     $stmt = $pdo->prepare("INSERT INTO camera_contributors
-        (full_name,email,mobile,nid_number,nid_photo,profile_photo,date_of_birth,gender,
-        street,city,postal_code,country,latitude,longitude,password_hash,
-        camera_location,camera_type,stream_type,bandwidth,payment_number,agreement)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+        (full_name,email,mobile,nid_number,nid_photo,profile_photo,cover_photo,
+        date_of_birth,gender,street,city,postal_code,country,latitude,longitude,
+        password_hash,camera_location,camera_type,stream_type,bandwidth,payment_number,agreement)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
     $stmt->execute([
         $_POST['fullname'],
@@ -62,11 +68,12 @@ try {
         $nid,
         $nid_photo,
         $profile_photo,
+        $cover_photo,
         $_POST['dob'],
         $_POST['gender'],
         $addr['street'],
         $addr['city'],
-        $addr['postal'],   // form field → goes to `postal_code` column
+        $addr['postal'],   // goes to postal_code column
         $addr['country'],
         $addr['latitude'],
         $addr['longitude'],

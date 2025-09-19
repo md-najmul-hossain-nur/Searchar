@@ -16,9 +16,9 @@ if (empty($role) || empty($login_input) || empty($password)) {
 // Map roles to table info
 $roleTableMap = [
     'user'        => ['table' => 'users', 'id_col' => 'user_id', 'home' => '../Html/User_Home.php'],
-    'police'      => ['table' => 'policemen', 'id_col' => 'police_id', 'home' => '../Html/Policeman_Home.html'],
-    'volunteer'   => ['table' => 'volunteers', 'id_col' => 'volunteer_id', 'home' => '../Html/Volunteer_Home.html'],
-    'contributor' => ['table' => 'camera_contributors', 'id_col' => 'camera_id', 'home' => '../Html/Camera_Contribution_Home.html']
+    'police'      => ['table' => 'policemen', 'id_col' => 'police_id', 'home' => '../Html/Policeman_Home.php'],
+    'volunteer'   => ['table' => 'volunteers', 'id_col' => 'volunteer_id', 'home' => '../Html/Volunteer_Home.php'],
+    'contributor' => ['table' => 'camera_contributors', 'id_col' => 'camera_id', 'home' => '../Html/Camera_Contribution_Home.php']
 ];
 
 // Validate role

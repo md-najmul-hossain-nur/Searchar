@@ -165,6 +165,10 @@ function showForm() {
           <label for="profile_photo" class="form-label">Profile Photo </label>
           <input type="file" class="form-control" id="profile_photo" name="profile_photo" accept=".jpg,.jpeg,.png">
         </div>
+           <div class="mb-3">
+  <label for="cover_photo" class="form-label">Cover Photo</label>
+  <input type="file" class="form-control" id="cover_photo" name="cover_photo" accept=".jpg,.jpeg,.png">
+</div>
         <div class="mb-3">
           <label for="dob" class="form-label">Date of Birth </label>
           <input type="date" class="form-control" id="dob" name="dob" required>
@@ -292,6 +296,10 @@ function showForm() {
             <label for="profile_photo" class="form-label">Profile Photo </label>
             <input type="file" class="form-control" id="profile_photo" name="profile_photo" accept=".jpg,.jpeg,.png">
           </div>
+             <div class="mb-3">
+  <label for="cover_photo" class="form-label">Cover Photo</label>
+  <input type="file" class="form-control" id="cover_photo" name="cover_photo" accept=".jpg,.jpeg,.png">
+</div>
           <div class="mb-3">
             <label for="dob" class="form-label">Date of Birth </label>
             <input type="date" class="form-control" id="dob" name="dob" required>
@@ -419,9 +427,13 @@ function showForm() {
           <input type="file" class="form-control" id="nid_photo" name="nid_photo" accept=".jpg,.jpeg,.png" required>
         </div>
         <div class="mb-3">
-          <label for="profile_photo" class="form-label">Profile Photo (Optional)</label>
+          <label for="profile_photo" class="form-label">Profile Photo</label>
           <input type="file" class="form-control" id="profile_photo" name="profile_photo" accept=".jpg,.jpeg,.png">
         </div>
+           <div class="mb-3">
+  <label for="cover_photo" class="form-label">Cover Photo</label>
+  <input type="file" class="form-control" id="cover_photo" name="cover_photo" accept=".jpg,.jpeg,.png">
+</div>
         <div class="mb-3">
           <label for="dob" class="form-label">Date of Birth </label>
           <input type="date" class="form-control" id="dob" name="dob" required>

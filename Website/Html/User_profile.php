@@ -10,7 +10,7 @@ if (empty($_SESSION['role']) || $_SESSION['role'] !== 'user' || empty($_SESSION[
 $user_id = (int) $_SESSION['user_id'];
 
 // Fetch user data
-$stmt = $pdo->prepare("SELECT full_name, email, profile_photo, cover_photo, street,email, city, country, bio FROM users WHERE user_id=:id LIMIT 1");
+$stmt = $pdo->prepare("SELECT full_name, email, profile_photo, cover_photo,date_of_birth, gender,street,email, city, country, bio FROM users WHERE user_id=:id LIMIT 1");
 $stmt->execute(['id' => $user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -68,12 +68,39 @@ $bio_text = !empty($user['bio']) ? e($user['bio']) : "💬 Bio not added yet. Go
                 <?= !empty($user['bio']) ? e($user['bio']) : ' 💬 Add your bio in your profile so everyone knows a little about you' ?>
             </p>
 
-            <ul class="info-list">
-<li><span class="icon">&#128187;</span> <?= !empty($user['email']) ? e($user['email']) : 'No email provided' ?></li>
-                <li><span class="icon">&#127968;</span> <?= e($user['street'] ?? 'Address') ?></li>
-               <li><span class="icon">&#127758;</span> <?= e($user['city'] ?? 'City') ?>, <?= e($user['country'] ?? 'Country') ?></li>
+        <ul class="info-list">
+    <!-- Birthday -->
+    <li>
+        <span class="icon">&#127874;</span> <!-- 🎂 cake icon -->
+        <?= !empty($user['date_of_birth']) ? e($user['date_of_birth']) : 'No birthday provided' ?>
+    </li>
 
-            </ul>
+    <!-- Gender -->
+    <li>
+        <span class="icon">&#9794;&#9792;</span> <!-- ⚥ gender icon -->
+        <?= !empty($user['gender']) ? ucfirst(e($user['gender'])) : 'Gender not specified' ?>
+    </li>
+
+    <!-- Email -->
+    <li>
+        <span class="icon">&#9993;</span> <!-- ✉️ envelope icon -->
+        <?= !empty($user['email']) ? e($user['email']) : 'No email provided' ?>
+    </li>
+
+    <!-- Street / Address -->
+    <li>
+        <span class="icon">&#127968;</span> <!-- 🏠 house icon -->
+        <?= !empty($user['street']) ? e($user['street']) : 'No street provided' ?>
+    </li>
+
+    <!-- City / Country -->
+    <li>
+        <span class="icon">&#127758;</span> <!-- 🌎 globe icon -->
+        <?= !empty($user['city']) ? e($user['city']) : 'No city provided' ?>, 
+        <?= !empty($user['country']) ? e($user['country']) : 'No country provided' ?>
+    </li>
+</ul>
+
 
    
   </div>
