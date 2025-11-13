@@ -6,14 +6,14 @@ require_once "../Php/db.php";
 // ===============================
 function save_upload($file, $prefix = '') {
     if (!isset($file) || $file['error'] !== UPLOAD_ERR_OK) {
-        throw new Exception("❌ File upload error! Error code: " . ($file['error'] ?? 'unknown'));
+        throw new Exception(" File upload error! Error code: " . ($file['error'] ?? 'unknown'));
     }
 
     // Upload folder path
     $uploadDir = __DIR__ . '/../uploads/user/';
     if (!is_dir($uploadDir)) {
         if (!mkdir($uploadDir, 0777, true)) {
-            throw new Exception("❌ Upload folder তৈরি করা যায়নি: $uploadDir");
+            throw new Exception(" Upload folder তৈরি করা যায়নি: $uploadDir");
         }
     }
 
@@ -22,7 +22,7 @@ function save_upload($file, $prefix = '') {
     $dest = $uploadDir . $filename;
 
     if (!move_uploaded_file($file['tmp_name'], $dest)) {
-        throw new Exception("❌ move_uploaded_file ব্যর্থ! Path: $dest");
+        throw new Exception(" move_uploaded_file ব্যর্থ! Path: $dest");
     }
 
     // শুধু filename DB তে রাখব
@@ -110,7 +110,7 @@ $stmt->execute([
     // Success
     // ===============================
     echo "<script>
-        alert('✅ Signup Successful!');
+        alert(' Signup Successful!');
         window.location.href = '../Html/login.html';
     </script>";
     exit;
@@ -120,7 +120,7 @@ $stmt->execute([
     // Error
     // ===============================
     echo "<script>
-        alert('❌ " . addslashes($ex->getMessage()) . "');
+        alert(' " . addslashes($ex->getMessage()) . "');
         window.history.back();
     </script>";
     exit;

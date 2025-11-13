@@ -1,3 +1,5 @@
+
+
 let container = document.getElementById('container');
 
 const toggle = () => {
@@ -639,128 +641,114 @@ function saveMapLocation() {
 function closeMapModal() {
   document.getElementById('mapModal').style.display = 'none';
 }
-document.addEventListener('click', function(e) {
-  const googleBtn = e.target.closest('.google-btn');
-  if (googleBtn) {
-    let selectedRole = document.getElementById('role')?.value || '';
-    if (!selectedRole) {
-      alert('Please select your role first!');
-      return;
+
+
+// Central handler for social button clicks. Keeps behavior the same whether triggered via
+// delegated document clicks or direct button listeners.
+function handleSocialClick(e) {
+  const target = e.target;
+  const fbBtn = target.closest('.fb-btn');
+  const googleBtn = target.closest('.google-btn');
+  if (!fbBtn && !googleBtn) return;
+
+  console.debug('social click detected', { fbBtn: !!fbBtn, googleBtn: !!googleBtn });
+
+  // Find the role select nearest to the clicked button (fixes duplicate id='role' in page)
+  function findSelectedRoleFromEvent(target) {
+    // Look for a role select inside the nearest sign-in or sign-up container
+    const container = target.closest('.sign-in, .sign-up, .form');
+    if (container) {
+      const sel = container.querySelector('select#role, select[name="role"]');
+      if (sel && sel.value) return sel.value;
     }
-    google.accounts.id.initialize({
-      client_id: '469478841301-arnhu8ocbr8pfji2fhochn3bbqrf5ivf.apps.googleusercontent.com',
-      callback: function(response) {
-        fetch('../Php/google-signup.php', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({
-            credential: response.credential,
-            role: selectedRole
-          })
-        })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            // Role-wise page mapping
-            const roleToPage = {
-              user: '../Html/User_Home.html',
-              volunteer: '../Html/Volunteer_Home.html',
-              police: '../Html/Policeman_Home.html',
-              contributor: '../Html/Camera_Contribution_Home.html'
-            };
-            const goTo = roleToPage[data.role || selectedRole] || '../Html/User_Home.html';
-            alert('Sign up successful as ' + (data.role || selectedRole) + '!');
-            window.location.href = goTo;
-          } else {
-            alert('Google sign up failed! ' + (data.error || ''));
+    // Fallback: global element (legacy)
+    return document.getElementById('role')?.value || document.querySelector('select[name="role"]')?.value || '';
+  }
+
+  const selectedRole = findSelectedRoleFromEvent(target);
+  if (!selectedRole) {
+    alert('Please select your role first!');
+    return;
+  }
+
+  if (googleBtn) {
+    console.debug('starting google flow with role', selectedRole);
+    // If Google Identity Services is available, use it to get an ID token and post to our endpoint.
+    if (window.google && google.accounts && google.accounts.id) {
+      try {
+        google.accounts.id.initialize({
+          client_id: window.GOOGLE_CLIENT_ID || '368248658746-72i73ro0ec1jqcso9kaeo4653tdr6jop.apps.googleusercontent.com',
+          callback: function (resp) {
+            if (!resp || !resp.credential) {
+              alert('Google sign-in failed to provide credential.');
+              return;
+            }
+            fetch('../Php/google-signin.php', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ credential: resp.credential, role: selectedRole })
+            }).then(r => r.json()).then(json => {
+              if (json.success) {
+                // Notify the user and then redirect
+                alert('Sign in successful!');
+                const map = { user: '../Html/User_Home.php', policeman: '../Html/Policeman_Home.php', volunteer: '../Html/Volunteer_Home.php', camera_contributor: '../Html/Camera_Contribution_Home.php' };
+                window.location.href = map[json.role] || '../Html/Index.html';
+              } else {
+                alert('Google sign-in failed: ' + (json.error || 'unknown'));
+              }
+            });
           }
         });
+        google.accounts.id.prompt();
+        return;
+      } catch (ex) {
+        console.warn('Google IDS init failed', ex);
       }
-    });
-    google.accounts.id.prompt();
-  }
-});
+    }
 
-document.addEventListener('click', function(e) {
-  const fbBtn = e.target.closest('.facebook-btn');
+    alert('Google SDK not available. Please include Google Identity Services or use server-side login.');
+    return;
+  }
+
   if (fbBtn) {
-    let selectedRole = document.getElementById('role')?.value || '';
-    if (!selectedRole) {
-      alert('Please select your role first!');
+    console.debug('starting facebook flow with role', selectedRole);
+    if (window.FB) {
+      FB.login(function(response) {
+        if (response.authResponse) {
+          const accessToken = response.authResponse.accessToken;
+          fetch('../Php/facebook-signin.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ access_token: accessToken, role: selectedRole })
+          }).then(r => r.json()).then(json => {
+            if (json.success) {
+              // Notify the user and then redirect
+              alert('Sign in successful!');
+              const map = { user: '../Html/User_Home.php', policeman: '../Html/Policeman_Home.php', volunteer: '../Html/Volunteer_Home.php', camera_contributor: '../Html/Camera_Contribution_Home.php' };
+              window.location.href = map[json.role] || '../Html/Index.html';
+            } else {
+              alert('Facebook sign-in failed: ' + (json.error || 'unknown'));
+            }
+          });
+        } else {
+          alert('Facebook login cancelled or failed.');
+        }
+      }, { scope: 'public_profile,email' });
       return;
     }
 
-    // Facebook Login Flow
-    FB.login(function(response) {
-      if (response.authResponse) {
-        FB.api('/me', {fields: 'id,name,email,picture'}, function(userInfo) {
-          fetch('../Php/facebook-signup.php', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-              fb_id: userInfo.id,
-              name: userInfo.name,
-              email: userInfo.email,
-              picture: userInfo.picture?.data?.url || '',
-              role: selectedRole
-            })
-          })
-          .then(res => res.json())
-          .then(data => {
-            if (data.success) {
-              // Role-wise page mapping
-              const roleToPage = {
-                user: '../Html/User_Home.html',
-                volunteer: '../Html/Volunteer_Home.html',
-                police: '../Html/Policeman_Home.html',
-                contributor: '../Html/Camera_Contribution_Home.html'
-              };
-              const goTo = roleToPage[data.role || selectedRole] || '../Html/User_Home.html';
-              alert('Sign up successful as ' + (data.role || selectedRole) + '!');
-              window.location.href = goTo;
-            } else {
-              alert('Facebook sign up failed! ' + (data.error || ''));
-            }
-          });
-        });
-      } else {
-        alert('Facebook login cancelled or failed!');
-      }
-    }, {scope: 'public_profile,email'});
+    alert('Facebook SDK not available. Please include the Facebook JS SDK or use server-side login.');
+    return;
   }
-});
+}
 
-document.getElementById("googleBtn").addEventListener("click", function() {
-    const role = document.getElementById("role").value;
-    if (!role) {
-        alert("Please select your role first!");
-        return;
-    }
+// Delegated handler (keeps behavior for dynamically inserted buttons)
+document.addEventListener('click', handleSocialClick);
 
-    google.accounts.id.initialize({
-        client_id: "469478841301-arnhu8ocbr8pfji2fhochn3bbqrf5ivf.apps.googleusercontent.com",
-        callback: function(response) {
-            // Create a temporary form to POST to PHP
-            const form = document.createElement("form");
-            form.method = "POST";
-            form.action = "../Php/google-signin.php";
-
-            const inputCredential = document.createElement("input");
-            inputCredential.type = "hidden";
-            inputCredential.name = "credential";
-            inputCredential.value = response.credential;
-            form.appendChild(inputCredential);
-
-            const inputRole = document.createElement("input");
-            inputRole.type = "hidden";
-            inputRole.name = "role";
-            inputRole.value = role;
-            form.appendChild(inputRole);
-
-            document.body.appendChild(form);
-            form.submit();
-        }
-    });
-
-    google.accounts.id.prompt();
+// Also attach direct listeners to buttons present on page load to be extra reliable
+document.addEventListener('DOMContentLoaded', function () {
+  const fbButtons = document.querySelectorAll('.fb-btn');
+  const gButtons = document.querySelectorAll('.google-btn');
+  fbButtons.forEach(b => b.addEventListener('click', handleSocialClick));
+  gButtons.forEach(b => b.addEventListener('click', handleSocialClick));
 });

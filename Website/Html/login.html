@@ -7,9 +7,28 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+ <!-- Google / Facebook SDK configuration -->
+ <script>
+   // Provide your Google client id (safe to expose) so the Google IDS init in login.js can use it
+   window.GOOGLE_CLIENT_ID = '368248658746-72i73ro0ec1jqcso9kaeo4653tdr6jop.apps.googleusercontent.com';
+   // Provide your Facebook App ID and initialize FB when the SDK loads
+   window.FB_APP_ID = '694071223391461';
+   window.fbAsyncInit = function() {
+     try {
+       FB.init({
+         appId: window.FB_APP_ID,
+         cookie: true,
+         xfbml: true,
+         version: 'v16.0'
+       });
+       console.debug('FB SDK initialized');
+     } catch (e) {
+       console.warn('FB init error', e);
+     }
+   };
+ </script>
  <!-- Facebook SDK -->
-  <script async defer crossorigin="anonymous"
-    src="https://connect.facebook.net/en_US/sdk.js"></script>
+ <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
     <link rel="stylesheet" href="../css/login.css">
 </head>
 <body>
@@ -84,7 +103,7 @@
           <img src="../Images/facebook.png" alt="Facebook" class="social-icon" style="width: 20px; height: 20px;" />
           Sign in with Facebook
         </button>
-        <button type="button" class="google" style="display: flex; align-items: center; gap: 10px;">
+        <button type="button" class="social-btn google-btn" style="display: flex; align-items: center; gap: 10px;">
           <img src="../Images/google.png" alt="Google" class="social-icon" style="width: 20px; height: 20px;" />
           Sign in with Google
         </button>

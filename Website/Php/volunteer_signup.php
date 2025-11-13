@@ -138,7 +138,7 @@ try {
     // Success
     // -----------------------------
     echo "<script>
-        alert('✅ Signup Successful!');
+        alert('Signup Successful!');
         window.location.href = '../Html/login.html';
     </script>";
     exit;
@@ -148,7 +148,7 @@ try {
     // Error
     // -----------------------------
     echo "<script>
-        alert('❌ " . addslashes($ex->getMessage()) . "');
+        alert(' " . addslashes($ex->getMessage()) . "');
         window.history.back();
     </script>";
     exit;

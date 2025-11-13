@@ -1,12 +1,42 @@
 <?php
 require_once "../Php/db.php";
 
-function save_upload($file, $prefix = '') {
-    if (!isset($file) || $file['error'] !== UPLOAD_ERR_OK) return null;
-    $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+function save_upload($file, $prefix = '', $allowed = ['jpg','jpeg','png','pdf']) {
+    if (!isset($file)) throw new Exception('No file provided for upload');
+    if (!isset($file['error']) || $file['error'] !== UPLOAD_ERR_OK) {
+        $code = $file['error'] ?? 'missing';
+        throw new Exception('Upload error (code: ' . $code . ')');
+    }
+
+    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    if (!in_array($ext, $allowed)) {
+        throw new Exception('Invalid file type: .' . $ext);
+    }
+
+    // Validate MIME type for safety
+    if (function_exists('finfo_open')) {
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime = finfo_file($finfo, $file['tmp_name']);
+        finfo_close($finfo);
+        if (in_array($ext, ['jpg','jpeg','png'])) {
+            if (strpos($mime, 'image/') !== 0) throw new Exception('Uploaded file is not an image');
+        } elseif ($ext === 'pdf') {
+            if ($mime !== 'application/pdf') throw new Exception('Uploaded file is not a PDF');
+        }
+    }
+
     $filename = $prefix . uniqid('_', true) . '.' . $ext;
-    $dest = '../uploads/police/' . $filename;
-    if (!move_uploaded_file($file['tmp_name'], $dest)) return null;
+    $uploadDir = __DIR__ . '/../uploads/police/';
+    if (!is_dir($uploadDir)) {
+        if (!mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
+            throw new Exception('Failed to create upload directory');
+        }
+    }
+
+    $dest = $uploadDir . $filename;
+    if (!move_uploaded_file($file['tmp_name'], $dest)) {
+        throw new Exception('Failed to move uploaded file');
+    }
     return $filename;
 }
 
@@ -36,18 +66,20 @@ try {
 
     $password_hash = password_hash($_POST['password'], PASSWORD_BCRYPT);
 
-    // File uploads
-    $nid_photo = save_upload($_FILES['nid_photo'], 'nid_');
-    if (!$nid_photo) throw new Exception("NID photo upload failed!");
+    // File uploads (validate and save)
+    $nid_photo = save_upload($_FILES['nid_photo'], 'nid_', ['jpg','jpeg','png']);
 
-    $profile_photo = (!empty($_FILES['profile_photo']) && $_FILES['profile_photo']['error'] === UPLOAD_ERR_OK)
-        ? save_upload($_FILES['profile_photo'], 'profile_') : null;
+    $profile_photo = null;
+    if (!empty($_FILES['profile_photo']) && ($_FILES['profile_photo']['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
+        $profile_photo = save_upload($_FILES['profile_photo'], 'profile_', ['jpg','jpeg','png']);
+    }
 
-    $cover_photo = (!empty($_FILES['cover_photo']) && $_FILES['cover_photo']['error'] === UPLOAD_ERR_OK)
-        ? save_upload($_FILES['cover_photo'], 'cover_') : null;
+    $cover_photo = null;
+    if (!empty($_FILES['cover_photo']) && ($_FILES['cover_photo']['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
+        $cover_photo = save_upload($_FILES['cover_photo'], 'cover_', ['jpg','jpeg','png']);
+    }
 
-    $official_id = save_upload($_FILES['official_id'], 'official_');
-    if (!$official_id) throw new Exception("Official letter upload failed!");
+    $official_id = save_upload($_FILES['official_id'], 'official_', ['pdf']);
 
     // Address fields
     $fields = ['street', 'city', 'postal', 'country', 'latitude', 'longitude'];
@@ -85,14 +117,14 @@ try {
     ]);
 
     echo "<script>
-        alert('✅ Signup Successful!');
+        alert(' Signup Successful!');
         window.location.href = '../Html/login.html';
     </script>";
     exit;
 
 } catch (Exception $ex) {
     echo "<script>
-        alert('❌ " . addslashes($ex->getMessage()) . "');
+        alert(' " . addslashes($ex->getMessage()) . "');
         window.history.back();
     </script>";
     exit;

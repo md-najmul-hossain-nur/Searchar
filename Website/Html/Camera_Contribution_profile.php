@@ -1,27 +1,26 @@
 <?php
+declare(strict_types=1);
 session_start();
 require_once __DIR__ . '/../Php/db.php';
 
-if (empty($_SESSION['role']) || $_SESSION['role'] !== 'user' || empty($_SESSION['user_id'])) {
-    header('Location: ../Html/login.html');
-    exit();
+if (empty($_SESSION['user_id'])) {
+  header('Location: ../Html/login.html');
+  exit();
 }
 
 $user_id = (int) $_SESSION['user_id'];
 
-// Fetch user data
-$stmt = $pdo->prepare("SELECT full_name, email, profile_photo, cover_photo,date_of_birth, gender,street,email, city, country, bio FROM users WHERE user_id=:id LIMIT 1");
-$stmt->execute(['id' => $user_id]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-function e($v) {
-    return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+try {
+  $sql = "SELECT camera_id AS id, full_name, email, mobile, profile_photo, cover_photo, bio, date_of_birth, gender, street, city, country FROM camera_contributors WHERE camera_id = :id LIMIT 1";
+  $stmt = $pdo->prepare($sql);
+  $stmt->execute(['id' => $user_id]);
+  $user = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+} catch (PDOException $e) {
+  header('Location: ../Html/login.html?error=db');
+  exit();
 }
 
-// Fallback images
-$profile_pic = !empty($user['profile_photo']) ? '../uploads/user/' . $user['profile_photo'] : '../Images/default_profile.png';
-$cover_pic = !empty($user['cover_photo']) ? '../uploads/user/' . $user['cover_photo'] : '../Images/default_cover.jpg';
-$bio_text = !empty($user['bio']) ? e($user['bio']) : "💬 Bio not added yet. Go to <a href='../Html/User_Edit_profile.html'>edit profile</a> to add your bio!";
+function e($v) { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -29,36 +28,25 @@ $bio_text = !empty($user['bio']) ? e($user['bio']) : "💬 Bio not added yet. Go
   <meta charset="UTF-8">
   <title>Searchar</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Main CSS -->
-  <link rel="stylesheet" href="../css/User_profile.css">
-
+  <link rel="stylesheet" href="../css/Camera_Contribution_profile.css">
 </head>
 <body>
   <header class="navbar">
     <div class="navbar-logo">
-    <a href="../Html/User_Home.php">
-        <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
-    </a>
-</div>
-
-  </header>
-  <!-- Cover & Profile Photo -->
-<div class="cover-photo">
-    <img src="<?= !empty($user['cover_photo']) ? '../uploads/user/' . e($user['cover_photo']) : '../Images/cover_default.jpg' ?>" 
-         alt="Cover" class="cover-img">
-    <div class="profile-pic-container">
-        <img src="<?= !empty($user['profile_photo']) ? '../uploads/user/' . e($user['profile_photo']) : '../Images/default_profile.png' ?>" 
-             class="profile-pic" 
-             alt="Profile">
+      <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
     </div>
+  </header>
 
-
+  <div class="cover-photo">
+    <img src="<?= !empty($user['cover_photo']) ? '../uploads/camera/' . e($user['cover_photo']) : '../Images/WhatsApp Image 2025-07-31 at 12.44.01_9b24e7f5.jpg' ?>" alt="Cover" class="cover-img">
+    <div class="profile-pic-container">
+      <img class="profile-pic" src="<?= !empty($user['profile_photo']) ? '../uploads/camera/' . e($user['profile_photo']) : '../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg' ?>" alt="Profile">
+    </div>
   <div class="main-content">
-   <div class="left-panel">
+    <div class="left-panel">
   <div class="card user-info" style="position: relative;">
-        <button class="edit-btn" title="Edit Profile" onclick="location.href='../Html/User_Edit_profile.php?user_id=<?= $user_id ?>'">
+        <button class="edit-btn" title="Edit Profile" onclick="location.href='../Html/Camera_Contribution_Edit_profile.php?camera_id=<?= $user_id ?>'">
       <img src="../Images/pencil.gif" alt="Edit" />
     </button>
      <h2><?= e($user['full_name'] ?? 'User Name') ?></h2>
@@ -71,61 +59,55 @@ $bio_text = !empty($user['bio']) ? e($user['bio']) : "💬 Bio not added yet. Go
         <ul class="info-list">
     <!-- Birthday -->
     <li>
-        <span class="icon">&#127874;</span> <!-- 🎂 cake icon -->
+        <span class="icon">&#127874;</span>
         <?= !empty($user['date_of_birth']) ? e($user['date_of_birth']) : 'No birthday provided' ?>
     </li>
 
     <!-- Gender -->
     <li>
-        <span class="icon">&#9794;&#9792;</span> <!-- ⚥ gender icon -->
+        <span class="icon">&#9794;&#9792;</span>
         <?= !empty($user['gender']) ? ucfirst(e($user['gender'])) : 'Gender not specified' ?>
     </li>
 
     <!-- Email -->
     <li>
-        <span class="icon">&#9993;</span> <!-- ✉️ envelope icon -->
+        <span class="icon">&#9993;</span>
         <?= !empty($user['email']) ? e($user['email']) : 'No email provided' ?>
     </li>
 
     <!-- Street / Address -->
     <li>
-        <span class="icon">&#127968;</span> <!-- 🏠 house icon -->
+        <span class="icon">&#127968;</span>
         <?= !empty($user['street']) ? e($user['street']) : 'No street provided' ?>
     </li>
 
     <!-- City / Country -->
     <li>
-        <span class="icon">&#127758;</span> <!-- 🌎 globe icon -->
-        <?= !empty($user['city']) ? e($user['city']) : 'No city provided' ?>, 
+        <span class="icon">&#127758;</span>
+        <?= !empty($user['city']) ? e($user['city']) : 'No city provided' ?>,
         <?= !empty($user['country']) ? e($user['country']) : 'No country provided' ?>
     </li>
 </ul>
 
-
-   
   </div>
    <!-- New Password Change Section -->
     <div class="password-change-section">
       <h3>Password Change</h3>
       <p>For your account security, please change your password regularly.</p>
-      <button class="change-pass-btn" onclick="location.href='../Html/User_Passchagned.php?user_id=<?= $user_id ?>'">Change Password</button>
+      <button class="change-pass-btn" onclick="location.href='../Html/Camera_Contribution_Passchanged.php'">Change Password</button>
     </div>
 </div>
-
-<div class="center-panel">
+    <div class="center-panel">
   <div class="card share-box">
-    <img class="mini-profile" src="../Images/post.gif" alt="Profile">
+    <img class="mini-profile" src="<?= !empty($user['profile_photo']) ? '../uploads/camera/' . e($user['profile_photo']) : '../Images/post.gif' ?>" alt="Profile">
     <input type="text" placeholder="What's on your mind?" onclick="openModal()">
   </div>
 
   <div class="card post">
     <div class="post-header">
-        <img src="<?= !empty($user['profile_photo']) ? '../uploads/user/' . e($user['profile_photo']) : '../Images/default_profile.png' ?>" 
-             class="mini-profile"
-             alt="Profile">
-      
+      <img class="mini-profile" src="<?= !empty($user['profile_photo']) ? '../uploads/camera/' . e($user['profile_photo']) : 'https://randomuser.me/api/portraits/men/20.jpg' ?>" alt="Profile">
       <div>
-     <h2><?= e($user['full_name'] ?? 'User Name') ?></h2>
+        <div class="username"><?= e($user['full_name'] ?? '—') ?></div>
         <div class="post-time">35 min ago</div>
       </div>
     </div>
@@ -136,27 +118,35 @@ $bio_text = !empty($user['bio']) ? e($user['bio']) : "💬 Bio not added yet. Go
   </div>
 </div>
 
-<!-- Popup Modal -->
+<!-- Popup Modal and right panel copied from template -->
 <div id="postModal" class="post-modal">
   <div class="post-modal-content">
     <span class="post-modal-close" onclick="closeModal()">&times;</span>
     <h2 class="post-modal-title">Share Your Mood</h2>
-
-    <!-- Facebook Toggle -->
     <div class="facebook-toggle">
       <label class="facebook-toggle-switch">
         <input type="checkbox" id="facebookShareToggle">
-        <span class="facebook-toggle-slider">
-          <i class="fab fa-facebook"></i>
-        </span>
+        <span class="facebook-toggle-slider"><i class="fab fa-facebook"></i></span>
       </label>
       <span class="facebook-toggle-label">Share to Facebook</span>
     </div>
-
-    <!-- Textarea -->
+    <!-- ✅ Anonymous Mode Toggle -->
+    <div class="facebook-toggle">
+      <label class="facebook-toggle-switch">
+        <input type="checkbox" id="anonToggle">
+        <span class="facebook-toggle-slider">
+          <i class="fas fa-user-secret"></i>
+        </span>
+      </label>
+      <span class="facebook-toggle-label">Post Anonymously</span>
+    </div>
+    <!-- ✅ Category Selection --> <p class="category-label">Select Category:</p> <div class="category-toggle"> <label class="category-option"> <input type="radio" name="category" value="mission" checked> <img src="../Images/mission-icon.gif" alt="Mission Icon" class="category-icon" /> Mission Person </label> <label class="category-option"> <input type="radio" name="category" value="disaster"> <img src="../Images/disaster-icon.gif" alt="Disaster Icon" class="category-icon" /> Disaster </label> </div>
     <textarea id="postText" class="post-modal-textarea" placeholder="Say Something..."></textarea>
-
-    <!-- Media Options -->
+    <div class="post-modal-preview">
+      <p id="sharedPostText" class="preview-text"></p>
+      <img id="sharedPostImage" class="preview-img" src="" alt="" />
+    </div>
+    <!-- ✅ Media Upload Buttons -->
     <div class="post-media-options">
       <label>
         <input type="file" id="imageUpload" accept="image/*" hidden>
@@ -168,17 +158,14 @@ $bio_text = !empty($user['bio']) ? e($user['bio']) : "💬 Bio not added yet. Go
       </label>
     </div>
 
-    <!-- Media Preview -->
+    <!-- ✅ Media Preview -->
     <div id="mediaPreview" class="post-media-preview"></div>
-
-    <!-- Actions -->
     <div class="post-modal-actions">
       <button class="post-cancel-btn" onclick="closeModal()">Cancel</button>
       <button class="post-submit-btn" onclick="createPost()">Post</button>
     </div>
   </div>
 </div>
-
 <style>.category-label {
   text-align: left;
   font-weight: 600;
@@ -235,42 +222,21 @@ $bio_text = !empty($user['bio']) ? e($user['bio']) : "💬 Bio not added yet. Go
   color: #1a73e8;
 }
 </style>
+
     <div class="right-panel">
       <div class="card notifications">
         <h3>Recent Notifications</h3>
         <div class="divider"></div>
         <div class="notification">
-          <img class="mini-profile" src="https://randomuser.me/api/portraits/men/22.jpg" alt="User">
+          <img class="mini-profile" src="<?= !empty($user['profile_photo']) ? '../uploads/camera/' . e($user['profile_photo']) : 'https://randomuser.me/api/portraits/men/22.jpg' ?>" alt="User">
           <div>
             <div class="notification-text">Any one can join with us if you want</div>
             <div class="notification-time">5 Min Ago</div>
-          </div>
-        </div>
-        <div class="notification">
-          <img class="mini-profile" src="https://randomuser.me/api/portraits/women/34.jpg" alt="User">
-          <div>
-            <div class="notification-text">Any one can join with us if you want</div>
-            <div class="notification-time">10 Min Ago</div>
-          </div>
-        </div>
-        <div class="notification">
-          <img class="mini-profile" src="https://randomuser.me/api/portraits/men/23.jpg" alt="User">
-          <div>
-            <div class="notification-text">Any one can join with us if you want</div>
-            <div class="notification-time">18 Min Ago</div>
-          </div>
-        </div>
-        <div class="notification">
-          <img class="mini-profile" src="https://randomuser.me/api/portraits/men/25.jpg" alt="User">
-          <div>
-            <div class="notification-text">Any one can join with us if you want</div>
-            <div class="notification-time">20 Min Ago</div>
           </div>
         </div>
       </div>
     </div>
   </div>
 </body>
-       <script src="../javascrpit/User_profile.js"></script>
-
+<script src="../javascrpit/Camera_Contribution_profile.js"></script>
 </html>

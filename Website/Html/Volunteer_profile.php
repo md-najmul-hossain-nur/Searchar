@@ -155,27 +155,35 @@ $bio_text    = !empty($volunteer['bio']) ? e($volunteer['bio']) : "💬 Bio not 
   </div>
 </div>
 
-<!-- Popup Modal -->
+<!-- Popup Modal and right panel copied from template -->
 <div id="postModal" class="post-modal">
   <div class="post-modal-content">
     <span class="post-modal-close" onclick="closeModal()">&times;</span>
     <h2 class="post-modal-title">Share Your Mood</h2>
-
-    <!-- Facebook Toggle -->
     <div class="facebook-toggle">
       <label class="facebook-toggle-switch">
         <input type="checkbox" id="facebookShareToggle">
-        <span class="facebook-toggle-slider">
-          <i class="fab fa-facebook"></i>
-        </span>
+        <span class="facebook-toggle-slider"><i class="fab fa-facebook"></i></span>
       </label>
       <span class="facebook-toggle-label">Share to Facebook</span>
     </div>
-
-    <!-- Textarea -->
+    <!-- ✅ Anonymous Mode Toggle -->
+    <div class="facebook-toggle">
+      <label class="facebook-toggle-switch">
+        <input type="checkbox" id="anonToggle">
+        <span class="facebook-toggle-slider">
+          <i class="fas fa-user-secret"></i>
+        </span>
+      </label>
+      <span class="facebook-toggle-label">Post Anonymously</span>
+    </div>
+    <!-- ✅ Category Selection --> <p class="category-label">Select Category:</p> <div class="category-toggle"> <label class="category-option"> <input type="radio" name="category" value="mission" checked> <img src="../Images/mission-icon.gif" alt="Mission Icon" class="category-icon" /> Mission Person </label> <label class="category-option"> <input type="radio" name="category" value="disaster"> <img src="../Images/disaster-icon.gif" alt="Disaster Icon" class="category-icon" /> Disaster </label> </div>
     <textarea id="postText" class="post-modal-textarea" placeholder="Say Something..."></textarea>
-
-    <!-- Media Options -->
+    <div class="post-modal-preview">
+      <p id="sharedPostText" class="preview-text"></p>
+      <img id="sharedPostImage" class="preview-img" src="" alt="" />
+    </div>
+    <!-- ✅ Media Upload Buttons -->
     <div class="post-media-options">
       <label>
         <input type="file" id="imageUpload" accept="image/*" hidden>
@@ -187,16 +195,70 @@ $bio_text    = !empty($volunteer['bio']) ? e($volunteer['bio']) : "💬 Bio not 
       </label>
     </div>
 
-    <!-- Media Preview -->
+    <!-- ✅ Media Preview -->
     <div id="mediaPreview" class="post-media-preview"></div>
-
-    <!-- Actions -->
     <div class="post-modal-actions">
       <button class="post-cancel-btn" onclick="closeModal()">Cancel</button>
       <button class="post-submit-btn" onclick="createPost()">Post</button>
     </div>
   </div>
 </div>
+<style>.category-label {
+  text-align: left;
+  font-weight: 600;
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 12px;
+  font-family: 'Roboto', Arial, sans-serif;
+}
+
+.category-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin-bottom: 18px;
+  user-select: none;
+  font-family: 'Roboto', Arial, sans-serif;
+}
+
+.category-option {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 6px 18px; /* ↓ reduced height */
+  border: 2px solid #1a73e8;
+  border-radius: 16px; /* slightly smaller for balance */
+  font-weight: 450;
+  color: #f75c3c;
+  transition: all 0.3s ease;
+  user-select: none;
+  min-width: 90px;
+  justify-content: center;
+  gap: 6px;
+  background-color: white;
+}
+
+.category-icon {
+  width: 24px; /* ↓ smaller icons */
+  height: 24px;
+  object-fit: contain;
+}
+
+/* Highlight selected label */
+.category-option:has(input[type="radio"]:checked) {
+  background-color: #cdb468;
+  color: white;
+  box-shadow: 0 0 6px rgba(26, 115, 232, 0.5);
+  border-color: #f75c3c;
+}
+
+/* Hover effect */
+.category-option:hover {
+  background-color: rgba(26, 115, 232, 0.1);
+  border-color: #1a73e8;
+  color: #1a73e8;
+}
+</style>
     <div class="right-panel">
       <div class="card notifications">
         <h3>Recent Notifications</h3>

@@ -1,3 +1,31 @@
+<?php
+declare(strict_types=1);
+session_start();
+require_once __DIR__ . '/../Php/db.php';
+
+// Require a logged-in user id. This page specifically displays camera contributor data,
+// so always fetch from `camera_contributors` using the session `user_id`.
+if (empty($_SESSION['user_id'])) {
+  header('Location: ../Html/login.html');
+  exit();
+}
+
+$user_id = (int) $_SESSION['user_id'];
+
+try {
+  $sql = "SELECT camera_id AS id, full_name, email, mobile, profile_photo, cover_photo, bio
+      FROM camera_contributors WHERE camera_id = :id LIMIT 1";
+  $stmt = $pdo->prepare($sql);
+  $stmt->execute(['id' => $user_id]);
+  $user = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+} catch (PDOException $e) {
+  // If DB fails, redirect to login to avoid showing sensitive errors.
+  header('Location: ../Html/login.html?error=db');
+  exit();
+}
+
+function e($v) { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,27 +40,38 @@
 
 </head>
 <body>
- <header class="navbar">
-    <div class="navbar-logo">
-      <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
-    </div>
-    
-  </header>
-    <div class="container">
+ <header class="navbar" style="display:flex; align-items:center; justify-content:space-between; padding:10px;">
+  <!-- Left: Logo -->
+  <div class="navbar-logo">
+    <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
+  </div>
+  
+  <!-- Right: Email + Logout -->
+  <div style="display:flex; align-items:center; gap:10px; margin-right:40px;">
+    <span><?= e($user['email'] ?? 'Guest') ?></span>
+    <button class="navbar-donate" onclick="window.location.href='../Php/logout.php';" style="display:flex; align-items:center; gap:5px;">
+      LOG OUT
+      <img src="../Images/import.gif" alt="Gift" style="height:1.5em; border-radius:6px;">
+    </button>
+  </div>
+</header>
+  <?php /* user data loaded above */ ?>
+  <div class="container">
     <!-- Left Sidebar -->
     <div class="sidebar-left">
       <div class="profile-card">
-        <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_0c691462.jpg" class="cover">
-        <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg" class="profile-pic">
+        <img src="<?= isset($user['cover_photo']) ? '../uploads/camera/' . e($user['cover_photo']) : '../Images/WhatsApp Image 2025-07-31 at 12.44.00_0c691462.jpg' ?>" class="cover">
+        <img src="<?= isset($user['profile_photo']) ? '../uploads/camera/' . e($user['profile_photo']) : '../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg' ?>" class="profile-pic">
         <!-- Edit button as image icon -->
-        <button class="edit-btn" title="Edit Profile" onclick="location.href='../Html/Camera_Contribution_profile.html'">
+        <button class="edit-btn" title="Edit Profile" onclick="location.href='../Html/Camera_Contribution_profile.php'">
   <img src="../Images/pencil.gif" alt="Edit" />
 </button>
 
-        <h3>Erik Jhonson</h3>
+        <h3><?= e($user['full_name'] ?? '—') ?></h3>
         <p class="user-bio">
-          Any one can join with but Social network us if you want Any one can join with us if you want</p>
+          <?= !empty($user['bio']) ? e($user['bio']) : 'Any one can join with us.' ?></p>
       </div>
+      
       
      <!-- Streamer Info Section -->
 <div class="money-withdrawal">
