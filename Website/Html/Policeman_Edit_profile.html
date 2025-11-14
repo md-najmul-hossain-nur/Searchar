@@ -47,9 +47,24 @@
         <input type="file" id="profilePhoto" name="profilePhoto" accept="image/*" onchange="previewImage(event, 'profilePreview')">
       </div>
 
-      <!-- Bio -->
-      <label for="bio">Bio</label>
-      <textarea id="bio" name="bio" placeholder="Write something about yourself..." maxlength="250"></textarea>
+        <!-- Bio -->
+        <label for="bio">Bio</label>
+        <textarea id="bio" name="bio" placeholder="Write something about yourself..." maxlength="250"></textarea>
+
+        <!-- Date of birth & Gender -->
+        <label for="date_of_birth">Date of Birth</label>
+        <input type="date" id="date_of_birth" name="date_of_birth">
+
+        <label for="gender">Gender</label>
+        <select id="gender" name="gender">
+          <option value="">Prefer not to say</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+        </select>
+
+        <input type="hidden" name="current_profile" id="current_profile">
+        <input type="hidden" name="current_cover" id="current_cover">
 
       <!-- Name -->
       <label for="name">Full Name</label>
@@ -70,16 +85,16 @@
 </p>
 <!-- Address Fields -->
 <label for="street">Street Address</label>
-<input type="text" id="street" name="street" placeholder="Enter street address " disabled>
+<input type="text" id="street" name="street" placeholder="Enter street address">
 
 <label for="city">City</label>
-<input type="text" id="city" name="city" placeholder="Enter city " disabled>
+<input type="text" id="city" name="city" placeholder="Enter city">
 
 <label for="postal">Postal Code</label>
-<input type="text" id="postal" name="postal" placeholder="Enter postal code" disabled>
+<input type="text" id="postal" name="postal" placeholder="Enter postal code">
 
 <label for="country">Country</label>
-<input type="text" id="country" name="country" placeholder="Enter country" disabled>
+<input type="text" id="country" name="country" placeholder="Enter country">
 
 <input type="hidden" id="latitude" name="latitude">
 <input type="hidden" id="longitude" name="longitude">
@@ -106,8 +121,85 @@
   </main>
 
   <!-- JavaScript -->
-         <script src="../javascrpit/Policeman_Edit_profile.js"></script>
+  <script src="../javascrpit/Policeman_Edit_profile.js"></script>
 
+  <script>
+  // small preview helper (same as camera page)
+  function previewImage(event, id) {
+    const out = document.getElementById(id);
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) { out.src = e.target.result; };
+    reader.readAsDataURL(file);
+  }
+
+  let map, marker, selectedLatLng;
+
+  function selectLocationFromMap() {
+    document.getElementById('mapModal').style.display = 'flex';
+    initMap();
+  }
+
+  function closeMapModal() {
+    document.getElementById('mapModal').style.display = 'none';
+  }
+
+  function initMap() {
+    if (!map) {
+      map = L.map('map').setView([23.8103, 90.4125], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+      map.on('click', function(e) { setMarker(e.latlng); });
+    }
+    map.invalidateSize();
+  }
+
+  function setMarker(latlng) {
+    selectedLatLng = latlng;
+    if (marker) marker.setLatLng(latlng);
+    else marker = L.marker(latlng).addTo(map);
+  }
+
+  function getCurrentLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        const latlng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        map.setView([latlng.lat, latlng.lng], 16);
+        setMarker(latlng);
+      }, function(err) {
+        alert('Failed to get current location: ' + err.message);
+      });
+    } else {
+      alert('Geolocation not supported by your browser');
+    }
+  }
+
+  function saveMapLocation() {
+    if (!selectedLatLng) { alert('Please select a location on the map!'); return; }
+    const latEl = document.getElementById('latitude');
+    const lonEl = document.getElementById('longitude');
+    if (latEl) latEl.value = selectedLatLng.lat;
+    if (lonEl) lonEl.value = selectedLatLng.lng;
+
+    // Reverse geocode without custom User-Agent header (browsers block it)
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${selectedLatLng.lat}&lon=${selectedLatLng.lng}`)
+      .then(response => { if (!response.ok) throw new Error('Reverse geocode failed'); return response.json(); })
+      .then(data => {
+        const streetEl = document.getElementById('street');
+        const cityEl = document.getElementById('city');
+        const postalEl = document.getElementById('postal');
+        const countryEl = document.getElementById('country');
+        if (streetEl) streetEl.value = data.address?.road || data.address?.neighbourhood || '';
+        if (cityEl) cityEl.value = data.address?.city || data.address?.town || data.address?.village || '';
+        if (postalEl) postalEl.value = data.address?.postcode || '';
+        if (countryEl) countryEl.value = data.address?.country || '';
+        closeMapModal();
+      })
+      .catch(err => { console.error('Reverse geocoding error:', err); alert('Failed to get address. You can fill it manually.'); closeMapModal(); });
+  }
+  </script>
 
 </body>
 </html>

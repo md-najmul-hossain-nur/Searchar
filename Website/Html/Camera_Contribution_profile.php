@@ -34,8 +34,9 @@ function e($v) { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE
 <body>
   <header class="navbar">
     <div class="navbar-logo">
-      <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
-    </div>
+<a href="../Html/Camera_Contribution_Home.php">
+        <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
+    </a>    </div>
   </header>
 
   <div class="cover-photo">

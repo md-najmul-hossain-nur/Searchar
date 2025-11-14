@@ -64,7 +64,17 @@
       <label for="phone">Phone Number</label>
       <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" pattern="[0-9]{10,15}" required>
 
-      <!-- Current Password -->
+  <!-- Date of birth & Gender -->
+      <label for="date_of_birth">Date of Birth</label>
+      <input type="date" id="date_of_birth" name="date_of_birth" value="<?= e($user['date_of_birth'] ?? '') ?>">
+
+      <label for="gender">Gender</label>
+      <select id="gender" name="gender">
+        <option value="" <?= empty($user['gender']) ? 'selected' : '' ?>>Prefer not to say</option>
+        <option value="male" <?= (isset($user['gender']) && $user['gender']==='male') ? 'selected' : '' ?>>Male</option>
+        <option value="female" <?= (isset($user['gender']) && $user['gender']==='female') ? 'selected' : '' ?>>Female</option>
+        <option value="other" <?= (isset($user['gender']) && $user['gender']==='other') ? 'selected' : '' ?>>Other</option>
+      </select>
     
 <!-- Helper Instruction -->
 <p class="map-helper-text" style="margin:12px 0 8px 0; color:#425a78; font-size:1em;">

@@ -1,129 +1,117 @@
 <?php
-require_once __DIR__ . '/../Php/db.php'; // Make sure $pdo is set
+require_once __DIR__ . '/../Php/db.php';
 session_start();
 
-if (!isset($_SESSION['user_id'])) {
+if (empty($_SESSION['user_id'])) {
     header('Location: ../Html/login.html');
     exit;
 }
 
-$user_id = $_SESSION['user_id'];
+$user_id = (int) $_SESSION['user_id'];
 
-// Helper to escape output
-function e($str) {
-    return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
-}
+function e($str) { return htmlspecialchars($str, ENT_QUOTES, 'UTF-8'); }
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
     $full_name = $_POST['name'] ?? '';
     $email = $_POST['email'] ?? '';
     $mobile = $_POST['phone'] ?? '';
     $bio = $_POST['bio'] ?? '';
-    $latitude = $_POST['latitude'] ?? '';
-    $longitude = $_POST['longitude'] ?? '';
-$street  = $_POST['street'] ?? '';
-$city    = $_POST['city'] ?? '';
-$postal  = $_POST['postal_code'] ?? '';
-$country = $_POST['country'] ?? '';
+    $date_of_birth = $_POST['date_of_birth'] ?? null;
+    $gender = $_POST['gender'] ?? null;
+    $street = $_POST['street'] ?? '';
+    $city = $_POST['city'] ?? '';
+    $country = $_POST['country'] ?? '';
+    $latitude = $_POST['latitude'] ?? null;
+    $longitude = $_POST['longitude'] ?? null;
 
-    // Profile photo upload
+    // Profile upload
     if (!empty($_FILES['profilePhoto']['name']) && $_FILES['profilePhoto']['error'] === 0) {
         $ext = pathinfo($_FILES['profilePhoto']['name'], PATHINFO_EXTENSION);
         $profile_photo_name = 'profile_' . uniqid() . '.' . $ext;
-        move_uploaded_file($_FILES['profilePhoto']['tmp_name'], "../uploads/user/$profile_photo_name");
+        if (!is_dir(__DIR__ . '/../uploads/camera')) mkdir(__DIR__ . '/../uploads/camera', 0755, true);
+        move_uploaded_file($_FILES['profilePhoto']['tmp_name'], __DIR__ . '/../uploads/camera/' . $profile_photo_name);
     } else {
-        $profile_photo_name = $_POST['current_profile'] ?? $user['profile_photo'];
+        $profile_photo_name = $_POST['current_profile'] ?? null;
     }
 
-    // Cover photo upload
+    // Cover upload
     if (!empty($_FILES['coverPhoto']['name']) && $_FILES['coverPhoto']['error'] === 0) {
         $ext = pathinfo($_FILES['coverPhoto']['name'], PATHINFO_EXTENSION);
         $cover_photo_name = 'cover_' . uniqid() . '.' . $ext;
-        move_uploaded_file($_FILES['coverPhoto']['tmp_name'], "../uploads/user/$cover_photo_name");
+        if (!is_dir(__DIR__ . '/../uploads/camera')) mkdir(__DIR__ . '/../uploads/camera', 0755, true);
+        move_uploaded_file($_FILES['coverPhoto']['tmp_name'], __DIR__ . '/../uploads/camera/' . $cover_photo_name);
     } else {
-        $cover_photo_name = $_POST['current_cover'] ?? $user['cover_photo'];
+        $cover_photo_name = $_POST['current_cover'] ?? null;
     }
 
+    // Update camera_contributors
+    $stmt = $pdo->prepare("UPDATE camera_contributors SET full_name = ?, email = ?, mobile = ?, bio = ?, profile_photo = ?, cover_photo = ?, date_of_birth = ?, gender = ?, street = ?, city = ?, country = ?, latitude = ?, longitude = ? WHERE camera_id = ?");
+    $stmt->execute([
+        $full_name,
+        $email,
+        $mobile,
+        $bio,
+        $profile_photo_name,
+        $cover_photo_name,
+        $date_of_birth,
+        $gender,
+        $street,
+        $city,
+        $country,
+        $latitude,
+        $longitude,
+        $user_id
+    ]);
 
-
-// Update user in DB including address
-$stmt = $pdo->prepare("UPDATE users 
-    SET full_name = ?, email = ?, mobile = ?, bio = ?, profile_photo = ?, cover_photo = ?, latitude = ?, longitude = ?, street = ?, city = ?, postal_code = ?, country = ?
-    WHERE user_id = ?");
-$stmt->execute([
-    $full_name,
-    $email,
-    $mobile,
-    $bio,
-    $profile_photo_name,
-    $cover_photo_name,
-    $latitude,
-    $longitude,
-    $street,
-    $city,
-    $postal,
-    $country,
-    $user_id
-]);
-
-
-    // ✅ Redirect to profile page after successful save
-    header("Location: ../Html/User_profile.php");
+    header('Location: ../Html/Camera_Contribution_profile.php');
     exit;
 }
 
-// Fetch user data to prefill form
-$stmt = $pdo->prepare("SELECT * FROM users WHERE user_id = ?");
+// Fetch existing data
+$stmt = $pdo->prepare('SELECT * FROM camera_contributors WHERE camera_id = ?');
 $stmt->execute([$user_id]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
+$user = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Edit Profile - Searchar</title>
+  <title>Edit Profile - Camera Contributor</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <link rel="stylesheet" href="../css/User_Edit_profile.css">
+  <link rel="stylesheet" href="../css/Camera_Contribution_Edit_profile.css">
 </head>
 <body>
-  <!-- Navbar -->
   <header class="navbar">
     <div class="navbar-logo">
       <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo">
     </div>
   </header>
-
   <div class="bubble-background"></div>
 
-  <!-- Main Content -->
   <main class="edit-profile-container">
     <div class="edit-profile-header-vertical">
       <img src="../Images/edit-profile.gif" alt="Edit Icon" class="edit-profile-icon-vertical">
       <h2>EDIT YOUR PROFILE</h2>
     </div>
 
-    <!-- Back Button -->
     <div class="back-button-container">
-      <a href="../Html/User_profile.php" class="back-btn">← Back</a>
+      <a href="../Html/Camera_Contribution_profile.php" class="back-btn">← Back</a>
     </div>
 
     <form class="edit-profile-form" method="POST" enctype="multipart/form-data">
 
-      <!-- Hidden for current images -->
-      <input type="hidden" name="current_profile" value="<?= e($user['profile_photo']) ?>">
-      <input type="hidden" name="current_cover" value="<?= e($user['cover_photo']) ?>">
+      <input type="hidden" name="current_profile" value="<?= e($user['profile_photo'] ?? '') ?>">
+      <input type="hidden" name="current_cover" value="<?= e($user['cover_photo'] ?? '') ?>">
 
       <!-- Cover Photo -->
       <div class="cover-photo-section">
         <label for="coverPhoto" class="cover-label">Cover Photo</label>
         <div class="cover-preview">
-          <img id="coverPreview" src="<?= !empty($user['cover_photo']) ? '../uploads/user/' . e($user['cover_photo']) : '../Images/default-cover.gif' ?>" alt="Cover Photo Preview">
+          <img id="coverPreview" src="<?= !empty($user['cover_photo']) ? '../uploads/camera/' . e($user['cover_photo']) : '../Images/default-cover.gif' ?>" alt="Cover Photo Preview">
         </div>
         <input type="file" id="coverPhoto" name="coverPhoto" accept="image/*" onchange="previewImage(event, 'coverPreview')">
       </div>
@@ -132,7 +120,7 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC);
       <div class="profile-photo-section">
         <label for="profilePhoto" class="profile-label">Profile Picture</label>
         <div class="profile-preview">
-          <img id="profilePreview" src="<?= !empty($user['profile_photo']) ? '../uploads/user/' . e($user['profile_photo']) : '../Images/default-profile.gif' ?>" alt="Profile Picture Preview">
+          <img id="profilePreview" src="<?= !empty($user['profile_photo']) ? '../uploads/camera/' . e($user['profile_photo']) : '../Images/default-profile.gif' ?>" alt="Profile Picture Preview">
         </div>
         <input type="file" id="profilePhoto" name="profilePhoto" accept="image/*" onchange="previewImage(event, 'profilePreview')">
       </div>
@@ -143,16 +131,17 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
       <!-- Name -->
       <label for="name">Full Name</label>
-      <input type="text" id="name" name="name" placeholder="Enter your name" value="<?= e($user['full_name']) ?>" required>
+      <input type="text" id="name" name="name" placeholder="Enter your name" value="<?= e($user['full_name'] ?? '') ?>" required>
 
       <!-- Email -->
       <label for="email">Email</label>
-      <input type="email" id="email" name="email" placeholder="Enter your email" value="<?= e($user['email']) ?>" required>
+      <input type="email" id="email" name="email" placeholder="Enter your email" value="<?= e($user['email'] ?? '') ?>" required>
 
       <!-- Phone -->
       <label for="phone">Phone Number</label>
-      <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" value="<?= e($user['mobile']) ?>" pattern="[0-9]{10,15}" required>
-<!-- Date of birth & Gender -->
+      <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" value="<?= e($user['mobile'] ?? '') ?>" pattern="[0-9]{6,15}" required>
+
+      <!-- Date of birth & Gender -->
       <label for="date_of_birth">Date of Birth</label>
       <input type="date" id="date_of_birth" name="date_of_birth" value="<?= e($user['date_of_birth'] ?? '') ?>">
 
@@ -163,23 +152,19 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC);
         <option value="female" <?= (isset($user['gender']) && $user['gender']==='female') ? 'selected' : '' ?>>Female</option>
         <option value="other" <?= (isset($user['gender']) && $user['gender']==='other') ? 'selected' : '' ?>>Other</option>
       </select>
-      <!-- Map / Location -->
-      <p class="map-helper-text" style="margin:12px 0 8px 0; color:#425a78; font-size:1em;">
-        Please select your location by clicking the <b>Select location from map</b> button below.
-      </p>
+      <p class="map-helper-text" style="margin:12px 0 8px 0; color:#425a78; font-size:1em;">Please select your location by clicking the <b>Select location from map</b> button below.</p>
+
+      <!-- Address -->
       <label for="street">Street Address</label>
-      <input type="text" id="street" name="street" value="<?= e($user['street']) ?>" >
+      <input type="text" id="street" name="street" value="<?= e($user['street'] ?? '') ?>">
       <label for="city">City</label>
-      <input type="text" id="city" name="city" value="<?= e($user['city']) ?>" >
-      <label for="postal">Postal Code</label>
-      <input type="text" id="postal" name="postal" value="<?= e($user['postal_code']) ?>" >
+      <input type="text" id="city" name="city" value="<?= e($user['city'] ?? '') ?>">
       <label for="country">Country</label>
-      <input type="text" id="country" name="country" value="<?= e($user['country']) ?>" >
+      <input type="text" id="country" name="country" value="<?= e($user['country'] ?? '') ?>">
 
-      <input type="hidden" id="latitude" name="latitude" value="<?= e($user['latitude']) ?>">
-      <input type="hidden" id="longitude" name="longitude" value="<?= e($user['longitude']) ?>">
+      <input type="hidden" id="latitude" name="latitude" value="<?= e($user['latitude'] ?? '') ?>">
+      <input type="hidden" id="longitude" name="longitude" value="<?= e($user['longitude'] ?? '') ?>">
 
-      <!-- Map Select Button -->
       <button type="button" class="map-select-btn" onclick="selectLocationFromMap()">Select location from map</button>
 
       <!-- Map Modal -->
@@ -194,15 +179,28 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
       <!-- Action Buttons -->
       <div class="profile-actions">
-        <button type="button" class="cancel-btn" onclick="window.location.href='../Html/User_profile.php'">Cancel</button>
+        <button type="button" class="cancel-btn" onclick="window.location.href='../Html/Camera_Contribution_profile.php'">Cancel</button>
         <button type="submit" class="save-btn">Save Changes</button>
       </div>
     </form>
   </main>
 
-  <!-- JavaScript -->
-  <script src="../javascrpit/User_Edit_profile.js"></script>
+  <script src="../javascrpit/Camera_Contribution_Edit_profile.js"></script>
+
   <script>
+  // small preview helper
+  function previewImage(event, id) {
+    const out = document.getElementById(id);
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) { out.src = e.target.result; };
+    reader.readAsDataURL(file);
+  }
+
+  // Map helper functions will be reused from template JS if present
+  </script>
+<script>
 let map, marker, selectedLatLng;
 
 // Open the map modal and initialize the map
@@ -341,6 +339,5 @@ function saveMapLocation() {
   letter-spacing: 0.01em;
 }
 </style>
-
 </body>
 </html>

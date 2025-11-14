@@ -1,61 +1,121 @@
+<?php
+declare(strict_types=1);
+session_start();
+require_once __DIR__ . '/../Php/db.php';
+
+if (empty($_SESSION['user_id'])) {
+  header('Location: ../Html/login.html');
+  exit();
+}
+
+$user_id = (int) $_SESSION['user_id'];
+
+try {
+  $sql = "SELECT police_id AS id, full_name, email, mobile, profile_photo, cover_photo, bio, date_of_birth, gender, street, city, country, badge_id, designation, station FROM policemen WHERE police_id = :id LIMIT 1";
+  $stmt = $pdo->prepare($sql);
+  $stmt->execute(['id' => $user_id]);
+  $user = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+} catch (PDOException $e) {
+  header('Location: ../Html/login.html?error=db');
+  exit();
+}
+
+function e($v) { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Searchar</title>
+  <title>Policeman Profile - Searchar</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Main CSS -->
   <link rel="stylesheet" href="../css/Policeman_profile.css">
-
 </head>
 <body>
   <header class="navbar">
     <div class="navbar-logo">
-      <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
+      <a href="../Html/Policeman_Home.php">
+        <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
+      </a>
     </div>
   </header>
+
   <div class="cover-photo">
-    <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_9b24e7f5.jpg" alt="Cover" class="cover-img">
+    <img src="<?= !empty($user['cover_photo']) ? '../uploads/police/' . e($user['cover_photo']) : '../Images/default-cover.gif' ?>" alt="Cover" class="cover-img">
     <div class="profile-pic-container">
-      <img class="profile-pic" src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg" alt="Profile">
+      <img class="profile-pic" src="<?= !empty($user['profile_photo']) ? '../uploads/police/' . e($user['profile_photo']) : '../Images/default-profile.gif' ?>" alt="Profile">
     </div>
   <div class="main-content">
-   <div class="left-panel">
+    <div class="left-panel">
   <div class="card user-info" style="position: relative;">
-    <button class="edit-btn" title="Edit Profile" onclick="location.href='../Html/User_Edit_profile.html'">
+        <button class="edit-btn" title="Edit Profile" onclick="location.href='../Html/Policeman_Edit_profile.php?police_id=<?= $user_id ?>'">
       <img src="../Images/pencil.gif" alt="Edit" />
     </button>
-    <h2>Erik Jhonson</h2>
-    <div class="divider"></div>
-    <p class="user-bio">I Don’t know how? But i believe that it is possible one day if i stay with my dream all time</p>
-    <ul class="info-list">
-      <li><span class="icon">&#128187;</span> Web Developer</li>
-      <li><span class="icon">&#127758;</span> Melbourne, Australia</li>
-      <li><span class="icon">&#127968;</span> Pulshar, Melbourne</li>
-    </ul>
+     <h2><?= e($user['full_name'] ?? 'Officer Name') ?></h2>
+            <div class="divider"></div>
+            
+            <p class="user-bio">
+                <?= !empty($user['bio']) ? e($user['bio']) : ' 💬 Add your bio in your profile so colleagues know a little about you' ?>
+            </p>
 
-   
+        <ul class="info-list">
+    <!-- Badge ID -->
+    <li>
+        <span class="icon">🏷️</span>
+        <?= !empty($user['badge_id']) ? e($user['badge_id']) : 'Badge not set' ?>
+    </li>
+
+    <!-- Designation -->
+    <li>
+        <span class="icon">💼</span>
+        <?= !empty($user['designation']) ? e($user['designation']) : 'Designation not set' ?>
+    </li>
+
+    <!-- Station -->
+    <li>
+        <span class="icon">🏢</span>
+        <?= !empty($user['station']) ? e($user['station']) : 'Station not set' ?>
+    </li>
+
+    <!-- Email -->
+    <li>
+        <span class="icon">✉️</span>
+        <?= !empty($user['email']) ? e($user['email']) : 'No email provided' ?>
+    </li>
+
+    <!-- Street / Address -->
+    <li>
+        <span class="icon">🏠</span>
+        <?= !empty($user['street']) ? e($user['street']) : 'No street provided' ?>
+    </li>
+
+    <!-- City / Country -->
+    <li>
+        <span class="icon">🌍</span>
+        <?= !empty($user['city']) ? e($user['city']) : 'No city provided' ?>,
+        <?= !empty($user['country']) ? e($user['country']) : 'No country provided' ?>
+    </li>
+</ul>
+
   </div>
    <!-- New Password Change Section -->
     <div class="password-change-section">
       <h3>Password Change</h3>
       <p>For your account security, please change your password regularly.</p>
-      <button class="change-pass-btn" onclick="location.href='../Html/Policeman_Passchagned.html'">Change Password</button>
+      <button class="change-pass-btn" onclick="location.href='../Html/Policeman_Passchanged.php'">Change Password</button>
     </div>
 </div>
     <div class="center-panel">
   <div class="card share-box">
-    <img class="mini-profile" src="../Images/post.gif" alt="Profile">
+    <img class="mini-profile" src="<?= !empty($user['profile_photo']) ? '../uploads/police/' . e($user['profile_photo']) : '../Images/default-profile.gif' ?>" alt="Profile">
     <input type="text" placeholder="What's on your mind?" onclick="openModal()">
   </div>
 
   <div class="card post">
     <div class="post-header">
-      <img class="mini-profile" src="https://randomuser.me/api/portraits/men/20.jpg" alt="Profile">
+      <img class="mini-profile" src="<?= !empty($user['profile_photo']) ? '../uploads/police/' . e($user['profile_photo']) : 'https://randomuser.me/api/portraits/men/20.jpg' ?>" alt="Profile">
       <div>
-        <div class="username">Erik Jhonson</div>
+        <div class="username"><?= e($user['full_name'] ?? '—') ?></div>
         <div class="post-time">35 min ago</div>
       </div>
     </div>
@@ -66,7 +126,7 @@
   </div>
 </div>
 
-<<!-- Popup Modal and right panel copied from template -->
+<!-- Popup Modal and right panel copied from template -->
 <div id="postModal" class="post-modal">
   <div class="post-modal-content">
     <span class="post-modal-close" onclick="closeModal()">&times;</span>
@@ -78,7 +138,6 @@
       </label>
       <span class="facebook-toggle-label">Share to Facebook</span>
     </div>
-    <!-- ✅ Anonymous Mode Toggle -->
     <div class="facebook-toggle">
       <label class="facebook-toggle-switch">
         <input type="checkbox" id="anonToggle">
@@ -88,13 +147,22 @@
       </label>
       <span class="facebook-toggle-label">Post Anonymously</span>
     </div>
-    <!-- ✅ Category Selection --> <p class="category-label">Select Category:</p> <div class="category-toggle"> <label class="category-option"> <input type="radio" name="category" value="mission" checked> <img src="../Images/mission-icon.gif" alt="Mission Icon" class="category-icon" /> Mission Person </label> <label class="category-option"> <input type="radio" name="category" value="disaster"> <img src="../Images/disaster-icon.gif" alt="Disaster Icon" class="category-icon" /> Disaster </label> </div>
+    <p class="category-label">Select Category:</p>
+    <div class="category-toggle">
+      <label class="category-option">
+        <input type="radio" name="category" value="mission" checked>
+        <img src="../Images/mission-icon.gif" alt="Mission Icon" class="category-icon" /> Mission Person
+      </label>
+      <label class="category-option">
+        <input type="radio" name="category" value="disaster">
+        <img src="../Images/disaster-icon.gif" alt="Disaster Icon" class="category-icon" /> Disaster
+      </label>
+    </div>
     <textarea id="postText" class="post-modal-textarea" placeholder="Say Something..."></textarea>
     <div class="post-modal-preview">
       <p id="sharedPostText" class="preview-text"></p>
       <img id="sharedPostImage" class="preview-img" src="" alt="" />
     </div>
-    <!-- ✅ Media Upload Buttons -->
     <div class="post-media-options">
       <label>
         <input type="file" id="imageUpload" accept="image/*" hidden>
@@ -105,8 +173,6 @@
         <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
       </label>
     </div>
-
-    <!-- ✅ Media Preview -->
     <div id="mediaPreview" class="post-media-preview"></div>
     <div class="post-modal-actions">
       <button class="post-cancel-btn" onclick="closeModal()">Cancel</button>
@@ -170,43 +236,20 @@
   color: #1a73e8;
 }
 </style>
-
     <div class="right-panel">
       <div class="card notifications">
         <h3>Recent Notifications</h3>
         <div class="divider"></div>
         <div class="notification">
-          <img class="mini-profile" src="https://randomuser.me/api/portraits/men/22.jpg" alt="User">
+          <img class="mini-profile" src="<?= !empty($user['profile_photo']) ? '../uploads/police/' . e($user['profile_photo']) : 'https://randomuser.me/api/portraits/men/22.jpg' ?>" alt="User">
           <div>
             <div class="notification-text">Any one can join with us if you want</div>
             <div class="notification-time">5 Min Ago</div>
-          </div>
-        </div>
-        <div class="notification">
-          <img class="mini-profile" src="https://randomuser.me/api/portraits/women/34.jpg" alt="User">
-          <div>
-            <div class="notification-text">Any one can join with us if you want</div>
-            <div class="notification-time">10 Min Ago</div>
-          </div>
-        </div>
-        <div class="notification">
-          <img class="mini-profile" src="https://randomuser.me/api/portraits/men/23.jpg" alt="User">
-          <div>
-            <div class="notification-text">Any one can join with us if you want</div>
-            <div class="notification-time">18 Min Ago</div>
-          </div>
-        </div>
-        <div class="notification">
-          <img class="mini-profile" src="https://randomuser.me/api/portraits/men/25.jpg" alt="User">
-          <div>
-            <div class="notification-text">Any one can join with us if you want</div>
-            <div class="notification-time">20 Min Ago</div>
           </div>
         </div>
       </div>
     </div>
   </div>
 </body>
-       <script src="../javascrpit/Policeman_profile.js"></script>
-
+<script src="../javascrpit/Policeman_profile.js"></script>
 </html>

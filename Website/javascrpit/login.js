@@ -655,14 +655,25 @@ function handleSocialClick(e) {
 
   // Find the role select nearest to the clicked button (fixes duplicate id='role' in page)
   function findSelectedRoleFromEvent(target) {
-    // Look for a role select inside the nearest sign-in or sign-up container
-    const container = target.closest('.sign-in, .sign-up, .form');
+    // 1) If the clicked button contains an explicit data-role, use it
+    const btnWithData = target.closest('[data-role]');
+    if (btnWithData && btnWithData.dataset && btnWithData.dataset.role) {
+      return btnWithData.dataset.role;
+    }
+
+    // 2) Look for a role select inside the nearest container (form, sign-in, sign-up)
+    const container = target.closest('form, .sign-in, .sign-up, .form-wrapper, .form');
     if (container) {
-      const sel = container.querySelector('select#role, select[name="role"]');
+      const sel = container.querySelector('select[name="role"], select#role');
       if (sel && sel.value) return sel.value;
     }
-    // Fallback: global element (legacy)
-    return document.getElementById('role')?.value || document.querySelector('select[name="role"]')?.value || '';
+
+    // 3) Fallback: any visible/global role select on the page
+    const globalSel = document.querySelector('select[name="role"], select#role');
+    if (globalSel && globalSel.value) return globalSel.value;
+
+    // 4) Nothing found
+    return '';
   }
 
   const selectedRole = findSelectedRoleFromEvent(target);
@@ -689,10 +700,14 @@ function handleSocialClick(e) {
               body: JSON.stringify({ credential: resp.credential, role: selectedRole })
             }).then(r => r.json()).then(json => {
               if (json.success) {
-                // Notify the user and then redirect
-                alert('Sign in successful!');
+                // Prefer server-provided redirect (server returns { action, redirect })
+                if (json.redirect) {
+                  window.location.href = json.redirect;
+                  return;
+                }
+                // Fallback: map role -> home
                 const map = { user: '../Html/User_Home.php', policeman: '../Html/Policeman_Home.php', volunteer: '../Html/Volunteer_Home.php', camera_contributor: '../Html/Camera_Contribution_Home.php' };
-                window.location.href = map[json.role] || '../Html/Index.html';
+                window.location.href = json.redirect || map[json.role] || '../Html/Index.html';
               } else {
                 alert('Google sign-in failed: ' + (json.error || 'unknown'));
               }
@@ -722,10 +737,13 @@ function handleSocialClick(e) {
             body: JSON.stringify({ access_token: accessToken, role: selectedRole })
           }).then(r => r.json()).then(json => {
             if (json.success) {
-              // Notify the user and then redirect
-              alert('Sign in successful!');
+              // Prefer server-provided redirect (server returns { action, redirect })
+              if (json.redirect) {
+                window.location.href = json.redirect;
+                return;
+              }
               const map = { user: '../Html/User_Home.php', policeman: '../Html/Policeman_Home.php', volunteer: '../Html/Volunteer_Home.php', camera_contributor: '../Html/Camera_Contribution_Home.php' };
-              window.location.href = map[json.role] || '../Html/Index.html';
+              window.location.href = json.redirect || map[json.role] || '../Html/Index.html';
             } else {
               alert('Facebook sign-in failed: ' + (json.error || 'unknown'));
             }
