@@ -70,26 +70,36 @@ function createPost() {
     alert("Please add text or media to post!");
     return;
   }
+  // Build FormData and submit to backend. Do NOT render locally — saved for later retrieval.
+  const category = document.querySelector('input[name="category"]:checked')?.value || 'general';
+  const fd = new FormData();
+  fd.append('text', text);
+  fd.append('category', category);
+  fd.append('case_id', '1'); // single shared case; change if dynamic
+  // include facebook toggle value
+  const shareFb = document.getElementById('facebookShareToggle')?.checked ? '1' : '0';
+  fd.append('share_facebook', shareFb);
+  if (selectedImage) fd.append('media', selectedImage, selectedImage.name);
+  if (selectedVideo) fd.append('media', selectedVideo, selectedVideo.name);
 
-  const post = document.createElement("div");
-  post.classList.add("post");
-  if (text) post.innerHTML = `<p>${text}</p>`;
-
-  if (selectedImage) {
-    const img = document.createElement("img");
-    img.src = URL.createObjectURL(selectedImage);
-    post.appendChild(img);
-  }
-
-  if (selectedVideo) {
-    const video = document.createElement("video");
-    video.src = URL.createObjectURL(selectedVideo);
-    video.controls = true;
-    post.appendChild(video);
-  }
-
-  feed.prepend(post);
-  closeModal();
+  fetch('../Php/save_post.php', {
+    method: 'POST',
+    body: fd,
+    credentials: 'same-origin'
+  }).then(r => r.json())
+    .then(res => {
+      if (res && res.success) {
+        // reload page so saved posts (or admin view) can pick up the new contribution
+        alert('Saved successfully. Your contribution is stored and will be available to case reviewers.');
+        closeModal();
+        window.location.reload();
+      } else {
+        alert('Save failed: ' + (res.error || 'Unknown'));
+      }
+    }).catch(err => {
+      console.error(err);
+      alert('Network error while saving.');
+    });
 }
 
 function openMissingForm() {
