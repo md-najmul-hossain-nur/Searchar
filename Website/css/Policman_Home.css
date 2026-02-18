@@ -152,6 +152,96 @@ body {
   width: 30px;
   height: 30px;
 }
+
+/* Notifications card refinements */
+.notifications {
+  border: 1px solid #eef2f7;
+  background: linear-gradient(135deg, #ffffff 0%, #f9fbff 100%);
+}
+
+.notifications h4 {
+  margin: 0 0 8px 0;
+  color: #1a2a3a;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.notifications ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notifications ul li {
+  background: #fff;
+  padding: 8px 10px;
+  border: 1px solid #ecf1f6;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  color: #2d3748;
+}
+
+.notifications ul li span {
+  color: #7a8aa0;
+  font-size: 0.85em;
+  margin-left: 8px;
+}
+.redzone {
+  border: 1px solid #ffd4d4;
+  background: linear-gradient(135deg, #fff7f7, #ffecec);
+  padding: 14px;
+  border-radius: 12px;
+  margin-top: 12px;
+}
+
+.redzone h4 {
+  margin-bottom: 10px;
+  color: #c0392b;
+  font-weight: 700;
+}
+
+.redzone ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px 0;
+}
+
+.redzone ul li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  border-left: 4px solid #e74c3c;
+  padding: 8px 10px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.redzone ul li span:last-child {
+  font-size: 12px;
+  color: #888;
+}
+
+.redzone-btn {
+  width: 100%;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+.redzone-btn:hover {
+  background: #c0392b;
+}
+
 /* Volunteer Section (Same Style) */
 .volunteer-section {
   background: #fff;
@@ -214,7 +304,7 @@ body {
 .advert-track {
   display: flex;
   gap: 20px;
-  animation: scrollAds 2s linear infinite;
+  animation: scrollAds 14s ease-in-out infinite alternate;
 }
 
 .advert-track img {
@@ -232,8 +322,8 @@ body {
 
 /* Animation Keyframes */
 @keyframes scrollAds {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  from { transform: translateX(0); }
+  to { transform: translateX(-60%); }
 }
 
 /* Pause on Hover */
@@ -749,7 +839,7 @@ body {
 .advert-track {
   display: flex;
   gap: 20px;
-  animation: scrollAds 2s linear infinite;
+  animation: scrollAds 14s ease-in-out infinite alternate;
 }
 
 .advert-track img {
@@ -767,8 +857,8 @@ body {
 
 /* Animation Keyframes */
 @keyframes scrollAds {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  from { transform: translateX(0); }
+  to { transform: translateX(-60%); }
 }
 
 /* Pause on Hover */
@@ -1617,7 +1707,7 @@ body {
 .advert-track {
   display: flex;
   gap: 20px;
-  animation: scrollAds 2s linear infinite;
+  animation: scrollAds 14s ease-in-out infinite alternate;
 }
 
 .advert-track img {
@@ -1635,8 +1725,8 @@ body {
 
 /* Animation Keyframes */
 @keyframes scrollAds {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  from { transform: translateX(0); }
+  to { transform: translateX(-60%); }
 }
 
 /* Pause on Hover */
@@ -2152,7 +2242,7 @@ body {
 .advert-track {
   display: flex;
   gap: 20px;
-  animation: scrollAds 2s linear infinite;
+  animation: scrollAds 14s ease-in-out infinite alternate;
 }
 
 .advert-track img {
@@ -2170,8 +2260,8 @@ body {
 
 /* Animation Keyframes */
 @keyframes scrollAds {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  from { transform: translateX(0); }
+  to { transform: translateX(-60%); }
 }
 
 /* Pause on Hover */
@@ -2401,7 +2491,7 @@ body {
   border: none;
   padding: 8px 18px;
   font-size: 0.9rem;
-  border-radius: 25px;
+  border-radius: 2px;
   cursor: pointer;
   transition: background 0.2s ease-in-out;
   text-decoration: none; /* For link buttons */
@@ -2745,18 +2835,23 @@ body {
 
 /* Call Button (Same Style Concept) */
 .call-btn {
-  background: #f05454;
-  color: #fff;
-  border: none;
-  padding: 4px 12px;
-  font-size: 0.85rem;
-  border-radius: 20px;
+  background: #fff;
+  color: #f05454;
+  border: 2px solid #f05454;
+  padding: 6px 16px;
+  font-size: 0.92rem;
+  border-radius: 999px;
   cursor: pointer;
-  transition: background 0.2s ease-in-out;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 4px 10px rgba(240, 84, 84, 0.12);
 }
 
 .call-btn:hover {
-  background: #e3471c;
+  background: #f05454;
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(240, 84, 84, 0.18);
 }
 
 
@@ -3150,4 +3245,14 @@ body {
 .user-bio:hover {
     background-color: #f0f0f0;
     border-color: #d0d0d0;
+}
+
+/* Carousel-style advert slider (unified) */
+.advert-track {
+  animation: none;
+}
+
+@keyframes advertMarquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }

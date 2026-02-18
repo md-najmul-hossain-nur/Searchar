@@ -301,7 +301,7 @@ body {
 .advert-track {
   display: flex;
   gap: 20px;
-  animation: scrollAds 2s linear infinite;
+  animation: scrollAds 14s ease-in-out infinite alternate;
 }
 
 .advert-track img {
@@ -319,8 +319,8 @@ body {
 
 /* Animation Keyframes */
 @keyframes scrollAds {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  from { transform: translateX(0); }
+  to { transform: translateX(-60%); }
 }
 
 /* Pause on Hover */
@@ -1086,19 +1086,60 @@ background: linear-gradient(80deg, #d1b75a);
 
 /* Call Button (Same Style Concept) */
 .call-btn {
-  background: #f05454;
-  color: #fff;
-  border: none;
-  padding: 4px 12px;
-  font-size: 0.85rem;
-  border-radius: 20px;
+  background: #fff;
+  color: #f05454;
+  border: 2px solid #f05454;
+  padding: 6px 16px;
+  font-size: 0.92rem;
+  border-radius: 999px;
   cursor: pointer;
-  transition: background 0.2s ease-in-out;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 4px 10px rgba(240, 84, 84, 0.12);
+  letter-spacing: 0.02em;
 }
 
 .call-btn:hover {
-  background: #e3471c;
+  background: #f05454;
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(240, 84, 84, 0.18);
 }
+
+/* Emergency quick-action buttons (hospital/fire/police) */
+.emergency-btn {
+  --btn-color: #f05454;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  margin: 0 6px 8px 0;
+  border: 2px solid var(--btn-color);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--btn-color);
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.emergency-btn:hover {
+  background: var(--btn-color);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+}
+
+.emergency-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.emergency-btn.hospital { --btn-color: #f05454; }
+.emergency-btn.fire { --btn-color: #ff7f11; }
+.emergency-btn.police { --btn-color: #0077b6; }
 
 
 /* Overlay Background */
@@ -1689,6 +1730,16 @@ background: linear-gradient(80deg, #d1b75a);
   vertical-align: middle;
   filter: drop-shadow(0 1px 2px rgba(0,0,0,0.05));
   margin-right: 2px;
+}
+
+/* Carousel-style advert slider (unified) */
+.advert-track {
+  animation: advertMarquee 20s linear infinite;
+}
+
+@keyframes advertMarquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }
 /* --- General Modal Styles --- */
 .cam-form-popup {

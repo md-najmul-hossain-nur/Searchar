@@ -155,6 +155,41 @@ var policeIcon = L.icon({
         }
     }
 
+    // Basic escaper for popup content
+    const HOTLINE_NUMBER = '999'; // national emergency hotline fallback
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function formatPlaceInfo(place, fallbackType) {
+      const name = place.display_name?.split(',')[0] || place.name || fallbackType || 'Location';
+      const address = place.address
+        ? [place.address.road, place.address.city || place.address.town || place.address.village, place.address.state, place.address.country]
+          .filter(Boolean)
+          .join(', ')
+        : (place.display_name || 'Address not available');
+      const phoneRaw = place.extratags?.phone || place.extratags?.['contact:phone'] || place.extratags?.['contact:mobile'] || place.extratags?.mobile || '';
+      const phoneOsm = phoneRaw.trim();
+      const phone = phoneOsm || HOTLINE_NUMBER;
+      const phoneDial = phone ? phone.replace(/[^0-9+]/g, '') : '';
+      const phoneLabel = phoneOsm ? 'Phone' : 'Hotline';
+      return { name, address, phone, phoneDial, phoneLabel };
+    }
+
+    window.callPlace = function(phoneDial, name) {
+      const target = phoneDial || HOTLINE_NUMBER;
+      if (!target) {
+        alert('Phone number not available for ' + (name || 'this place'));
+        return;
+      }
+      window.location.href = 'tel:' + target;
+    };
+
     // Fetch places function
     function fetchPlaces(lat, lon, type, icon) {
         clearMap(); // Remove old markers and routes
@@ -164,7 +199,7 @@ var policeIcon = L.icon({
             .bindPopup("📍 You are here").openPopup();
         markers.push(userMarker);
 
-        var url = `https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${type}&bounded=1&viewbox=${lon-0.02},${lat+0.02},${lon+0.02},${lat-0.02}`;
+        var url = `https://nominatim.openstreetmap.org/search?format=json&limit=5&addressdetails=1&extratags=1&q=${type}&bounded=1&viewbox=${lon-0.02},${lat+0.02},${lon+0.02},${lat-0.02}`;
 
         fetch(url)
             .then(res => res.json())
@@ -174,12 +209,18 @@ var policeIcon = L.icon({
                     return;
                 }
                 data.forEach(place => {
+                    const info = formatPlaceInfo(place, type);
+                    const popupHtml = `<b>${escapeHtml(info.name)}</b><br>
+<small>${escapeHtml(info.address)}</small><br>
+<div class="popup-actions">
+  <button class="route-btn" onclick="showRoute(${lat}, ${lon}, ${place.lat}, ${place.lon})">🚗 Show Route</button>
+  <button class="call-btn" onclick="callPlace('${info.phoneDial}', '${escapeHtml(info.name)}')">📞 Call</button>
+</div>
+<div class="phone-text">${info.phone ? '📞 ' + escapeHtml(info.phoneLabel) + ': ' + escapeHtml(info.phone) : 'Phone not available'}</div>`;
+
                     var marker = L.marker([place.lat, place.lon], { icon: icon })
                         .addTo(map)
-                       .bindPopup(`<b>${place.display_name}</b><br>
-  <button class="route-btn" onclick="showRoute(${lat}, ${lon}, ${place.lat}, ${place.lon})">
-    🚗 Show Route
-  </button>`);
+                        .bindPopup(popupHtml);
 
                     markers.push(marker);
                 });

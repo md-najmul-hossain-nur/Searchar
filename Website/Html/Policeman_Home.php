@@ -35,7 +35,7 @@ function e($v) { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE
   
 </head>
 <body>
- <header class="navbar" style="display:flex; align-items:center; justify-content:space-between; padding:10px;">
+ <header class="navbar" style="display:flex; align-items:center; justify-content:space-between; padding:10px; position:sticky; top:0; z-index:2000; background:#fff;">
   <!-- Left: Logo -->
   <div class="navbar-logo">
     <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
@@ -65,10 +65,6 @@ function e($v) { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE
       </div>
 
      
-       
-
-
-
 
 
 
@@ -107,7 +103,7 @@ function e($v) { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE
 <button id="find-police" style="padding:8px 15px;background:#0077b6;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:10px;">👮 Show Police Stations</button>
 
 <!-- Map Container -->
-<div id="emergency-map" style="height: 400px; border-radius: 8px;"></div>
+<div id="emergency-map" style="height: 400px; border-radius: 8px; border: 2px solid #000; width: 100%; max-width: 100%; overflow: hidden; box-sizing: border-box; position: relative; z-index: 0;"></div>
 
 <!-- JS Libraries -->
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -885,9 +881,84 @@ function e($v) { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE
       <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg">
       <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg">
       <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg">
+      <!-- duplicate set for seamless carousel loop -->
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg">
     </div>
   </div>
 </div>
+ 
+<div class="notifications">
+  <div class="redzone">
+  <h4>Red Zone Alerts</h4>
+  <ul>
+    <li><span>Badda: Fire risk</span><span>Today</span></li>
+    <li><span>Kuril: Accident zone</span><span>1 hr ago</span></li>
+    <li><span>Gulshan-2: Snatching alert</span><span>Yesterday</span></li>
+    <li><span>Rampura: Traffic heavy</span><span>30 min ago</span></li>
+  </ul>
+
+  <button class="redzone-btn"
+    onclick="window.location.href='../Html/RedZone.html';">
+    Open Red Zone Map
+  </button>
+</div>
+</div>
+<style>.redzone {
+  border: 1px solid #ffd4d4;
+  background: linear-gradient(135deg, #fff7f7, #ffecec);
+  padding: 14px;
+  border-radius: 12px;
+  margin-top: 12px;
+}
+
+.redzone h4 {
+  margin-bottom: 10px;
+  color: #c0392b;
+  font-weight: 700;
+}
+
+.redzone ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px 0;
+}
+
+.redzone ul li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  border-left: 4px solid #e74c3c;
+  padding: 8px 10px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.redzone ul li span:last-child {
+  font-size: 12px;
+  color: #888;
+}
+
+.redzone-btn {
+  width: 100%;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+.redzone-btn:hover {
+  background: #c0392b;
+}
+</style>
 <div class="Calender-section">
   <div class="calendar-container">
     <h2 class="calendar-title">Calendar</h2>
@@ -917,6 +988,6 @@ function e($v) { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE
 </div>
 
     </body>
-       <script src="../javascrpit/Policeman_Home.js"></script>
+      <script src="../javascrpit/Policeman_Home.js?v=callbtn1"></script>
 
 </html>

@@ -81,7 +81,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user_id
     ]);
 
-    header('Location: ../Html/Policeman_profile.html');
+    // After saving, go back to the policeman profile page
+    header('Location: ../Html/Policeman_profile.php');
     exit;
 }
 
@@ -213,7 +214,7 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
 
       <!-- Action Buttons -->
       <div class="profile-actions">
-        <button type="button" class="cancel-btn" onclick="window.location.href='../Html/Policeman_profile.html'">Cancel</button>
+        <button type="button" class="cancel-btn" onclick="window.location.href='../Html/Policeman_profile.php'">Cancel</button>
         <button type="submit" class="save-btn">Save Changes</button>
       </div>
     </form>
