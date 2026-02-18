@@ -14,6 +14,49 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- Main CSS -->
   <link rel="stylesheet" href="../css/Admin.css">
+  <style>
+    .navbar-search { position: relative; }
+    .navbar-avatar { cursor: pointer; }
+    .avatar-panel {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 240px;
+      display: none;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+      border-radius: 10px;
+      padding: 14px;
+      transform: translateY(-10px);
+      opacity: 0;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+      z-index: 1500;
+      pointer-events: none;
+    }
+    .avatar-panel.open {
+      display: block;
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .avatar-panel__user { font-weight: 600; margin-bottom: 10px; color: #222a42; }
+    .avatar-panel__logout {
+      width: 100%;
+      background: #e04a4f;
+      color: #fff;
+      border: none;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      box-shadow: 0 8px 18px rgba(224, 74, 79, 0.25);
+    }
+    .avatar-panel__logout:hover { background: #c83f44; }
+  </style>
   
 </head>
 <body>
@@ -67,8 +110,15 @@
       <div class="navbar-title"></div>
       <div class="navbar-search">
         <input type="text" placeholder="Search here...">
-        <img class="navbar-avatar" src="../Images/businessman.gif" alt="User Avatar">
+        <img class="navbar-avatar" id="admin-avatar" src="../Images/businessman.gif" alt="User Avatar">
+        <div id="avatar-panel" class="avatar-panel">
+          <div class="avatar-panel__user">Signed in as Admin</div>
+          <button class="avatar-panel__logout" onclick="window.location.href='../Php/logout.php';">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Log out
+          </button>
+        </div>
       </div>
+      
     </div>
     <!-- Dashboard Section -->
     <div id="dashboard" class="main-section active">
@@ -188,40 +238,27 @@
         <th>Actions</th>
       </tr>
     </thead>
-    <tbody>
-      <tr>
-        <td>Alice Johnson</td>
-        <td>alice@email.com</td>
-        <td>+123456789</td>
-        <td>New York</td>
-        <td>Camera Man</td>
-        <td>
-          <button class="delete-btn" onclick="confirmDelete('Alice Johnson')"><i class="fa-solid fa-trash"></i></button>
-          <button class="warn-btn" onclick="warnUser('Alice Johnson')"><i class="fa-solid fa-triangle-exclamation"></i> Warn</button>
-        </td>
-      </tr>
-      <tr>
-        <td>Bob Smith</td>
-        <td>bob@email.com</td>
-        <td>+987654321</td>
-        <td>Los Angeles</td>
-        <td>User</td>
-        <td>
-          <button class="delete-btn" onclick="confirmDelete('Bob Smith')"><i class="fa-solid fa-trash"></i></button>
-          <button class="warn-btn" onclick="warnUser('Bob Smith')"><i class="fa-solid fa-triangle-exclamation"></i> Warn</button>
-        </td>
-      </tr>
-      <!-- Add more users as needed -->
+    <tbody id="users-table-body">
+      <tr><td colspan="6">Loading...</td></tr>
     </tbody>
   </table>
 
   <!-- Volunteers Table -->
   <h2>Volunteers</h2>
   <div class="filters-bar">
-    <input type="text" placeholder="Search by name/location">
-    <select><option>Status</option></select>
-    <select><option>Rank</option></select>
-    <button>Filter</button>
+    <input id="vol-filter-text" type="text" placeholder="Search by name/location">
+    <select id="vol-filter-status">
+      <option value="">Status</option>
+      <option value="active">Active</option>
+      <option value="inactive">Inactive</option>
+    </select>
+    <select id="vol-filter-rank">
+      <option value="">Rank</option>
+      <option value="gold">Gold</option>
+      <option value="silver">Silver</option>
+      <option value="bronze">Bronze</option>
+    </select>
+    <button onclick="filterVolunteers()">Filter</button>
   </div>
   <table class="styled-table">
     <thead>
@@ -236,25 +273,11 @@
         <th>Actions</th>
       </tr>
     </thead>
-    <tbody>
-      <tr>
-        <td>Rakib Khan</td>
-        <td>Dhanmondi</td>
-        <td>017xxxxxxx</td>
-        <td>2024-09-01</td>
-        <td>2 days ago</td>
-        <td>12</td>
-        <td>Gold</td>
-        <td>
-          <button>View Profile</button>
-          <button>Promote</button>
-          <button>Assign Search</button>
-        </td>
-      </tr>
-      <!-- More rows... -->
+    <tbody id="volunteers-table-body">
+      <tr><td colspan="8">Loading...</td></tr>
     </tbody>
   </table>
-  <div id="volunteer-map" style="height:200px;background:#f2f2f2; margin-top:18px;">Volunteer Activity Map</div>
+  <div id="volunteer-map" style="height:320px; margin-top:18px; background:#f8f8f8;"></div>
 
   <!-- CCTV Management Table -->
   <h2>CCTV Management</h2>
@@ -284,14 +307,14 @@
         <td>Ali Ahmed</td>
         <td>2025-07-27 14:00</td>
         <td>
-          <button>View Feed</button>
-          <button>Contact Owner</button>
+          <button disabled title="Disabled">Edit</button>
+          <button disabled title="Disabled">Deactivate</button>
         </td>
       </tr>
       <!-- More rows... -->
     </tbody>
   </table>
-  <div id="cctv-map" style="height:200px;background:#f2f2f2;margin-top:18px;">CCTV Camera Map</div>
+  <div id="cctv-map" style="height:320px; margin-top:18px; background:#f8f8f8;"></div>
   <div class="widget-bar">
     <div class="widget">Active Cameras: <span>00</span></div>
     <div class="widget">Top Zones: <span>---</span></div>
@@ -324,7 +347,6 @@
           <span class="status-active">Active</span>
         </td>
         <td>
-          <button class="view-btn" onclick="viewOfficer('BD-203')">View</button>
           <button class="edit-btn" onclick="editOfficer('BD-203')">Edit</button>
           <button class="deactivate-btn" onclick="deactivateOfficer('BD-203')">Deactivate</button>
         </td>
@@ -337,6 +359,8 @@
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <div id="maps" class="main-section">
   <h2>Maps Page</h2>
 
@@ -380,7 +404,6 @@
         <td>MP1001</td><td>Jane Doe</td><td>14</td><td>F</td><td>Dhaka, 12:30PM</td>
         <td><span class="status active">Active</span></td><td>Rakib</td><td>2025-07-25</td>
         <td>
-          <button>View</button>
           <button>Edit</button>
           <button>Assign Volunteer</button>
           <button>Alert CCTV</button>
@@ -448,7 +471,6 @@
         <td>CR-001</td><td>Theft</td><td>Banani</td><td>Open</td>
         <td>Yes</td><td>2025-07-26</td><td>No</td>
         <td>
-          <button>View</button>
           <button>Approve Payment</button>
           <button>Forward</button>
         </td>
@@ -570,7 +592,6 @@
         <td>Amber Alert</td><td>Child missing in Dhanmondi</td><td>Dhanmondi</td>
         <td>All</td><td>2025-07-27 13:00</td>
         <td>
-          <button>View</button>
           <button>Repeat</button>
         </td>
       </tr>
@@ -642,9 +663,262 @@
 
 
 
+
+  <script>
+      // Simple modal helpers for CCTV actions
+      function openCctvView(id) {
+        alert(`View CCTV ${id}`);
+      }
+
+      function openCctvEdit(id) {
+        const newLoc = prompt(`Edit CCTV ${id}\nEnter new location:`, '');
+        if (newLoc !== null) {
+          alert(`Saved CCTV ${id} with location: ${newLoc}`);
+        }
+      }
+
+      function openCctvDeactivate(id) {
+        const ok = confirm(`Deactivate CCTV ${id}?`);
+        if (ok) {
+          alert(`CCTV ${id} deactivated.`);
+        }
+      }
+
+      function initAvatarPanel() {
+        const trigger = document.getElementById('admin-avatar');
+        const panel = document.getElementById('avatar-panel');
+        if (!trigger || !panel) return;
+
+        const close = () => panel.classList.remove('open');
+        const toggle = () => panel.classList.toggle('open');
+
+        trigger.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggle();
+        });
+
+        panel.addEventListener('click', (e) => e.stopPropagation());
+        document.addEventListener('click', close);
+        window.addEventListener('resize', close);
+      }
+
+    initAvatarPanel();
+
+    // Helper to fetch JSON safely
+    async function fetchJSON(url) {
+      const res = await fetch(url, { credentials: 'same-origin' });
+      return res.json();
+    }
+
+    function setRows(tbody, rowsHtml) {
+      if (tbody) tbody.innerHTML = rowsHtml;
+    }
+
+    let volunteersData = [];
+
+    function populateVolunteerFilterOptions(rows) {
+      const statusSelect = document.getElementById('vol-filter-status');
+      const rankSelect = document.getElementById('vol-filter-rank');
+      if (!statusSelect || !rankSelect) return;
+
+      const statuses = new Set();
+      const ranks = new Set();
+      rows.forEach(r => {
+        if (r.status) statuses.add(String(r.status).trim());
+        if (r.rank) ranks.add(String(r.rank).trim());
+      });
+
+      const buildOptions = (select, placeholder, values) => {
+        const options = [`<option value="">${placeholder}</option>`];
+        Array.from(values)
+          .filter(Boolean)
+          .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
+          .forEach(val => {
+            options.push(`<option value="${val.toLowerCase()}">${val}</option>`);
+          });
+        select.innerHTML = options.join('');
+      };
+
+      buildOptions(statusSelect, 'Status', statuses);
+      buildOptions(rankSelect, 'Rank', ranks);
+    }
+
+    function renderUsersTable(rows) {
+      const tbody = document.getElementById('users-table-body');
+      if (!tbody) return;
+      if (!rows.length) {
+        setRows(tbody, '<tr><td colspan="6">No users found.</td></tr>');
+        return;
+      }
+      const html = rows.map(r => {
+        const name = r.name || '—';
+        const email = r.email || '—';
+        const phone = r.phone || '—';
+        const location = r.location || '—';
+        const role = r.role || 'User';
+        return `
+          <tr>
+            <td>${name}</td>
+            <td>${email}</td>
+            <td>${phone}</td>
+            <td>${location}</td>
+            <td>${role}</td>
+            <td>
+              <button class="delete-btn" disabled title="Disabled"><i class="fa-solid fa-trash"></i></button>
+              <button class="warn-btn" disabled title="Disabled"><i class="fa-solid fa-triangle-exclamation"></i> Warn</button>
+            </td>
+          </tr>`;
+      }).join('');
+      setRows(tbody, html);
+    }
+
+    function renderVolunteersTable(rows) {
+      const tbody = document.getElementById('volunteers-table-body');
+      if (!tbody) return;
+      if (!rows.length) {
+        setRows(tbody, '<tr><td colspan="8">No volunteers found.</td></tr>');
+        return;
+      }
+      const html = rows.map(r => {
+        const name = r.name || '—';
+        const location = r.location || '—';
+        const contact = r.contact || '—';
+        const joinDate = r.join_date || '—';
+        const lastActive = r.last_active || '—';
+        const missions = r.total_missions || '—';
+        const rank = r.rank || '—';
+        return `
+          <tr>
+            <td>${name}</td>
+            <td>${location}</td>
+            <td>${contact}</td>
+            <td>${joinDate}</td>
+            <td>${lastActive}</td>
+            <td>${missions}</td>
+            <td>${rank}</td>
+            <td>
+              <button>View Profile</button>
+              <button>Promote</button>
+              <button>Assign Search</button>
+            </td>
+          </tr>`;
+      }).join('');
+      setRows(tbody, html);
+    }
+
+    function applyVolunteerFilters() {
+      const text = (document.getElementById('vol-filter-text')?.value || '').trim().toLowerCase();
+      const status = (document.getElementById('vol-filter-status')?.value || '').toLowerCase();
+      const rank = (document.getElementById('vol-filter-rank')?.value || '').toLowerCase();
+
+      return volunteersData.filter(v => {
+        const haystack = `${v.name || ''} ${v.location || ''}`.toLowerCase();
+        const matchesText = !text || haystack.includes(text);
+        const matchesStatus = !status || (v.status || '').toLowerCase() === status;
+        const matchesRank = !rank || (v.rank || '').toLowerCase() === rank;
+        return matchesText && matchesStatus && matchesRank;
+      });
+    }
+
+    function filterVolunteers() {
+      const filtered = applyVolunteerFilters();
+      renderVolunteersTable(filtered);
+      const points = filtered.map(r => ({
+        name: r.name || '',
+        location: r.location || '',
+        lat: r.lat,
+        lon: r.lon
+      }));
+      initLeafletMap('volunteer-map', points, 'Volunteer');
+    }
+
+    function attachVolunteerFilterListeners() {
+      const text = document.getElementById('vol-filter-text');
+      const status = document.getElementById('vol-filter-status');
+      const rank = document.getElementById('vol-filter-rank');
+      if (text) text.addEventListener('input', filterVolunteers);
+      if (status) status.addEventListener('change', filterVolunteers);
+      if (rank) rank.addEventListener('change', filterVolunteers);
+    }
+
+    function initLeafletMap(elId, points, fallbackLabel) {
+      const el = document.getElementById(elId);
+      if (!el) return;
+      el.innerHTML = '';
+      const map = L.map(elId).setView([23.78, 90.41], 11);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+
+      const coords = [];
+      points.forEach(p => {
+        const lat = Number(p.lat);
+        const lon = Number(p.lon);
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+        const name = p.name || fallbackLabel;
+        const location = p.location || '';
+        const popup = `<strong>${name}</strong><br>${location}`;
+        L.marker([lat, lon]).addTo(map).bindPopup(popup);
+        coords.push([lat, lon]);
+      });
+
+      if (coords.length) {
+        map.fitBounds(coords, { padding: [18, 18] });
+        setTimeout(() => map.invalidateSize(), 150);
+      } else {
+        setTimeout(() => map.invalidateSize(), 150);
+      }
+    }
+
+    attachVolunteerFilterListeners();
+
+    (async function loadAdminData() {
+      // Users table (only users)
+      try {
+        const users = await fetchJSON('../Php/admin_fetch_users.php');
+        if (users && users.success) {
+          renderUsersTable(Array.isArray(users.data) ? users.data : []);
+        } else {
+          renderUsersTable([]);
+        }
+      } catch (e) {
+        console.error('Users fetch failed', e);
+        renderUsersTable([]);
+      }
+
+      // Volunteers table + map
+      try {
+        const vols = await fetchJSON('../Php/admin_fetch_volunteers.php');
+        const rows = vols && vols.success && Array.isArray(vols.data) ? vols.data : [];
+        volunteersData = rows;
+        populateVolunteerFilterOptions(rows);
+        filterVolunteers();
+      } catch (e) {
+        console.error('Volunteers fetch failed', e);
+        volunteersData = [];
+        populateVolunteerFilterOptions([]);
+        filterVolunteers();
+      }
+
+      // Camera contributors map (reuse CCTV map)
+      try {
+        const cams = await fetchJSON('../Php/admin_fetch_cameras.php');
+        const rows = cams && cams.success && Array.isArray(cams.data) ? cams.data : [];
+        const camPoints = rows.map(r => ({
+          name: r.name || r.camera_id || 'Camera',
+          location: r.location || '',
+          lat: r.lat,
+          lon: r.lon
+        }));
+        initLeafletMap('cctv-map', camPoints, 'Camera');
+      } catch (e) {
+        console.error('Camera fetch failed', e);
+        initLeafletMap('cctv-map', [], 'Camera');
+      }
+    })();
+  </script>
   <!-- Chart.js CDN for demo chart drawing (remove if you use your own chart lib) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
       <script src="../javascrpit/Admin.js"></script>
-
 </body>
 </html>

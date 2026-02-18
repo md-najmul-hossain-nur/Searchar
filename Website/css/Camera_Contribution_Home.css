@@ -106,6 +106,7 @@ body {
   position: fixed;
   z-index: 10;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Added shadow */
+margin-bottom: -100px;
 }
 .navbar-logo {
   display: flex;
@@ -173,13 +174,14 @@ body {
   background: #e3471c;
 }
 
-/* Layout Container */
 .container {
   display: flex;
   justify-content: space-between;
-  padding: 120px 20px 20px; /* Padding fixed for navbar height */
+  margin-top: 104px;  /* same as navbar height */
+  padding: 20px;
   gap: 20px;
 }
+
 
 /* Sidebars */
 .sidebar-left,
@@ -1734,7 +1736,7 @@ background: linear-gradient(80deg, #d1b75a);
 
 /* Carousel-style advert slider (unified) */
 .advert-track {
-  animation: advertMarquee 20s linear infinite;
+  animation: none;
 }
 
 @keyframes advertMarquee {

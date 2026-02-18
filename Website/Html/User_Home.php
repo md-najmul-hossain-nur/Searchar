@@ -662,7 +662,7 @@ function e($v) {
   </div>
 </div>
 
-<div class="group-chat-section">
+<div class="group-chat-section" hidden>
   <h4>Group Chat</h4>
   <div class="chat-window" id="chatWindow">
     <!-- Messages will appear here -->

@@ -14,7 +14,12 @@ if (empty($role) || empty($login_input) || empty($password)) {
 }
 
 // Map roles to table info
+$adminEmail = 'mnajmulhossainnur@gmail.com';
+$adminPhone = '01743094595';
+$adminPassword = '12345678';
+
 $roleTableMap = [
+    'admin'       => ['table' => null, 'id_col' => null, 'home' => '../Html/Admin.html'],
     'user'        => ['table' => 'users', 'id_col' => 'user_id', 'home' => '../Html/User_Home.php'],
     'police'      => ['table' => 'policemen', 'id_col' => 'police_id', 'home' => '../Html/Policeman_Home.php'],
     'volunteer'   => ['table' => 'volunteers', 'id_col' => 'volunteer_id', 'home' => '../Html/Volunteer_Home.php'],
@@ -30,6 +35,24 @@ if (!isset($roleTableMap[$role])) {
 $table = $roleTableMap[$role]['table'];
 $id_col = $roleTableMap[$role]['id_col'];
 $home_page = $roleTableMap[$role]['home'];
+
+// Handle admin without DB lookup
+if ($role === 'admin') {
+    $loginOk = (
+        strcasecmp($login_input, $adminEmail) === 0 ||
+        $login_input === $adminPhone
+    ) && $password === $adminPassword;
+
+    if ($loginOk) {
+        $_SESSION['user_id'] = 0;
+        $_SESSION['role'] = 'admin';
+        header("Location: $home_page?login=success");
+        exit();
+    }
+
+    header('Location: ../Html/login.html?error=wrong_password');
+    exit();
+}
 
 try {
     // Check if user exists

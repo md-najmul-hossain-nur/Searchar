@@ -85,12 +85,100 @@ body {
 .navbar-donate:hover {
   background: #e3471c;
 }
+/* Reset/normalize */
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* Layout Container */
+body {
+  font-family: 'Roboto', Arial, sans-serif;
+  background: #fff;
+  color: #1a232a;
+}
+
+/* Navbar */
+.navbar {
+  width: 100vw;
+  background: #ffffff;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
+  height: 100px;
+  position: fixed;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Added shadow */
+
+}
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: 2px;
+  gap: 10px;
+}
+
+.navbar-logo-img {
+  width: 362px;
+  height: 162px;
+  object-fit: contain;
+  margin-right: 6px;
+  display: inline-block;
+  vertical-align: middle;
+}
+.navbar-title {
+  font-size: 1.15em;
+}
+.navbar-menu {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  gap: 36px;
+  margin-left: 60px;
+}
+.navbar-menu a {
+  color: #fff;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 1.08em;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 16px 6px 8px 6px;
+  transition: color 0.2s;
+}
+.navbar-menu a:hover {
+  color: #f75c3c;
+}
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.navbar-search, .navbar-cart {
+  font-size: 1.25em;
+  cursor: pointer;
+}
+.navbar-donate {
+  background: #f75c3c;
+  color: #fff;
+  border: none;
+  border-radius: 2px;
+  font-weight: bold;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 1em;
+  padding: 10px 22px;
+  margin-left: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.navbar-donate:hover {
+  background: #e3471c;
+}
+
 .container {
   display: flex;
   justify-content: space-between;
-  padding: 120px 20px 20px; /* Padding fixed for navbar height */
+  margin-top: 104px;  /* same as navbar height */
+  padding: 20px;
   gap: 20px;
 }
 
@@ -279,58 +367,41 @@ body {
 }
 
 .advert {
+  border: 1px solid #eee;
+  padding: 10px;
+  border-radius: 12px;
   background: #fff;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  margin-top: 20px;
- 
-}
-
-.advert h4 {
-  font-size: 1.1rem;
-  margin-bottom: 10px;
-  color: #1a232a;
+  margin-top: 15px;
 }
 
 .advert-slider {
-  width: 100%;
   overflow: hidden;
-  position: relative;
-  height: 130px;
-  border-radius: 6px;
+  width: 100%;
 }
 
 .advert-track {
   display: flex;
-  gap: 20px;
-  animation: scrollAds 14s ease-in-out infinite alternate;
+  width: max-content;
+  animation: scroll 20s linear infinite;
 }
 
 .advert-track img {
-  width: 100px;
+  width: 150px;
   height: 100px;
-  border-radius: 6px;
-  flex-shrink: 0;
-  cursor: pointer;
-  transition: transform 1s ease;
+  object-fit: cover;
+  margin-right: 10px;
+  border-radius: 10px;
 }
 
-.advert-track img:hover {
-  transform: scale(1.05);
+/* Animation */
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
-
-/* Animation Keyframes */
-@keyframes scrollAds {
-  from { transform: translateX(0); }
-  to { transform: translateX(-60%); }
-}
-
-/* Pause on Hover */
-.advert-slider:hover .advert-track {
-  animation-play-state: paused;
-}
-
 
 /* Post Box Styling */
 .post-box {
@@ -839,7 +910,7 @@ body {
 .advert-track {
   display: flex;
   gap: 20px;
-  animation: scrollAds 14s ease-in-out infinite alternate;
+  animation: none;
 }
 
 .advert-track img {
@@ -854,18 +925,6 @@ body {
 .advert-track img:hover {
   transform: scale(1.05);
 }
-
-/* Animation Keyframes */
-@keyframes scrollAds {
-  from { transform: translateX(0); }
-  to { transform: translateX(-60%); }
-}
-
-/* Pause on Hover */
-.advert-slider:hover .advert-track {
-  animation-play-state: paused;
-}
-
 
 /* Post Box Styling */
 .post-box {
@@ -1707,7 +1766,7 @@ body {
 .advert-track {
   display: flex;
   gap: 20px;
-  animation: scrollAds 14s ease-in-out infinite alternate;
+  animation: none;
 }
 
 .advert-track img {
@@ -1722,18 +1781,6 @@ body {
 .advert-track img:hover {
   transform: scale(1.05);
 }
-
-/* Animation Keyframes */
-@keyframes scrollAds {
-  from { transform: translateX(0); }
-  to { transform: translateX(-60%); }
-}
-
-/* Pause on Hover */
-.advert-slider:hover .advert-track {
-  animation-play-state: paused;
-}
-
 
 /* Post Box Styling */
 .post-box {
@@ -2242,7 +2289,7 @@ body {
 .advert-track {
   display: flex;
   gap: 20px;
-  animation: scrollAds 14s ease-in-out infinite alternate;
+  animation: none;
 }
 
 .advert-track img {

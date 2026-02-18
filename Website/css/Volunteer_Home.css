@@ -19,6 +19,8 @@ body {
   position: fixed;
   z-index: 10;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Added shadow */
+margin-bottom: -100px;
+
 }
 .navbar-logo {
   display: flex;
@@ -1637,7 +1639,7 @@ background: linear-gradient(80deg, #d1b75a);
 
 /* Carousel-style advert slider (unified) */
 .advert-track {
-  animation: advertMarquee 20s linear infinite;
+  animation: none;
 }
 
 @keyframes advertMarquee {
