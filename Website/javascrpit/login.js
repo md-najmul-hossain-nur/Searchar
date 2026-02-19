@@ -770,3 +770,37 @@ document.addEventListener('DOMContentLoaded', function () {
   fbButtons.forEach(b => b.addEventListener('click', handleSocialClick));
   gButtons.forEach(b => b.addEventListener('click', handleSocialClick));
 });
+
+// Handle admin-only login on the client: known credentials go straight to Admin.html
+document.addEventListener('DOMContentLoaded', function () {
+  const signInForm = document.querySelector('form.form.sign-in');
+  if (!signInForm) return;
+
+  const roleSelect = signInForm.querySelector('select[name="role"]');
+  const credentialInput = signInForm.querySelector('input[name="emailOrPhone"]');
+  const passwordInput = signInForm.querySelector('input[name="password"]');
+
+  signInForm.addEventListener('submit', function (e) {
+    const role = roleSelect ? roleSelect.value : '';
+    if (role !== 'admin') return; // other roles use the existing server flow
+
+    const adminEmail = 'mnajmulhossainnur@gmail.com';
+    const adminPhone = '01743094595';
+    const adminPassword = '12345678';
+
+    const credentialRaw = credentialInput && credentialInput.value ? credentialInput.value.trim() : '';
+    const password = passwordInput && passwordInput.value ? passwordInput.value : '';
+    const normalizedCredential = credentialRaw.replace(/\s+/g, '').toLowerCase();
+
+    const emailOk = normalizedCredential === adminEmail;
+    const phoneOk = normalizedCredential === adminPhone;
+
+    if (password === adminPassword && (emailOk || phoneOk)) {
+      e.preventDefault();
+      window.location.href = '../Html/Admin.html';
+    } else {
+      e.preventDefault();
+      alert('Invalid admin credentials. Please check the email/phone and password.');
+    }
+  });
+});

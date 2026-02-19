@@ -56,6 +56,23 @@
       box-shadow: 0 8px 18px rgba(224, 74, 79, 0.25);
     }
     .avatar-panel__logout:hover { background: #c83f44; }
+    .chart-legend { display: flex; gap: 10px; align-items: center; margin-top: 12px; }
+    .legend-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+      font-weight: 600;
+      color: #222a42;
+      transition: all 0.15s ease;
+    }
+    .legend-chip:hover { background: #f4f5f7; }
+    .legend-active { border-color: #4339f2; box-shadow: 0 4px 10px rgba(67, 57, 242, 0.12); }
+    .chart-meta { margin-top: 8px; font-size: 13px; color: #4b5563; }
   </style>
   
 </head>
@@ -131,14 +148,14 @@
         </div>
         <div class="card">
           <div class="card-title">NEW USERS</div>
-          <div class="card-value">2,356</div>
-          <div class="card-meta down">↓ 3.48% <span>Since last week</span></div>
+          <div class="card-value" id="new-users-value">2,356</div>
+          <div class="card-meta down" id="new-users-meta">↓ 3.48% <span>Since last week</span></div>
           <div class="card-icon card-icon-orange"><i class="fa-solid fa-user-plus"></i></div>
         </div>
         <div class="card">
           <div class="card-title">CAMERA CONNECTION</div>
-          <div class="card-value">924</div>
-          <div class="card-meta down">↓ 1.10% <span>Since yesterday</span></div>
+          <div class="card-value" id="camera-conn-value">924</div>
+          <div class="card-meta down" id="camera-conn-meta">↓ 1.10% <span>Since yesterday</span></div>
           <div class="card-icon card-icon-pink"><i class="fa-solid fa-video"></i></div>
         </div>
         <div class="card">
@@ -153,10 +170,15 @@
           <div class="overview-title">OVERVIEW</div>
           <div class="overview-subtitle">CAMERA CONNECTION </div>
           <canvas id="salesChart" width="600" height="320"></canvas>
-          <div class="chart-legend">
-            <span class="legend-color legend-blue"></span>2025
-            <span class="legend-color legend-white"></span>2024
+          <div class="chart-legend" id="camera-legend">
+            <button type="button" class="legend-chip legend-active" data-year="2026">
+              <span class="legend-color legend-blue"></span>2026
+            </button>
+            <button type="button" class="legend-chip" data-year="2027">
+              <span class="legend-color legend-white"></span>2027
+            </button>
           </div>
+          <div class="chart-meta" id="camera-meta">Showing: 2026 (all months)</div>
         </div>
         <div class="orders-card">
           <div class="orders-title"> AI PERFORMANCE</div>

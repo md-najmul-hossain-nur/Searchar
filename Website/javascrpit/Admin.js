@@ -1,37 +1,88 @@
- // Sales Chart
-    const salesChart = new Chart(document.getElementById('salesChart').getContext('2d'), {
-      type: 'line',
-      data: {
-        labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-        datasets: [
-          {
-            label: '2025',
-            data: [65, 75, 70, 60, 65, 75, 85],
-            borderColor: '#4339f2',
-            backgroundColor: 'transparent',
-            borderWidth: 3,
-            pointBackgroundColor: '#4339f2',
-            tension: 0.4
-          },
-          {
-            label: '2024',
-            data: [40, 60, 80, 70, 60, 70, 90],
-            borderColor: '#fff',
-            backgroundColor: 'transparent',
-            borderWidth: 3,
-            pointBackgroundColor: '#fff',
-            tension: 0.4
-          }
-        ]
-      },
-      options: {
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#fff' } },
-          y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#fff' }, beginAtZero: true, min: 40, max: 90 }
-        }
+// Camera Connections (salesChart canvas) - now fetches live DB data
+const cameraLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const cameraCtx = document.getElementById('salesChart').getContext('2d');
+const cameraMeta = document.getElementById('camera-meta');
+const legendChips = Array.from(document.querySelectorAll('#camera-legend .legend-chip'));
+let cameraSeries = {};
+let currentYear = '2026';
+
+const cameraChart = new Chart(cameraCtx, {
+  type: 'line',
+  data: {
+    labels: cameraLabels,
+    datasets: [
+      {
+        label: 'Camera Connections',
+        data: Array(12).fill(0),
+        borderColor: '#4339f2',
+        backgroundColor: 'transparent',
+        borderWidth: 3,
+        pointBackgroundColor: '#4339f2',
+        tension: 0.35
+      }
+    ]
+  },
+  options: {
+    animation: { duration: 800, easing: 'easeOutQuart' },
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#fff' } },
+      y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#fff' }, beginAtZero: true }
+    },
+    onClick(evt, elements) {
+      if (!elements.length || !cameraSeries[currentYear]) return;
+      const pt = elements[0];
+      const idx = pt.index;
+      const month = cameraLabels[idx];
+      const value = cameraSeries[currentYear][idx];
+      if (cameraMeta) cameraMeta.textContent = `Showing: ${month} ${currentYear} - ${value} camera connections`;
+    }
+  }
+});
+
+function setCameraYear(year) {
+  if (!cameraSeries[year]) return;
+  currentYear = year;
+  cameraChart.data.datasets[0].data = cameraSeries[year];
+  cameraChart.update();
+  if (cameraMeta) cameraMeta.textContent = `Showing: ${year} (all months)`;
+  legendChips.forEach(btn => btn.classList.toggle('legend-active', btn.dataset.year === year));
+}
+
+async function loadCameraSeries() {
+  try {
+    const res = await fetch('../Php/fetch_camera_connections.php', { credentials: 'same-origin', cache: 'no-store' });
+    const json = await res.json();
+    console.info('camera data', json);
+    if (!json || !json.success || !json.data) throw new Error('No data');
+    cameraSeries = json.data;
+
+    // Ensure both years exist with 12 slots
+    ['2026', '2027'].forEach(y => {
+      if (!cameraSeries[y]) cameraSeries[y] = Array(12).fill(0);
+      if (cameraSeries[y].length < 12) {
+        cameraSeries[y] = [...cameraSeries[y], ...Array(12 - cameraSeries[y].length).fill(0)];
       }
     });
+
+    setCameraYear(currentYear);
+    if (cameraMeta) cameraMeta.textContent = `Showing: ${currentYear} (all months)`;
+  } catch (e) {
+    console.error('camera data load failed', e);
+    // Fallback empty data
+    cameraSeries = { '2026': Array(12).fill(0), '2027': Array(12).fill(0) };
+    setCameraYear(currentYear);
+    if (cameraMeta) cameraMeta.textContent = 'No data: check DB or API response';
+  }
+}
+
+legendChips.forEach(btn => {
+  btn.addEventListener('click', () => setCameraYear(btn.dataset.year));
+});
+
+loadCameraSeries();
+// Refresh every 30s for a near-real-time view
+setInterval(loadCameraSeries, 30000);
 
     // Orders Chart
     const ordersChart = new Chart(document.getElementById('ordersChart').getContext('2d'), {
