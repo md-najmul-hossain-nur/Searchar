@@ -1032,6 +1032,7 @@ h4 {
 #cctv-map,
 #crime-map,
 #ai-graphs {
+  border: 2px solid #000;
   border-radius: 8px;
   font-size: 1.08em;
   display: flex;
@@ -1072,6 +1073,14 @@ h4 {
 }
 .table-actions-bar {
   margin-bottom: 7px;
+}
+
+/* Clear separation between table blocks */
+#tables .tables-divider {
+  height: 1px;
+  background: #d7deea;
+  margin: 26px 0 18px;
+  border-radius: 2px;
 }
 
 /* Broadcast action buttons */
@@ -1289,6 +1298,7 @@ h4 {
   width: 100%;
   max-width: 1500px;
   height: 500px;
+  border: 2px solid #000;
   border-radius: 10px;
   background: hsl(0, 0%, 100%);
   margin: 0 auto 32px auto;
