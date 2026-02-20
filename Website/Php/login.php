@@ -80,21 +80,21 @@ if ($role === 'admin') {
 }
 
 try {
-    // Try email first
+    // Simple login flow: role অনুযায়ী table থেকে email/phone match
     $phoneCandidates = buildPhoneCandidates($login_input);
-    $stmt = $pdo->prepare("SELECT * FROM $table WHERE LOWER(email) = LOWER(:email) LIMIT 1");
-    $stmt->execute(['email' => $login_input]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    $sql = "SELECT * FROM `{$table}` WHERE LOWER(email) = LOWER(?)";
+    $params = [$login_input];
 
-    // If not found by email, try possible phone formats one by one
-    if (!$user && !empty($phoneCandidates)) {
-        $phoneStmt = $pdo->prepare("SELECT * FROM $table WHERE mobile = :mobile LIMIT 1");
-        foreach ($phoneCandidates as $candidatePhone) {
-            $phoneStmt->execute(['mobile' => $candidatePhone]);
-            $user = $phoneStmt->fetch(PDO::FETCH_ASSOC);
-            if ($user) break;
-        }
+    if (!empty($phoneCandidates)) {
+        $placeholders = implode(',', array_fill(0, count($phoneCandidates), '?'));
+        $sql .= " OR mobile IN ({$placeholders})";
+        $params = array_merge($params, $phoneCandidates);
     }
+
+    $sql .= ' LIMIT 1';
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$user) {
         // No account found
