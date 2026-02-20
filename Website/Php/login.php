@@ -3,9 +3,33 @@ session_start();
 require_once "../Php/db.php";
 
 // Get form data
-$role = $_POST['role'] ?? '';
-$login_input = $_POST['emailOrPhone'] ?? '';
-$password = $_POST['password'] ?? '';
+$role = trim((string)($_POST['role'] ?? ''));
+$login_input = trim((string)($_POST['emailOrPhone'] ?? ''));
+$password = (string)($_POST['password'] ?? '');
+
+function buildPhoneCandidates(string $value): array {
+    $candidates = [];
+    $clean = trim($value);
+    if ($clean !== '') {
+        $candidates[] = $clean;
+    }
+
+    $digits = preg_replace('/\D+/', '', $clean);
+    if ($digits !== '') {
+        $candidates[] = $digits;
+
+        if (substr($digits, 0, 3) === '880' && strlen($digits) === 13) {
+            $candidates[] = '0' . substr($digits, 3);
+        }
+
+        if (substr($digits, 0, 2) === '01' && strlen($digits) === 11) {
+            $candidates[] = '880' . substr($digits, 1);
+            $candidates[] = '+880' . substr($digits, 1);
+        }
+    }
+
+    return array_values(array_unique(array_filter($candidates, static fn($x) => $x !== '')));
+}
 
 // Check for empty fields
 if (empty($role) || empty($login_input) || empty($password)) {
@@ -38,9 +62,10 @@ $home_page = $roleTableMap[$role]['home'];
 
 // Handle admin without DB lookup
 if ($role === 'admin') {
+    $adminPhoneCandidates = buildPhoneCandidates($login_input);
     $loginOk = (
         strcasecmp($login_input, $adminEmail) === 0 ||
-        $login_input === $adminPhone
+        in_array($adminPhone, $adminPhoneCandidates, true)
     ) && $password === $adminPassword;
 
     if ($loginOk) {
@@ -55,10 +80,21 @@ if ($role === 'admin') {
 }
 
 try {
-    // Check if user exists
-    $stmt = $pdo->prepare("SELECT * FROM $table WHERE email = :login OR mobile = :login");
-    $stmt->execute(['login' => $login_input]);
+    // Try email first
+    $phoneCandidates = buildPhoneCandidates($login_input);
+    $stmt = $pdo->prepare("SELECT * FROM $table WHERE LOWER(email) = LOWER(:email) LIMIT 1");
+    $stmt->execute(['email' => $login_input]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // If not found by email, try possible phone formats one by one
+    if (!$user && !empty($phoneCandidates)) {
+        $phoneStmt = $pdo->prepare("SELECT * FROM $table WHERE mobile = :mobile LIMIT 1");
+        foreach ($phoneCandidates as $candidatePhone) {
+            $phoneStmt->execute(['mobile' => $candidatePhone]);
+            $user = $phoneStmt->fetch(PDO::FETCH_ASSOC);
+            if ($user) break;
+        }
+    }
 
     if (!$user) {
         // No account found
@@ -78,7 +114,8 @@ try {
     header("Location: $home_page?login=success");
     exit();
 
-} catch (PDOException $e) {
+} catch (Throwable $e) {
+    error_log('Login error: ' . $e->getMessage());
     header('Location: ../Html/login.html?error=db');
     exit();
 }

@@ -29,13 +29,29 @@ try {
     foreach ($rows as $row) {
         $coords = pickCoords($row);
         $data[] = [
-            'name'     => pickField($row, ['full_name', 'name'], ''),
-            'email'    => pickField($row, ['email'], ''),
-            'phone'    => pickField($row, ['mobile', 'phone', 'phone_number', 'contact'], ''),
-            'location' => pickField($row, ['city', 'street', 'country', 'address', 'location'], ''),
-            'role'     => 'User',
-            'lat'      => $coords['lat'],
-            'lon'      => $coords['lon'],
+            'user_id'       => pickField($row, ['user_id', 'id'], ''),
+            'full_name'     => pickField($row, ['full_name', 'name'], ''),
+            'name'          => pickField($row, ['full_name', 'name'], ''),
+            'email'         => pickField($row, ['email'], ''),
+            'mobile'        => pickField($row, ['mobile', 'phone', 'phone_number', 'contact'], ''),
+            'phone'         => pickField($row, ['mobile', 'phone', 'phone_number', 'contact'], ''),
+            'nid_number'    => pickField($row, ['nid_number'], ''),
+            'nid_photo'     => pickField($row, ['nid_photo'], ''),
+            'profile_photo' => pickField($row, ['profile_photo'], ''),
+            'cover_photo'   => pickField($row, ['cover_photo'], ''),
+            'date_of_birth' => pickField($row, ['date_of_birth', 'dob'], ''),
+            'gender'        => pickField($row, ['gender'], ''),
+            'street'        => pickField($row, ['street'], ''),
+            'city'          => pickField($row, ['city'], ''),
+            'postal_code'   => pickField($row, ['postal_code', 'postal'], ''),
+            'country'       => pickField($row, ['country'], ''),
+            'location'      => pickField($row, ['city', 'street', 'country', 'address', 'location'], ''),
+            'latitude'      => $coords['lat'],
+            'longitude'     => $coords['lon'],
+            'lat'           => $coords['lat'],
+            'lon'           => $coords['lon'],
+            'created_at'    => pickField($row, ['created_at'], ''),
+            'role'          => 'User',
         ];
     }
     echo json_encode(['success' => true, 'data' => $data]);

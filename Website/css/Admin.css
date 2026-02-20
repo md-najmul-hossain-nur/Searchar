@@ -1312,6 +1312,99 @@ h4 {
   position: relative;
 }
 
+/* Table Actions: clean unified design */
+.styled-table td button,
+.styled-table td .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 4px 6px 4px 0;
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid #d9e3f3;
+  background: #f3f7ff;
+  color: #22324a;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .15s ease, background .15s ease;
+}
+
+.styled-table td button:hover,
+.styled-table td .btn:hover {
+  background: #e7efff;
+  box-shadow: 0 6px 14px rgba(34, 50, 74, 0.12);
+  transform: translateY(-1px);
+}
+
+.styled-table td button:active,
+.styled-table td .btn:active {
+  transform: translateY(0);
+}
+
+.styled-table td button[disabled] {
+  opacity: .55;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.styled-table .view-profile-btn {
+  background: #e9f0ff;
+  border-color: #c9d8ff;
+  color: #1f4cbf;
+}
+
+.styled-table .edit-btn,
+.styled-table .edit-profile-btn {
+  background: #fff3e8;
+  border-color: #ffd6b0;
+  color: #b35b00;
+}
+
+.styled-table .assign-btn {
+  background: #e8fff4;
+  border-color: #baf1d3;
+  color: #0f6b44;
+}
+
+.styled-table .warn-btn {
+  background: #fff9e8;
+  border-color: #ffe3a1;
+  color: #9a6b00;
+}
+
+.styled-table .delete-btn,
+.styled-table .deactivate-btn {
+  background: #ffecee;
+  border-color: #ffc7cd;
+  color: #b4232f;
+}
+
+.styled-table .actions-cell {
+  min-width: 250px;
+}
+
+.styled-table .actions-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.styled-table .actions-wrap button,
+.styled-table .actions-wrap .btn {
+  margin: 0 !important;
+}
+
+.styled-table .actions-wrap .delete-btn {
+  min-width: 38px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
 .avatar-panel {
   position: absolute;
   top: calc(100% + 8px);

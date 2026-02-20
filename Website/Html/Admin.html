@@ -73,6 +73,138 @@
     .legend-chip:hover { background: #f4f5f7; }
     .legend-active { border-color: #4339f2; box-shadow: 0 4px 10px rgba(67, 57, 242, 0.12); }
     .chart-meta { margin-top: 8px; font-size: 13px; color: #4b5563; }
+    .profile-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.52);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+      padding: 18px;
+    }
+    .profile-modal.open { display: flex; }
+    .profile-modal__card {
+      width: min(680px, 96vw);
+      max-height: 88vh;
+      overflow: auto;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 18px 42px rgba(0,0,0,.2);
+      border: 1px solid #e6ebf5;
+      padding: 16px;
+    }
+    .profile-modal__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e9eef7;
+    }
+    .profile-modal__title { font-size: 19px; font-weight: 800; color: #1f2f46; letter-spacing: .2px; }
+    .profile-modal__close {
+      border: none;
+      background: #f4f6fb;
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      color: #2f3a53;
+      transition: background .15s ease;
+    }
+    .profile-modal__close:hover { background: #e8edf7; }
+    .profile-modal__grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .profile-modal__row {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      align-items: start;
+      gap: 10px;
+      background: #f8faff;
+      border: 1px solid #e7edf8;
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .profile-modal__label {
+      color: #51607a;
+      font-weight: 700;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: .35px;
+    }
+    .profile-modal__value {
+      color: #111827;
+      word-break: break-word;
+      font-size: 14px;
+      line-height: 1.45;
+      font-weight: 600;
+    }
+    .profile-modal__img {
+      width: 100%;
+      max-width: 240px;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #dbe2ef;
+      background: #f8fafc;
+      display: block;
+    }
+    .profile-modal__img-link {
+      display: inline-flex;
+      margin-top: 6px;
+      font-size: 12px;
+      color: #2244aa;
+      text-decoration: none;
+    }
+    .profile-modal__img-link:hover { text-decoration: underline; }
+    .profile-modal__footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid #e9eef7;
+    }
+    .profile-modal__btn {
+      border: none;
+      border-radius: 8px;
+      padding: 9px 14px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .profile-modal__btn.secondary { background: #eef2fb; color: #23324f; }
+    .profile-modal__btn.primary { background: #2a4c85; color: #fff; }
+    .profile-modal__btn.success { background: #0f8b6c; color: #fff; }
+    .profile-modal__input {
+      width: 100%;
+      border: 1px solid #d3dced;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #111827;
+      background: #fff;
+    }
+    .hidden { display: none !important; }
+    @media (max-width: 640px) {
+      .profile-modal__row { grid-template-columns: 1fr; }
+      .profile-modal__label { margin-bottom: 2px; }
+    }
+    .view-profile-btn {
+      border: none;
+      background: #eaf0ff;
+      color: #2244aa;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-weight: 600;
+      cursor: pointer;
+    }
   </style>
   
 </head>
@@ -248,7 +380,6 @@
       <option value="silver">Silver</option>
       <option value="bronze">Bronze</option>
     </select>
-    <button onclick="filterVolunteers()">Filter</button>
   </div>
   <table class="styled-table">
     <thead>
@@ -273,9 +404,13 @@
   <div class="tables-divider"></div>
   <h2>CCTV Management</h2>
   <div class="filters-bar">
-    <input type="text" placeholder="Search by location/camera ID">
-    <select><option>Status</option></select>
-    <button>Filter</button>
+    <input id="cctv-filter-text" type="text" placeholder="Search by location/camera ID">
+    <select id="cctv-filter-status">
+      <option value="">Status</option>
+      <option value="online">Online</option>
+      <option value="offline">Offline</option>
+      <option value="inactive">Inactive</option>
+    </select>
   </div>
   <table class="styled-table">
     <thead>
@@ -289,20 +424,8 @@
         <th>Actions</th>
       </tr>
     </thead>
-    <tbody>
-      <tr>
-        <td>CCTV-21</td>
-        <td>Mirpur</td>
-        <td>Online</td>
-        <td>30</td>
-        <td>Ali Ahmed</td>
-        <td>2025-07-27 14:00</td>
-        <td>
-          <button disabled title="Disabled">Edit</button>
-          <button disabled title="Disabled">Deactivate</button>
-        </td>
-      </tr>
-      <!-- More rows... -->
+    <tbody id="cctv-table-body">
+      <tr><td colspan="7">Loading...</td></tr>
     </tbody>
   </table>
   <div id="cctv-map" style="height:320px; margin-top:18px; background:#f8f8f8;"></div>
@@ -329,21 +452,8 @@
         <th>Action</th>
       </tr>
     </thead>
-    <tbody>
-      <tr>
-        <td>Inspector Rahim</td>
-        <td>BD-203</td>
-        <td>Inspector</td>
-        <td>Dhaka North</td>
-        <td>
-          <span class="status-active">Active</span>
-        </td>
-        <td>
-          <button class="edit-btn" onclick="editOfficer('BD-203')">Edit</button>
-          <button class="deactivate-btn" onclick="deactivateOfficer('BD-203')">Deactivate</button>
-        </td>
-      </tr>
-      <!-- More officer rows here -->
+    <tbody id="policemen-table-body">
+      <tr><td colspan="6">Loading...</td></tr>
     </tbody>
   </table>
 </div>
@@ -561,7 +671,6 @@
     <div class="widget">Pending Requests: <span>3</span></div>
   </div>
   <div class="withdraw-actions">
-    <button class="btn-process-all"><i class="fa-solid fa-check-double"></i> Process All</button>
     <button class="btn-export-report"><i class="fa-solid fa-file-export"></i> Export Report</button>
   </div>
 </div>
@@ -646,6 +755,48 @@
 </div>
   </div>
 
+  <div id="profile-modal" class="profile-modal" onclick="if(event.target===this) closeProfileModal()">
+    <div class="profile-modal__card">
+      <div class="profile-modal__header">
+        <div class="profile-modal__title" id="profile-modal-title">Profile Details</div>
+        <button class="profile-modal__close" type="button" onclick="closeProfileModal()">×</button>
+      </div>
+      <div id="profile-modal-grid" class="profile-modal__grid"></div>
+      <div class="profile-modal__footer">
+        <button type="button" id="profile-edit-btn" class="profile-modal__btn primary">Edit</button>
+        <button type="button" id="profile-save-btn" class="profile-modal__btn success hidden">Save</button>
+        <button type="button" id="profile-cancel-btn" class="profile-modal__btn secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="add-officer-modal" class="profile-modal" onclick="if(event.target===this) closeAddOfficerModal()">
+    <div class="profile-modal__card">
+      <div class="profile-modal__header">
+        <div class="profile-modal__title">Add Officer</div>
+        <button class="profile-modal__close" type="button" onclick="closeAddOfficerModal()">×</button>
+      </div>
+      <div class="profile-modal__grid">
+        <div class="profile-modal__row"><div class="profile-modal__label">Full Name</div><div class="profile-modal__value"><input type="text" id="add-officer-full-name" class="profile-modal__input" placeholder="Officer full name"></div></div>
+        <div class="profile-modal__row"><div class="profile-modal__label">Email</div><div class="profile-modal__value"><input type="email" id="add-officer-email" class="profile-modal__input" placeholder="officer@email.com"></div></div>
+        <div class="profile-modal__row"><div class="profile-modal__label">Mobile</div><div class="profile-modal__value"><input type="text" id="add-officer-mobile" class="profile-modal__input" placeholder="01XXXXXXXXX"></div></div>
+        <div class="profile-modal__row"><div class="profile-modal__label">NID Number</div><div class="profile-modal__value"><input type="text" id="add-officer-nid" class="profile-modal__input" placeholder="NID number"></div></div>
+        <div class="profile-modal__row"><div class="profile-modal__label">Date Of Birth</div><div class="profile-modal__value"><input type="date" id="add-officer-dob" class="profile-modal__input"></div></div>
+        <div class="profile-modal__row"><div class="profile-modal__label">Gender</div><div class="profile-modal__value"><select id="add-officer-gender" class="profile-modal__input"><option value="">Select gender</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select></div></div>
+        <div class="profile-modal__row"><div class="profile-modal__label">Badge ID</div><div class="profile-modal__value"><input type="text" id="add-officer-badge" class="profile-modal__input" placeholder="Badge ID"></div></div>
+        <div class="profile-modal__row"><div class="profile-modal__label">Designation</div><div class="profile-modal__value"><input type="text" id="add-officer-designation" class="profile-modal__input" placeholder="Designation"></div></div>
+        <div class="profile-modal__row"><div class="profile-modal__label">Station</div><div class="profile-modal__value"><input type="text" id="add-officer-station" class="profile-modal__input" placeholder="Station"></div></div>
+        <div class="profile-modal__row"><div class="profile-modal__label">City</div><div class="profile-modal__value"><input type="text" id="add-officer-city" class="profile-modal__input" placeholder="City (optional)"></div></div>
+        <div class="profile-modal__row"><div class="profile-modal__label">Country</div><div class="profile-modal__value"><input type="text" id="add-officer-country" class="profile-modal__input" placeholder="Country (optional)"></div></div>
+        <div class="profile-modal__row"><div class="profile-modal__label">Password</div><div class="profile-modal__value"><input type="password" id="add-officer-password" class="profile-modal__input" placeholder="Minimum 6 chars"></div></div>
+      </div>
+      <div class="profile-modal__footer">
+        <button type="button" class="profile-modal__btn success" id="add-officer-submit-btn">Add Officer</button>
+        <button type="button" class="profile-modal__btn secondary" onclick="closeAddOfficerModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
 
 
 
@@ -697,6 +848,68 @@
 
     function setRows(tbody, rowsHtml) {
       if (tbody) tbody.innerHTML = rowsHtml;
+    }
+
+    function addOfficer() {
+      const modal = document.getElementById('add-officer-modal');
+      if (!modal) return;
+      modal.classList.add('open');
+    }
+
+    function closeAddOfficerModal() {
+      const modal = document.getElementById('add-officer-modal');
+      if (modal) modal.classList.remove('open');
+    }
+
+    async function reloadPolicemenTable() {
+      try {
+        const police = await fetchJSON('../Php/admin_fetch_policemen.php');
+        const rows = police && police.success && Array.isArray(police.data) ? police.data : [];
+        renderPolicemenTable(rows);
+      } catch (e) {
+        console.error('Policemen reload failed', e);
+      }
+    }
+
+    async function submitAddOfficerForm() {
+      const payload = {
+        full_name: (document.getElementById('add-officer-full-name')?.value || '').trim(),
+        email: (document.getElementById('add-officer-email')?.value || '').trim(),
+        mobile: (document.getElementById('add-officer-mobile')?.value || '').trim(),
+        nid_number: (document.getElementById('add-officer-nid')?.value || '').trim(),
+        date_of_birth: (document.getElementById('add-officer-dob')?.value || '').trim(),
+        gender: (document.getElementById('add-officer-gender')?.value || '').trim(),
+        badge_id: (document.getElementById('add-officer-badge')?.value || '').trim(),
+        designation: (document.getElementById('add-officer-designation')?.value || '').trim(),
+        station: (document.getElementById('add-officer-station')?.value || '').trim(),
+        city: (document.getElementById('add-officer-city')?.value || '').trim(),
+        country: (document.getElementById('add-officer-country')?.value || '').trim(),
+        password: (document.getElementById('add-officer-password')?.value || '').trim()
+      };
+
+      if (!payload.full_name || !payload.email || !payload.mobile || !payload.nid_number || !payload.date_of_birth || !payload.gender || !payload.badge_id || !payload.designation || !payload.station || !payload.password) {
+        alert('Please fill all required fields.');
+        return;
+      }
+
+      try {
+        const res = await fetch('../Php/admin_add_officer.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify(payload)
+        });
+
+        const json = await res.json();
+        if (!json || !json.success) throw new Error(json?.error || 'Add officer failed');
+
+        alert('Officer added successfully.');
+        closeAddOfficerModal();
+        await reloadPolicemenTable();
+      } catch (e) {
+        console.error('Add officer failed', e);
+        alert('Could not add officer.');
+      }
     }
 
     function renderSocialTraffic(rows) {
@@ -814,6 +1027,7 @@
     }
 
     let volunteersData = [];
+    let camerasData = [];
 
     function populateVolunteerFilterOptions(rows) {
       const statusSelect = document.getElementById('vol-filter-status');
@@ -827,9 +1041,10 @@
         if (r.rank) ranks.add(String(r.rank).trim());
       });
 
-      const buildOptions = (select, placeholder, values) => {
+      const buildOptions = (select, placeholder, values, fallbackValues = []) => {
+        const merged = new Set([...(fallbackValues || []), ...Array.from(values || [])]);
         const options = [`<option value="">${placeholder}</option>`];
-        Array.from(values)
+        Array.from(merged)
           .filter(Boolean)
           .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
           .forEach(val => {
@@ -838,8 +1053,307 @@
         select.innerHTML = options.join('');
       };
 
-      buildOptions(statusSelect, 'Status', statuses);
-      buildOptions(rankSelect, 'Rank', ranks);
+      buildOptions(statusSelect, 'Status', statuses, ['Active', 'Inactive']);
+      buildOptions(rankSelect, 'Rank', ranks, ['Gold', 'Silver', 'Bronze']);
+    }
+
+    function populateCctvFilterOptions(rows) {
+      const statusSelect = document.getElementById('cctv-filter-status');
+      if (!statusSelect) return;
+
+      const statuses = new Set(['Online', 'Offline', 'Inactive']);
+      rows.forEach(r => {
+        if (r && r.status) statuses.add(String(r.status).trim());
+      });
+
+      const options = ['<option value="">Status</option>'];
+      Array.from(statuses)
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
+        .forEach(val => {
+          options.push(`<option value="${val.toLowerCase()}">${val}</option>`);
+        });
+
+      statusSelect.innerHTML = options.join('');
+    }
+
+    function serializeProfile(data) {
+      return encodeURIComponent(JSON.stringify(data));
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    const editableFieldsByEntity = {
+      users: ['full_name', 'email', 'mobile', 'date_of_birth', 'gender', 'street', 'city', 'postal_code', 'country'],
+      volunteers: ['full_name', 'email', 'mobile', 'date_of_birth', 'gender', 'street', 'city', 'postal_code', 'country', 'occupation', 'availability'],
+      camera_contributors: ['full_name', 'email', 'mobile', 'date_of_birth', 'gender', 'street', 'city', 'postal_code', 'country', 'camera_location', 'camera_type', 'stream_type', 'bandwidth', 'payment_number'],
+      policemen: ['full_name', 'email', 'mobile', 'date_of_birth', 'gender', 'street', 'city', 'postal_code', 'country', 'badge_id', 'designation', 'station']
+    };
+
+    let currentProfile = null;
+    let isEditMode = false;
+
+    function openProfileModal(profile, editMode = false) {
+      const modal = document.getElementById('profile-modal');
+      const titleEl = document.getElementById('profile-modal-title');
+      const gridEl = document.getElementById('profile-modal-grid');
+      const editBtn = document.getElementById('profile-edit-btn');
+      const saveBtn = document.getElementById('profile-save-btn');
+      const cancelBtn = document.getElementById('profile-cancel-btn');
+      if (!modal || !titleEl || !gridEl || !editBtn || !saveBtn || !cancelBtn) return;
+
+      currentProfile = profile || null;
+      isEditMode = editMode;
+
+      const title = profile && profile.__title ? profile.__title : 'Profile Details';
+      titleEl.textContent = title;
+
+      const labelMap = {
+        full_name: 'Name',
+        name: 'Name',
+        email: 'Email',
+        mobile: 'Mobile',
+        phone: 'Phone',
+        date_of_birth: 'Date Of Birth',
+        role: 'Role',
+        location: 'Location',
+        city: 'City',
+        contact: 'Contact',
+        join_date: 'Join Date',
+        last_active: 'Last Active',
+        total_missions: 'Total Missions',
+        rank: 'Rank',
+        camera_id: 'Camera ID',
+        camera_location: 'Camera Location',
+        badge_id: 'Badge ID',
+        designation: 'Designation',
+        station: 'Station',
+        status: 'Status'
+      };
+
+      const imageKeys = new Set(['nid_photo', 'profile_photo', 'cover_photo']);
+      const isImagePath = (value) => /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(String(value || ''));
+      const normalizeAssetPath = (value) => {
+        const raw = String(value || '').trim();
+        if (!raw) return '';
+        if (/^https?:\/\//i.test(raw) || raw.startsWith('../') || raw.startsWith('./') || raw.startsWith('/')) {
+          return raw;
+        }
+        if (raw.startsWith('uploads/')) {
+          return `../${raw}`;
+        }
+        return `../uploads/${raw}`;
+      };
+
+      const hiddenKeys = new Set([
+        '__title',
+        '__entity',
+        '__id',
+        'password_hash',
+        'lat',
+        'lon',
+        'latitude',
+        'longitude'
+      ]);
+
+      const entity = profile && profile.__entity ? profile.__entity : '';
+      const editableKeys = new Set(editableFieldsByEntity[entity] || []);
+
+      const hasFullName = Boolean(profile && profile.full_name);
+      const hasName = Boolean(profile && profile.name);
+      const hasMobile = Boolean(profile && profile.mobile);
+      const hasPhone = Boolean(profile && profile.phone);
+      const entries = Object.entries(profile || {}).filter(([key]) => {
+        if (hiddenKeys.has(key)) return false;
+        if (key === 'name' && hasFullName) return false;
+        if (key === 'full_name' && !hasFullName && hasName) return false;
+        if (key === 'phone' && hasMobile) return false;
+        if (key === 'mobile' && !hasMobile && hasPhone) return false;
+        return true;
+      });
+      const html = entries.map(([key, value]) => {
+        const label = labelMap[key] || key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        const val = value === null || value === undefined || value === '' ? '—' : String(value);
+        if (editMode && editableKeys.has(key)) {
+          const inputVal = val === '—' ? '' : val;
+          const inputType = key === 'date_of_birth' ? 'date' : (key === 'email' ? 'email' : 'text');
+          return `<div class="profile-modal__row"><div class="profile-modal__label">${label}</div><div class="profile-modal__value"><input type="${inputType}" class="profile-modal__input" data-edit-key="${key}" value="${escapeHtml(inputVal)}" /></div></div>`;
+        }
+        if (imageKeys.has(key) && val !== '—' && isImagePath(val)) {
+          const src = normalizeAssetPath(val);
+          return `<div class="profile-modal__row"><div class="profile-modal__label">${label}</div><div class="profile-modal__value"><img class="profile-modal__img" src="${src}" alt="${label}"><a class="profile-modal__img-link" href="${src}" target="_blank" rel="noopener">Open image</a></div></div>`;
+        }
+        return `<div class="profile-modal__row"><div class="profile-modal__label">${label}</div><div class="profile-modal__value">${val}</div></div>`;
+      }).join('');
+
+      gridEl.innerHTML = html || '<div class="profile-modal__row"><div class="profile-modal__value">No details found.</div></div>';
+
+      const canEdit = Boolean(entity && profile && profile.__id && editableFieldsByEntity[entity]);
+      editBtn.classList.toggle('hidden', !canEdit || editMode);
+      saveBtn.classList.toggle('hidden', !editMode || !canEdit);
+      cancelBtn.textContent = editMode ? 'Back' : 'Cancel';
+
+      modal.classList.add('open');
+    }
+
+    function closeProfileModal() {
+      const modal = document.getElementById('profile-modal');
+      if (modal) modal.classList.remove('open');
+    }
+
+    function bindViewProfileButtons(scope) {
+      if (!scope) return;
+      scope.querySelectorAll('.view-profile-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          try {
+            const payload = JSON.parse(decodeURIComponent(btn.dataset.profile || ''));
+            openProfileModal(payload);
+          } catch (e) {
+            console.error('Profile parse error', e);
+          }
+        });
+      });
+    }
+
+    function bindEditProfileButtons(scope) {
+      if (!scope) return;
+      scope.querySelectorAll('.edit-profile-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          try {
+            const payload = JSON.parse(decodeURIComponent(btn.dataset.profile || ''));
+            openProfileModal(payload, true);
+          } catch (e) {
+            console.error('Edit profile parse error', e);
+          }
+        });
+      });
+    }
+
+    async function handleWarn(entity, id, displayName) {
+      try {
+        const res = await fetch('../Php/admin_account_actions.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({
+            action: 'warn',
+            entity,
+            id,
+            message: `Admin warning: Please review your account activity. (${displayName})`
+          })
+        });
+        const json = await res.json();
+        if (!json || !json.success) throw new Error(json?.error || 'Warn failed');
+        alert(`Warning sent to ${displayName}.`);
+      } catch (e) {
+        console.error('Warn failed', e);
+        alert('Could not send warning.');
+      }
+    }
+
+    async function handleDelete(entity, id, displayName) {
+      const ok = confirm(`Delete ${displayName}? This will remove account and block re-signup by email/phone.`);
+      if (!ok) return false;
+
+      try {
+        const res = await fetch('../Php/admin_account_actions.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ action: 'delete', entity, id })
+        });
+        const json = await res.json();
+        if (!json || !json.success) throw new Error(json?.error || 'Delete failed');
+        alert(`${displayName} deleted and blocked from re-signup.`);
+        return true;
+      } catch (e) {
+        console.error('Delete failed', e);
+        alert('Could not delete account.');
+        return false;
+      }
+    }
+
+    function bindWarnDeleteButtons(scope) {
+      if (!scope) return;
+
+      scope.querySelectorAll('.warn-action-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const entity = btn.dataset.entity;
+          const id = Number(btn.dataset.id || 0);
+          const name = btn.dataset.name || 'User';
+          if (!entity || !id) return;
+          handleWarn(entity, id, name);
+        });
+      });
+
+      scope.querySelectorAll('.delete-action-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const entity = btn.dataset.entity;
+          const id = Number(btn.dataset.id || 0);
+          const name = btn.dataset.name || 'User';
+          if (!entity || !id) return;
+          const deleted = await handleDelete(entity, id, name);
+          if (deleted) {
+            const row = btn.closest('tr');
+            if (row) row.remove();
+          }
+        });
+      });
+    }
+
+    async function handleAssignMission(volunteerId, volunteerName) {
+      const missionTitle = prompt(`Assign mission to ${volunteerName}\nEnter mission title:`);
+      if (missionTitle === null) return false;
+      const title = missionTitle.trim();
+      if (!title) {
+        alert('Mission title is required.');
+        return false;
+      }
+
+      const missionDetails = prompt('Enter mission details (optional):', '') || '';
+      const missionLocation = prompt('Enter mission location (optional):', '') || '';
+
+      try {
+        const res = await fetch('../Php/admin_assign_mission.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({
+            volunteer_id: volunteerId,
+            title,
+            details: missionDetails.trim(),
+            mission_location: missionLocation.trim()
+          })
+        });
+
+        const json = await res.json();
+        if (!json || !json.success) throw new Error(json?.error || 'Assign failed');
+        alert(`Mission assigned to ${volunteerName}.`);
+        return true;
+      } catch (e) {
+        console.error('Assign mission failed', e);
+        alert('Could not assign mission.');
+        return false;
+      }
+    }
+
+    function bindAssignMissionButtons(scope) {
+      if (!scope) return;
+      scope.querySelectorAll('.assign-mission-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = Number(btn.dataset.id || 0);
+          const name = btn.dataset.name || 'Volunteer';
+          if (!id) return;
+          await handleAssignMission(id, name);
+        });
+      });
     }
 
     function renderUsersTable(rows) {
@@ -850,11 +1364,24 @@
         return;
       }
       const html = rows.map(r => {
+        const entity = 'users';
+        const recordId = r.user_id || '';
         const name = r.name || '—';
         const email = r.email || '—';
         const phone = r.phone || '—';
         const location = r.location || '—';
         const role = r.role || 'User';
+        const profileData = serializeProfile({
+          __title: 'User Profile',
+          __entity: 'users',
+          __id: r.user_id || '',
+          ...r,
+          full_name: name,
+          email,
+          mobile: r.mobile || phone,
+          location,
+          role
+        });
         return `
           <tr>
             <td>${name}</td>
@@ -862,13 +1389,20 @@
             <td>${phone}</td>
             <td>${location}</td>
             <td>${role}</td>
-            <td>
-              <button class="delete-btn" disabled title="Disabled"><i class="fa-solid fa-trash"></i></button>
-              <button class="warn-btn" disabled title="Disabled"><i class="fa-solid fa-triangle-exclamation"></i> Warn</button>
+            <td class="actions-cell">
+              <div class="actions-wrap">
+                <button class="view-profile-btn" data-profile="${profileData}">View Profile</button>
+                <button class="edit-profile-btn" data-profile="${profileData}">Edit</button>
+                <button class="delete-btn delete-action-btn" data-entity="${entity}" data-id="${recordId}" data-name="${name}"><i class="fa-solid fa-trash"></i></button>
+                <button class="warn-btn warn-action-btn" data-entity="${entity}" data-id="${recordId}" data-name="${name}"><i class="fa-solid fa-triangle-exclamation"></i> Warn</button>
+              </div>
             </td>
           </tr>`;
       }).join('');
       setRows(tbody, html);
+      bindViewProfileButtons(tbody);
+      bindEditProfileButtons(tbody);
+      bindWarnDeleteButtons(tbody);
     }
 
     function renderVolunteersTable(rows) {
@@ -879,6 +1413,8 @@
         return;
       }
       const html = rows.map(r => {
+        const entity = 'volunteers';
+        const recordId = r.volunteer_id || '';
         const name = r.name || '—';
         const location = r.location || '—';
         const contact = r.contact || '—';
@@ -886,6 +1422,19 @@
         const lastActive = r.last_active || '—';
         const missions = r.total_missions || '—';
         const rank = r.rank || '—';
+        const profileData = serializeProfile({
+          __title: 'Volunteer Profile',
+          __entity: 'volunteers',
+          __id: r.volunteer_id || '',
+          ...r,
+          full_name: name,
+          location,
+          contact,
+          join_date: joinDate,
+          last_active: lastActive,
+          total_missions: missions,
+          rank
+        });
         return `
           <tr>
             <td>${name}</td>
@@ -895,24 +1444,178 @@
             <td>${lastActive}</td>
             <td>${missions}</td>
             <td>${rank}</td>
-            <td>
-              <button>View Profile</button>
-              <button>Promote</button>
-              <button>Assign Search</button>
+            <td class="actions-cell">
+              <div class="actions-wrap">
+                <button class="view-profile-btn" data-profile="${profileData}">View Profile</button>
+                <button class="edit-profile-btn" data-profile="${profileData}">Edit</button>
+                <button class="assign-btn assign-mission-btn" data-id="${recordId}" data-name="${name}"><i class="fa-solid fa-bullseye"></i> Assign</button>
+                <button class="delete-btn delete-action-btn" data-entity="${entity}" data-id="${recordId}" data-name="${name}"><i class="fa-solid fa-trash"></i></button>
+                <button class="warn-btn warn-action-btn" data-entity="${entity}" data-id="${recordId}" data-name="${name}"><i class="fa-solid fa-triangle-exclamation"></i> Warn</button>
+              </div>
             </td>
           </tr>`;
       }).join('');
       setRows(tbody, html);
+      bindViewProfileButtons(tbody);
+      bindEditProfileButtons(tbody);
+      bindAssignMissionButtons(tbody);
+      bindWarnDeleteButtons(tbody);
+    }
+
+    function renderCameraTable(rows) {
+      const tbody = document.getElementById('cctv-table-body');
+      if (!tbody) return;
+      if (!rows.length) {
+        setRows(tbody, '<tr><td colspan="7">No camera contributors found.</td></tr>');
+        return;
+      }
+
+      const html = rows.map(r => {
+        const entity = 'camera_contributors';
+        const recordId = r.camera_id || '';
+        const cameraId = r.camera_id || '—';
+        const location = r.location || '—';
+        const ownerName = r.name || '—';
+        const statusText = (r.status || 'Online');
+        const statusClass = (statusText || '').toLowerCase() === 'online' || (statusText || '').toLowerCase() === 'active'
+          ? 'status-active'
+          : 'status-pending';
+        const fps = r.fps || '—';
+        const lastChecked = r.last_checked || r.updated_at || r.created_at || '—';
+        const profileData = serializeProfile({
+          __title: 'Camera Contributor Profile',
+          __entity: 'camera_contributors',
+          __id: r.camera_id || '',
+          ...r,
+          camera_id: cameraId,
+          full_name: ownerName,
+          location,
+          camera_location: r.camera_location || location,
+          status: statusText,
+          fps,
+          last_checked: lastChecked
+        });
+        return `
+          <tr>
+            <td>${cameraId}</td>
+            <td>${location}</td>
+            <td><span class="${statusClass}">${statusText}</span></td>
+            <td>${fps}</td>
+            <td>${ownerName}</td>
+            <td>${lastChecked}</td>
+            <td class="actions-cell">
+              <div class="actions-wrap">
+                <button class="view-profile-btn" data-profile="${profileData}">View Profile</button>
+                <button class="edit-profile-btn" data-profile="${profileData}">Edit</button>
+                <button class="delete-btn delete-action-btn" data-entity="${entity}" data-id="${recordId}" data-name="${ownerName}"><i class="fa-solid fa-trash"></i></button>
+                <button class="warn-btn warn-action-btn" data-entity="${entity}" data-id="${recordId}" data-name="${ownerName}"><i class="fa-solid fa-triangle-exclamation"></i> Warn</button>
+              </div>
+            </td>
+          </tr>`;
+      }).join('');
+
+      setRows(tbody, html);
+      bindViewProfileButtons(tbody);
+      bindEditProfileButtons(tbody);
+      bindWarnDeleteButtons(tbody);
+    }
+
+    function applyCctvFilters() {
+      const text = (document.getElementById('cctv-filter-text')?.value || '').trim().toLowerCase();
+      const status = (document.getElementById('cctv-filter-status')?.value || '').toLowerCase();
+      const textTokens = text.split(/\s+/).filter(Boolean);
+
+      return camerasData.filter(c => {
+        const statusVal = (c.status || 'online').toLowerCase();
+        const haystack = `${c.camera_id || ''} ${c.location || ''} ${c.camera_location || ''} ${c.name || ''} ${c.full_name || ''}`.toLowerCase();
+        const matchesText = !textTokens.length || textTokens.every(token => haystack.includes(token));
+        const matchesStatus = !status || statusVal === status;
+        return matchesText && matchesStatus;
+      });
+    }
+
+    function filterCameras() {
+      const filtered = applyCctvFilters();
+      renderCameraTable(filtered);
+      const points = filtered.map(r => ({
+        name: r.name || r.full_name || r.camera_id || 'Camera',
+        location: r.location || r.camera_location || r.city || '',
+        lat: r.lat ?? r.latitude,
+        lon: r.lon ?? r.lng ?? r.longitude
+      }));
+      initLeafletMap('cctv-map', points, 'Camera');
+    }
+
+    function attachCctvFilterListeners() {
+      const text = document.getElementById('cctv-filter-text');
+      const status = document.getElementById('cctv-filter-status');
+      if (text) text.addEventListener('input', filterCameras);
+      if (status) status.addEventListener('change', filterCameras);
+    }
+
+    function renderPolicemenTable(rows) {
+      const tbody = document.getElementById('policemen-table-body');
+      if (!tbody) return;
+      if (!rows.length) {
+        setRows(tbody, '<tr><td colspan="6">No police officers found.</td></tr>');
+        return;
+      }
+
+      const html = rows.map(r => {
+        const entity = 'policemen';
+        const recordId = r.police_id || '';
+        const name = r.full_name || r.name || '—';
+        const badge = r.badge_id || '—';
+        const designation = r.designation || 'Officer';
+        const station = r.station || r.city || '—';
+        const statusClass = (r.status || 'active').toLowerCase() === 'inactive' ? 'status-pending' : 'status-active';
+        const statusText = (r.status || 'Active');
+        const profileData = serializeProfile({
+          __title: 'Police Officer Profile',
+          __entity: 'policemen',
+          __id: r.police_id || '',
+          ...r,
+          full_name: name,
+          badge_id: badge,
+          designation,
+          station,
+          status: statusText,
+          email: r.email || '',
+          mobile: r.mobile || ''
+        });
+        return `
+          <tr>
+            <td>${name}</td>
+            <td>${badge}</td>
+            <td>${designation}</td>
+            <td>${station}</td>
+            <td><span class="${statusClass}">${statusText}</span></td>
+            <td class="actions-cell">
+              <div class="actions-wrap">
+                <button class="view-profile-btn" data-profile="${profileData}">View Profile</button>
+                <button class="edit-profile-btn" data-profile="${profileData}">Edit</button>
+                <button class="delete-btn delete-action-btn" data-entity="${entity}" data-id="${recordId}" data-name="${name}"><i class="fa-solid fa-trash"></i></button>
+                <button class="warn-btn warn-action-btn" data-entity="${entity}" data-id="${recordId}" data-name="${name}"><i class="fa-solid fa-triangle-exclamation"></i> Warn</button>
+              </div>
+            </td>
+          </tr>`;
+      }).join('');
+
+      setRows(tbody, html);
+      bindViewProfileButtons(tbody);
+      bindEditProfileButtons(tbody);
+      bindWarnDeleteButtons(tbody);
     }
 
     function applyVolunteerFilters() {
       const text = (document.getElementById('vol-filter-text')?.value || '').trim().toLowerCase();
       const status = (document.getElementById('vol-filter-status')?.value || '').toLowerCase();
       const rank = (document.getElementById('vol-filter-rank')?.value || '').toLowerCase();
+      const textTokens = text.split(/\s+/).filter(Boolean);
 
       return volunteersData.filter(v => {
-        const haystack = `${v.name || ''} ${v.location || ''}`.toLowerCase();
-        const matchesText = !text || haystack.includes(text);
+        const haystack = `${v.name || ''} ${v.full_name || ''} ${v.location || ''} ${v.city || ''} ${v.street || ''} ${v.station || ''}`.toLowerCase();
+        const matchesText = !textTokens.length || textTokens.every(token => haystack.includes(token));
         const matchesStatus = !status || (v.status || '').toLowerCase() === status;
         const matchesRank = !rank || (v.rank || '').toLowerCase() === rank;
         return matchesText && matchesStatus && matchesRank;
@@ -923,10 +1626,10 @@
       const filtered = applyVolunteerFilters();
       renderVolunteersTable(filtered);
       const points = filtered.map(r => ({
-        name: r.name || '',
-        location: r.location || '',
-        lat: r.lat,
-        lon: r.lon
+        name: r.name || r.full_name || '',
+        location: r.location || r.city || r.street || '',
+        lat: r.lat ?? r.latitude,
+        lon: r.lon ?? r.lng ?? r.longitude
       }));
       initLeafletMap('volunteer-map', points, 'Volunteer');
     }
@@ -943,16 +1646,33 @@
     function initLeafletMap(elId, points, fallbackLabel) {
       const el = document.getElementById(elId);
       if (!el) return;
+      window.__leafletMaps = window.__leafletMaps || {};
+      const existingMap = window.__leafletMaps[elId];
+      if (existingMap && typeof existingMap.remove === 'function') {
+        existingMap.remove();
+      }
+
       el.innerHTML = '';
       const map = L.map(elId).setView([23.78, 90.41], 11);
+      window.__leafletMaps[elId] = map;
+
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
       }).addTo(map);
 
+      const parseCoord = (value) => {
+        if (value === null || value === undefined || value === '') return NaN;
+        if (typeof value === 'string') {
+          const normalized = value.trim().replace(',', '.');
+          return Number(normalized);
+        }
+        return Number(value);
+      };
+
       const coords = [];
       points.forEach(p => {
-        const lat = Number(p.lat);
-        const lon = Number(p.lon);
+        const lat = parseCoord(p.lat);
+        const lon = parseCoord(p.lon);
         if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
         const name = p.name || fallbackLabel;
         const location = p.location || '';
@@ -970,6 +1690,7 @@
     }
 
     attachVolunteerFilterListeners();
+    attachCctvFilterListeners();
 
   loadDashboardCounts();
   setInterval(loadDashboardCounts, 30000);
@@ -977,6 +1698,68 @@
   setInterval(() => loadSocialTraffic(), 15000);
   const socialSeeAll = document.getElementById('social-see-all');
   if (socialSeeAll) socialSeeAll.addEventListener('click', () => loadSocialTraffic(true));
+
+  const modalEditBtn = document.getElementById('profile-edit-btn');
+  const modalSaveBtn = document.getElementById('profile-save-btn');
+  const modalCancelBtn = document.getElementById('profile-cancel-btn');
+  const addOfficerSubmitBtn = document.getElementById('add-officer-submit-btn');
+
+  if (addOfficerSubmitBtn) {
+    addOfficerSubmitBtn.addEventListener('click', submitAddOfficerForm);
+  }
+
+  if (modalEditBtn) {
+    modalEditBtn.addEventListener('click', () => {
+      if (currentProfile) openProfileModal(currentProfile, true);
+    });
+  }
+
+  if (modalCancelBtn) {
+    modalCancelBtn.addEventListener('click', () => {
+      if (isEditMode && currentProfile) {
+        openProfileModal(currentProfile, false);
+      } else {
+        closeProfileModal();
+      }
+    });
+  }
+
+  if (modalSaveBtn) {
+    modalSaveBtn.addEventListener('click', async () => {
+      if (!currentProfile || !currentProfile.__entity || !currentProfile.__id) return;
+
+      const inputs = Array.from(document.querySelectorAll('#profile-modal-grid [data-edit-key]'));
+      const updates = {};
+      inputs.forEach(input => {
+        const key = input.dataset.editKey;
+        if (!key) return;
+        updates[key] = input.value.trim();
+      });
+
+      try {
+        const res = await fetch('../Php/admin_update_profile.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({
+            entity: currentProfile.__entity,
+            id: currentProfile.__id,
+            updates
+          })
+        });
+
+        const json = await res.json();
+        if (!json || !json.success) throw new Error(json?.error || 'Update failed');
+
+        alert('Profile updated successfully.');
+        closeProfileModal();
+        window.location.reload();
+      } catch (e) {
+        console.error('Profile update failed', e);
+        alert('Could not update profile.');
+      }
+    });
+  }
 
     (async function loadAdminData() {
       // Users table (only users)
@@ -1010,16 +1793,22 @@
       try {
         const cams = await fetchJSON('../Php/admin_fetch_cameras.php');
         const rows = cams && cams.success && Array.isArray(cams.data) ? cams.data : [];
-        const camPoints = rows.map(r => ({
-          name: r.name || r.camera_id || 'Camera',
-          location: r.location || '',
-          lat: r.lat,
-          lon: r.lon
-        }));
-        initLeafletMap('cctv-map', camPoints, 'Camera');
+        camerasData = rows;
+        populateCctvFilterOptions(rows);
+        filterCameras();
       } catch (e) {
         console.error('Camera fetch failed', e);
-        initLeafletMap('cctv-map', [], 'Camera');
+        camerasData = [];
+        populateCctvFilterOptions([]);
+        filterCameras();
+      }
+
+      // Policemen table
+      try {
+        await reloadPolicemenTable();
+      } catch (e) {
+        console.error('Policemen fetch failed', e);
+        renderPolicemenTable([]);
       }
     })();
   </script>

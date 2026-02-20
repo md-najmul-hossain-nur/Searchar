@@ -45,6 +45,15 @@ try {
     $mobile = $_POST['mobile'];
     $nid    = $_POST['nid'];
 
+    // Blocked account check (email/phone reuse prevention)
+    $blkExists = $pdo->prepare("SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'signup_blacklist' LIMIT 1");
+    $blkExists->execute();
+    if ($blkExists->fetchColumn()) {
+        $blk = $pdo->prepare("SELECT 1 FROM signup_blacklist WHERE email = ? OR mobile = ? LIMIT 1");
+        $blk->execute([$email, $mobile]);
+        if ($blk->fetch()) throw new Exception("This Email/Mobile has been blocked by admin.");
+    }
+
     // -----------------------------
     // Duplicate check
     // -----------------------------
