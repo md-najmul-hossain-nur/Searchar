@@ -142,20 +142,20 @@
       <div class="dashboard-cards">
         <div class="card">
           <div class="card-title">TRAFFIC</div>
-          <div class="card-value">350,897</div>
-          <div class="card-meta up">↑ 3.48% <span>Since last month</span></div>
+          <div class="card-value" id="traffic-value">—</div>
+          <div class="card-meta up" id="traffic-meta">Loading traffic…</div>
           <div class="card-icon card-icon-red"><i class="fa-solid fa-chart-line"></i></div>
         </div>
         <div class="card">
           <div class="card-title">NEW USERS</div>
-          <div class="card-value" id="new-users-value">2,356</div>
-          <div class="card-meta down" id="new-users-meta">↓ 3.48% <span>Since last week</span></div>
+          <div class="card-value" id="new-users-value">—</div>
+          <div class="card-meta down" id="new-users-meta">Loading counts…</div>
           <div class="card-icon card-icon-orange"><i class="fa-solid fa-user-plus"></i></div>
         </div>
         <div class="card">
           <div class="card-title">CAMERA CONNECTION</div>
-          <div class="card-value" id="camera-conn-value">924</div>
-          <div class="card-meta down" id="camera-conn-meta">↓ 1.10% <span>Since yesterday</span></div>
+          <div class="card-value" id="camera-conn-value">—</div>
+          <div class="card-meta down" id="camera-conn-meta">Loading camera total…</div>
           <div class="card-icon card-icon-pink"><i class="fa-solid fa-video"></i></div>
         </div>
         <div class="card">
@@ -171,14 +171,14 @@
           <div class="overview-subtitle">CAMERA CONNECTION </div>
           <canvas id="salesChart" width="600" height="320"></canvas>
           <div class="chart-legend" id="camera-legend">
-            <button type="button" class="legend-chip legend-active" data-year="2026">
-              <span class="legend-color legend-blue"></span>2026
+            <button type="button" class="legend-chip legend-active" data-year="2025">
+              <span class="legend-color legend-blue"></span>2025
             </button>
-            <button type="button" class="legend-chip" data-year="2027">
-              <span class="legend-color legend-white"></span>2027
+            <button type="button" class="legend-chip" data-year="2026">
+              <span class="legend-color legend-white"></span>2026
             </button>
           </div>
-          <div class="chart-meta" id="camera-meta">Showing: 2026 (all months)</div>
+          <div class="chart-meta" id="camera-meta">Showing: 2025 (all months)</div>
         </div>
         <div class="orders-card">
           <div class="orders-title"> AI PERFORMANCE</div>
@@ -191,34 +191,10 @@
         </div>
       </div>
       <div class="dashboard-bottom">
-        <div class="page-visits-card">
-          <div class="pv-header">
-            <span>Page visits</span>
-            <button class="see-all-btn">SEE ALL</button>
-          </div>
-          <table class="pv-table">
-            <thead>
-              <tr>
-                <th>PAGE NAME</th>
-                <th>VISITORS</th>
-                <th>UNIQUE USERS</th>
-                <th>BOUNCE RATE</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>/argon/</td>
-                <td>4,569</td>
-                <td>340</td>
-                <td class="up">↑ 46,53%</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
         <div class="social-traffic-card">
           <div class="st-header">
             <span>Social traffic</span>
-            <button class="see-all-btn">SEE ALL</button>
+            <button class="see-all-btn" id="social-see-all">SEE ALL</button>
           </div>
           <table class="st-table">
             <thead>
@@ -228,17 +204,8 @@
                 <th></th>
               </tr>
             </thead>
-            <tbody>
-              <tr>
-                <td>Facebook</td>
-                <td>1,480</td>
-                <td>
-                  <div class="st-progress-bar">
-                    <div class="st-progress-inner" style="width:60%"></div>
-                  </div>
-                  60%
-                </td>
-              </tr>
+            <tbody id="social-table-body">
+              <tr><td colspan="3">Loading social traffic…</td></tr>
             </tbody>
           </table>
         </div>
@@ -529,10 +496,6 @@
   <div class="widget-bar">
     <div class="widget">Total Donations: <span>৳00,000</span></div>
   </div>
-  <div>
-    <button>Withdraw</button>
-    <button>Generate Report</button>
-  </div>
 </div>
 <div id="volunteer" class="main-section">
   <h2>Volunteer Mission Complete Table</h2>
@@ -594,9 +557,9 @@
     <div class="widget">Total Withdrawals: <span>৳12,500</span></div>
     <div class="widget">Pending Requests: <span>3</span></div>
   </div>
-  <div>
-    <button>Process All</button>
-    <button>Export Report</button>
+  <div class="withdraw-actions">
+    <button class="btn-process-all"><i class="fa-solid fa-check-double"></i> Process All</button>
+    <button class="btn-export-report"><i class="fa-solid fa-file-export"></i> Export Report</button>
   </div>
 </div>
 
@@ -619,13 +582,9 @@
       </tr>
     </tbody>
   </table>
-  <div>
-    <button>Send New Alert</button>
-    <button>Schedule Broadcast</button>
-  </div>
-  <div class="widget-bar">
-    <div class="widget">Open Rate: <span>00%</span></div>
-    <div class="widget">Uninstalls: <span>00</span></div>
+  <div class="broadcast-actions">
+    <button class="btn-alert"><i class="fa-solid fa-bullhorn"></i> Send New Alert</button>
+    <button class="btn-schedule"><i class="fa-regular fa-calendar-check"></i> Schedule Broadcast</button>
   </div>
 </div>
 
@@ -734,6 +693,120 @@
 
     function setRows(tbody, rowsHtml) {
       if (tbody) tbody.innerHTML = rowsHtml;
+    }
+
+    function renderSocialTraffic(rows) {
+      const tbody = document.getElementById('social-table-body');
+      if (!tbody) return;
+      if (!Array.isArray(rows) || !rows.length) {
+        setRows(tbody, '<tr><td colspan="3">No social traffic yet.</td></tr>');
+        return;
+      }
+
+      const total = rows.reduce((sum, r) => sum + (Number(r.visitors) || 0), 0) || 1;
+      const html = rows.map(r => {
+        const source = r.source || 'Unknown';
+        const visitors = Number(r.visitors) || 0;
+        const pct = Math.round((visitors / total) * 100);
+        return `
+          <tr>
+            <td>${source}</td>
+            <td>${visitors.toLocaleString('en-US')}</td>
+            <td>
+              <div class="st-progress-bar">
+                <div class="st-progress-inner" style="width:${pct}%"></div>
+              </div>
+              ${pct}%
+            </td>
+          </tr>`;
+      }).join('');
+      setRows(tbody, html);
+    }
+
+    async function loadSocialTraffic(showAll = false) {
+      const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+      try {
+        const url = showAll ? '../Php/admin_social_traffic.php?all=1' : '../Php/admin_social_traffic.php';
+        const res = await fetchJSON(url);
+        if (!res || !res.success || !Array.isArray(res.data)) throw new Error('Bad response');
+        renderSocialTraffic(res.data);
+      } catch (e) {
+        console.error('Social traffic load failed', e);
+        // Demo fallback with random social sources
+        const demo = [
+          { source: 'Facebook', visitors: randInt(500, 1500) },
+          { source: 'Instagram', visitors: randInt(400, 1200) },
+          { source: 'YouTube', visitors: randInt(300, 900) },
+          { source: 'Twitter/X', visitors: randInt(200, 800) },
+          { source: 'Direct', visitors: randInt(250, 700) },
+          { source: 'LinkedIn', visitors: randInt(100, 400) }
+        ];
+        renderSocialTraffic(demo);
+      }
+    }
+
+    async function loadDashboardCounts() {
+      const usersEl = document.getElementById('new-users-value');
+      const usersMetaEl = document.getElementById('new-users-meta');
+      const camEl = document.getElementById('camera-conn-value');
+      const camMetaEl = document.getElementById('camera-conn-meta');
+      const trafficEl = document.getElementById('traffic-value');
+      const trafficMetaEl = document.getElementById('traffic-meta');
+
+      const setTrend = (el, pct, baseText, periodLabel) => {
+        if (!el) return;
+        el.classList.remove('up', 'down');
+        const arrow = pct > 0 ? '↑' : pct < 0 ? '↓' : '→';
+        if (pct > 0) el.classList.add('up');
+        if (pct < 0) el.classList.add('down');
+        el.textContent = `${arrow} ${pct.toFixed(2)}% ${periodLabel} | ${baseText}`;
+      };
+
+      try {
+        const res = await fetchJSON('../Php/admin_dashboard_counts.php');
+        if (!res || !res.success || !res.data) throw new Error('Bad response');
+        const {
+          users = 0,
+          policemen = 0,
+          volunteers = 0,
+          cameras = 0,
+          traffic = 0,
+          userTrend = { current: 0, previous: 0, pct: 0 },
+          cameraTrend = { current: 0, previous: 0, pct: 0 },
+          trafficTrend = { current: 0, previous: 0, pct: 0 }
+        } = res.data;
+
+        const totalAccounts = users + policemen + volunteers;
+
+        if (usersEl) usersEl.textContent = totalAccounts.toLocaleString('en-US');
+        setTrend(
+          usersMetaEl,
+          userTrend.pct || 0,
+          `Policemen ${policemen}, Users ${users}, Volunteers ${volunteers}`,
+          'since last week'
+        );
+
+        if (camEl) camEl.textContent = cameras.toLocaleString('en-US');
+        setTrend(
+          camMetaEl,
+          cameraTrend.pct || 0,
+          `Total cameras connected: ${cameras}`,
+          'since last week'
+        );
+
+        if (trafficEl) trafficEl.textContent = traffic.toLocaleString('en-US');
+        setTrend(
+          trafficMetaEl,
+          trafficTrend.pct || 0,
+          `Total visits (all time): ${traffic}`,
+          'since last week'
+        );
+      } catch (e) {
+        console.error('Dashboard counts load failed', e);
+        if (usersMetaEl) usersMetaEl.textContent = 'Counts unavailable (check DB/API)';
+        if (camMetaEl) camMetaEl.textContent = 'Camera total unavailable (check DB/API)';
+        if (trafficMetaEl) trafficMetaEl.textContent = 'Traffic unavailable (check DB/API)';
+      }
     }
 
     let volunteersData = [];
@@ -893,6 +966,13 @@
     }
 
     attachVolunteerFilterListeners();
+
+  loadDashboardCounts();
+  setInterval(loadDashboardCounts, 30000);
+  loadSocialTraffic();
+  setInterval(() => loadSocialTraffic(), 15000);
+  const socialSeeAll = document.getElementById('social-see-all');
+  if (socialSeeAll) socialSeeAll.addEventListener('click', () => loadSocialTraffic(true));
 
     (async function loadAdminData() {
       // Users table (only users)

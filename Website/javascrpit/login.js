@@ -1,10 +1,14 @@
-
-
 let container = document.getElementById('container');
 
-const toggle = () => {
-  container.classList.toggle('sign-in');
-  container.classList.toggle('sign-up');
+// Expose toggle for inline onclick and guard if the container is missing
+window.toggle = function toggle() {
+  if (!container) {
+    container = document.getElementById('container');
+  }
+  if (container) {
+    container.classList.toggle('sign-in');
+    container.classList.toggle('sign-up');
+  }
 };
 
 setTimeout(() => {

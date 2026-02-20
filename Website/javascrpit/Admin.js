@@ -4,7 +4,10 @@ const cameraCtx = document.getElementById('salesChart').getContext('2d');
 const cameraMeta = document.getElementById('camera-meta');
 const legendChips = Array.from(document.querySelectorAll('#camera-legend .legend-chip'));
 let cameraSeries = {};
-let currentYear = '2026';
+let currentYear = '2025';
+
+// Placeholder zeros used only when the API fails
+const emptySeries = { '2025': Array(12).fill(0), '2026': Array(12).fill(0) };
 
 const cameraChart = new Chart(cameraCtx, {
   type: 'line',
@@ -12,12 +15,21 @@ const cameraChart = new Chart(cameraCtx, {
     labels: cameraLabels,
     datasets: [
       {
-        label: 'Camera Connections',
+        label: '2025',
         data: Array(12).fill(0),
         borderColor: '#4339f2',
         backgroundColor: 'transparent',
         borderWidth: 3,
         pointBackgroundColor: '#4339f2',
+        tension: 0.35
+      },
+      {
+        label: '2026',
+        data: Array(12).fill(0),
+        borderColor: '#ffffff',
+        backgroundColor: 'transparent',
+        borderWidth: 3,
+        pointBackgroundColor: '#ffffff',
         tension: 0.35
       }
     ]
@@ -40,10 +52,30 @@ const cameraChart = new Chart(cameraCtx, {
   }
 });
 
+function updateCameraDatasets() {
+  const ds2025 = cameraSeries['2025'] || Array(12).fill(0);
+  const ds2026 = cameraSeries['2026'] || Array(12).fill(0);
+  cameraChart.data.datasets[0].data = ds2025;
+  cameraChart.data.datasets[1].data = ds2026;
+  cameraChart.update();
+}
+
+function showAllYears() {
+  cameraChart.data.datasets.forEach(ds => {
+    ds.hidden = false;
+  });
+  cameraChart.update();
+  if (cameraMeta) cameraMeta.textContent = 'Showing: 2025 & 2026 (all months)';
+  legendChips.forEach(btn => btn.classList.remove('legend-active'));
+}
+
 function setCameraYear(year) {
   if (!cameraSeries[year]) return;
   currentYear = year;
-  cameraChart.data.datasets[0].data = cameraSeries[year];
+  // Show only the selected year; keep both lines available
+  cameraChart.data.datasets.forEach(ds => {
+    ds.hidden = ds.label !== year;
+  });
   cameraChart.update();
   if (cameraMeta) cameraMeta.textContent = `Showing: ${year} (all months)`;
   legendChips.forEach(btn => btn.classList.toggle('legend-active', btn.dataset.year === year));
@@ -58,21 +90,22 @@ async function loadCameraSeries() {
     cameraSeries = json.data;
 
     // Ensure both years exist with 12 slots
-    ['2026', '2027'].forEach(y => {
+    ['2025', '2026'].forEach(y => {
       if (!cameraSeries[y]) cameraSeries[y] = Array(12).fill(0);
       if (cameraSeries[y].length < 12) {
         cameraSeries[y] = [...cameraSeries[y], ...Array(12 - cameraSeries[y].length).fill(0)];
       }
     });
 
-    setCameraYear(currentYear);
-    if (cameraMeta) cameraMeta.textContent = `Showing: ${currentYear} (all months)`;
+    updateCameraDatasets();
+    showAllYears();
   } catch (e) {
     console.error('camera data load failed', e);
-    // Fallback empty data
-    cameraSeries = { '2026': Array(12).fill(0), '2027': Array(12).fill(0) };
-    setCameraYear(currentYear);
-    if (cameraMeta) cameraMeta.textContent = 'No data: check DB or API response';
+    // Fallback to empty data so only real DB data is shown when available
+    cameraSeries = { ...emptySeries };
+    updateCameraDatasets();
+    showAllYears();
+    if (cameraMeta) cameraMeta.textContent = 'No data: check DB/API response';
   }
 }
 
