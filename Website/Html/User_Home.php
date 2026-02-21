@@ -36,7 +36,7 @@ $id_col = $roleTableMap[$role]['id_col'];
 
 try {
     // Fetch the user row by id. Use whitelist for table/column interpolation.
-    $sql = "SELECT {$id_col}, full_name, email, mobile, profile_photo,bio, cover_photo, date_of_birth, gender, street, city, country
+    $sql = "SELECT {$id_col}, full_name, email, mobile, profile_photo, NULL AS bio, cover_photo, date_of_birth, gender, street, city, country
             FROM {$table} WHERE {$id_col} = :id LIMIT 1";
     $stmt = $pdo->prepare($sql);
     $stmt->execute(['id' => $user_id]);

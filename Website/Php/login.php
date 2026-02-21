@@ -102,8 +102,14 @@ try {
         exit();
     }
 
-    // Verify password
-    if (!password_verify($password, $user['password_hash'])) {
+    // Verify password (guard against null/invalid stored hash to avoid TypeError)
+    $storedHash = $user['password_hash'] ?? '';
+    if (!is_string($storedHash) || $storedHash === '') {
+        header('Location: ../Html/login.html?error=wrong_password');
+        exit();
+    }
+
+    if (!password_verify($password, $storedHash)) {
         header('Location: ../Html/login.html?error=wrong_password');
         exit();
     }

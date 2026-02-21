@@ -1140,15 +1140,35 @@
 
       const imageKeys = new Set(['nid_photo', 'profile_photo', 'cover_photo']);
       const isImagePath = (value) => /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(String(value || ''));
-      const normalizeAssetPath = (value) => {
-        const raw = String(value || '').trim();
-        if (!raw) return '';
+      const entityUploadDirMap = {
+        users: 'user',
+        volunteers: 'volunteer',
+        camera_contributors: 'camera',
+        policemen: 'police'
+      };
+      const normalizeAssetPath = (value, key, entityName) => {
+        const rawValue = String(value || '').trim();
+        if (!rawValue) return '';
+
+        const raw = rawValue.replace(/\\/g, '/').replace(/^\/+/, '');
+
         if (/^https?:\/\//i.test(raw) || raw.startsWith('../') || raw.startsWith('./') || raw.startsWith('/')) {
           return raw;
         }
+
         if (raw.startsWith('uploads/')) {
           return `../${raw}`;
         }
+
+        if (/^(user|volunteer|camera|police)\//i.test(raw)) {
+          return `../uploads/${raw}`;
+        }
+
+        const folder = entityUploadDirMap[String(entityName || '').toLowerCase()] || '';
+        if (folder) {
+          return `../uploads/${folder}/${raw}`;
+        }
+
         return `../uploads/${raw}`;
       };
 
@@ -1187,7 +1207,7 @@
           return `<div class="profile-modal__row"><div class="profile-modal__label">${label}</div><div class="profile-modal__value"><input type="${inputType}" class="profile-modal__input" data-edit-key="${key}" value="${escapeHtml(inputVal)}" /></div></div>`;
         }
         if (imageKeys.has(key) && val !== '—' && isImagePath(val)) {
-          const src = normalizeAssetPath(val);
+          const src = normalizeAssetPath(val, key, entity);
           return `<div class="profile-modal__row"><div class="profile-modal__label">${label}</div><div class="profile-modal__value"><img class="profile-modal__img" src="${src}" alt="${label}"><a class="profile-modal__img-link" href="${src}" target="_blank" rel="noopener">Open image</a></div></div>`;
         }
         return `<div class="profile-modal__row"><div class="profile-modal__label">${label}</div><div class="profile-modal__value">${val}</div></div>`;
