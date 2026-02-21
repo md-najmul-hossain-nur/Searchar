@@ -21,15 +21,41 @@ function pickCoords(array $row): array {
     ];
 }
 
+function fetchWarnedIdMap(PDO $pdo, string $role, array $ids): array {
+    $cleanIds = array_values(array_filter(array_map('intval', $ids), static fn($id) => $id > 0));
+    if (!$cleanIds) {
+        return [];
+    }
+
+    $placeholders = implode(',', array_fill(0, count($cleanIds), '?'));
+    $sql = "SELECT DISTINCT recipient_id FROM user_notifications
+            WHERE recipient_entity = ?
+              AND level = 'warning'
+              AND title = 'Admin Warning'
+              AND recipient_id IN ($placeholders)";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute(array_merge([$role], $cleanIds));
+    $rows = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+    $map = [];
+    foreach ($rows as $rid) {
+        $map[(int)$rid] = true;
+    }
+    return $map;
+}
+
 $data = [];
 
 try {
     $stmt = $pdo->query('SELECT * FROM camera_contributors LIMIT 300');
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $ids = array_map(static fn(array $row): int => (int)pickField($row, ['camera_id', 'id'], '0'), $rows);
+    $warnedMap = fetchWarnedIdMap($pdo, 'camera_contributor', $ids);
     foreach ($rows as $row) {
         $coords = pickCoords($row);
+        $recordId = (int)pickField($row, ['camera_id', 'id'], '0');
         $data[] = [
-            'camera_id'       => pickField($row, ['camera_id', 'id'], ''),
+            'camera_id'       => (string)$recordId,
             'full_name'       => pickField($row, ['full_name', 'name'], ''),
             'name'            => pickField($row, ['full_name', 'name'], ''),
             'email'           => pickField($row, ['email'], ''),
@@ -59,6 +85,7 @@ try {
             'agreement'       => pickField($row, ['agreement'], ''),
             'location'        => pickField($row, ['camera_location', 'city', 'station', 'address', 'street', 'location'], ''),
             'created_at'      => pickField($row, ['created_at'], ''),
+            'warned_by_admin' => isset($warnedMap[$recordId]),
         ];
     }
     echo json_encode(['success' => true, 'data' => $data]);

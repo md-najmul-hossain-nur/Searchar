@@ -76,6 +76,16 @@ try {
         $title = 'Admin Warning';
         $body = $message !== '' ? $message : 'Admin warning: Please review your account activity.';
 
+        $exists = $pdo->prepare("SELECT notification_id FROM user_notifications WHERE recipient_entity = :entity AND recipient_id = :id AND level = 'warning' AND title = 'Admin Warning' LIMIT 1");
+        $exists->execute([
+            ':entity' => $role,
+            ':id' => $id,
+        ]);
+        if ($exists->fetchColumn()) {
+            echo json_encode(['success' => true, 'already_warned' => true]);
+            exit;
+        }
+
         $ins = $pdo->prepare("INSERT INTO user_notifications (recipient_entity, recipient_id, title, message, level) VALUES (:entity, :id, :title, :message, 'warning')");
         $ins->execute([
             ':entity' => $role,
@@ -84,7 +94,7 @@ try {
             ':message' => $body,
         ]);
 
-        echo json_encode(['success' => true]);
+        echo json_encode(['success' => true, 'already_warned' => false]);
         exit;
     }
 

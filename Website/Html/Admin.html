@@ -1228,7 +1228,34 @@
       });
     }
 
-    async function handleWarn(entity, id, displayName) {
+    function warnButtonMarkup(entity, recordId, name, warnedByAdmin) {
+      const warned = Boolean(warnedByAdmin);
+      const iconClass = warned ? 'fa-solid fa-check' : 'fa-solid fa-triangle-exclamation';
+      const text = warned ? 'Warned' : 'Warn';
+      const warnedClass = warned ? ' warned' : '';
+      const disabledAttr = warned ? ' disabled' : '';
+      const warnedData = warned ? '1' : '0';
+      return `<button class="warn-btn warn-action-btn${warnedClass}" data-entity="${entity}" data-id="${recordId}" data-name="${name}" data-warned="${warnedData}"${disabledAttr}><i class="${iconClass}"></i> ${text}</button>`;
+    }
+
+    function markWarnButtonAsDone(btn) {
+      if (!btn) return;
+      btn.dataset.warned = '1';
+      btn.disabled = true;
+      btn.classList.add('warned');
+      btn.innerHTML = '<i class="fa-solid fa-check"></i> Warned';
+      btn.title = 'Warning already sent';
+    }
+
+    async function handleWarn(entity, id, displayName, btn = null) {
+      if (btn && btn.dataset.warned === '1') {
+        return true;
+      }
+
+      if (btn) {
+        btn.disabled = true;
+      }
+
       try {
         const res = await fetch('../Php/admin_account_actions.php', {
           method: 'POST',
@@ -1243,10 +1270,23 @@
         });
         const json = await res.json();
         if (!json || !json.success) throw new Error(json?.error || 'Warn failed');
+
+        markWarnButtonAsDone(btn);
+
+        if (json.already_warned) {
+          alert(`${displayName} was already warned earlier.`);
+          return true;
+        }
+
         alert(`Warning sent to ${displayName}.`);
+        return true;
       } catch (e) {
+        if (btn && btn.dataset.warned !== '1') {
+          btn.disabled = false;
+        }
         console.error('Warn failed', e);
         alert('Could not send warning.');
+        return false;
       }
     }
 
@@ -1276,12 +1316,12 @@
       if (!scope) return;
 
       scope.querySelectorAll('.warn-action-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
           const entity = btn.dataset.entity;
           const id = Number(btn.dataset.id || 0);
           const name = btn.dataset.name || 'User';
           if (!entity || !id) return;
-          handleWarn(entity, id, name);
+          await handleWarn(entity, id, name, btn);
         });
       });
 
@@ -1363,6 +1403,7 @@
         const phone = r.phone || '—';
         const location = r.location || '—';
         const role = r.role || 'User';
+        const warnedByAdmin = Boolean(r.warned_by_admin);
         const profileData = serializeProfile({
           __title: 'User Profile',
           __entity: 'users',
@@ -1386,7 +1427,7 @@
                 <button class="view-profile-btn" data-profile="${profileData}">View Profile</button>
                 <button class="edit-profile-btn" data-profile="${profileData}">Edit</button>
                 <button class="delete-btn delete-action-btn" data-entity="${entity}" data-id="${recordId}" data-name="${name}"><i class="fa-solid fa-trash"></i></button>
-                <button class="warn-btn warn-action-btn" data-entity="${entity}" data-id="${recordId}" data-name="${name}"><i class="fa-solid fa-triangle-exclamation"></i> Warn</button>
+                ${warnButtonMarkup(entity, recordId, name, warnedByAdmin)}
               </div>
             </td>
           </tr>`;
@@ -1414,6 +1455,7 @@
         const lastActive = r.last_active || '—';
         const missions = r.total_missions || '—';
         const rank = r.rank || '—';
+        const warnedByAdmin = Boolean(r.warned_by_admin);
         const profileData = serializeProfile({
           __title: 'Volunteer Profile',
           __entity: 'volunteers',
@@ -1442,7 +1484,7 @@
                 <button class="edit-profile-btn" data-profile="${profileData}">Edit</button>
                 <button class="assign-btn assign-mission-btn" data-id="${recordId}" data-name="${name}"><i class="fa-solid fa-bullseye"></i> Assign</button>
                 <button class="delete-btn delete-action-btn" data-entity="${entity}" data-id="${recordId}" data-name="${name}"><i class="fa-solid fa-trash"></i></button>
-                <button class="warn-btn warn-action-btn" data-entity="${entity}" data-id="${recordId}" data-name="${name}"><i class="fa-solid fa-triangle-exclamation"></i> Warn</button>
+                ${warnButtonMarkup(entity, recordId, name, warnedByAdmin)}
               </div>
             </td>
           </tr>`;
@@ -1472,6 +1514,7 @@
         const statusClass = (statusText || '').toLowerCase() === 'online' || (statusText || '').toLowerCase() === 'active'
           ? 'status-active'
           : 'status-pending';
+        const warnedByAdmin = Boolean(r.warned_by_admin);
         const fps = r.fps || '—';
         const lastChecked = r.last_checked || r.updated_at || r.created_at || '—';
         const profileData = serializeProfile({
@@ -1500,7 +1543,7 @@
                 <button class="view-profile-btn" data-profile="${profileData}">View Profile</button>
                 <button class="edit-profile-btn" data-profile="${profileData}">Edit</button>
                 <button class="delete-btn delete-action-btn" data-entity="${entity}" data-id="${recordId}" data-name="${ownerName}"><i class="fa-solid fa-trash"></i></button>
-                <button class="warn-btn warn-action-btn" data-entity="${entity}" data-id="${recordId}" data-name="${ownerName}"><i class="fa-solid fa-triangle-exclamation"></i> Warn</button>
+                ${warnButtonMarkup(entity, recordId, ownerName, warnedByAdmin)}
               </div>
             </td>
           </tr>`;
@@ -1562,6 +1605,7 @@
         const station = r.station || r.city || '—';
         const statusClass = (r.status || 'active').toLowerCase() === 'inactive' ? 'status-pending' : 'status-active';
         const statusText = (r.status || 'Active');
+        const warnedByAdmin = Boolean(r.warned_by_admin);
         const profileData = serializeProfile({
           __title: 'Police Officer Profile',
           __entity: 'policemen',
@@ -1587,7 +1631,7 @@
                 <button class="view-profile-btn" data-profile="${profileData}">View Profile</button>
                 <button class="edit-profile-btn" data-profile="${profileData}">Edit</button>
                 <button class="delete-btn delete-action-btn" data-entity="${entity}" data-id="${recordId}" data-name="${name}"><i class="fa-solid fa-trash"></i></button>
-                <button class="warn-btn warn-action-btn" data-entity="${entity}" data-id="${recordId}" data-name="${name}"><i class="fa-solid fa-triangle-exclamation"></i> Warn</button>
+                ${warnButtonMarkup(entity, recordId, name, warnedByAdmin)}
               </div>
             </td>
           </tr>`;

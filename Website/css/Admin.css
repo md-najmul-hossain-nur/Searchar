@@ -1376,6 +1376,15 @@ h4 {
   color: #9a6b00;
 }
 
+.styled-table .warn-btn.warned,
+.styled-table .warn-btn.warned:disabled {
+  background: #e9fff3;
+  border-color: #baf1d3;
+  color: #0f6b44;
+  cursor: default;
+  opacity: 1;
+}
+
 .styled-table .delete-btn,
 .styled-table .deactivate-btn {
   background: #ffecee;
