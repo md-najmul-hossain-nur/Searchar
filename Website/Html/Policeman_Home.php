@@ -441,6 +441,15 @@ function e($v) { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE
         </ul>
       </div>
 
+      <div class="find-love-simple">
+        <h4>Missing Person Investigation Desk</h4>
+        <p class="helpdesk-subtitle">Collect verified clues quickly and report suspected sightings for fast police action.</p>
+        <button type="button" onclick="openMissingForm()">
+          <img src="../Images/search.gif" alt="Investigation Icon" class="love-image" />
+        </button>
+        <p class="helpdesk-cta">Tap to open investigation form</p>
+      </div>
+
     <div class="advert">
   <h4>Advertisement</h4>
 
@@ -457,6 +466,64 @@ function e($v) { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE
       <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg">
       <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg">
     </div>
+  </div>
+</div>
+
+<!-- Missing Person Investigation Popup -->
+<div id="missingFormModal" class="missing-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:2200; justify-content:center; align-items:flex-start; padding-top:120px;">
+  <div class="missing-modal-content" style="background:#fff; width:min(640px,92vw); max-height:78vh; overflow:auto; border-radius:12px; padding:16px; position:relative;">
+    <span class="missing-close" onclick="closeMissingForm()" style="position:absolute; right:12px; top:10px; font-size:24px; cursor:pointer;">&times;</span>
+    <h2 style="margin-bottom:10px;">Police Missing Person Investigation Form</h2>
+
+    <form id="missingForm" action="../Php/save_missing_person.php" method="POST" enctype="multipart/form-data">
+      <h3>Basic Identity</h3>
+      <label>Full Name</label>
+      <input type="text" name="full_name" required style="width:100%; margin:6px 0 10px; padding:8px;">
+
+      <label>Gender</label>
+      <select name="gender" required style="width:100%; margin:6px 0 10px; padding:8px;">
+        <option value="">Select Gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
+      </select>
+
+      <label>Age</label>
+      <input type="number" name="age" min="1" required style="width:100%; margin:6px 0 10px; padding:8px;">
+
+      <label>Photo / Snapshot</label>
+      <input type="file" name="person_photo" accept="image/*" required style="width:100%; margin:6px 0 10px;">
+
+      <h3>Last Seen Details</h3>
+      <label>Last Seen Date</label>
+      <input type="date" name="last_seen_date" required style="width:100%; margin:6px 0 10px; padding:8px;">
+
+      <label>Last Seen Location</label>
+      <input type="text" name="last_seen_location" required style="width:100%; margin:6px 0 10px; padding:8px;" placeholder="Area / road / landmark">
+
+      <label>Approximate Time</label>
+      <input type="text" name="last_seen_time" style="width:100%; margin:6px 0 10px; padding:8px;" placeholder="e.g. 7:45 PM">
+
+      <h3>Reporting Officer / Source</h3>
+      <label>Reporting Officer Name</label>
+      <input type="text" name="reporter_name" required style="width:100%; margin:6px 0 10px; padding:8px;">
+
+      <label>Official Contact Number</label>
+      <input type="tel" name="reporter_mobile" required style="width:100%; margin:6px 0 10px; padding:8px;">
+
+      <label>Source Relation</label>
+      <input type="text" name="relationship" style="width:100%; margin:6px 0 10px; padding:8px;" placeholder="Witness / Family / Field Team">
+
+      <label style="display:flex; gap:8px; align-items:flex-start; margin:8px 0 12px;">
+        <input type="checkbox" name="consent" value="1" required>
+        <span>I confirm this information is verified for investigation use.</span>
+      </label>
+
+      <div style="display:flex; gap:10px; justify-content:flex-end;">
+        <button type="button" onclick="closeMissingForm()" style="padding:8px 14px; border:1px solid #ccc; background:#fff; border-radius:8px; cursor:pointer;">Cancel</button>
+        <button type="submit" style="padding:8px 14px; border:none; background:#f05454; color:#fff; border-radius:8px; cursor:pointer;">Submit Investigation Report</button>
+      </div>
+    </form>
   </div>
 </div>
 
