@@ -97,6 +97,31 @@ function closeMissingForm() {
   document.getElementById("missingFormModal").style.display = "none";
 }
 
+const personPhotoInput = document.getElementById('personPhotoInput');
+const personPhotoPreviewWrap = document.getElementById('personPhotoPreviewWrap');
+const personPhotoPreview = document.getElementById('personPhotoPreview');
+
+if (personPhotoInput && personPhotoPreviewWrap && personPhotoPreview) {
+  personPhotoInput.addEventListener('change', function () {
+    const file = this.files && this.files[0];
+
+    if (!file) {
+      personPhotoPreview.src = '';
+      personPhotoPreviewWrap.style.display = 'none';
+      return;
+    }
+
+    if (!file.type || !file.type.startsWith('image/')) {
+      personPhotoPreview.src = '';
+      personPhotoPreviewWrap.style.display = 'none';
+      return;
+    }
+
+    personPhotoPreview.src = URL.createObjectURL(file);
+    personPhotoPreviewWrap.style.display = 'block';
+  });
+}
+
 // Close when clicking outside the form
 window.onclick = function(event) {
   const modal = document.getElementById("missingFormModal");
