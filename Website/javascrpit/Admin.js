@@ -121,12 +121,14 @@ setInterval(loadCameraSeries, 30000);
     const ordersChart = new Chart(document.getElementById('ordersChart').getContext('2d'), {
       type: 'bar',
       data: {
-        labels: ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
         datasets: [
           {
             label: '2025',
             data: [40, 60, 80, 70, 100, 30, 10],
-            backgroundColor: '#f64e60',
+            backgroundColor: '#f59e0b',
+            borderColor: '#d97706',
+            borderWidth: 1,
             borderRadius: 8,
             maxBarThickness: 34,
             categoryPercentage: 0.74,
@@ -135,7 +137,9 @@ setInterval(loadCameraSeries, 30000);
           {
             label: '2024',
             data: [20, 50, 60, 30, 90, 25, 80],
-            backgroundColor: '#4339f2',
+            backgroundColor: '#2563eb',
+            borderColor: '#1d4ed8',
+            borderWidth: 1,
             borderRadius: 8,
             maxBarThickness: 34,
             categoryPercentage: 0.74,
@@ -146,10 +150,28 @@ setInterval(loadCameraSeries, 30000);
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'rgba(17, 24, 39, 0.92)',
+            titleColor: '#ffffff',
+            bodyColor: '#f9fafb',
+            padding: 10,
+            displayColors: true
+          }
+        },
         scales: {
-          x: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { color: '#4b5563', font: { size: 12, weight: '600' } } },
-          y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#6b7280' }, beginAtZero: true, min: 0, max: 110 }
+          x: {
+            grid: { color: 'rgba(0,0,0,0.04)' },
+            ticks: { color: '#374151', font: { size: 12, weight: '700' } }
+          },
+          y: {
+            grid: { color: 'rgba(0,0,0,0.08)' },
+            ticks: { color: '#4b5563', font: { size: 12, weight: '600' }, stepSize: 20 },
+            beginAtZero: true,
+            min: 0,
+            max: 120
+          }
         }
       }
     });

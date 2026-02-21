@@ -434,30 +434,31 @@ body {
   position: relative;
   min-width: 340px;
   min-height: 420px;
-  border: 1px solid #e8ecf5;
+  border: 1px solid #dfe6f3;
 }
 
 .orders-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: #a0aec0;
-  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+  margin-bottom: 8px;
 }
 
 .orders-subtitle {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
-  margin-bottom: 14px;
-  color: #222a42;
+  margin-bottom: 16px;
+  color: #1f2a44;
 }
 
 .orders-chart-wrap {
   width: 100%;
-  height: 300px;
-  border: 1px solid #edf1f7;
+  height: 340px;
+  border: 1px solid #dfe7f3;
   border-radius: 10px;
-  background: linear-gradient(180deg, #fcfdff 0%, #f8faff 100%);
-  padding: 10px;
+  background: #ffffff;
+  padding: 12px;
   box-sizing: border-box;
 }
 
@@ -469,7 +470,8 @@ body {
 .orders-legend {
   margin-top: 12px;
   font-size: 13px;
-  color: #5a6478;
+  font-weight: 600;
+  color: #4b5563;
 }
 
 .legend-bar {
@@ -481,11 +483,11 @@ body {
 }
 
 .legend-pink {
-  background: #f64e60;
+  background: #f59e0b;
 }
 
 .legend-blue {
-  background: #4339f2;
+  background: #2563eb;
 }
 
 /* Dashboard Bottom */
