@@ -240,6 +240,229 @@ margin-bottom: -100px;
   width: 30px;
   height: 30px;
 }
+
+.notifications-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.notifications-see-more {
+  background: #f3f6ff;
+  border: 1px solid #d8e0f5;
+  color: #2f4b85;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.notifications-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 252px;
+  overflow: hidden;
+}
+
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid #e9edf5;
+  border-left: 4px solid #d9e3f4;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.notification-item.is-unread {
+  border-left-color: #2563eb;
+  background: #f8fbff;
+}
+
+.notification-item.is-read {
+  opacity: 0.9;
+}
+
+.notification-item.warning {
+  border-left-color: #e67e22;
+  background: #fff9f2;
+}
+
+.notification-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f2f5fb;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.notification-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1.3;
+}
+
+.notification-message {
+  font-size: 12px;
+  color: #4b5563;
+  line-height: 1.35;
+  margin-top: 2px;
+}
+
+.notification-time {
+  font-size: 11px;
+  color: #8a94a6;
+  white-space: nowrap;
+}
+
+.notifications-empty {
+  font-size: 12px;
+  color: #6b7280;
+  text-align: center;
+  padding: 8px 6px;
+}
+
+.notifications-drawer-backdrop {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 104px;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.45);
+  z-index: 1200;
+  display: none;
+}
+
+.notifications-drawer-backdrop.open {
+  display: block;
+}
+
+.notifications-drawer {
+  position: fixed;
+  top: 104px;
+  right: -420px;
+  width: min(420px, 92vw);
+  height: calc(100vh - 104px);
+  background: #fff;
+  box-shadow: -6px 0 24px rgba(0, 0, 0, 0.2);
+  z-index: 1250;
+  display: flex;
+  flex-direction: column;
+  transition: right 0.25s ease;
+}
+
+.notifications-drawer.open {
+  right: 0;
+}
+
+.notifications-drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.notifications-drawer-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #1f2937;
+}
+
+.notifications-drawer-close {
+  border: none;
+  background: #f3f4f6;
+  width: 30px;
+  height: 30px;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.notifications-drawer-list {
+  padding: 12px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.post-target-flash {
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.35), 0 8px 20px rgba(0, 0, 0, 0.15) !important;
+  transition: box-shadow 0.25s ease;
+}
+
+.drawer-notification {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  border-left: 4px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.drawer-notification.is-unread {
+  border-left-color: #2563eb;
+  background: #f8fbff;
+}
+
+.drawer-notification.is-read {
+  opacity: 0.9;
+}
+
+.drawer-notification.warning {
+  border-left-color: #d97706;
+  background: #fffbeb;
+}
+
+.drawer-notification-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.drawer-notification-content h4 {
+  margin: 0;
+  font-size: 12px;
+  color: #111827;
+  line-height: 1.25;
+}
+
+.drawer-notification-content p {
+  margin: 3px 0;
+  font-size: 11px;
+  color: #4b5563;
+  line-height: 1.3;
+}
+
+.drawer-notification-content small {
+  font-size: 10px;
+  color: #9ca3af;
+}
 /* Volunteer Section (Same Style) */
 .volunteer-section {
   background: #fff;
@@ -978,38 +1201,74 @@ background: linear-gradient(80deg, #d1b75a);
   display: block;
 }
 .find-love-simple {
-  background: #fff;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  background: linear-gradient(180deg, #ffffff 0%, #f9fcff 100%);
+  padding: 12px 12px 10px;
+  border-radius: 10px;
+  border: 1px solid #e6eef9;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
   text-align: center;
-  margin-top: 20px;
+  margin-top: 36px;
 }
 
 .find-love-simple h4 {
-  font-size: 1.1rem;
-  margin-bottom: 8px;
+  font-size: 0.96rem;
+  margin-bottom: 6px;
   color: #1a232a;
+  letter-spacing: 0.2px;
+}
+
+.helpdesk-subtitle {
+  font-size: 0.76rem;
+  color: #607087;
+  line-height: 1.35;
+  margin: 0 0 8px 0;
+}
+
+.helpdesk-highlights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.helpdesk-highlights span {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #3d4f66;
+  background: #f4f8ff;
+  border: 1px solid #e1ebff;
+  padding: 3px 7px;
+  border-radius: 999px;
 }
 
 /* Transparent button with no border or background */
 .find-love-simple button {
-  background: transparent;
+  background: #fff;
   border: none;
-  padding: 0;
+  padding: 6px;
+  border-radius: 999px !important;
+  box-shadow: 0 3px 10px rgba(59, 130, 246, 0.18);
   cursor: pointer;
 }
 
 .find-love-simple button:hover {
-  opacity: 0.8; /* subtle hover effect */
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(59, 130, 246, 0.24);
 }
 
 .love-image {
-  width: 40px;  /* adjust size as needed */
-  height: 40px;
+  width: 30px;
+  height: 30px;
   object-fit: contain;
   vertical-align: middle;
   pointer-events: none; /* so clicks pass through image */
+}
+
+.helpdesk-cta {
+  margin-top: 7px;
+  font-size: 0.68rem;
+  color: #7b889c;
 }
 
 
@@ -1317,13 +1576,16 @@ background: linear-gradient(80deg, #d1b75a);
   width: 100vw;
   height: 100vh;
   overflow: auto;
-background: rgba(0, 0, 0, 0.7); /* Semi-transparent black overlay */
+  background: rgba(0, 0, 0, 0.7); /* Semi-transparent black overlay */
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 82px;
 }
 
 /* Modal Content Box */
 .missing-modal-content {
   background: #fff; /* switched from #f5f8fa to pure white for cleaner look */
-  margin: 4% auto;
+  margin: 0 auto 4% auto;
   padding: 2.5em 2.5em 1.5em 2.5em;
   border-radius: 8px; /* same radius as volunteer-section */
   border: 1px solid #dbeafe;
@@ -1429,6 +1691,30 @@ background: rgba(0, 0, 0, 0.7); /* Semi-transparent black overlay */
   font-size: 0.99em;
   background: #f0f7ff;
 }
+
+.person-photo-preview-wrap {
+  margin: -4px 0 14px 0;
+  padding: 10px;
+  border: 1px solid #dbeafe;
+  border-radius: 7px;
+  background: #fafdff;
+}
+
+.person-photo-preview-title {
+  margin: 0 0 8px 0;
+  color: #425a78;
+  font-size: 0.92em;
+  font-weight: 600;
+}
+
+.person-photo-preview {
+  width: 100%;
+  max-height: 240px;
+  object-fit: contain;
+  border: 1px solid #dbeafe;
+  border-radius: 6px;
+  background: #fff;
+}
 #missingForm input:focus,
 #missingForm select:focus {
   border-color: #f05454; /* volunteer red */
@@ -1532,10 +1818,32 @@ background: rgba(0, 0, 0, 0.7); /* Semi-transparent black overlay */
   border-radius: 10px;
 }
 
+/* Global button shape: match logout button style */
+body button {
+  border-radius: 2px !important;
+}
+
+/* Force missing form below fixed header */
+.missing-modal {
+  align-items: flex-start !important;
+  padding-top: 96px !important;
+}
+
+.missing-modal-content {
+  margin-top: 0 !important;
+}
+
 .page-like h4 {
   margin-bottom: 20px;
   font-size: 20px;
   color: #333;
+}
+
+.contribution-text {
+  font-size: 0.86rem;
+  color: #5b6678;
+  line-height: 1.45;
+  margin: 0 0 14px 0;
 }
 .donate-btn {
   --border-radius: 15px;
@@ -1550,7 +1858,7 @@ background: rgba(0, 0, 0, 0.7); /* Semi-transparent black overlay */
   color: #fff;
   z-index: 2;
   cursor: pointer;
-  border-radius: var(--border-radius);
+  border-radius: 25px !important;
   overflow: hidden;
   position: relative; 
 }

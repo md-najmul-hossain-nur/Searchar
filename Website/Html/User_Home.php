@@ -149,7 +149,8 @@ function e($v) {
 </div>
       
     <div class="page-like">
-  <h4>Make a Contribution</h4>
+  <h4>Contribute to Save Lives</h4>
+  <p class="contribution-text">Support emergency response efforts by donating to verified rescue and assistance programs.</p>
 
   <!-- Donation Button -->
 <button class="donate-btn" onclick="window.location.href='../Html/Donated.Html'"> Donate Now</button>
@@ -288,7 +289,7 @@ function e($v) {
 </div>
   <!-- Only ONE post block should exist, not repeated. Comment modules should be closed properly and IDs/classes should be unique per post. Here is a cleaned-up, non-repeated example of a single post: -->
 
-<div class="post">
+<div class="post" id="post-1" data-post-id="1" data-category="mission">
   <div class="post-header">
     <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg">
     <div>
@@ -498,15 +499,28 @@ function e($v) {
 
     <!-- Right Sidebar -->
     <div class="sidebar-right">
-      <div class="notifications">
-        <h4>Recent Notifications</h4>
-        <ul>
-          <li><img src="https://via.placeholder.com/30"> Any one can join... <span>5 min ago</span></li>
-          <li><img src="https://via.placeholder.com/30"> Any one can join... <span>10 min ago</span></li>
-          <li><img src="https://via.placeholder.com/30"> Any one can join... <span>18 min ago</span></li>
+      <div class="notifications notifications-card">
+        <div class="notifications-top">
+          <h4>Recent Notifications</h4>
+          <button type="button" id="notificationsSeeMore" class="notifications-see-more">See more</button>
+        </div>
+        <ul id="recentNotificationsList" class="notifications-list">
+          <li class="notifications-empty">Loading notifications...</li>
         </ul>
       </div>
-
+<div class="find-love-simple">
+  <h4>Missing Person Help Desk</h4>
+  <p class="helpdesk-subtitle">Quickly report a missing person and share verified details with responders.</p>
+  <div class="helpdesk-highlights">
+    <span>Fast Report</span>
+    <span>Photo Support</span>
+    <span>Secure Data</span>
+  </div>
+  <button type="button" onclick="openMissingForm()">
+    <img src="../Images/search.gif" alt="Love Icon" class="love-image" />
+  </button>
+  <p class="helpdesk-cta">Tap the icon to open the form</p>
+</div>
      <div class="advert">
   <h4>Advertisement</h4>
   <div class="advert-slider">
@@ -587,71 +601,83 @@ function e($v) {
   background: #c0392b;
 }
 </style>
-<div class="find-love-simple">
-  <h4>Find Your Loved One</h4>
-  <button type="button" onclick="openMissingForm()">
-    <img src="../Images/search.gif" alt="Love Icon" class="love-image" />
-  </button>
-</div>
+
 
 <!-- Missing Person Report Popup -->
 <div id="missingFormModal" class="missing-modal">
   <div class="missing-modal-content">
     <span class="missing-close" onclick="closeMissingForm()">&times;</span>
-    <h2>Missing Person Report Form</h2>
+    <h2>Missing Person Information Form</h2>
 
-    <form id="missingForm">
+    <form id="missingForm" action="../Php/save_missing_person.php" method="POST" enctype="multipart/form-data">
       <!-- Section 1: Personal Details -->
       <h3>Personal Details</h3>
       <label>Full Name</label>
-      <input type="text" required>
+      <input type="text" name="full_name" required>
       
       <label>Nickname / Alias</label>
-      <input type="text">
+      <input type="text" name="nickname">
 
       <label>Gender</label>
-      <select>
-        <option>Male</option>
-        <option>Female</option>
-        <option>Other</option>
+      <select name="gender" required>
+        <option value="">Select Gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
       </select>
 
       <label>Age</label>
-      <input type="number" min="1">
+      <input type="number" name="age" min="1" required>
+
+      <label>Physical Description (Height / Dress / Marks)</label>
+      <input type="text" name="physical_description" placeholder="E.g., 5'6, blue shirt, scar on left hand">
 
       <label>Photo Upload</label>
-      <input type="file" accept="image/*" required>
+      <input type="file" id="personPhotoInput" name="person_photo" accept="image/*" required>
+      <div id="personPhotoPreviewWrap" class="person-photo-preview-wrap" style="display:none;">
+        <p class="person-photo-preview-title">Photo Preview</p>
+        <img id="personPhotoPreview" class="person-photo-preview" src="" alt="Missing Person Photo Preview">
+      </div>
 
       <!-- Section 2: Last Seen Info -->
       <h3>Last Seen Information</h3>
       <label>Last Seen Date</label>
-      <input type="date">
+      <input type="date" name="last_seen_date" required>
       
       <label>Last Seen Location</label>
-      <input type="text" placeholder="E.g., Dhanmondi 27, Dhaka">
+      <input type="text" name="last_seen_location" placeholder="E.g., Dhanmondi 27, Dhaka" required>
+
+      <label>Approximate Time</label>
+      <input type="text" name="last_seen_time" placeholder="E.g., 6:30 PM">
 
       <!-- Section 3: Health -->
       <h3>Health & Mental Condition</h3>
       <label>Mental Condition</label>
-      <select>
-        <option>Stable</option>
-        <option>Depression</option>
-        <option>Autism</option>
-        <option>Memory Loss</option>
+      <select name="mental_condition">
+        <option value="Stable">Stable</option>
+        <option value="Depression">Depression</option>
+        <option value="Autism">Autism</option>
+        <option value="Memory Loss">Memory Loss</option>
       </select>
+
+      <label>Medical Notes</label>
+      <input type="text" name="medical_notes" placeholder="E.g., Needs regular medicine">
 
       <!-- Section 4: Reporter Contact -->
       <h3>Your Contact Details</h3>
       <label>Your Name</label>
-      <input type="text" required>
+      <input type="text" name="reporter_name" required>
       
       <label>Mobile Number</label>
-      <input type="tel" required>
+      <input type="tel" name="reporter_mobile" required>
+
+      <label>Relationship with Missing Person</label>
+      <input type="text" name="relationship" placeholder="E.g., Father / Sister / Friend">
 
       <!-- Section 5: Consent -->
       <h3>Consent</h3>
       <label>
-        <input type="checkbox" required> I give permission to share this data publicly.
+        <input type="checkbox" name="consent" value="1" required> I give permission to share this data publicly.
       </label>
       
       <div class="modal-actions">
@@ -675,10 +701,42 @@ function e($v) {
     <img src="../Images/send.png" alt="Send" class="send-icon" />
   </button></div>
 
+<div id="notificationsDrawerBackdrop" class="notifications-drawer-backdrop"></div>
+<aside id="notificationsDrawer" class="notifications-drawer" aria-hidden="true">
+  <div class="notifications-drawer-header">
+    <h3>All Notifications</h3>
+    <button type="button" id="notificationsDrawerClose" class="notifications-drawer-close">&times;</button>
+  </div>
+  <div id="allNotificationsList" class="notifications-drawer-list">
+    <div class="notifications-empty">No notifications yet.</div>
+  </div>
+</aside>
+
 
 
 
     </body>
+       <script>
+         (function () {
+           const params = new URLSearchParams(window.location.search);
+           const status = params.get('missing_report');
+           const msg = params.get('msg');
+           if (!status) return;
+
+           if (msg) {
+             alert(msg);
+           } else if (status === 'success') {
+             alert('Missing person report submitted successfully.');
+           } else if (status === 'error') {
+             alert('Could not submit missing person report. Please try again.');
+           }
+
+           params.delete('missing_report');
+           params.delete('msg');
+           const cleanUrl = window.location.pathname + (params.toString() ? ('?' + params.toString()) : '');
+           window.history.replaceState({}, document.title, cleanUrl);
+         })();
+       </script>
        <script src="../javascrpit/User_Home.js"></script>
 
 </html>

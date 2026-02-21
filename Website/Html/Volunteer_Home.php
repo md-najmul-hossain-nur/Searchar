@@ -48,6 +48,7 @@ function e($v) {
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Main CSS -->
   <link rel="stylesheet" href="../css/Volunteer_Home.css">
+  <link rel="stylesheet" href="../css/notifications_shared.css">
   <style>
     .main-section { display:none; }
     .main-section.active { display:block; }
@@ -277,7 +278,7 @@ function e($v) {
   </nav>
 </div>
 
-      <div class="post">
+      <div class="post" id="post-1" data-post-id="1" data-category="mission">
   <div class="post-header">
     <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg">
     <div>
@@ -494,7 +495,7 @@ function e($v) {
 </section>
 
 </div>
-<div class="post">
+<div class="post" id="post-2" data-post-id="2" data-category="mission">
   <div class="post-header">
     <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg">
     <div>
@@ -711,7 +712,7 @@ function e($v) {
 </section>
 
 </div>
-<div class="post">
+<div class="post" id="post-3" data-post-id="3" data-category="mission">
   <div class="post-header">
     <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg">
     <div>
@@ -933,12 +934,13 @@ function e($v) {
 
     <!-- Right Sidebar -->
     <div class="sidebar-right">
-      <div class="notifications">
-        <h4>Recent Notifications</h4>
-        <ul>
-          <li><img src="https://via.placeholder.com/30"> Any one can join... <span>5 min ago</span></li>
-          <li><img src="https://via.placeholder.com/30"> Any one can join... <span>10 min ago</span></li>
-          <li><img src="https://via.placeholder.com/30"> Any one can join... <span>18 min ago</span></li>
+      <div class="notifications notifications-card">
+        <div class="notifications-top">
+          <h4>Recent Notifications</h4>
+          <button type="button" id="notificationsSeeMore" class="notifications-see-more">See more</button>
+        </div>
+        <ul id="recentNotificationsList" class="notifications-list">
+          <li class="notifications-empty">Loading notifications...</li>
         </ul>
       </div>
 
@@ -1038,6 +1040,17 @@ function e($v) {
     <img src="../Images/send.png" alt="Send" class="send-icon" />
   </button></div>
 
+<div id="notificationsDrawerBackdrop" class="notifications-drawer-backdrop"></div>
+<aside id="notificationsDrawer" class="notifications-drawer" aria-hidden="true">
+  <div class="notifications-drawer-header">
+    <h3>All Notifications</h3>
+    <button type="button" id="notificationsDrawerClose" class="notifications-drawer-close">&times;</button>
+  </div>
+  <div id="allNotificationsList" class="notifications-drawer-list">
+    <div class="notifications-empty">No notifications yet.</div>
+  </div>
+</aside>
+
 
 
   
@@ -1045,5 +1058,6 @@ function e($v) {
 
     </body>
        <script src="../javascrpit/Volunteer_Home.js"></script>
+       <script src="../javascrpit/notifications_shared.js"></script>
 
 </html>

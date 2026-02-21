@@ -541,13 +541,21 @@ body {
   border: none;
   padding: 8px 18px;
   font-size: 0.9rem;
-  border-radius: 25px;
+  border-radius: 2px;
   cursor: pointer;
   transition: background 0.2s ease-in-out;
 }
 
 .change-pass-btn:hover {
   background: #e3471c;
+}
+
+/* Keep action buttons visually consistent with logout button style */
+.post-media-btn,
+.post-cancel-btn,
+.post-submit-btn,
+.change-pass-btn {
+  border-radius: 2px;
 }
 .user-bio {
     font-style: normal;            /* normal text instead of italic */

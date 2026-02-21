@@ -30,6 +30,7 @@ function e($v) { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../css/Policeman_profile.css">
+  <link rel="stylesheet" href="../css/notifications_shared.css">
 </head>
 <body>
   <header class="navbar">
@@ -237,16 +238,15 @@ function e($v) { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE
 }
 </style>
     <div class="right-panel">
-      <div class="card notifications">
-        <h3>Recent Notifications</h3>
-        <div class="divider"></div>
-        <div class="notification">
-          <img class="mini-profile" src="<?= !empty($user['profile_photo']) ? '../uploads/police/' . e($user['profile_photo']) : 'https://randomuser.me/api/portraits/men/22.jpg' ?>" alt="User">
-          <div>
-            <div class="notification-text">Any one can join with us if you want</div>
-            <div class="notification-time">5 Min Ago</div>
-          </div>
+      <div class="card notifications notifications-card">
+        <div class="notifications-top">
+          <h3>Recent Notifications</h3>
+          <button type="button" id="notificationsSeeMore" class="notifications-see-more">See more</button>
         </div>
+        <div class="divider"></div>
+        <ul id="recentNotificationsList" class="notifications-list">
+          <li class="notifications-empty">Loading notifications...</li>
+        </ul>
       </div>
       <div class="notifications">
   <div class="redzone">
@@ -319,7 +319,19 @@ function e($v) { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE
 </style>
     </div>
   </div>
+
+<div id="notificationsDrawerBackdrop" class="notifications-drawer-backdrop"></div>
+<aside id="notificationsDrawer" class="notifications-drawer" aria-hidden="true">
+  <div class="notifications-drawer-header">
+    <h3>All Notifications</h3>
+    <button type="button" id="notificationsDrawerClose" class="notifications-drawer-close">&times;</button>
+  </div>
+  <div id="allNotificationsList" class="notifications-drawer-list">
+    <div class="notifications-empty">No notifications yet.</div>
+  </div>
+</aside>
   
 </body>
 <script src="../javascrpit/Policeman_profile.js"></script>
+<script src="../javascrpit/notifications_shared.js"></script>
 </html>

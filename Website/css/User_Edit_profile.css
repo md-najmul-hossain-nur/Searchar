@@ -257,7 +257,7 @@ body {
   background: #f05454;
   color: #fff;
   border: none;
-  border-radius: 25px;
+  border-radius: 2px;
   padding: 10px 28px;
   font-size: 1.01em;
   font-weight: 500;
@@ -281,7 +281,7 @@ body {
   background: #fff;
   color: #f05454;
   border: 1.6px solid #f05454;
-  border-radius: 25px;
+  border-radius: 2px;
   padding: 10px 28px;
   font-size: 1.01em;
   font-weight: 500;
@@ -344,7 +344,7 @@ body {
   background: #f05454;
   color: #fff;
   border: none;
-  border-radius: 25px;
+  border-radius: 2px;
   padding: 8px 22px;
   font-size: 0.98em;
   font-weight: 500;
@@ -371,7 +371,7 @@ body {
 }
 #currentLocationBtn, #saveLocationBtn {
   margin-top: 1em; margin-right: 1em;
-  background: #f05454; color: #fff; border: none; border-radius: 22px; padding: 8px 20px; font-weight: 500;
+  background: #f05454; color: #fff; border: none; border-radius: 2px; padding: 8px 20px; font-weight: 500;
   cursor: pointer; transition: background 0.2s;
 }
 #currentLocationBtn:hover, #saveLocationBtn:hover {
@@ -419,7 +419,7 @@ body {
   background-color: #ffffff;
   color: #f05454;
   border: 1.5px solid #f05454;
-  border-radius: 5px;
+  border-radius: 2px;
   font-size: 1em;
   font-weight: 500;
   text-decoration: none;
