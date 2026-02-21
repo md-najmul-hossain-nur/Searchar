@@ -5,12 +5,33 @@
   const notificationsDrawer = document.getElementById('notificationsDrawer');
   const notificationsDrawerBackdrop = document.getElementById('notificationsDrawerBackdrop');
   const notificationsDrawerClose = document.getElementById('notificationsDrawerClose');
+  const notificationsDrawerFooter = notificationsDrawer ? notificationsDrawer.querySelector('.notifications-drawer-footer') : null;
 
   if (!recentNotificationsList || !allNotificationsList) {
     return;
   }
 
   let notificationsCache = [];
+
+  function formatRelativeTime(createdAt, fallback) {
+    if (!createdAt) return fallback || 'Just now';
+    const date = new Date(createdAt);
+    if (Number.isNaN(date.getTime())) return fallback || 'Just now';
+
+    const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+    if (seconds < 60) return 'Just now';
+
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} min ago`;
+
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hr ago`;
+
+    const days = Math.floor(hours / 24);
+    if (days < 30) return `${days} day${days > 1 ? 's' : ''} ago`;
+
+    return date.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+  }
 
   function notificationIconBySource(source) {
     if (source === 'admin') return '🛡️';
@@ -45,7 +66,7 @@
               <div class="notification-title">${item.title || 'Notification'}</div>
               <div class="notification-message">${item.message || ''}</div>
             </div>
-            <span class="notification-time">${item.time_ago || ''}</span>
+            <span class="notification-time">${formatRelativeTime(item.created_at, item.time_ago)}</span>
           </li>
         `;
       }).join('');
@@ -62,7 +83,7 @@
           <div class="drawer-notification-content">
             <h4>${item.title || 'Notification'}</h4>
             <p>${item.message || ''}</p>
-            <small>${item.time_ago || ''}</small>
+            <small>${formatRelativeTime(item.created_at, item.time_ago)}</small>
           </div>
         </article>
       `;
@@ -109,6 +130,49 @@
     }
   }
 
+  async function markAllNotificationsRead() {
+    try {
+      await fetch('../Php/mark_all_notifications_read.php', {
+        method: 'POST',
+        credentials: 'same-origin'
+      });
+
+      notificationsCache = notificationsCache.map(item => ({ ...item, is_read: true }));
+      recentNotificationsList.innerHTML = renderNotificationItems(notificationsCache, { compact: true });
+      allNotificationsList.innerHTML = renderNotificationItems(notificationsCache, { compact: false });
+
+      const btn = document.getElementById('notificationsMarkAllRead');
+      if (btn) {
+        btn.classList.add('is-done');
+        btn.textContent = 'All marked read';
+        setTimeout(() => {
+          btn.classList.remove('is-done');
+          btn.textContent = 'Mark all read';
+        }, 1800);
+      }
+    } catch (error) {
+      console.error('mark all read failed', error);
+    }
+  }
+
+  function ensureMarkAllReadButton() {
+    if (!notificationsDrawerFooter) return;
+    if (document.getElementById('notificationsMarkAllRead')) return;
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.id = 'notificationsMarkAllRead';
+    button.className = 'notifications-mark-all';
+    button.textContent = 'Mark all read';
+    button.addEventListener('click', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      markAllNotificationsRead();
+    });
+
+    notificationsDrawerFooter.appendChild(button);
+  }
+
   function goToTargetPost(targetPostId) {
     const id = Number(targetPostId);
     if (!id || id <= 0) return;
@@ -125,8 +189,11 @@
     const notificationId = Number(row.getAttribute('data-notification-id'));
     const targetPostId = Number(row.getAttribute('data-target-post-id'));
     await markNotificationRead(notificationId);
-    closeNotificationsDrawer();
-    goToTargetPost(targetPostId);
+
+    if (targetPostId > 0) {
+      closeNotificationsDrawer();
+      goToTargetPost(targetPostId);
+    }
   }
 
   async function notifyPostInteraction(postId, actionType) {
@@ -171,6 +238,8 @@
   if (notificationsDrawerBackdrop) {
     notificationsDrawerBackdrop.addEventListener('click', closeNotificationsDrawer);
   }
+
+  ensureMarkAllReadButton();
 
   recentNotificationsList.addEventListener('click', function (event) {
     const row = event.target.closest('[data-notification-id]');

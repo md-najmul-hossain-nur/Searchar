@@ -353,6 +353,7 @@ $bio_text    = !empty($volunteer['bio']) ? e($volunteer['bio']) : "💬 Bio not 
   <div id="allNotificationsList" class="notifications-drawer-list">
     <div class="notifications-empty">No notifications yet.</div>
   </div>
+  <div class="notifications-drawer-footer"></div>
 </aside>
 </body>
        <script src="../javascrpit/Volunteer_profile.js"></script>

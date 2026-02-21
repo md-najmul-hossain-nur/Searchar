@@ -43,9 +43,18 @@ function timeAgo(?string $datetime): string {
         $now = new DateTime();
         $diff = $now->getTimestamp() - $created->getTimestamp();
         if ($diff < 60) return 'Just now';
-        if ($diff < 3600) return floor($diff / 60) . ' min ago';
-        if ($diff < 86400) return floor($diff / 3600) . ' hr ago';
-        if ($diff < 2592000) return floor($diff / 86400) . ' day ago';
+        if ($diff < 3600) {
+            $minutes = (int)floor($diff / 60);
+            return $minutes . ' min ago';
+        }
+        if ($diff < 86400) {
+            $hours = (int)floor($diff / 3600);
+            return $hours . ' hr ago';
+        }
+        if ($diff < 2592000) {
+            $days = (int)floor($diff / 86400);
+            return $days . ' day' . ($days > 1 ? 's' : '') . ' ago';
+        }
         return $created->format('d M Y');
     } catch (Throwable $e) {
         return 'Just now';
@@ -65,6 +74,7 @@ function detectSource(string $title, string $message): string {
 
 try {
     $notifications = [];
+    $seenNotificationKeys = [];
     $entities = recipientEntitiesForRole($role);
     $entityPlaceholders = implode(', ', array_fill(0, count($entities), '?'));
 
@@ -91,6 +101,12 @@ try {
             $message = trim((string)($row['message'] ?? ''));
             $level = strtolower((string)($row['level'] ?? 'info'));
             $source = detectSource($title, $message);
+
+            $dedupeKey = strtolower($title . '|' . $message . '|' . $source . '|' . $level);
+            if (isset($seenNotificationKeys[$dedupeKey])) {
+                continue;
+            }
+            $seenNotificationKeys[$dedupeKey] = true;
 
             if ($source === 'admin' && $level === 'info') {
                 $level = 'warning';

@@ -36,7 +36,7 @@ function e($v) { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE
   
 </head>
 <body>
- <header class="navbar" style="display:flex; align-items:center; justify-content:space-between; padding:10px; position:sticky; top:0; z-index:2000; background:#fff;">
+ <header class="navbar" style="display:flex; align-items:center; justify-content:space-between; padding:10px; position:fixed; top:0; left:0; right:0; z-index:2000; background:#fff;">
   <!-- Left: Logo -->
   <div class="navbar-logo">
     <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
@@ -51,8 +51,7 @@ function e($v) { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE
     </button>
   </div>
 </header>
-  </header>
-   <div class="container">
+  <div class="container" style="margin-top:104px; padding:20px;">
     <div class="sidebar-left">
       <div class="profile-card">
         <img src="<?= isset($user['cover_photo']) ? '../uploads/police/' . e($user['cover_photo']) : '../Images/default-cover.gif' ?>" class="cover">
@@ -477,7 +476,6 @@ function e($v) { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE
 .advert-track {
   display: flex;
   width: max-content;
-  animation: scroll 20s linear infinite;
 }
 
 .advert-track img {
@@ -486,16 +484,6 @@ function e($v) { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE
   object-fit: cover;
   margin-right: 10px;
   border-radius: 10px;
-}
-
-/* Animation */
-@keyframes scroll {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
 }
 </style>
 <div class="notifications">
@@ -604,6 +592,7 @@ function e($v) { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE
   <div id="allNotificationsList" class="notifications-drawer-list">
     <div class="notifications-empty">No notifications yet.</div>
   </div>
+  <div class="notifications-drawer-footer"></div>
 </aside>
 
     </body>

@@ -1049,6 +1049,7 @@ function e($v) {
   <div id="allNotificationsList" class="notifications-drawer-list">
     <div class="notifications-empty">No notifications yet.</div>
   </div>
+  <div class="notifications-drawer-footer"></div>
 </aside>
 
 

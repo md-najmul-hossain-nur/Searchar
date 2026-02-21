@@ -33,6 +33,7 @@ $bio_text = !empty($user['bio']) ? e($user['bio']) : "💬 Bio not added yet. Go
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Main CSS -->
   <link rel="stylesheet" href="../css/User_profile.css">
+  <link rel="stylesheet" href="../css/notifications_shared.css">
 
 </head>
 <body>
@@ -236,37 +237,15 @@ $bio_text = !empty($user['bio']) ? e($user['bio']) : "💬 Bio not added yet. Go
 }
 </style>
     <div class="right-panel">
-      <div class="card notifications">
-        <h3>Recent Notifications</h3>
+      <div class="card notifications notifications-card">
+        <div class="notifications-top">
+          <h3>Recent Notifications</h3>
+          <button type="button" id="notificationsSeeMore" class="notifications-see-more">See more</button>
+        </div>
         <div class="divider"></div>
-        <div class="notification">
-          <img class="mini-profile" src="https://randomuser.me/api/portraits/men/22.jpg" alt="User">
-          <div>
-            <div class="notification-text">Any one can join with us if you want</div>
-            <div class="notification-time">5 Min Ago</div>
-          </div>
-        </div>
-        <div class="notification">
-          <img class="mini-profile" src="https://randomuser.me/api/portraits/women/34.jpg" alt="User">
-          <div>
-            <div class="notification-text">Any one can join with us if you want</div>
-            <div class="notification-time">10 Min Ago</div>
-          </div>
-        </div>
-        <div class="notification">
-          <img class="mini-profile" src="https://randomuser.me/api/portraits/men/23.jpg" alt="User">
-          <div>
-            <div class="notification-text">Any one can join with us if you want</div>
-            <div class="notification-time">18 Min Ago</div>
-          </div>
-        </div>
-        <div class="notification">
-          <img class="mini-profile" src="https://randomuser.me/api/portraits/men/25.jpg" alt="User">
-          <div>
-            <div class="notification-text">Any one can join with us if you want</div>
-            <div class="notification-time">20 Min Ago</div>
-          </div>
-        </div>
+        <ul id="recentNotificationsList" class="notifications-list">
+          <li class="notifications-empty">Loading notifications...</li>
+        </ul>
       </div><div class="notifications">
   <div class="redzone">
   <h4>Red Zone Alerts</h4>
@@ -339,7 +318,20 @@ $bio_text = !empty($user['bio']) ? e($user['bio']) : "💬 Bio not added yet. Go
       
     </div>
   </div>
+
+<div id="notificationsDrawerBackdrop" class="notifications-drawer-backdrop"></div>
+<aside id="notificationsDrawer" class="notifications-drawer" aria-hidden="true">
+  <div class="notifications-drawer-header">
+    <h3>All Notifications</h3>
+    <button type="button" id="notificationsDrawerClose" class="notifications-drawer-close">&times;</button>
+  </div>
+  <div id="allNotificationsList" class="notifications-drawer-list">
+    <div class="notifications-empty">No notifications yet.</div>
+  </div>
+  <div class="notifications-drawer-footer"></div>
+</aside>
 </body>
        <script src="../javascrpit/User_profile.js"></script>
+       <script src="../javascrpit/notifications_shared.js"></script>
 
 </html>

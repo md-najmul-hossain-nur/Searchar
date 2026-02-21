@@ -317,6 +317,7 @@ function e($v) { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE
   <div id="allNotificationsList" class="notifications-drawer-list">
     <div class="notifications-empty">No notifications yet.</div>
   </div>
+  <div class="notifications-drawer-footer"></div>
 </aside>
 </body>
 <script src="../javascrpit/Camera_Contribution_profile.js"></script>
