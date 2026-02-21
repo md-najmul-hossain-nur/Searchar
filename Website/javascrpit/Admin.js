@@ -218,7 +218,15 @@ setInterval(loadCameraSeries, 30000);
       });
     });
 
-    showAllOrdersYears();
+    function resetOrdersDefaultView() {
+      showAllOrdersYears();
+    }
+
+    resetOrdersDefaultView();
+
+    window.addEventListener('pageshow', () => {
+      resetOrdersDefaultView();
+    });
 
     // Sidebar click logic
     document.querySelectorAll('.sidebar ul li').forEach(function(item) {
