@@ -241,9 +241,6 @@
   <li data-section="broadcast">
     <span class="icon"><i class="fa-solid fa-bullhorn"></i></span> Broadcast & Notifications
   </li>
-  <li data-section="access">
-    <span class="icon"><i class="fa-solid fa-user-lock"></i></span> User Access & Security
-  </li>
   <li data-section="volunteer">
     <span class="icon"><i class="fa-solid fa-handshake-angle"></i></span> Volunteer Mission Complete Table
   </li>
@@ -480,19 +477,30 @@
   <h2>Missing Persons</h2>
   <div class="analytics-widgets">
     <!-- Analytics: total active, resolved this month, avg. resolution time -->
-    <div class="widget">Total Active Cases: <span>00</span></div>
-    <div class="widget">Resolved Cases (Month): <span>00</span></div>
-    <div class="widget">Avg. Resolution Time: <span>00d 00h</span></div>
+    <div class="widget">Total Active Cases: <span id="missing-total-active">00</span></div>
+    <div class="widget">Resolved Cases (Month): <span id="missing-resolved-month">00</span></div>
+    <div class="widget">Avg. Resolution Time: <span id="missing-avg-resolution">00d 00h</span></div>
   </div>
   <div class="filters-bar">
-    <select><option>Status</option></select>
-    <input type="text" placeholder="Location">
-    <input type="number" placeholder="Min Age" style="width:90px;">
-    <input type="number" placeholder="Max Age" style="width:90px;">
-    <select><option>Gender</option></select>
-    <input type="date">
-    <input type="date">
-    <button>Filter</button>
+    <select id="missing-filter-status">
+      <option value="">Status</option>
+      <option value="open">Open</option>
+      <option value="active">Active</option>
+      <option value="found">Found</option>
+      <option value="resolved">Resolved</option>
+      <option value="closed">Closed</option>
+    </select>
+    <input id="missing-filter-location" type="text" placeholder="Location">
+    <input id="missing-filter-min-age" type="number" placeholder="Min Age" style="width:90px;">
+    <input id="missing-filter-max-age" type="number" placeholder="Max Age" style="width:90px;">
+    <select id="missing-filter-gender">
+      <option value="">Gender</option>
+      <option value="male">Male</option>
+      <option value="female">Female</option>
+      <option value="other">Other</option>
+    </select>
+    <input id="missing-filter-date-from" type="date">
+    <input id="missing-filter-date-to" type="date">
   </div>
   <table class="styled-table">
     <thead>
@@ -501,17 +509,8 @@
         <th>Status</th><th>Submitted By</th><th>Date Submitted</th><th>Actions</th>
       </tr>
     </thead>
-    <tbody>
-      <tr>
-        <td>MP1001</td><td>Jane Doe</td><td>14</td><td>F</td><td>Dhaka, 12:30PM</td>
-        <td><span class="status active">Active</span></td><td>Rakib</td><td>2025-07-25</td>
-        <td>
-          <button>Edit</button>
-          <button>Assign Volunteer</button>
-          <button>Alert CCTV</button>
-        </td>
-      </tr>
-      <!-- More rows... -->
+    <tbody id="missing-table-body">
+      <tr><td colspan="9">Loading missing person reports...</td></tr>
     </tbody>
   </table>
 </div>
@@ -698,33 +697,6 @@
   <div class="broadcast-actions">
     <button class="btn-alert"><i class="fa-solid fa-bullhorn"></i> Send New Alert</button>
     <button class="btn-schedule"><i class="fa-regular fa-calendar-check"></i> Schedule Broadcast</button>
-  </div>
-</div>
-
-<div id="access" class="main-section">
-  <h2>User Access & Security</h2>
-  <table class="styled-table">
-    <thead>
-      <tr>
-        <th>Name</th><th>Role</th><th>Last Login</th><th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Rakib Khan</td><td>Admin</td><td>2025-07-27 10:00</td><td>Active</td>
-        <td>
-          <button>Change Role</button>
-          <button>Revoke</button>
-          <button>Reset Password</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-  <div class="widget-bar">
-    <div class="widget">Failed logins: <span>0</span></div>
-    <div class="widget">Blocked IPs: <span>0</span></div>
-    <div class="widget">Suspicious activity: <span>0</span></div>
   </div>
 </div>
 

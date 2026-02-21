@@ -267,3 +267,176 @@ if (aiConfidence && confidenceValue) {
 function openAddVolunteerModal() {
   alert("Add/Invite Volunteer form/modal goes here.");
 }
+
+// Missing persons: live table + filters + summary metrics
+(function () {
+  const section = document.getElementById('missing');
+  if (!section) return;
+
+  const totalActiveEl = document.getElementById('missing-total-active');
+  const resolvedMonthEl = document.getElementById('missing-resolved-month');
+  const avgResolutionEl = document.getElementById('missing-avg-resolution');
+  const tableBody = document.getElementById('missing-table-body');
+
+  const statusFilter = document.getElementById('missing-filter-status');
+  const locationFilter = document.getElementById('missing-filter-location');
+  const minAgeFilter = document.getElementById('missing-filter-min-age');
+  const maxAgeFilter = document.getElementById('missing-filter-max-age');
+  const genderFilter = document.getElementById('missing-filter-gender');
+  const dateFromFilter = document.getElementById('missing-filter-date-from');
+  const dateToFilter = document.getElementById('missing-filter-date-to');
+
+  let missingRows = [];
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function formatDate(iso) {
+    if (!iso) return '—';
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return escapeHtml(iso);
+    return date.toISOString().slice(0, 10);
+  }
+
+  function prettyStatus(status) {
+    const normalized = String(status || 'open').toLowerCase();
+    if (normalized === 'open') return 'Open';
+    if (normalized === 'active') return 'Active';
+    if (normalized === 'resolved') return 'Resolved';
+    if (normalized === 'closed') return 'Closed';
+    if (normalized === 'found') return 'Found';
+    return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+  }
+
+  function statusClass(status) {
+    const normalized = String(status || '').toLowerCase();
+    if (['resolved', 'closed', 'found'].includes(normalized)) return 'status inactive';
+    return 'status active';
+  }
+
+  function renderRows(rows) {
+    if (!tableBody) return;
+    if (!Array.isArray(rows) || rows.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="9">No missing person reports found.</td></tr>';
+      return;
+    }
+
+    tableBody.innerHTML = rows.map(row => {
+      const reportId = Number(row.report_id || 0);
+      const labelId = reportId > 0 ? `MP${String(reportId).padStart(4, '0')}` : '—';
+      const lastSeen = [row.last_seen_location || '', row.last_seen_time || ''].filter(Boolean).join(', ');
+
+      return `
+        <tr>
+          <td>${escapeHtml(labelId)}</td>
+          <td>${escapeHtml(row.full_name || '—')}</td>
+          <td>${escapeHtml(row.age || '—')}</td>
+          <td>${escapeHtml(row.gender || '—')}</td>
+          <td>${escapeHtml(lastSeen || '—')}</td>
+          <td><span class="${statusClass(row.status)}">${escapeHtml(prettyStatus(row.status))}</span></td>
+          <td>${escapeHtml(row.reporter_name || '—')}</td>
+          <td>${escapeHtml(formatDate(row.created_at))}</td>
+          <td>
+            <button type="button">Assign Volunteer</button>
+            <button type="button">Alert CCTV</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function parseDateOnly(input) {
+    if (!input) return null;
+    const d = new Date(`${input}T00:00:00`);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+
+  function applyFilters() {
+    const status = String(statusFilter?.value || '').trim().toLowerCase();
+    const location = String(locationFilter?.value || '').trim().toLowerCase();
+    const minAgeRaw = String(minAgeFilter?.value || '').trim();
+    const maxAgeRaw = String(maxAgeFilter?.value || '').trim();
+    const minAge = minAgeRaw === '' ? null : parseInt(minAgeRaw, 10);
+    const maxAge = maxAgeRaw === '' ? null : parseInt(maxAgeRaw, 10);
+    const gender = String(genderFilter?.value || '').trim().toLowerCase();
+    const fromDate = parseDateOnly(dateFromFilter?.value || '');
+    const toDate = parseDateOnly(dateToFilter?.value || '');
+
+    let safeMinAge = Number.isInteger(minAge) ? minAge : null;
+    let safeMaxAge = Number.isInteger(maxAge) ? maxAge : null;
+    if (safeMinAge !== null && safeMaxAge !== null && safeMinAge > safeMaxAge) {
+      const tmp = safeMinAge;
+      safeMinAge = safeMaxAge;
+      safeMaxAge = tmp;
+    }
+
+    const filtered = missingRows.filter(row => {
+      const rowStatus = String(row.status || '').toLowerCase();
+      const rowLocation = String(row.last_seen_location || '').toLowerCase();
+      const rowGender = String(row.gender || '').toLowerCase();
+      const rowAge = parseInt(String(row.age ?? ''), 10);
+      const rowDate = parseDateOnly(formatDate(row.created_at));
+
+      if (status && rowStatus !== status) return false;
+      if (location && !rowLocation.includes(location)) return false;
+      if (gender && rowGender !== gender) return false;
+      if (safeMinAge !== null || safeMaxAge !== null) {
+        if (!Number.isInteger(rowAge)) return false;
+      }
+      if (safeMinAge !== null && rowAge < safeMinAge) return false;
+      if (safeMaxAge !== null && rowAge > safeMaxAge) return false;
+      if (fromDate && (!rowDate || rowDate < fromDate)) return false;
+      if (toDate && (!rowDate || rowDate > toDate)) return false;
+
+      return true;
+    });
+
+    renderRows(filtered);
+  }
+
+  async function loadMissingReports() {
+    if (!tableBody) return;
+    tableBody.innerHTML = '<tr><td colspan="9">Loading missing person reports...</td></tr>';
+
+    try {
+      const res = await fetch('../Php/fetch_missing_reports_admin.php', {
+        credentials: 'same-origin',
+        cache: 'no-store'
+      });
+      const json = await res.json();
+      if (!json || !json.success) {
+        throw new Error(json?.error || 'Unable to load missing reports');
+      }
+
+      missingRows = Array.isArray(json.rows) ? json.rows : [];
+      const summary = json.summary || {};
+
+      if (totalActiveEl) totalActiveEl.textContent = String(summary.total_active_cases ?? 0).padStart(2, '0');
+      if (resolvedMonthEl) resolvedMonthEl.textContent = String(summary.resolved_cases_month ?? 0).padStart(2, '0');
+      if (avgResolutionEl) avgResolutionEl.textContent = String(summary.avg_resolution_time || '00d 00h');
+
+      applyFilters();
+    } catch (error) {
+      console.error('missing reports load failed', error);
+      tableBody.innerHTML = '<tr><td colspan="9">Failed to load missing person reports.</td></tr>';
+      if (totalActiveEl) totalActiveEl.textContent = '00';
+      if (resolvedMonthEl) resolvedMonthEl.textContent = '00';
+      if (avgResolutionEl) avgResolutionEl.textContent = '00d 00h';
+    }
+  }
+
+  [statusFilter, locationFilter, minAgeFilter, maxAgeFilter, genderFilter, dateFromFilter, dateToFilter]
+    .filter(Boolean)
+    .forEach(el => {
+      const eventName = el.tagName === 'INPUT' ? 'input' : 'change';
+      el.addEventListener(eventName, applyFilters);
+    });
+
+  loadMissingReports();
+})();
