@@ -425,15 +425,16 @@ body {
 /* Orders Card */
 .orders-card {
   background: #fff;
-  border-radius: 10px;
+  border-radius: 12px;
   box-shadow: 0 6px 20px 0 rgba(16,30,54,.11);
   flex: 1 1 0;
-  padding: 28px 28px 18px 28px;
+  padding: 24px 24px 18px 24px;
   display: flex;
   flex-direction: column;
   position: relative;
   min-width: 340px;
-  min-height: 320px;
+  min-height: 420px;
+  border: 1px solid #e8ecf5;
 }
 
 .orders-title {
@@ -444,15 +445,31 @@ body {
 }
 
 .orders-subtitle {
-  font-size: 17px;
-  font-weight: bold;
-  margin-bottom: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 14px;
   color: #222a42;
 }
 
+.orders-chart-wrap {
+  width: 100%;
+  height: 300px;
+  border: 1px solid #edf1f7;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #fcfdff 0%, #f8faff 100%);
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+#ordersChart {
+  width: 100% !important;
+  height: 100% !important;
+}
+
 .orders-legend {
-  margin-top: 6px;
+  margin-top: 12px;
   font-size: 13px;
+  color: #5a6478;
 }
 
 .legend-bar {

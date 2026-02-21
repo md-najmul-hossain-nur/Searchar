@@ -126,20 +126,30 @@ setInterval(loadCameraSeries, 30000);
           {
             label: '2025',
             data: [40, 60, 80, 70, 100, 30, 10],
-            backgroundColor: '#f64e60'
+            backgroundColor: '#f64e60',
+            borderRadius: 8,
+            maxBarThickness: 34,
+            categoryPercentage: 0.74,
+            barPercentage: 0.9
           },
           {
             label: '2024',
             data: [20, 50, 60, 30, 90, 25, 80],
-            backgroundColor: '#4339f2'
+            backgroundColor: '#4339f2',
+            borderRadius: 8,
+            maxBarThickness: 34,
+            categoryPercentage: 0.74,
+            barPercentage: 0.9
           }
         ]
       },
       options: {
+        responsive: true,
+        maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
-          x: { grid: { color: 'rgba(0,0,0,0.05)' } },
-          y: { grid: { color: 'rgba(0,0,0,0.05)' }, beginAtZero: true, min: 0, max: 110 }
+          x: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { color: '#4b5563', font: { size: 12, weight: '600' } } },
+          y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#6b7280' }, beginAtZero: true, min: 0, max: 110 }
         }
       }
     });
