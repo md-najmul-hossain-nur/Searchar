@@ -594,6 +594,19 @@ body {
   pointer-events: none; /* so clicks pass through image */
 }
 
+.find-love-simple .helpdesk-subtitle {
+  font-size: 0.9rem;
+  color: #5b667a;
+  line-height: 1.45;
+  margin: 4px 0 10px;
+}
+
+.find-love-simple .helpdesk-cta {
+  font-size: 0.82rem;
+  color: #6c768a;
+  margin-top: 8px;
+}
+
 
 
 .group-chat-section {
