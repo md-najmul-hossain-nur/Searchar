@@ -472,6 +472,32 @@ body {
   font-size: 13px;
   font-weight: 600;
   color: #4b5563;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.orders-legend-btn {
+  border: 1px solid #d8e1ef;
+  background: #f8fbff;
+  color: #374151;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.orders-legend-btn.active {
+  border-color: #9fb5da;
+  background: #eef4ff;
+}
+
+.orders-legend-btn:hover {
+  background: #f1f6ff;
 }
 
 .legend-bar {

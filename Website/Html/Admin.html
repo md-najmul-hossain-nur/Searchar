@@ -315,9 +315,13 @@
           <div class="orders-chart-wrap">
             <canvas id="ordersChart" width="440" height="300"></canvas>
           </div>
-          <div class="orders-legend">
-            <span class="legend-bar legend-pink"></span>2025
-            <span class="legend-bar legend-blue"></span>2024
+          <div class="orders-legend" id="orders-legend">
+            <button type="button" class="orders-legend-btn active" data-year="2025">
+              <span class="legend-bar legend-pink"></span>2025
+            </button>
+            <button type="button" class="orders-legend-btn" data-year="2026">
+              <span class="legend-bar legend-blue"></span>2026
+            </button>
           </div>
         </div>
       </div>

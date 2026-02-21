@@ -135,7 +135,7 @@ setInterval(loadCameraSeries, 30000);
             barPercentage: 0.9
           },
           {
-            label: '2024',
+            label: '2026',
             data: [20, 50, 60, 30, 90, 25, 80],
             backgroundColor: '#2563eb',
             borderColor: '#1d4ed8',
@@ -175,6 +175,27 @@ setInterval(loadCameraSeries, 30000);
         }
       }
     });
+
+    const ordersLegendButtons = Array.from(document.querySelectorAll('#orders-legend .orders-legend-btn'));
+
+    function setOrdersYear(year) {
+      ordersChart.data.datasets.forEach(ds => {
+        ds.hidden = ds.label !== year;
+      });
+      ordersChart.update();
+      ordersLegendButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.year === year));
+    }
+
+    ordersLegendButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const year = btn.dataset.year;
+        if (!year) return;
+        setOrdersYear(year);
+      });
+    });
+
+    setOrdersYear('2025');
+
     // Sidebar click logic
     document.querySelectorAll('.sidebar ul li').forEach(function(item) {
       item.addEventListener('click', function() {
