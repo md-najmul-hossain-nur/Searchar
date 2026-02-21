@@ -150,6 +150,22 @@ setInterval(loadCameraSeries, 30000);
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: {
+          duration: 1100,
+          easing: 'easeOutQuart',
+          delay(ctx) {
+            if (ctx.type !== 'data' || ctx.mode !== 'default') return 0;
+            return (ctx.dataIndex * 70) + (ctx.datasetIndex * 120);
+          }
+        },
+        transitions: {
+          active: {
+            animation: {
+              duration: 500,
+              easing: 'easeOutCubic'
+            }
+          }
+        },
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -178,6 +194,14 @@ setInterval(loadCameraSeries, 30000);
 
     const ordersLegendButtons = Array.from(document.querySelectorAll('#orders-legend .orders-legend-btn'));
 
+    function showAllOrdersYears() {
+      ordersChart.data.datasets.forEach(ds => {
+        ds.hidden = false;
+      });
+      ordersChart.update();
+      ordersLegendButtons.forEach(btn => btn.classList.add('active'));
+    }
+
     function setOrdersYear(year) {
       ordersChart.data.datasets.forEach(ds => {
         ds.hidden = ds.label !== year;
@@ -194,7 +218,7 @@ setInterval(loadCameraSeries, 30000);
       });
     });
 
-    setOrdersYear('2025');
+    showAllOrdersYears();
 
     // Sidebar click logic
     document.querySelectorAll('.sidebar ul li').forEach(function(item) {
