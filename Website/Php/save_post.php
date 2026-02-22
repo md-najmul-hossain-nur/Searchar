@@ -49,16 +49,116 @@ if (isset($_POST['share_facebook'])) {
 // handle file upload (optional)
 $media_path = null;
 $media_type = null;
-if (!empty($_FILES['media']) && is_uploaded_file($_FILES['media']['tmp_name'])) {
-    $file = $_FILES['media'];
-    // Basic server-side validation
-    $maxImage = 10 * 1024 * 1024; // 10 MB
-    $maxVideo = 50 * 1024 * 1024; // 50 MB
-    $allowedImage = ['image/png','image/jpeg','image/gif','image/webp'];
-    $allowedVideo = ['video/mp4','video/quicktime','video/webm'];
+$media_json = null;
 
+$maxImage = 10 * 1024 * 1024; // 10 MB
+$maxVideo = 50 * 1024 * 1024; // 50 MB
+$maxImageCount = 5;
+$allowedImage = ['image/png','image/jpeg','image/gif','image/webp'];
+$allowedVideo = ['video/mp4','video/quicktime','video/webm'];
+
+$uploadDir = __DIR__ . '/../uploads/posts/';
+if (!is_dir($uploadDir)) {
+    mkdir($uploadDir, 0755, true);
+}
+
+$hasVideo = !empty($_FILES['media_video']) && is_uploaded_file($_FILES['media_video']['tmp_name']);
+$hasImageArray = !empty($_FILES['media_images']) && isset($_FILES['media_images']['tmp_name']) && is_array($_FILES['media_images']['tmp_name']);
+$hasLegacySingle = !empty($_FILES['media']) && is_uploaded_file($_FILES['media']['tmp_name']);
+
+if (($hasVideo && $hasImageArray) || ($hasVideo && $hasLegacySingle)) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'Upload either images or one video, not both']);
+    exit;
+}
+
+if ($hasVideo) {
+    $file = $_FILES['media_video'];
+    $fsize = (int)$file['size'];
+    $mime = (string)$file['type'];
+
+    if (!in_array($mime, $allowedVideo, true)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Unsupported video type']);
+        exit;
+    }
+    if ($fsize > $maxVideo) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Video too large']);
+        exit;
+    }
+
+    $ext = pathinfo((string)$file['name'], PATHINFO_EXTENSION);
+    $basename = bin2hex(random_bytes(10));
+    $target = $uploadDir . $basename . '.' . $ext;
+
+    if (!move_uploaded_file((string)$file['tmp_name'], $target)) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => 'Failed to move uploaded video']);
+        exit;
+    }
+
+    $media_type = 'video';
+    $media_path = 'uploads/posts/' . $basename . '.' . $ext;
+} elseif ($hasImageArray) {
+    $imageNames = $_FILES['media_images']['name'];
+    $imageTypes = $_FILES['media_images']['type'];
+    $imageSizes = $_FILES['media_images']['size'];
+    $imageTmp = $_FILES['media_images']['tmp_name'];
+
+    $validIndexes = [];
+    foreach ($imageTmp as $idx => $tmpPath) {
+        if (is_uploaded_file((string)$tmpPath)) {
+            $validIndexes[] = $idx;
+        }
+    }
+
+    if (count($validIndexes) > $maxImageCount) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Maximum 5 images allowed']);
+        exit;
+    }
+
+    $storedImages = [];
+    foreach ($validIndexes as $idx) {
+        $mime = (string)($imageTypes[$idx] ?? '');
+        $size = (int)($imageSizes[$idx] ?? 0);
+        $tmpPath = (string)($imageTmp[$idx] ?? '');
+        $name = (string)($imageNames[$idx] ?? '');
+
+        if (!in_array($mime, $allowedImage, true)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Unsupported image type']);
+            exit;
+        }
+        if ($size > $maxImage) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Image too large']);
+            exit;
+        }
+
+        $ext = pathinfo($name, PATHINFO_EXTENSION);
+        $basename = bin2hex(random_bytes(10));
+        $target = $uploadDir . $basename . '.' . $ext;
+
+        if (!move_uploaded_file($tmpPath, $target)) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => 'Failed to move uploaded image']);
+            exit;
+        }
+
+        $storedImages[] = 'uploads/posts/' . $basename . '.' . $ext;
+    }
+
+    if (!empty($storedImages)) {
+        $media_type = 'image';
+        $media_path = $storedImages[0];
+        $media_json = json_encode($storedImages, JSON_UNESCAPED_SLASHES);
+    }
+} elseif ($hasLegacySingle) {
+    $file = $_FILES['media'];
     $fsize = (int) $file['size'];
-    $mime = $file['type'];
+    $mime = (string) $file['type'];
 
     if (in_array($mime, $allowedImage, true)) {
         if ($fsize > $maxImage) {
@@ -80,23 +180,20 @@ if (!empty($_FILES['media']) && is_uploaded_file($_FILES['media']['tmp_name'])) 
         exit;
     }
 
-    $uploadDir = __DIR__ . '/../uploads/posts/';
-    if (!is_dir($uploadDir)) {
-        mkdir($uploadDir, 0755, true);
-    }
-
-    $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+    $ext = pathinfo((string)$file['name'], PATHINFO_EXTENSION);
     $basename = bin2hex(random_bytes(10));
     $target = $uploadDir . $basename . '.' . $ext;
 
-    if (!move_uploaded_file($file['tmp_name'], $target)) {
+    if (!move_uploaded_file((string)$file['tmp_name'], $target)) {
         http_response_code(500);
         echo json_encode(['success' => false, 'error' => 'Failed to move uploaded file']);
         exit;
     }
 
-    // store web-relative path to media
     $media_path = 'uploads/posts/' . $basename . '.' . $ext;
+    if ($media_type === 'image') {
+        $media_json = json_encode([$media_path], JSON_UNESCAPED_SLASHES);
+    }
 }
 
 try {
@@ -110,10 +207,16 @@ try {
         `category` VARCHAR(50) DEFAULT 'general',
         `text` TEXT,
         `media_path` VARCHAR(512) DEFAULT NULL,
+        `media_json` TEXT DEFAULT NULL,
         `media_type` ENUM('image','video','file') DEFAULT NULL,
         `share_facebook` TINYINT(1) DEFAULT 0,
         `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+
+    $columnStmt = $pdo->query("SHOW COLUMNS FROM posts LIKE 'media_json'");
+    if (!$columnStmt || !$columnStmt->fetch(PDO::FETCH_ASSOC)) {
+        $pdo->exec("ALTER TABLE posts ADD COLUMN media_json TEXT DEFAULT NULL AFTER media_path");
+    }
 
     // Try to fetch author's display name (best-effort)
     $author_name = null;
@@ -135,7 +238,7 @@ try {
         $author_name = $s->fetchColumn() ?: null;
     }
 
-    $ins = $pdo->prepare('INSERT INTO posts (case_id, author_role, author_id, author_name, category, text, media_path, media_type, share_facebook) VALUES (:case_id, :author_role, :author_id, :author_name, :category, :text, :media_path, :media_type, :share_facebook)');
+    $ins = $pdo->prepare('INSERT INTO posts (case_id, author_role, author_id, author_name, category, text, media_path, media_json, media_type, share_facebook) VALUES (:case_id, :author_role, :author_id, :author_name, :category, :text, :media_path, :media_json, :media_type, :share_facebook)');
     $ins->execute([
         'case_id' => $case_id,
         'author_role' => $role,
@@ -144,6 +247,7 @@ try {
         'category' => $category,
         'text' => $text ?: null,
         'media_path' => $media_path,
+        'media_json' => $media_json,
         'media_type' => $media_type,
         'share_facebook' => $share_fb,
     ]);

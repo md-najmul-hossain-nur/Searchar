@@ -137,7 +137,18 @@ function getAuthorPhoto(PDO $pdo, string $authorRole, int $authorId): string {
 
 $posts = [];
 try {
-  $postStmt = $pdo->query("SELECT id, author_role, author_id, author_name, category, text, media_path, media_type, created_at FROM posts ORDER BY id DESC LIMIT 50");
+  $hasMediaJson = false;
+  $mediaJsonCol = $pdo->query("SHOW COLUMNS FROM posts LIKE 'media_json'");
+  if ($mediaJsonCol && $mediaJsonCol->fetch(PDO::FETCH_ASSOC)) {
+    $hasMediaJson = true;
+  }
+
+  $selectCols = "id, author_role, author_id, author_name, category, text, media_path, media_type, created_at";
+  if ($hasMediaJson) {
+    $selectCols .= ", media_json";
+  }
+
+  $postStmt = $pdo->query("SELECT {$selectCols} FROM posts ORDER BY id DESC LIMIT 50");
   $posts = $postStmt ? $postStmt->fetchAll(PDO::FETCH_ASSOC) : [];
 } catch (Exception $e) {
   $posts = [];
@@ -271,7 +282,10 @@ try {
     <span class="post-modal-close" onclick="closeModal()">&times;</span>
 
     <!-- Title -->
-    <h2 class="post-modal-title">Share Your Mood</h2>
+    <div class="post-modal-head">
+      <h2 class="post-modal-title">Share Your Mood</h2>
+      <p class="post-modal-subtitle">Upload photos or a video and post instantly</p>
+    </div>
 
     <!-- ✅ Facebook Toggle -->
     <div class="facebook-toggle">
@@ -320,7 +334,7 @@ try {
     <!-- ✅ Media Upload Buttons -->
     <div class="post-media-options">
       <label>
-        <input type="file" id="imageUpload" accept="image/*" hidden>
+        <input type="file" id="imageUpload" accept="image/*" multiple hidden>
         <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
       </label>
       <label>
@@ -328,6 +342,7 @@ try {
         <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
       </label>
     </div>
+    <p class="post-media-hint">You can select up to 5 photos in one post.</p>
 
 
     <!-- ✅ Media Preview (optional preview for uploaded file) -->
@@ -365,6 +380,21 @@ try {
       $postMediaType = (string)($post['media_type'] ?? '');
       $postMediaPath = (string)($post['media_path'] ?? '');
       $postMediaUrl = $postMediaPath !== '' ? ('../' . ltrim($postMediaPath, '/')) : '';
+      $postMediaJson = isset($post['media_json']) ? (string)$post['media_json'] : '';
+      $postImageUrls = [];
+      if ($postMediaJson !== '') {
+        $decodedImages = json_decode($postMediaJson, true);
+        if (is_array($decodedImages)) {
+          foreach ($decodedImages as $imgPath) {
+            if (is_string($imgPath) && trim($imgPath) !== '') {
+              $postImageUrls[] = '../' . ltrim($imgPath, '/');
+            }
+          }
+        }
+      }
+      if (empty($postImageUrls) && $postMediaType === 'image' && $postMediaUrl !== '') {
+        $postImageUrls[] = $postMediaUrl;
+      }
       $authorRole = (string)($post['author_role'] ?? '');
       $authorId = (int)($post['author_id'] ?? 0);
       $authorPhoto = getAuthorPhoto($pdo, $authorRole, $authorId);
@@ -382,8 +412,16 @@ try {
         <p><?= nl2br(e($postText)) ?></p>
       <?php endif; ?>
 
-      <?php if ($postMediaUrl !== '' && $postMediaType === 'image'): ?>
-        <img src="<?= e($postMediaUrl) ?>" class="post-img" alt="Post Image">
+      <?php if (!empty($postImageUrls)): ?>
+        <?php if (count($postImageUrls) === 1): ?>
+          <img src="<?= e($postImageUrls[0]) ?>" class="post-img" alt="Post Image">
+        <?php else: ?>
+          <div class="post-image-grid">
+            <?php foreach ($postImageUrls as $imgUrl): ?>
+              <img src="<?= e($imgUrl) ?>" class="post-grid-img" alt="Post Image">
+            <?php endforeach; ?>
+          </div>
+        <?php endif; ?>
       <?php elseif ($postMediaUrl !== '' && $postMediaType === 'video'): ?>
         <video class="post-video" controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture oncontextmenu="return false;" preload="metadata">
           <source src="<?= e($postMediaUrl) ?>" type="video/mp4">

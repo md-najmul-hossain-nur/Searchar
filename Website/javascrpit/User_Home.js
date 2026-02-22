@@ -24,7 +24,7 @@ chatInput.addEventListener('keypress', (e) => {
 const modal = document.getElementById("postModal");
 const feed = document.getElementById("post-feed");
 const mediaPreview = document.getElementById("mediaPreview");
-let selectedImage = null;
+let selectedImages = [];
 let selectedVideo = null;
 let isShareMode = false;
 let shareContext = null;
@@ -37,6 +37,48 @@ function getPostVideoSource(postElement) {
     || postVideo.getAttribute('src')
     || postVideo.querySelector('source')?.getAttribute('src')
     || '';
+}
+
+function initFeedVideoCenterPlayButtons() {
+  document.querySelectorAll('.post-video').forEach(video => {
+    if (video.dataset.centerPlayReady === '1') return;
+    video.dataset.centerPlayReady = '1';
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'post-video-wrap';
+    video.parentNode.insertBefore(wrapper, video);
+    wrapper.appendChild(video);
+
+    const centerBtn = document.createElement('button');
+    centerBtn.type = 'button';
+    centerBtn.className = 'post-video-center-btn';
+    centerBtn.setAttribute('aria-label', 'Play video');
+    centerBtn.innerHTML = '<i class="fa fa-play"></i>';
+    wrapper.appendChild(centerBtn);
+
+    const syncState = () => {
+      const playing = !video.paused && !video.ended && video.readyState > 2;
+      wrapper.classList.toggle('is-playing', playing);
+      centerBtn.innerHTML = playing ? '<i class="fa fa-pause"></i>' : '<i class="fa fa-play"></i>';
+      centerBtn.setAttribute('aria-label', playing ? 'Pause video' : 'Play video');
+    };
+
+    centerBtn.addEventListener('click', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (video.paused || video.ended) {
+        video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
+      syncState();
+    });
+
+    video.addEventListener('play', syncState);
+    video.addEventListener('pause', syncState);
+    video.addEventListener('ended', syncState);
+    syncState();
+  });
 }
 
 function openModal(isShareMode = false) {
@@ -158,20 +200,40 @@ function closeModal() {
     sharedPostVideo.style.display = 'none';
   }
 
-  selectedImage = null;
+  selectedImages = [];
   selectedVideo = null;
   document.getElementById('facebookShareToggle').checked = false;
 }
 
 // Handle image upload preview
 document.getElementById("imageUpload").addEventListener("change", function() {
-  const file = this.files[0];
-  if (file) {
-    selectedImage = file;
-    mediaPreview.innerHTML = `<img src="${URL.createObjectURL(file)}">`;
-    selectedVideo = null;
-    document.getElementById("videoUpload").value = "";
+  const files = Array.from(this.files || []);
+  if (!files.length) return;
+
+  if (files.length > 5) {
+    alert('You can upload maximum 5 images in one post.');
+    this.value = '';
+    return;
   }
+
+  const invalid = files.find(file => !file.type || !file.type.startsWith('image/'));
+  if (invalid) {
+    alert('Only image files are allowed in Photo upload.');
+    this.value = '';
+    return;
+  }
+
+  selectedImages = files;
+  selectedVideo = null;
+  document.getElementById("videoUpload").value = "";
+
+  const countLabel = selectedImages.length > 1 ? `<p class="post-media-hint">${selectedImages.length} photos selected</p>` : '';
+  mediaPreview.innerHTML = `
+    ${countLabel}
+    <div class="post-media-grid">
+      ${selectedImages.map(file => `<img src="${URL.createObjectURL(file)}" alt="Preview image">`).join('')}
+    </div>
+  `;
 });
 
 // Handle video upload preview
@@ -180,7 +242,7 @@ document.getElementById("videoUpload").addEventListener("change", function() {
   if (file) {
     selectedVideo = file;
     mediaPreview.innerHTML = `<video src="${URL.createObjectURL(file)}" controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture oncontextmenu="return false;"></video>`;
-    selectedImage = null;
+    selectedImages = [];
     document.getElementById("imageUpload").value = "";
   }
 });
@@ -193,7 +255,7 @@ function createPost() {
     ? [caption, sharedText ? `\n\n🔁 Shared Post:\n${sharedText}` : ''].join('').trim()
     : caption;
 
-  if (finalText === "" && !selectedImage && !selectedVideo) {
+  if (finalText === "" && selectedImages.length === 0 && !selectedVideo) {
     alert("Please add text or media to post!");
     return;
   }
@@ -208,8 +270,14 @@ function createPost() {
   // include facebook toggle value
   const shareFb = document.getElementById('facebookShareToggle')?.checked ? '1' : '0';
   fd.append('share_facebook', shareFb);
-  if (selectedImage) fd.append('media', selectedImage, selectedImage.name);
-  if (selectedVideo) fd.append('media', selectedVideo, selectedVideo.name);
+  if (selectedImages.length > 0) {
+    selectedImages.forEach(imageFile => {
+      fd.append('media_images[]', imageFile, imageFile.name);
+    });
+  }
+  if (selectedVideo) {
+    fd.append('media_video', selectedVideo, selectedVideo.name);
+  }
 
   fetch('../Php/save_post.php', {
     method: 'POST',
@@ -831,6 +899,8 @@ document.querySelectorAll('.share-btn').forEach(btn => {
     openModal(true);
   });
 });
+initFeedVideoCenterPlayButtons();
+
 function filterPosts(category) {
   // Remove .active from all filter buttons
   document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
