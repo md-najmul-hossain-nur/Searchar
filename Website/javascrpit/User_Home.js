@@ -29,6 +29,44 @@ let selectedVideo = null;
 let isShareMode = false;
 let shareContext = null;
 
+function imageFileKey(file) {
+  return `${file.name}__${file.size}__${file.lastModified}`;
+}
+
+function renderSelectedImagesPreview() {
+  if (!mediaPreview) return;
+  if (!selectedImages.length) {
+    mediaPreview.innerHTML = '';
+    return;
+  }
+
+  const countLabel = selectedImages.length > 1 ? `<p class="post-media-hint">${selectedImages.length} photos selected</p>` : '';
+  mediaPreview.innerHTML = `
+    ${countLabel}
+    <div class="post-media-grid">
+      ${selectedImages.map((file, index) => `
+        <div class="post-media-item">
+          <img src="${URL.createObjectURL(file)}" alt="Preview image">
+          <button type="button" class="post-media-remove-btn" data-image-index="${index}" aria-label="Remove image">&times;</button>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+if (mediaPreview) {
+  mediaPreview.addEventListener('click', function (event) {
+    const removeBtn = event.target.closest('.post-media-remove-btn');
+    if (!removeBtn) return;
+
+    const index = Number(removeBtn.getAttribute('data-image-index'));
+    if (!Number.isInteger(index) || index < 0 || index >= selectedImages.length) return;
+
+    selectedImages.splice(index, 1);
+    renderSelectedImagesPreview();
+  });
+}
+
 function getPostVideoSource(postElement) {
   if (!postElement) return '';
   const postVideo = postElement.querySelector('video');
@@ -208,10 +246,7 @@ function closeModal() {
 // Handle image upload preview
 document.getElementById("imageUpload").addEventListener("change", function() {
   const files = Array.from(this.files || []);
-  if (!files.length) return;
-
-  if (files.length > 5) {
-    alert('You can upload maximum 5 images in one post.');
+  if (!files.length) {
     this.value = '';
     return;
   }
@@ -223,17 +258,21 @@ document.getElementById("imageUpload").addEventListener("change", function() {
     return;
   }
 
-  selectedImages = files;
+  const dedupe = new Map(selectedImages.map(file => [imageFileKey(file), file]));
+  files.forEach(file => dedupe.set(imageFileKey(file), file));
+  const merged = Array.from(dedupe.values());
+
+  if (merged.length > 5) {
+    alert('You can upload maximum 5 images in one post.');
+    selectedImages = merged.slice(0, 5);
+  } else {
+    selectedImages = merged;
+  }
+
   selectedVideo = null;
   document.getElementById("videoUpload").value = "";
-
-  const countLabel = selectedImages.length > 1 ? `<p class="post-media-hint">${selectedImages.length} photos selected</p>` : '';
-  mediaPreview.innerHTML = `
-    ${countLabel}
-    <div class="post-media-grid">
-      ${selectedImages.map(file => `<img src="${URL.createObjectURL(file)}" alt="Preview image">`).join('')}
-    </div>
-  `;
+  renderSelectedImagesPreview();
+  this.value = '';
 });
 
 // Handle video upload preview
