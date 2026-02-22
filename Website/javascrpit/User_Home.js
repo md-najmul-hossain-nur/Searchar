@@ -268,6 +268,54 @@ function formatRelativeTime(createdAt, fallback) {
   return date.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
+function parseServerDateTime(value) {
+  if (!value) return null;
+  const direct = new Date(value);
+  if (!Number.isNaN(direct.getTime())) return direct;
+
+  const normalized = String(value).replace(' ', 'T');
+  const fallback = new Date(normalized);
+  if (!Number.isNaN(fallback.getTime())) return fallback;
+  return null;
+}
+
+function refreshPostRelativeTimes() {
+  document.querySelectorAll('.post-time[data-created-at]').forEach(node => {
+    const raw = node.getAttribute('data-created-at') || '';
+    const parsed = parseServerDateTime(raw);
+    if (!parsed) {
+      node.textContent = 'Just now';
+      return;
+    }
+
+    const seconds = Math.floor((Date.now() - parsed.getTime()) / 1000);
+    if (seconds < 60) {
+      node.textContent = 'Just now';
+      return;
+    }
+
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) {
+      node.textContent = `${minutes} min ago`;
+      return;
+    }
+
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) {
+      node.textContent = `${hours} hr ago`;
+      return;
+    }
+
+    const days = Math.floor(hours / 24);
+    if (days < 30) {
+      node.textContent = `${days} day${days > 1 ? 's' : ''} ago`;
+      return;
+    }
+
+    node.textContent = parsed.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+  });
+}
+
 function notificationIconBySource(source) {
   if (source === 'admin') return '🛡️';
   if (source === 'police') return '👮';
@@ -500,6 +548,8 @@ document.addEventListener('keydown', function (event) {
 
 loadUserNotifications();
 setInterval(loadUserNotifications, 30000);
+refreshPostRelativeTimes();
+setInterval(refreshPostRelativeTimes, 60000);
 
 const personPhotoInput = document.getElementById('personPhotoInput');
 const personPhotoPreviewWrap = document.getElementById('personPhotoPreviewWrap');

@@ -84,6 +84,65 @@ function e($v) {
     return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
+function timeAgo(?string $datetime): string {
+  if (!$datetime) return 'Just now';
+  try {
+    $created = new DateTime($datetime);
+    $now = new DateTime();
+    $diff = $now->getTimestamp() - $created->getTimestamp();
+    if ($diff < 60) return 'Just now';
+    if ($diff < 3600) return floor($diff / 60) . ' min ago';
+    if ($diff < 86400) return floor($diff / 3600) . ' hr ago';
+    if ($diff < 2592000) return floor($diff / 86400) . ' day ago';
+    return $created->format('d M Y');
+  } catch (Exception $e) {
+    return 'Just now';
+  }
+}
+
+function getAuthorPhoto(PDO $pdo, string $authorRole, int $authorId): string {
+  static $roleMap = [
+    'user' => ['table' => 'users', 'id_col' => 'user_id'],
+    'police' => ['table' => 'policemen', 'id_col' => 'police_id'],
+    'volunteer' => ['table' => 'volunteers', 'id_col' => 'volunteer_id'],
+    'contributor' => ['table' => 'camera_contributors', 'id_col' => 'camera_id'],
+  ];
+  static $cache = [];
+
+  $cacheKey = $authorRole . ':' . $authorId;
+  if (isset($cache[$cacheKey])) {
+    return $cache[$cacheKey];
+  }
+
+  if (!isset($roleMap[$authorRole]) || $authorId <= 0) {
+    return $cache[$cacheKey] = '../Images/default_profile.png';
+  }
+
+  $table = $roleMap[$authorRole]['table'];
+  $idCol = $roleMap[$authorRole]['id_col'];
+
+  try {
+    $stmt = $pdo->prepare("SELECT profile_photo FROM {$table} WHERE {$idCol} = :id LIMIT 1");
+    $stmt->execute(['id' => $authorId]);
+    $photo = (string)($stmt->fetchColumn() ?: '');
+    if ($photo !== '') {
+      return $cache[$cacheKey] = '../uploads/user/' . e($photo);
+    }
+  } catch (Exception $e) {
+    // fall through to default image
+  }
+
+  return $cache[$cacheKey] = '../Images/default_profile.png';
+}
+
+$posts = [];
+try {
+  $postStmt = $pdo->query("SELECT id, author_role, author_id, author_name, category, text, media_path, media_type, created_at FROM posts ORDER BY id DESC LIMIT 50");
+  $posts = $postStmt ? $postStmt->fetchAll(PDO::FETCH_ASSOC) : [];
+} catch (Exception $e) {
+  $posts = [];
+}
+
 // Now render a minimal HTML page — integrate this into your full template as needed.
 ?>
 <!DOCTYPE html>
@@ -295,9 +354,70 @@ function e($v) {
     </button>
   </nav>
 </div>
+
+<?php if (!empty($posts)): ?>
+  <?php foreach ($posts as $post): ?>
+    <?php
+      $postId = (int)($post['id'] ?? 0);
+      $postCategory = (string)($post['category'] ?? 'general');
+      $postAuthorName = (string)($post['author_name'] ?? 'Unknown User');
+      $postText = (string)($post['text'] ?? '');
+      $postMediaType = (string)($post['media_type'] ?? '');
+      $postMediaPath = (string)($post['media_path'] ?? '');
+      $postMediaUrl = $postMediaPath !== '' ? ('../' . ltrim($postMediaPath, '/')) : '';
+      $authorRole = (string)($post['author_role'] ?? '');
+      $authorId = (int)($post['author_id'] ?? 0);
+      $authorPhoto = getAuthorPhoto($pdo, $authorRole, $authorId);
+    ?>
+    <div class="post" id="post-<?= $postId ?>" data-post-id="<?= $postId ?>" data-category="<?= e($postCategory) ?>">
+      <div class="post-header">
+        <img src="<?= $authorPhoto ?>" alt="Author Photo">
+        <div>
+          <h5><?= e($postAuthorName) ?></h5>
+          <small class="post-time" data-created-at="<?= e((string)($post['created_at'] ?? '')) ?>"><?= e(timeAgo((string)($post['created_at'] ?? ''))) ?></small>
+        </div>
+      </div>
+
+      <?php if ($postText !== ''): ?>
+        <p><?= nl2br(e($postText)) ?></p>
+      <?php endif; ?>
+
+      <?php if ($postMediaUrl !== '' && $postMediaType === 'image'): ?>
+        <img src="<?= e($postMediaUrl) ?>" class="post-img" alt="Post Image">
+      <?php elseif ($postMediaUrl !== '' && $postMediaType === 'video'): ?>
+        <video class="post-video" controls preload="metadata">
+          <source src="<?= e($postMediaUrl) ?>" type="video/mp4">
+          Your browser does not support video.
+        </video>
+      <?php endif; ?>
+
+      <div class="post-actions">
+        <span class="like-btn"><i class="fa fa-heart"></i> Like</span>
+        <span class="comment-btn"><i class="fa fa-comment"></i> Comment</span>
+        <span class="share-btn"><i class="fa fa-share"></i> Share</span>
+      </div>
+
+      <section class="comment-module" style="display:none;">
+        <div class="comment-input-area">
+          <div class="comment-editor" contenteditable="true" data-placeholder="Write a comment..."></div>
+          <button class="comment-send-btn">
+            <img src="../Images/send.png" alt="Send">
+          </button>
+        </div>
+        <h4 class="comments-title">All Comments</h4>
+        <ul></ul>
+      </section>
+    </div>
+  <?php endforeach; ?>
+<?php else: ?>
+  <div class="post">
+    <p>No published posts yet. Create a post and it will appear here.</p>
+  </div>
+<?php endif; ?>
+
   <!-- Only ONE post block should exist, not repeated. Comment modules should be closed properly and IDs/classes should be unique per post. Here is a cleaned-up, non-repeated example of a single post: -->
 
-<div class="post" id="post-1" data-post-id="1" data-category="mission">
+<div class="post" id="post-1" data-post-id="1" data-category="mission" style="display:none;">
   <div class="post-header">
     <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg">
     <div>
