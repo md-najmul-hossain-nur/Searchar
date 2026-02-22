@@ -314,7 +314,7 @@ try {
       </div>
       <p id="sharedPostText" class="preview-text"></p>
       <img id="sharedPostImage" class="preview-img" src="" alt="" />
-      <video id="sharedPostVideo" class="preview-video" src="" controls></video>
+      <video id="sharedPostVideo" class="preview-video" src="" controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture oncontextmenu="return false;"></video>
     </div>
 
     <!-- ✅ Media Upload Buttons -->
@@ -385,7 +385,7 @@ try {
       <?php if ($postMediaUrl !== '' && $postMediaType === 'image'): ?>
         <img src="<?= e($postMediaUrl) ?>" class="post-img" alt="Post Image">
       <?php elseif ($postMediaUrl !== '' && $postMediaType === 'video'): ?>
-        <video class="post-video" controls preload="metadata">
+        <video class="post-video" controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture oncontextmenu="return false;" preload="metadata">
           <source src="<?= e($postMediaUrl) ?>" type="video/mp4">
           Your browser does not support video.
         </video>

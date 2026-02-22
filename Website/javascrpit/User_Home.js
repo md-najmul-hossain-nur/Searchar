@@ -179,7 +179,7 @@ document.getElementById("videoUpload").addEventListener("change", function() {
   const file = this.files[0];
   if (file) {
     selectedVideo = file;
-    mediaPreview.innerHTML = `<video src="${URL.createObjectURL(file)}" controls></video>`;
+    mediaPreview.innerHTML = `<video src="${URL.createObjectURL(file)}" controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture oncontextmenu="return false;"></video>`;
     selectedImage = null;
     document.getElementById("imageUpload").value = "";
   }

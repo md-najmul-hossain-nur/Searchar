@@ -856,9 +856,9 @@ margin-bottom: -100px;
 
 .post-video {
   width: 100%;
-  max-width: 680px;
+  max-width: 1024px;
   height: 315px;
-  border-radius: 12px;
+  border-radius: 2px;
   margin: 10px auto;
   display: block;
   background: #000;
