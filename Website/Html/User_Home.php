@@ -246,8 +246,16 @@ function e($v) {
 
     <!-- ✅ Post Preview (Auto-filled from clicked post) -->
     <div class="post-modal-preview">
+      <div id="sharedPostMeta" class="preview-meta">
+        <img id="sharedPostAuthorImage" class="preview-meta-avatar" src="" alt="Author" />
+        <div class="preview-meta-text">
+          <h5 id="sharedPostAuthorName"></h5>
+          <small id="sharedPostTime"></small>
+        </div>
+      </div>
       <p id="sharedPostText" class="preview-text"></p>
       <img id="sharedPostImage" class="preview-img" src="" alt="" />
+      <video id="sharedPostVideo" class="preview-video" src="" controls></video>
     </div>
 
     <!-- ✅ Media Upload Buttons -->

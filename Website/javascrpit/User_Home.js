@@ -26,19 +26,141 @@ const feed = document.getElementById("post-feed");
 const mediaPreview = document.getElementById("mediaPreview");
 let selectedImage = null;
 let selectedVideo = null;
+let isShareMode = false;
+let shareContext = null;
 
-function openModal() {
+function getPostVideoSource(postElement) {
+  if (!postElement) return '';
+  const postVideo = postElement.querySelector('video');
+  if (!postVideo) return '';
+  return postVideo.currentSrc
+    || postVideo.getAttribute('src')
+    || postVideo.querySelector('source')?.getAttribute('src')
+    || '';
+}
+
+function openModal(isShareMode = false) {
+  const isSharing = Boolean(isShareMode);
+  const mediaOptions = document.querySelector('.post-media-options');
+  const sharedPreview = document.querySelector('.post-modal-preview');
+  const sharedPostMeta = document.getElementById('sharedPostMeta');
+  const sharedPostAuthorImage = document.getElementById('sharedPostAuthorImage');
+  const sharedPostAuthorName = document.getElementById('sharedPostAuthorName');
+  const sharedPostTime = document.getElementById('sharedPostTime');
+  const sharedPostImage = document.getElementById('sharedPostImage');
+  const sharedPostVideo = document.getElementById('sharedPostVideo');
+  const sharedPostText = document.getElementById('sharedPostText');
+
+  window.isShareMode = isSharing;
+
+  if (mediaOptions) {
+    mediaOptions.style.display = isSharing ? 'none' : 'flex';
+  }
+
+  if (mediaPreview) {
+    mediaPreview.style.display = isSharing ? 'none' : 'block';
+  }
+
+  if (sharedPreview) {
+    sharedPreview.style.display = isSharing ? 'block' : 'none';
+  }
+
+  if (isSharing) {
+    if (sharedPostMeta && sharedPostAuthorImage && sharedPostAuthorName && sharedPostTime) {
+      sharedPostMeta.style.display = 'flex';
+      sharedPostAuthorImage.src = shareContext?.authorImage || '../Images/default_profile.png';
+      sharedPostAuthorName.innerText = shareContext?.authorName || 'Unknown User';
+      sharedPostTime.innerText = shareContext?.timeAgo || '';
+    }
+
+    if (sharedPostText) {
+      sharedPostText.innerText = shareContext?.text || '';
+      sharedPostText.style.display = (shareContext?.text || '').trim() ? 'block' : 'none';
+    }
+    if (sharedPostImage) {
+      if (shareContext?.imageSrc) {
+        sharedPostImage.src = shareContext.imageSrc;
+        sharedPostImage.style.display = 'block';
+      } else {
+        sharedPostImage.removeAttribute('src');
+        sharedPostImage.style.display = 'none';
+      }
+    }
+    if (sharedPostVideo) {
+      if (shareContext?.videoSrc) {
+        sharedPostVideo.src = shareContext.videoSrc;
+        sharedPostVideo.style.display = 'block';
+      } else {
+        sharedPostVideo.removeAttribute('src');
+        sharedPostVideo.style.display = 'none';
+      }
+    }
+  } else {
+    if (sharedPostMeta && sharedPostAuthorImage && sharedPostAuthorName && sharedPostTime) {
+      sharedPostMeta.style.display = 'none';
+      sharedPostAuthorImage.removeAttribute('src');
+      sharedPostAuthorName.innerText = '';
+      sharedPostTime.innerText = '';
+    }
+
+    if (sharedPostText) {
+      sharedPostText.innerText = '';
+      sharedPostText.style.display = 'none';
+    }
+    if (sharedPostImage) {
+      sharedPostImage.removeAttribute('src');
+      sharedPostImage.style.display = 'none';
+    }
+    if (sharedPostVideo) {
+      sharedPostVideo.removeAttribute('src');
+      sharedPostVideo.style.display = 'none';
+    }
+  }
+
   modal.style.display = "flex";
 }
 
 function closeModal() {
+  isShareMode = false;
+  shareContext = null;
   modal.style.display = "none";
   document.getElementById("postText").value = "";
   document.getElementById("imageUpload").value = "";
   document.getElementById("videoUpload").value = "";
   mediaPreview.innerHTML = "";
+  mediaPreview.style.display = 'block';
+  const mediaOptions = document.querySelector('.post-media-options');
+  if (mediaOptions) mediaOptions.style.display = 'flex';
+
+  const sharedPreview = document.querySelector('.post-modal-preview');
+  const sharedPostMeta = document.getElementById('sharedPostMeta');
+  const sharedPostAuthorImage = document.getElementById('sharedPostAuthorImage');
+  const sharedPostAuthorName = document.getElementById('sharedPostAuthorName');
+  const sharedPostTime = document.getElementById('sharedPostTime');
+  const sharedPostText = document.getElementById('sharedPostText');
+  const sharedPostImage = document.getElementById('sharedPostImage');
+  const sharedPostVideo = document.getElementById('sharedPostVideo');
+  if (sharedPreview) sharedPreview.style.display = 'none';
+  if (sharedPostMeta) sharedPostMeta.style.display = 'none';
+  if (sharedPostAuthorImage) sharedPostAuthorImage.removeAttribute('src');
+  if (sharedPostAuthorName) sharedPostAuthorName.innerText = '';
+  if (sharedPostTime) sharedPostTime.innerText = '';
+  if (sharedPostText) {
+    sharedPostText.innerText = '';
+    sharedPostText.style.display = 'none';
+  }
+  if (sharedPostImage) {
+    sharedPostImage.removeAttribute('src');
+    sharedPostImage.style.display = 'none';
+  }
+  if (sharedPostVideo) {
+    sharedPostVideo.removeAttribute('src');
+    sharedPostVideo.style.display = 'none';
+  }
+
   selectedImage = null;
   selectedVideo = null;
+  document.getElementById('facebookShareToggle').checked = false;
 }
 
 // Handle image upload preview
@@ -65,15 +187,22 @@ document.getElementById("videoUpload").addEventListener("change", function() {
 
 // Create post
 function createPost() {
-  const text = document.getElementById("postText").value.trim();
-  if (text === "" && !selectedImage && !selectedVideo) {
+  const caption = document.getElementById("postText").value.trim();
+  const sharedText = shareContext?.text?.trim() || '';
+  const finalText = isShareMode
+    ? [caption, sharedText ? `\n\n🔁 Shared Post:\n${sharedText}` : ''].join('').trim()
+    : caption;
+
+  if (finalText === "" && !selectedImage && !selectedVideo) {
     alert("Please add text or media to post!");
     return;
   }
   // Build FormData and submit to backend. Do NOT render locally — saved for later retrieval.
-  const category = document.querySelector('input[name="category"]:checked')?.value || 'general';
+  const category = isShareMode
+    ? (shareContext?.category || 'general')
+    : (document.querySelector('input[name="category"]:checked')?.value || 'general');
   const fd = new FormData();
-  fd.append('text', text);
+  fd.append('text', finalText);
   fd.append('category', category);
   fd.append('case_id', '1'); // single shared case; change if dynamic
   // include facebook toggle value
@@ -636,25 +765,22 @@ document.querySelectorAll('.comment-reply a').forEach(replyBtn => {
 document.querySelectorAll('.share-btn').forEach(btn => {
   btn.addEventListener('click', function () {
     const post = this.closest('.post');
+    const postHeader = post ? post.querySelector('.post-header') : null;
     notifyPostInteraction(post?.dataset?.postId, 'share');
     const text = post.querySelector('p')?.innerText || '';
-    const img = post.querySelector('.post-img')?.getAttribute('src') || '';
+    const imageSrc = post.querySelector('.post-img')?.getAttribute('src') || '';
+    const videoSrc = getPostVideoSource(post);
+    const category = post?.dataset?.category || 'general';
+    const authorImage = postHeader?.querySelector('img')?.getAttribute('src') || '../Images/default_profile.png';
+    const authorName = postHeader?.querySelector('h5')?.innerText || 'Unknown User';
+    const timeAgo = postHeader?.querySelector('small')?.innerText || '';
 
-    // Fill preview
-    document.getElementById('sharedPostText').innerText = text;
-    document.getElementById('sharedPostImage').src = img;
+    shareContext = { text, imageSrc, videoSrc, category, authorImage, authorName, timeAgo };
+    isShareMode = true;
 
-    // Show modal in center
-    document.getElementById('postModal').style.display = 'flex';
+    openModal(true);
   });
 });
-function closeModal() {
-  document.getElementById('postModal').style.display = 'none';
-  document.getElementById('postText').value = '';
-  document.getElementById('sharedPostText').innerText = '';  // ❌ এই লাইন
-  document.getElementById('sharedPostImage').src = '';       // ❌ এই লাইন
-  document.getElementById('facebookShareToggle').checked = false;
-}
 function filterPosts(category) {
   // Remove .active from all filter buttons
   document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
