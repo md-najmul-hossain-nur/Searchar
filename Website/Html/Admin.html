@@ -163,6 +163,23 @@
       text-decoration: none;
     }
     .profile-modal__img-link:hover { text-decoration: underline; }
+    .profile-modal__media-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .profile-modal__media-item {
+      width: min(240px, 100%);
+    }
+    .profile-modal__video {
+      width: 100%;
+      max-width: 240px;
+      height: 140px;
+      border-radius: 8px;
+      border: 1px solid #dbe2ef;
+      background: #f8fafc;
+      display: block;
+    }
     .profile-modal__footer {
       display: flex;
       justify-content: flex-end;
@@ -234,6 +251,9 @@
   </li>
   <li data-section="crime">
     <span class="icon"><i class="fa-solid fa-video"></i></span> Crime Reporting
+  </li>
+  <li data-section="post-control">
+    <span class="icon"><i class="fa-solid fa-clipboard-check"></i></span> Post Control
   </li>
   <li data-section="donations">
     <span class="icon"><i class="fa-solid fa-hand-holding-dollar"></i></span> Donations Control
@@ -351,6 +371,9 @@
 
   <!-- Users Table -->
   <h2>Users Table</h2>
+  <div class="filters-bar">
+    <input id="user-filter-text" type="text" placeholder="Search by name/email/location" style="min-width: 320px;">
+  </div>
   <table class="styled-table">
     <thead>
       <tr>
@@ -358,12 +381,11 @@
         <th>Email</th>
         <th>Phone Number</th>
         <th>Location</th>
-        <th>Role</th>
         <th>Actions</th>
       </tr>
     </thead>
     <tbody id="users-table-body">
-      <tr><td colspan="6">Loading...</td></tr>
+      <tr><td colspan="5">Loading...</td></tr>
     </tbody>
   </table>
 
@@ -538,7 +560,7 @@
         <th>Matched Case</th><th>Snapshot</th><th>Status</th><th>Actions</th>
       </tr>
     </thead>
-    <tbody>
+    <tbody id="ai-table-body">
       <tr>
         <td>2025-07-27 12:40</td><td>CCTV-21</td><td>92%</td>
         <td>MP1001</td><td>[img]</td>
@@ -557,6 +579,32 @@
   </div>
 </div>
 
+<div id="post-control" class="main-section">
+  <h2>Post Control</h2>
+  <div class="filters-bar">
+    <input type="text" id="post-filter-keyword" placeholder="Post title/category">
+    <select id="post-filter-status">
+      <option value="all">All Status</option>
+      <option value="pending">Pending</option>
+      <option value="approved">Approved</option>
+      <option value="rejected">Rejected</option>
+    </select>
+    <input type="date" id="post-filter-from">
+    <input type="date" id="post-filter-to">
+    <button type="button" id="post-filter-refresh">Refresh</button>
+  </div>
+  <table class="styled-table" id="post-control-table">
+    <thead>
+      <tr>
+        <th>Post ID</th><th>Category</th><th>Posted By</th>
+        <th>Role</th><th>Share Facebook</th><th>Share Anonymous</th><th>Status</th><th>Submitted</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="post-control-body">
+      <tr><td colspan="9">Loading posts...</td></tr>
+    </tbody>
+  </table>
+</div>
 <div id="crime" class="main-section">
   <h2>Crime Reporting</h2>
   <div class="filters-bar">
@@ -1004,6 +1052,7 @@
       }
     }
 
+    let usersData = [];
     let volunteersData = [];
     let camerasData = [];
 
@@ -1113,11 +1162,20 @@
         badge_id: 'Badge ID',
         designation: 'Designation',
         station: 'Station',
-        status: 'Status'
+        status: 'Status',
+        media_path: 'Media Path',
+        media_json: 'Media Files',
+        media_type: 'Media Type',
+        share_facebook: 'Share Facebook',
+        share_anonymous: 'Share Anonymous',
+        is_share: 'Is Share',
+        shared_post_id: 'Shared Post ID',
+        shared_payload: 'Shared Payload'
       };
 
       const imageKeys = new Set(['nid_photo', 'profile_photo', 'cover_photo']);
       const isImagePath = (value) => /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(String(value || ''));
+      const isVideoPath = (value) => /\.(mp4|webm|ogg|mov|m4v)$/i.test(String(value || ''));
       const entityUploadDirMap = {
         users: 'user',
         volunteers: 'volunteer',
@@ -1163,6 +1221,7 @@
 
       const entity = profile && profile.__entity ? profile.__entity : '';
       const editableKeys = new Set(editableFieldsByEntity[entity] || []);
+  const hasMediaJson = Boolean(profile && profile.media_json);
 
       const hasFullName = Boolean(profile && profile.full_name);
       const hasName = Boolean(profile && profile.name);
@@ -1174,8 +1233,62 @@
         if (key === 'full_name' && !hasFullName && hasName) return false;
         if (key === 'phone' && hasMobile) return false;
         if (key === 'mobile' && !hasMobile && hasPhone) return false;
+        if (key === 'media_path' && hasMediaJson) return false;
         return true;
       });
+
+      const normalizeMediaList = (key, value) => {
+        if (value === null || value === undefined || value === '') return [];
+
+        const pushSafe = (arr, item) => {
+          const raw = String(item || '').trim();
+          if (!raw) return;
+          arr.push(raw);
+        };
+
+        const files = [];
+        if (key === 'media_json') {
+          try {
+            const parsed = JSON.parse(String(value));
+            if (Array.isArray(parsed)) {
+              parsed.forEach(item => pushSafe(files, item));
+            } else {
+              pushSafe(files, value);
+            }
+          } catch (_err) {
+            pushSafe(files, value);
+          }
+        } else {
+          pushSafe(files, value);
+        }
+
+        return files.filter((file, index, arr) => arr.indexOf(file) === index);
+      };
+
+      const renderMediaPreview = (files, label) => {
+        if (!files.length) {
+          return `<div class="profile-modal__row"><div class="profile-modal__label">${label}</div><div class="profile-modal__value">—</div></div>`;
+        }
+
+        const itemsHtml = files.map((file, index) => {
+          const src = normalizeAssetPath(file, 'media_path', entity);
+          const safeSrc = escapeHtml(src);
+          const safeLabel = escapeHtml(`Open media ${index + 1}`);
+
+          if (isImagePath(file)) {
+            return `<div class="profile-modal__media-item"><img class="profile-modal__img" src="${safeSrc}" alt="${escapeHtml(label)}"><a class="profile-modal__img-link" href="${safeSrc}" target="_blank" rel="noopener">${safeLabel}</a></div>`;
+          }
+
+          if (isVideoPath(file)) {
+            return `<div class="profile-modal__media-item"><video class="profile-modal__video" controls preload="metadata" src="${safeSrc}"></video><a class="profile-modal__img-link" href="${safeSrc}" target="_blank" rel="noopener">${safeLabel}</a></div>`;
+          }
+
+          return `<div class="profile-modal__media-item"><a class="profile-modal__img-link" href="${safeSrc}" target="_blank" rel="noopener">${escapeHtml(String(file))}</a></div>`;
+        }).join('');
+
+        return `<div class="profile-modal__row"><div class="profile-modal__label">${label}</div><div class="profile-modal__value"><div class="profile-modal__media-grid">${itemsHtml}</div></div></div>`;
+      };
+
       const html = entries.map(([key, value]) => {
         const label = labelMap[key] || key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
         const val = value === null || value === undefined || value === '' ? '—' : String(value);
@@ -1188,6 +1301,12 @@
           const src = normalizeAssetPath(val, key, entity);
           return `<div class="profile-modal__row"><div class="profile-modal__label">${label}</div><div class="profile-modal__value"><img class="profile-modal__img" src="${src}" alt="${label}"><a class="profile-modal__img-link" href="${src}" target="_blank" rel="noopener">Open image</a></div></div>`;
         }
+
+        if (key === 'media_json' || key === 'media_path') {
+          const files = normalizeMediaList(key, value);
+          return renderMediaPreview(files, label);
+        }
+
         return `<div class="profile-modal__row"><div class="profile-modal__label">${label}</div><div class="profile-modal__value">${val}</div></div>`;
       }).join('');
 
@@ -1398,7 +1517,7 @@
       const tbody = document.getElementById('users-table-body');
       if (!tbody) return;
       if (!rows.length) {
-        setRows(tbody, '<tr><td colspan="6">No users found.</td></tr>');
+        setRows(tbody, '<tr><td colspan="5">No users found.</td></tr>');
         return;
       }
       const html = rows.map(r => {
@@ -1427,7 +1546,6 @@
             <td>${email}</td>
             <td>${phone}</td>
             <td>${location}</td>
-            <td>${role}</td>
             <td class="actions-cell">
               <div class="actions-wrap">
                 <button class="view-profile-btn" data-profile="${profileData}">View Profile</button>
@@ -1442,6 +1560,27 @@
       bindViewProfileButtons(tbody);
       bindEditProfileButtons(tbody);
       bindWarnDeleteButtons(tbody);
+    }
+
+    function applyUserFilters() {
+      const text = (document.getElementById('user-filter-text')?.value || '').trim().toLowerCase();
+      const textTokens = text.split(/\s+/).filter(Boolean);
+
+      return usersData.filter(u => {
+        const haystack = `${u.name || ''} ${u.full_name || ''} ${u.email || ''} ${u.phone || ''} ${u.mobile || ''} ${u.location || ''} ${u.city || ''} ${u.street || ''}`.toLowerCase();
+        const matchesText = !textTokens.length || textTokens.every(token => haystack.includes(token));
+        return matchesText;
+      });
+    }
+
+    function filterUsers() {
+      const filtered = applyUserFilters();
+      renderUsersTable(filtered);
+    }
+
+    function attachUserFilterListeners() {
+      const text = document.getElementById('user-filter-text');
+      if (text) text.addEventListener('input', filterUsers);
     }
 
     function renderVolunteersTable(rows) {
@@ -1731,6 +1870,7 @@
       }
     }
 
+    attachUserFilterListeners();
     attachVolunteerFilterListeners();
     attachCctvFilterListeners();
 
@@ -1808,13 +1948,16 @@
       try {
         const users = await fetchJSON('../Php/admin_fetch_users.php');
         if (users && users.success) {
-          renderUsersTable(Array.isArray(users.data) ? users.data : []);
+          usersData = Array.isArray(users.data) ? users.data : [];
+          filterUsers();
         } else {
-          renderUsersTable([]);
+          usersData = [];
+          filterUsers();
         }
       } catch (e) {
         console.error('Users fetch failed', e);
-        renderUsersTable([]);
+        usersData = [];
+        filterUsers();
       }
 
       // Volunteers table + map
@@ -1856,6 +1999,6 @@
   </script>
   <!-- Chart.js CDN for demo chart drawing (remove if you use your own chart lib) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-      <script src="../javascrpit/Admin.js?v=20260222"></script>
+      <script src="../javascrpit/Admin.js?v=20260226"></script>
 </body>
 </html>

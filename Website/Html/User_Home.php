@@ -138,17 +138,28 @@ function getAuthorPhoto(PDO $pdo, string $authorRole, int $authorId): string {
 $posts = [];
 try {
   $hasMediaJson = false;
+  $hasStatus = false;
+
   $mediaJsonCol = $pdo->query("SHOW COLUMNS FROM posts LIKE 'media_json'");
   if ($mediaJsonCol && $mediaJsonCol->fetch(PDO::FETCH_ASSOC)) {
     $hasMediaJson = true;
+  }
+
+  $statusCol = $pdo->query("SHOW COLUMNS FROM posts LIKE 'status'");
+  if ($statusCol && $statusCol->fetch(PDO::FETCH_ASSOC)) {
+    $hasStatus = true;
   }
 
   $selectCols = "id, author_role, author_id, author_name, category, text, media_path, media_type, created_at";
   if ($hasMediaJson) {
     $selectCols .= ", media_json";
   }
+  if ($hasStatus) {
+    $selectCols .= ", status";
+  }
 
-  $postStmt = $pdo->query("SELECT {$selectCols} FROM posts ORDER BY id DESC LIMIT 50");
+  $whereClause = $hasStatus ? "WHERE status = 'approved'" : '';
+  $postStmt = $pdo->query("SELECT {$selectCols} FROM posts {$whereClause} ORDER BY id DESC LIMIT 50");
   $posts = $postStmt ? $postStmt->fetchAll(PDO::FETCH_ASSOC) : [];
 } catch (Exception $e) {
   $posts = [];
@@ -298,6 +309,16 @@ try {
       <span class="facebook-toggle-label">Share to Facebook</span>
     </div>
 
+    <div class="facebook-toggle">
+      <label class="facebook-toggle-switch">
+        <input type="checkbox" id="anonymousShareToggle">
+        <span class="facebook-toggle-slider">
+          <i class="fa-solid fa-user-secret"></i>
+        </span>
+      </label>
+      <span class="facebook-toggle-label">Share Anonymously</span>
+    </div>
+
     <!-- Category Label -->
 <p class="category-label">Select Category:</p>
 
@@ -399,7 +420,7 @@ try {
       $authorId = (int)($post['author_id'] ?? 0);
       $authorPhoto = getAuthorPhoto($pdo, $authorRole, $authorId);
     ?>
-    <div class="post" id="post-<?= $postId ?>" data-post-id="<?= $postId ?>" data-category="<?= e($postCategory) ?>">
+    <div class="post" id="post-<?= $postId ?>" data-post-id="<?= $postId ?>" data-category="<?= e($postCategory) ?>" data-status="<?= e((string)($post['status'] ?? 'approved')) ?>">
       <div class="post-header">
         <img src="<?= $authorPhoto ?>" alt="Author Photo">
         <div>

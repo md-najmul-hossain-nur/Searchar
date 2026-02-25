@@ -46,6 +46,12 @@ if (isset($_POST['share_facebook'])) {
     $share_fb = ($_POST['share_facebook'] === '1' || $_POST['share_facebook'] === 'true') ? 1 : 0;
 }
 
+// read share_anonymous flag
+$share_anonymous = 0;
+if (isset($_POST['share_anonymous'])) {
+    $share_anonymous = ($_POST['share_anonymous'] === '1' || $_POST['share_anonymous'] === 'true') ? 1 : 0;
+}
+
 // handle file upload (optional)
 $media_path = null;
 $media_type = null;
@@ -210,12 +216,24 @@ try {
         `media_json` TEXT DEFAULT NULL,
         `media_type` ENUM('image','video','file') DEFAULT NULL,
         `share_facebook` TINYINT(1) DEFAULT 0,
+        `share_anonymous` TINYINT(1) DEFAULT 0,
+        `status` VARCHAR(20) DEFAULT 'pending',
         `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
 
     $columnStmt = $pdo->query("SHOW COLUMNS FROM posts LIKE 'media_json'");
     if (!$columnStmt || !$columnStmt->fetch(PDO::FETCH_ASSOC)) {
         $pdo->exec("ALTER TABLE posts ADD COLUMN media_json TEXT DEFAULT NULL AFTER media_path");
+    }
+
+    $anonStmt = $pdo->query("SHOW COLUMNS FROM posts LIKE 'share_anonymous'");
+    if (!$anonStmt || !$anonStmt->fetch(PDO::FETCH_ASSOC)) {
+        $pdo->exec("ALTER TABLE posts ADD COLUMN share_anonymous TINYINT(1) DEFAULT 0 AFTER share_facebook");
+    }
+
+    $statusStmt = $pdo->query("SHOW COLUMNS FROM posts LIKE 'status'");
+    if (!$statusStmt || !$statusStmt->fetch(PDO::FETCH_ASSOC)) {
+        $pdo->exec("ALTER TABLE posts ADD COLUMN status VARCHAR(20) DEFAULT 'pending' AFTER share_anonymous");
     }
 
     // Try to fetch author's display name (best-effort)
@@ -238,7 +256,7 @@ try {
         $author_name = $s->fetchColumn() ?: null;
     }
 
-    $ins = $pdo->prepare('INSERT INTO posts (case_id, author_role, author_id, author_name, category, text, media_path, media_json, media_type, share_facebook) VALUES (:case_id, :author_role, :author_id, :author_name, :category, :text, :media_path, :media_json, :media_type, :share_facebook)');
+    $ins = $pdo->prepare('INSERT INTO posts (case_id, author_role, author_id, author_name, category, text, media_path, media_json, media_type, share_facebook, share_anonymous, status) VALUES (:case_id, :author_role, :author_id, :author_name, :category, :text, :media_path, :media_json, :media_type, :share_facebook, :share_anonymous, :status)');
     $ins->execute([
         'case_id' => $case_id,
         'author_role' => $role,
@@ -250,6 +268,47 @@ try {
         'media_json' => $media_json,
         'media_type' => $media_type,
         'share_facebook' => $share_fb,
+        'share_anonymous' => $share_anonymous,
+        'status' => 'pending',
+    ]);
+
+    $postId = (int)$pdo->lastInsertId();
+
+    // Notify the author that the post is submitted and waiting for admin review
+    $pdo->exec("CREATE TABLE IF NOT EXISTS user_notifications (
+        notification_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        recipient_entity VARCHAR(60) NOT NULL,
+        recipient_id INT UNSIGNED NOT NULL,
+        title VARCHAR(190) NOT NULL,
+        message TEXT NOT NULL,
+        level VARCHAR(30) NOT NULL DEFAULT 'info',
+        is_read TINYINT(1) NOT NULL DEFAULT 0,
+        target_post_id INT UNSIGNED DEFAULT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (notification_id),
+        INDEX idx_recipient (recipient_entity, recipient_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $hasTarget = $pdo->query("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user_notifications' AND COLUMN_NAME = 'target_post_id' LIMIT 1")->fetchColumn();
+    if (!$hasTarget) {
+        $pdo->exec("ALTER TABLE user_notifications ADD COLUMN target_post_id INT UNSIGNED DEFAULT NULL AFTER is_read");
+    }
+
+    $recipientEntity = match ($role) {
+        'police' => 'policeman',
+        'volunteer' => 'volunteer',
+        'contributor' => 'camera_contributor',
+        default => 'user',
+    };
+
+    $notify = $pdo->prepare('INSERT INTO user_notifications (recipient_entity, recipient_id, title, message, level, is_read, target_post_id) VALUES (:entity, :rid, :title, :message, :level, 0, :post_id)');
+    $notify->execute([
+        ':entity' => $recipientEntity,
+        ':rid' => $user_id,
+        ':title' => 'Post submitted for review',
+        ':message' => 'We received your post. An admin will review it shortly.',
+        ':level' => 'info',
+        ':post_id' => $postId,
     ]);
 
     echo json_encode(['success' => true, 'message' => 'Saved']);

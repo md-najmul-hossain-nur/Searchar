@@ -245,6 +245,307 @@ setInterval(loadCameraSeries, 30000);
       });
     });
 
+// Post control actions (Approve / Reject)
+let applyPostControlFilters = null;
+
+document.addEventListener('click', function (event) {
+  const detailsButton = event.target.closest('[data-post-details]');
+  if (detailsButton) {
+    const row = detailsButton.closest('tr');
+    if (!row) return;
+
+    const statusText = (row.querySelector('.post-status')?.textContent || '').trim() || (row.dataset.status || 'pending');
+    const postDetails = {
+      __title: 'Post Details',
+      id: row.dataset.id || '',
+      author_role: row.dataset.authorRole || '',
+      author_name: row.dataset.authorName || '',
+      category: row.dataset.category || '',
+      text: row.dataset.text || '',
+      media_path: row.dataset.mediaPath || '',
+      media_json: row.dataset.mediaJson || '',
+      media_type: row.dataset.mediaType || '',
+      status: statusText,
+      share_facebook: row.dataset.shareFacebook || '',
+      share_anonymous: row.dataset.shareAnonymous || '',
+      shared_post_id: row.dataset.sharedPostId || '',
+      shared_payload: row.dataset.sharedPayload || ''
+    };
+
+    if (typeof window.openProfileModal === 'function') {
+      window.openProfileModal(postDetails, false);
+    }
+    return;
+  }
+
+  const actionButton = event.target.closest('[data-post-action]');
+  if (!actionButton) return;
+
+  const row = actionButton.closest('tr');
+  if (!row) return;
+
+  const statusElement = row.querySelector('.post-status');
+  if (!statusElement) return;
+
+  const action = actionButton.getAttribute('data-post-action');
+  const approveButton = row.querySelector('[data-post-action="approve"]');
+  const rejectButton = row.querySelector('[data-post-action="reject"]');
+
+  const postId = row.dataset.id;
+  if (!postId) return;
+
+  const originalLabel = actionButton.textContent;
+  actionButton.disabled = true;
+  actionButton.textContent = action === 'approve' ? 'Approving…' : 'Rejecting…';
+  if (approveButton && approveButton !== actionButton) approveButton.disabled = true;
+  if (rejectButton && rejectButton !== actionButton) rejectButton.disabled = true;
+
+  const targetStatus = action === 'approve' ? 'approved' : 'rejected';
+
+  function setStatusUI(statusText) {
+    statusElement.textContent = statusText;
+    statusElement.classList.remove('status-pending', 'status-approved', 'status-rejected');
+    if (statusText.toLowerCase() === 'approved') {
+      statusElement.classList.add('status-approved');
+    } else if (statusText.toLowerCase() === 'rejected') {
+      statusElement.classList.add('status-rejected');
+    } else {
+      statusElement.classList.add('status-pending');
+    }
+  }
+
+  fetch('../Php/admin_update_post_status.php', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ post_id: postId, action })
+  })
+    .then(res => res.json())
+    .then(json => {
+      if (!json || !json.success) {
+        throw new Error(json?.error || 'Update failed');
+      }
+
+      if (json.deleted) {
+        row.remove();
+        if (typeof applyPostControlFilters === 'function') {
+          applyPostControlFilters();
+        }
+        return;
+      }
+
+      const newStatus = json.status || targetStatus;
+      setStatusUI(newStatus.charAt(0).toUpperCase() + newStatus.slice(1));
+
+      if (approveButton) approveButton.disabled = true;
+      if (rejectButton) rejectButton.disabled = true;
+
+      if (typeof applyPostControlFilters === 'function') {
+        applyPostControlFilters();
+      }
+    })
+    .catch(err => {
+      console.error('Post status update failed', err);
+      actionButton.disabled = false;
+      actionButton.textContent = originalLabel;
+      if (approveButton && approveButton !== actionButton) approveButton.disabled = false;
+      if (rejectButton && rejectButton !== actionButton) rejectButton.disabled = false;
+      alert('Could not update status. This post may already be decided or a network error occurred.');
+    });
+});
+
+// Post control filters (keyword + status + date range)
+(function () {
+  const section = document.getElementById('post-control');
+  if (!section) return;
+
+  const keywordInput = document.getElementById('post-filter-keyword');
+  const statusSelect = document.getElementById('post-filter-status');
+  const fromInput = document.getElementById('post-filter-from');
+  const toInput = document.getElementById('post-filter-to');
+  const applyButton = document.getElementById('post-filter-apply');
+    const refreshButton = document.getElementById('post-filter-refresh');
+  const tableBody = document.getElementById('post-control-body') || section.querySelector('#post-control-table tbody');
+
+  if (!keywordInput || !statusSelect || !fromInput || !toInput || !tableBody) return;
+
+  function parseDateOnly(dateText) {
+    if (!dateText) return null;
+    const parsed = new Date(`${dateText}T00:00:00`);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function statusClass(status) {
+    const val = String(status || '').toLowerCase();
+    if (val === 'approved') return 'status-approved';
+    if (val === 'rejected') return 'status-rejected';
+    return 'status-pending';
+  }
+
+  function yesNoBadge(value) {
+    const yes = String(value ?? '') === '1' || String(value ?? '').toLowerCase() === 'true';
+    return yes
+      ? '<span class="share-status share-yes">Yes</span>'
+      : '<span class="share-status share-no">No</span>';
+  }
+
+  function formatDate(value) {
+    if (!value) return '—';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return escapeHtml(String(value));
+    return date.toISOString().slice(0, 10);
+  }
+
+  function titleCase(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return '—';
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
+  }
+
+  function renderPostRows(rows) {
+    if (!Array.isArray(rows) || rows.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="9">No posts found.</td></tr>';
+      return;
+    }
+
+    tableBody.innerHTML = rows.map(row => {
+      const id = Number(row.id || 0);
+      const postIdText = id > 0 ? `PT-${String(id).padStart(3, '0')}` : '—';
+      const statusText = titleCase(row.status || 'pending');
+      const roleText = titleCase(row.author_role || 'user');
+
+      return `
+        <tr data-id="${escapeHtml(row.id || '')}" data-case-id="${escapeHtml(row.case_id || '')}" data-author-role="${escapeHtml(row.author_role || '')}" data-author-id="${escapeHtml(row.author_id || '')}" data-author-name="${escapeHtml(row.author_name || '')}"
+            data-category="${escapeHtml(row.category || '')}" data-text="${escapeHtml(row.text || '')}" data-media-path="${escapeHtml(row.media_path || '')}"
+            data-media-json='${escapeHtml(row.media_json || '')}' data-media-type="${escapeHtml(row.media_type || '')}" data-status="${escapeHtml((row.status || 'pending').toLowerCase())}" data-share-facebook="${escapeHtml(row.share_facebook || 0)}"
+            data-share-anonymous="${escapeHtml(row.share_anonymous || 0)}" data-is-share="${escapeHtml(row.is_share || 0)}" data-shared-post-id="${escapeHtml(row.shared_post_id || '')}" data-shared-payload='${escapeHtml(row.shared_payload || '')}'>
+          <td>${escapeHtml(postIdText)}</td>
+          <td>${escapeHtml(titleCase(row.category || 'general'))}</td>
+          <td>${escapeHtml(row.author_name || 'Unknown')}</td>
+          <td>${escapeHtml(roleText)}</td>
+          <td>${yesNoBadge(row.share_facebook || 0)}</td>
+          <td>${yesNoBadge(row.share_anonymous || 0)}</td>
+          <td><span class="post-status ${statusClass(row.status)}">${escapeHtml(statusText)}</span></td>
+          <td>${escapeHtml(formatDate(row.created_at || ''))}</td>
+          <td>
+            <button class="view-profile-btn" data-post-details="1">View Details</button>
+            <button class="approve-btn" data-post-action="approve" ${statusClass(row.status) !== 'status-pending' ? 'disabled' : ''}>Approve</button>
+            <button class="reject-btn" data-post-action="reject" ${statusClass(row.status) !== 'status-pending' ? 'disabled' : ''}>Reject</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function loadPostRows() {
+    const prevLabel = refreshButton ? refreshButton.textContent : '';
+    if (refreshButton) {
+      refreshButton.disabled = true;
+      refreshButton.textContent = 'Refreshing…';
+    }
+    try {
+      const res = await fetch('../Php/admin_fetch_pending_posts.php', {
+        credentials: 'same-origin',
+        cache: 'no-store'
+      });
+      const json = await res.json();
+      if (!json || !json.success) {
+        throw new Error(json?.error || 'Fetch failed');
+      }
+      renderPostRows(Array.isArray(json.rows) ? json.rows : []);
+      filterRows();
+    } catch (error) {
+      console.error('Post control fetch failed', error);
+      tableBody.innerHTML = '<tr><td colspan="9">Failed to load posts.</td></tr>';
+    }
+    if (refreshButton) {
+      refreshButton.disabled = false;
+      refreshButton.textContent = prevLabel || 'Refresh';
+    }
+  }
+
+  function filterRows() {
+    const keyword = keywordInput.value.trim().toLowerCase();
+    const selectedStatus = statusSelect.value.trim().toLowerCase();
+    const fromDate = parseDateOnly(fromInput.value);
+    const toDate = parseDateOnly(toInput.value);
+
+    const rows = Array.from(tableBody.querySelectorAll('tr'));
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+      if (row.classList.contains('post-filter-empty-row')) {
+        row.remove();
+        return;
+      }
+
+      const cells = row.querySelectorAll('td');
+      if (cells.length < 9) {
+        row.style.display = '';
+        visibleCount += 1;
+        return;
+      }
+
+      const postId = (cells[0]?.textContent || '').trim().toLowerCase();
+      const category = (cells[1]?.textContent || '').trim().toLowerCase();
+      const postedBy = (cells[2]?.textContent || '').trim().toLowerCase();
+      const role = (cells[3]?.textContent || '').trim().toLowerCase();
+      const statusText = (row.querySelector('.post-status')?.textContent || '').trim().toLowerCase();
+      const submittedText = (cells[7]?.textContent || '').trim();
+      const submittedDate = parseDateOnly(submittedText);
+
+      const keywordHaystack = `${postId} ${category} ${postedBy} ${role}`;
+      const keywordOk = !keyword || keywordHaystack.includes(keyword);
+      const statusOk = selectedStatus === 'all' || statusText === selectedStatus;
+      const fromOk = !fromDate || (submittedDate && submittedDate >= fromDate);
+      const toOk = !toDate || (submittedDate && submittedDate <= toDate);
+
+      const isVisible = keywordOk && statusOk && fromOk && toOk;
+      row.style.display = isVisible ? '' : 'none';
+      if (isVisible) visibleCount += 1;
+    });
+
+    if (visibleCount === 0) {
+      const noMatchRow = document.createElement('tr');
+      noMatchRow.className = 'post-filter-empty-row';
+      noMatchRow.innerHTML = '<td colspan="9">No posts match the selected filters.</td>';
+      tableBody.appendChild(noMatchRow);
+    }
+  }
+
+  if (applyButton) {
+    applyButton.addEventListener('click', filterRows);
+  }
+  statusSelect.addEventListener('change', filterRows);
+  fromInput.addEventListener('change', filterRows);
+  toInput.addEventListener('change', filterRows);
+  keywordInput.addEventListener('input', filterRows);
+  keywordInput.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      filterRows();
+    }
+  });
+
+  if (refreshButton) {
+    refreshButton.addEventListener('click', function () {
+      loadPostRows();
+    });
+  }
+
+  applyPostControlFilters = filterRows;
+  loadPostRows();
+})();
+
 // Initialize the map
 const map = L.map('map').setView([23.8103, 90.4125], 13); // Dhaka default
 

@@ -1459,6 +1459,61 @@ h4 {
   padding-right: 10px;
 }
 
+.styled-table .approve-btn {
+  background: #e8fff4;
+  border-color: #baf1d3;
+  color: #0f6b44;
+}
+
+.styled-table .reject-btn {
+  background: #ffecee;
+  border-color: #ffc7cd;
+  color: #b4232f;
+}
+
+.post-status {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status-pending {
+  background: #fff9e8;
+  color: #9a6b00;
+}
+
+.status-approved {
+  background: #e9fff3;
+  color: #0f6b44;
+}
+
+.status-rejected {
+  background: #ffecee;
+  color: #b4232f;
+}
+
+.share-status {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.share-yes {
+  background: #e9fff3;
+  color: #0f6b44;
+}
+
+.share-no {
+  background: #ffecee;
+  color: #b4232f;
+}
+
 .avatar-panel {
   position: absolute;
   top: calc(100% + 8px);

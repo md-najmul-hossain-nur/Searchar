@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS `posts` (
   `media_path` VARCHAR(512) DEFAULT NULL,
   `media_type` ENUM('image','video','file') DEFAULT NULL,
   `share_facebook` TINYINT(1) NOT NULL DEFAULT 0,
+    `share_anonymous` TINYINT(1) NOT NULL DEFAULT 0,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   INDEX `idx_case` (`case_id`),

@@ -308,7 +308,9 @@ function createPost() {
   fd.append('case_id', '1'); // single shared case; change if dynamic
   // include facebook toggle value
   const shareFb = document.getElementById('facebookShareToggle')?.checked ? '1' : '0';
+  const shareAnonymous = document.getElementById('anonymousShareToggle')?.checked ? '1' : '0';
   fd.append('share_facebook', shareFb);
+  fd.append('share_anonymous', shareAnonymous);
   if (selectedImages.length > 0) {
     selectedImages.forEach(imageFile => {
       fd.append('media_images[]', imageFile, imageFile.name);
