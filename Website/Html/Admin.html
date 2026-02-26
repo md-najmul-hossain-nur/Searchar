@@ -239,7 +239,6 @@
       <ul>
         <li class="active" data-section="dashboard"><span class="icon"><i class="fa-solid fa-chart-column"></i></span> Dashboard</li>
         <li data-section="tables"><span class="icon"><i class="fa-solid fa-table-list"></i></span> Tables</li>
-        <li data-section="maps"><span class="icon"><i class="fa-solid fa-map-location-dot"></i></span> Maps</li>
       </ul>
     </div>
     <div class="sidebar-section">
@@ -660,7 +659,7 @@
       </div>
     </div>
   </div>
-  <div class="tables-divider"></div>
+  <div class="tables-divider"></d aiv>
   <div class="crime-table-head">
     <div class="crime-stats">
       <span id="crime-stat-new" class="pill pill-open">New: 0</span>
@@ -687,6 +686,10 @@
 
 <div id="donations" class="main-section">
   <h2>Donations Control</h2>
+  <div class="filters-bar" id="donations-filters">
+    <input id="donations-filter-text" type="text" placeholder="Search donor, amount, message">
+    <button type="button" id="donations-filter-reset" class="ghost">Reset</button>
+  </div>
   <table class="styled-table">
     <thead>
       <tr>
@@ -709,9 +712,22 @@
   <div class="widget-bar">
     <div class="widget">Total Donations: <span>৳00,000</span></div>
   </div>
+  <div class="donations-actions">
+    <button class="btn-export-donations"><i class="fa-solid fa-file-export"></i> Export Report</button>
+  </div>
 </div>
 <div id="volunteer" class="main-section">
   <h2>Volunteer Mission Complete Table</h2>
+  <div class="filters-bar" id="volunteer-filters">
+    <input id="volunteer-filter-text" type="text" placeholder="Search volunteer, mission, location">
+    <select id="volunteer-filter-status">
+      <option value="">Status</option>
+      <option value="completed">Completed</option>
+      <option value="pending">Pending</option>
+      <option value="cancelled">Cancelled</option>
+    </select>
+    <button type="button" id="volunteer-filter-reset" class="ghost">Reset</button>
+  </div>
   <table class="styled-table">
     <thead>
       <tr>
@@ -742,6 +758,16 @@
 </div>
 <div id="withdraw" class="main-section">
   <h2>Withdraw Control</h2>
+  <div class="filters-bar" id="withdraw-filters">
+    <input id="withdraw-filter-text" type="text" placeholder="Search volunteer or amount">
+    <select id="withdraw-filter-status">
+      <option value="">Status</option>
+      <option value="pending">Pending</option>
+      <option value="approved">Approved</option>
+      <option value="rejected">Rejected</option>
+    </select>
+    <button type="button" id="withdraw-filter-reset" class="ghost">Reset</button>
+  </div>
   <table class="styled-table">
     <thead>
       <tr>
@@ -778,6 +804,10 @@
 <div id="broadcast" class="main-section">
   <h2>Broadcast & 
     Notifications</h2>
+  <div class="filters-bar" id="broadcast-filters">
+    <input id="broadcast-filter-text" type="text" placeholder="Search title, message, area">
+    <button type="button" id="broadcast-filter-reset" class="ghost">Reset</button>
+  </div>
   <table class="styled-table">
     <thead>
       <tr>
@@ -798,6 +828,25 @@
   <div class="broadcast-actions">
     <button class="btn-alert"><i class="fa-solid fa-bullhorn"></i> Send New Alert</button>
     <button class="btn-schedule"><i class="fa-regular fa-calendar-check"></i> Schedule Broadcast</button>
+  </div>
+</div>
+
+<!-- Crime assign volunteer modal -->
+<div id="crime-assign-modal" class="profile-modal" onclick="if(event.target===this) closeCrimeAssignModal()">
+  <div class="profile-modal__card">
+    <div class="profile-modal__header">
+      <div class="profile-modal__title">Assign Volunteers</div>
+      <button class="profile-modal__close" type="button" onclick="closeCrimeAssignModal()">×</button>
+    </div>
+    <div class="assign-modal__context">
+      <div><strong>Case:</strong> <span id="assign-case-id">—</span></div>
+      <div><strong>Landmark:</strong> <span id="assign-case-landmark">—</span></div>
+    </div>
+    <div class="assign-list" id="assign-volunteer-list">Loading…</div>
+    <div class="assign-actions">
+      <button type="button" class="primary" id="assign-confirm-btn">Assign Selected</button>
+      <button type="button" class="secondary" onclick="closeCrimeAssignModal()">Cancel</button>
+    </div>
   </div>
 </div>
 

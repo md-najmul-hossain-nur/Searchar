@@ -80,9 +80,14 @@ try {
 
     if (tableExists($pdo, 'user_notifications')) {
         $hasTargetPost = columnExists($pdo, 'user_notifications', 'target_post_id');
-        $selectCols = $hasTargetPost
-            ? "notification_id, title, message, level, is_read, target_post_id, created_at"
-            : "notification_id, title, message, level, is_read, created_at";
+        $hasMetaJson = columnExists($pdo, 'user_notifications', 'meta_json');
+        $selectCols = "notification_id, title, message, level, is_read, created_at";
+        if ($hasTargetPost) {
+            $selectCols .= ", target_post_id";
+        }
+        if ($hasMetaJson) {
+            $selectCols .= ", meta_json";
+        }
 
         $sql = "SELECT {$selectCols}
             FROM user_notifications
@@ -120,6 +125,7 @@ try {
                 'level' => $level,
                 'is_read' => ((int)($row['is_read'] ?? 0)) === 1,
                 'target_post_id' => isset($row['target_post_id']) && is_numeric($row['target_post_id']) ? (int)$row['target_post_id'] : null,
+                'meta_json' => isset($row['meta_json']) ? (string)$row['meta_json'] : '',
                 'created_at' => (string)($row['created_at'] ?? ''),
                 'time_ago' => timeAgo((string)($row['created_at'] ?? '')),
             ];

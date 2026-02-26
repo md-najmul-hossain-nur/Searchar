@@ -328,6 +328,8 @@ function closeModal() {
 
 // Get modal element
 const volunteerMissionModal = document.getElementById('volunteerMissionModal');
+const missionListEl = volunteerMissionModal?.querySelector('.mission-list');
+let missionLoadInFlight = false;
 
 // Get the button that opens the modal
 const openMissionBtn = document.querySelector('.view-missions-btn');
@@ -339,6 +341,7 @@ const closeButtons = volunteerMissionModal.querySelectorAll('.close');
 function openMissionModal() {
   volunteerMissionModal.classList.remove('hidden');
   volunteerMissionModal.focus(); // for accessibility, focus modal
+  loadAssignedMissionDetails();
 }
 
 // Function to close the modal
@@ -346,8 +349,208 @@ function closeMissionModal() {
   volunteerMissionModal.classList.add('hidden');
 }
 
-// Event listener to open modal on button click
-openMissionBtn.addEventListener('click', openMissionModal);
+function buildMissionPreview(file, previewEl) {
+  if (!previewEl) return;
+  previewEl.innerHTML = '';
+  if (!file) return;
+
+  const type = String(file.type || '').toLowerCase();
+  if (type.startsWith('image/')) {
+    const img = document.createElement('img');
+    img.src = URL.createObjectURL(file);
+    img.alt = 'Mission proof image';
+    previewEl.appendChild(img);
+    return;
+  }
+
+  if (type.startsWith('video/')) {
+    const video = document.createElement('video');
+    video.src = URL.createObjectURL(file);
+    video.controls = true;
+    previewEl.appendChild(video);
+    return;
+  }
+
+  const info = document.createElement('div');
+  info.textContent = `Selected file: ${file.name}`;
+  previewEl.appendChild(info);
+}
+
+function initMissionFlow() {
+  const step = document.getElementById('mission-proof-single');
+  const proofInput = document.getElementById('mission-proof-file');
+  const preview = document.getElementById('mission-proof-preview');
+  const status = document.getElementById('mission-proof-status');
+  const submitBtn = document.querySelector('[data-mission-proof-submit="1"]');
+
+  if (!step || !proofInput || !preview || !submitBtn) return;
+
+  proofInput.addEventListener('change', () => buildMissionPreview(proofInput.files?.[0], preview));
+
+  submitBtn.addEventListener('click', () => {
+    if (!proofInput.files || !proofInput.files[0]) {
+      alert('Please upload a proof file first.');
+      return;
+    }
+
+    step.classList.add('done');
+    submitBtn.disabled = true;
+    submitBtn.textContent = '✅ Proof Submitted';
+    if (status) status.textContent = 'Proof submitted successfully.';
+  });
+}
+
+function escapeHtmlInline(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function parseAssignmentMessage(message) {
+  const text = String(message || '');
+  const caseMatch = text.match(/\(([A-Za-z0-9\-]+)\)/);
+  const nearMatch = text.match(/near\s+([^\.]+)\./i);
+  return {
+    caseId: caseMatch ? caseMatch[1] : 'N/A',
+    landmark: nearMatch ? nearMatch[1].trim() : 'N/A'
+  };
+}
+
+function getAssignmentResponseState(message) {
+  const text = String(message || '').toLowerCase();
+  if (text.includes('[response: accepted]')) return 'accepted';
+  if (text.includes('[response: rejected_busy]')) return 'rejected_busy';
+  return 'pending';
+}
+
+function renderAssignmentStatus(state) {
+  if (state === 'accepted') return '<span class="mission-response accepted">Accepted</span>';
+  if (state === 'rejected_busy') return '<span class="mission-response rejected">Rejected (Busy)</span>';
+  return '<span class="mission-response pending">Pending response</span>';
+}
+
+function renderAssignmentMedia(metaJsonText) {
+  let meta = null;
+  try {
+    meta = metaJsonText ? JSON.parse(metaJsonText) : null;
+  } catch (_e) {
+    meta = null;
+  }
+
+  const media = Array.isArray(meta?.media) ? meta.media : [];
+  if (!media.length) return '';
+
+  const mediaHtml = media.map(item => {
+    const type = String(item?.type || '').toLowerCase();
+    const url = String(item?.url || '').trim();
+    if (!url) return '';
+
+    if (type.includes('video')) {
+      return `<video class="assignment-media" controls src="${escapeHtmlInline(url)}"></video>`;
+    }
+    return `<img class="assignment-media" src="${escapeHtmlInline(url)}" alt="Mission evidence">`;
+  }).join('');
+
+  if (!mediaHtml) return '';
+  return `<div class="assignment-media-wrap"><div class="assignment-media-title">Evidence</div>${mediaHtml}</div>`;
+}
+
+async function submitAssignmentResponse(notificationId, action, targetCard) {
+  try {
+    const res = await fetch('../Php/volunteer_assignment_response.php', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ notification_id: notificationId, action })
+    });
+    const json = await res.json();
+    if (!json?.success) {
+      throw new Error(json?.error || 'Failed to update assignment response');
+    }
+
+    const nextState = action === 'accept' ? 'accepted' : 'rejected_busy';
+    const statusEl = targetCard?.querySelector('.mission-response-wrap');
+    if (statusEl) statusEl.innerHTML = renderAssignmentStatus(nextState);
+
+    targetCard?.querySelectorAll('[data-assignment-action]').forEach(btn => {
+      btn.disabled = true;
+    });
+  } catch (error) {
+    console.error('Failed to submit assignment response', error);
+    alert('Could not update mission response right now.');
+  }
+}
+
+async function loadAssignedMissionDetails() {
+  if (!missionListEl) return;
+  if (missionLoadInFlight) return;
+  missionLoadInFlight = true;
+
+  missionListEl.querySelectorAll('.dynamic-assignment-item').forEach(item => item.remove());
+
+  try {
+    const res = await fetch('../Php/fetch_user_notifications.php', {
+      credentials: 'same-origin',
+      cache: 'no-store'
+    });
+    const json = await res.json();
+    if (!json?.success || !Array.isArray(json.data)) return;
+
+    const assignments = json.data.filter(n => String(n.title || '').toLowerCase().includes('new crime assignment'));
+    if (!assignments.length) return;
+
+    const seenKeys = new Set();
+    const deduped = assignments.filter(n => {
+      const d = parseAssignmentMessage(n.message || '');
+      const key = `${d.caseId}|${d.landmark}`;
+      if (seenKeys.has(key)) return false;
+      seenKeys.add(key);
+      return true;
+    });
+
+    const latest = deduped[0] || assignments[0];
+    const details = parseAssignmentMessage(latest.message || '');
+    const responseState = getAssignmentResponseState(latest.message || '');
+    const mediaBlock = renderAssignmentMedia(latest.meta_json || '');
+
+    const li = document.createElement('li');
+    li.className = 'dynamic-assignment-item';
+    li.innerHTML = `
+      <strong>🚨 Assigned Crime Mission</strong><br>
+      📌 <strong>Case ID:</strong> ${escapeHtmlInline(details.caseId)}<br>
+      📍 <strong>Area:</strong> ${escapeHtmlInline(details.landmark)}<br>
+      🕒 <strong>Assigned:</strong> ${escapeHtmlInline(latest.time_ago || 'Recently')}<br>
+      💬 <strong>Note:</strong> ${escapeHtmlInline(latest.message || '')}
+      ${mediaBlock}
+      <div class="mission-response-wrap">${renderAssignmentStatus(responseState)}</div>
+      <div class="mission-response-actions">
+        <button type="button" class="submit-proof-btn" data-assignment-action="accept" ${responseState === 'pending' ? '' : 'disabled'}>✅ Accept Mission</button>
+        <button type="button" class="reject-mission-btn" data-assignment-action="reject" ${responseState === 'pending' ? '' : 'disabled'}>⛔ Reject (Busy)</button>
+      </div>
+    `;
+
+    li.querySelectorAll('[data-assignment-action]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const action = btn.getAttribute('data-assignment-action');
+        await submitAssignmentResponse(Number(latest.id || 0), action, li);
+      });
+    });
+
+    missionListEl.insertBefore(li, missionListEl.firstChild);
+  } catch (error) {
+    console.error('Failed to load mission assignment details', error);
+  } finally {
+    missionLoadInFlight = false;
+  }
+}
+
+// Event listener to open modal on button click (avoid double-open with inline onclick)
+if (openMissionBtn && !openMissionBtn.hasAttribute('onclick')) {
+  openMissionBtn.addEventListener('click', openMissionModal);
+}
 
 // Event listeners to close modal on close button click
 closeButtons.forEach(btn => {
@@ -367,6 +570,8 @@ document.addEventListener('keydown', (e) => {
     closeMissionModal();
   }
 });
+
+initMissionFlow();
 function filterPosts(category) {
   // Remove .active from all filter buttons
   document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));

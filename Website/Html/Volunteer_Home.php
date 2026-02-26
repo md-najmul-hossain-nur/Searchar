@@ -131,26 +131,16 @@ function e($v) {
     <h3 id="missionModalTitle">🧭 Missions for Your Rank</h3>
 
     <ul class="mission-list">
-      <li>
-        <strong>📍 Locate a missing person</strong><br>
-        🎯 Verify alert visually<br>
-        🎁 50 XP<br><br>
+      <li id="mission-proof-single" class="mission-step" data-step="single">
+        <strong>📤 Mission Proof Submission</strong><br>
+        Upload one proof file (image/video/pdf) for your assigned mission.<br><br>
         <label>
-          📤 Submit Photo/Video:
-          <input type="file" accept="image/*,video/*" />
+          Submit Proof:
+          <input id="mission-proof-file" type="file" accept="image/*,video/*,application/pdf" />
         </label><br><br>
-        <button class="submit-proof-btn">✅ Submit Proof</button>
-      </li>
-
-      <li>
-        <strong>👮 Assist police with report</strong><br>
-        🎯 Identify suspects<br>
-        🎁 40 XP<br><br>
-        <label>
-          📤 Submit Confirmation:
-          <input type="file" accept="image/*,application/pdf" />
-        </label><br><br>
-        <button class="submit-proof-btn">✅ Submit Proof</button>
+        <div id="mission-proof-preview" class="mission-preview-box"></div>
+        <p id="mission-proof-status" class="mission-status-note"></p>
+        <button class="submit-proof-btn" data-mission-proof-submit="1">✅ Submit Proof</button>
       </li>
     </ul>
   </div>

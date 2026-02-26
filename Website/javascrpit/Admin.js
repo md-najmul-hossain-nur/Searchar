@@ -228,22 +228,87 @@ setInterval(loadCameraSeries, 30000);
       resetOrdersDefaultView();
     });
 
+    function activateSection(sectionId) {
+      if (!sectionId) return false;
+      const section = document.getElementById(sectionId);
+      if (!section) return false;
+
+      document.querySelectorAll('.sidebar ul li').forEach(li => li.classList.remove('active'));
+      const sidebarItem = document.querySelector(`.sidebar ul li[data-section="${sectionId}"]`);
+      if (sidebarItem) sidebarItem.classList.add('active');
+
+      document.querySelectorAll('.main-section').forEach(sec => sec.classList.remove('active'));
+      section.classList.add('active');
+      return true;
+    }
+
     // Sidebar click logic
     document.querySelectorAll('.sidebar ul li').forEach(function(item) {
       item.addEventListener('click', function() {
-        // Remove active from all sidebar items
-        document.querySelectorAll('.sidebar ul li').forEach(li => li.classList.remove('active'));
-        item.classList.add('active');
-        // Hide all sections
-        document.querySelectorAll('.main-section').forEach(sec => sec.classList.remove('active'));
-        // Show the one with same id as data-section
-        const sectionId = item.getAttribute('data-section');
-        if(sectionId) {
-          const section = document.getElementById(sectionId);
-          if(section) section.classList.add('active');
-        }
+        activateSection(item.getAttribute('data-section'));
       });
     });
+
+    // Global search: table name / person name / phone => jump to matching section
+    const globalSearchInput = document.querySelector('.navbar-search input[placeholder="Search here..."]');
+
+    function findMatchingSection(query) {
+      const q = String(query || '').trim().toLowerCase();
+      if (!q) return null;
+
+      const sectionNameMap = [
+        { terms: ['dashboard'], id: 'dashboard' },
+        { terms: ['tables'], id: 'tables' },
+        { terms: ['missing', 'missing persons'], id: 'missing' },
+        { terms: ['ai', 'ai detection logs'], id: 'ai' },
+        { terms: ['crime', 'crime reporting'], id: 'crime' },
+        { terms: ['post', 'post control'], id: 'post-control' },
+        { terms: ['donation', 'donations control'], id: 'donations' },
+        { terms: ['broadcast', 'notifications'], id: 'broadcast' },
+        { terms: ['volunteer', 'volunteer mission complete table'], id: 'volunteer' },
+        { terms: ['withdraw', 'withdraw control'], id: 'withdraw' }
+      ];
+
+      const direct = sectionNameMap.find(s => s.terms.some(t => t.includes(q) || q.includes(t)));
+      if (direct) return direct.id;
+
+      const sections = Array.from(document.querySelectorAll('.main-section'));
+      for (const sec of sections) {
+        const title = (sec.querySelector('h2')?.innerText || '').toLowerCase();
+        if (title.includes(q)) return sec.id;
+
+        const rowMatch = Array.from(sec.querySelectorAll('table tbody tr')).some(row => {
+          const text = (row.innerText || '').toLowerCase();
+          return text.includes(q);
+        });
+        if (rowMatch) return sec.id;
+      }
+
+      return null;
+    }
+
+    if (globalSearchInput) {
+      let searchTimer = null;
+
+      const runSearch = () => {
+        const q = globalSearchInput.value;
+        if (!q || q.trim().length < 2) return;
+        const matchedSection = findMatchingSection(q);
+        if (matchedSection) activateSection(matchedSection);
+      };
+
+      globalSearchInput.addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(runSearch, 250);
+      });
+
+      globalSearchInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          runSearch();
+        }
+      });
+    }
 
 // Post control actions (Approve / Reject)
 let applyPostControlFilters = null;
@@ -283,7 +348,23 @@ document.addEventListener('click', function (event) {
     const row = sendCrimeBtn.closest('tr');
     const postId = row?.dataset?.id || 'post';
     const caseId = row?.dataset?.caseId || postId;
-    alert(`Make report for ${caseId} into Crime Reporting queue (hook up backend).`);
+    const category = row?.dataset?.category || 'other';
+    const reporter = row?.dataset?.authorName || 'Unknown';
+    const text = row?.dataset?.text || '';
+    const landmark = row?.dataset?.category || '';
+    if (typeof window.pushCrimeFromExternal === 'function') {
+      window.pushCrimeFromExternal({
+        id: caseId || postId,
+        type: category.toLowerCase() || 'other',
+        severity: 'medium',
+        status: 'new',
+        landmark,
+        reporter,
+        description: text
+      });
+      sendCrimeBtn.disabled = true;
+      sendCrimeBtn.textContent = 'Reported';
+    }
     return;
   }
 
@@ -841,13 +922,45 @@ function openAddVolunteerModal() {
     if (rejectBtn) {
       const caseId = rejectBtn.getAttribute('data-missing-reject') || 'case';
       alert(`Reject ${caseId} (hook up backend).`);
+      const row = rejectBtn.closest('tr');
+      if (row) {
+        const reportBtn = row.querySelector('[data-send-to-crime]');
+        rejectBtn.disabled = true;
+        rejectBtn.textContent = 'Rejected';
+        if (reportBtn) {
+          reportBtn.disabled = true;
+          reportBtn.textContent = 'Locked';
+        }
+      }
       return;
     }
 
     const sendBtn = event.target.closest('[data-send-to-crime]');
     if (sendBtn) {
       const caseId = sendBtn.getAttribute('data-send-to-crime') || 'case';
-      alert(`Make report for ${caseId} into Crime Reporting queue (hook up backend).`);
+      const row = sendBtn.closest('tr');
+      const landmark = row ? row.children[4]?.innerText || '' : '';
+      const reporter = row ? row.children[6]?.innerText || '' : 'Anonymous';
+      if (typeof window.pushCrimeFromExternal === 'function') {
+        window.pushCrimeFromExternal({
+          id: caseId,
+          type: 'missing_person',
+          severity: 'high',
+          status: 'new',
+          landmark,
+          reporter,
+          description: 'Escalated from Missing Persons'
+        });
+        sendBtn.disabled = true;
+        sendBtn.textContent = 'Reported';
+        if (row) {
+          const rejectBtnPeer = row.querySelector('[data-missing-reject]');
+          if (rejectBtnPeer) {
+            rejectBtnPeer.disabled = true;
+            rejectBtnPeer.textContent = 'Locked';
+          }
+        }
+      }
     }
   });
 })();
@@ -896,9 +1009,15 @@ function openAddVolunteerModal() {
   const mapWrapper = document.getElementById('crime-map-wrapper');
   const mapToggle = document.getElementById('crime-map-toggle');
 
+  const assignModal = document.getElementById('crime-assign-modal');
+  const assignList = document.getElementById('assign-volunteer-list');
+  const assignCaseIdEl = document.getElementById('assign-case-id');
+  const assignCaseLandmarkEl = document.getElementById('assign-case-landmark');
+  const assignConfirmBtn = document.getElementById('assign-confirm-btn');
+
   if (!mapEl || !tableBody) return;
 
-  const demoCrimes = [
+  let demoCrimes = [
     {
       id: 'CR-2026-001',
       type: 'theft',
@@ -983,6 +1102,26 @@ function openAddVolunteerModal() {
   let geotagMarker = null;
   let proximityMarker = null;
   let proximityCircle = null;
+  let assignedCrimes = new Set();
+  let currentAssignCaseId = null;
+  let currentAssignMedia = [];
+  let assignCandidates = [];
+
+  const demoVolunteers = [
+    // Volunteers (password 12345678)
+    { id: 'VOL-100', name: 'Rahim Uddin', location: 'Banani', status: 'available', role: 'volunteer', password: '12345678' },
+    { id: 'VOL-101', name: 'Tariq Rahman', location: 'Banani', status: 'available', role: 'volunteer', password: '12345678' },
+    { id: 'VOL-102', name: 'Nabila Sultana', location: 'Dhanmondi', status: 'available', role: 'volunteer', password: '12345678' },
+    { id: 'VOL-103', name: 'Arman Hossain', location: 'Farmgate', status: 'busy', role: 'volunteer', password: '12345678' },
+    { id: 'VOL-104', name: 'Lamia Chowdhury', location: 'Jatrabari', status: 'available', role: 'volunteer', password: '12345678' },
+    { id: 'VOL-105', name: 'Sumon Ahmed', location: 'Uttara', status: 'available', role: 'volunteer', password: '12345678' },
+    // Cameramen (password 12345678)
+    { id: 'CAM-201', name: 'Rafiul Islam', location: 'Dhanmondi', status: 'available', role: 'cameraman', password: '12345678' },
+    { id: 'CAM-202', name: 'Mehedi Hasan', location: 'Gulshan', status: 'available', role: 'cameraman', password: '12345678' },
+    { id: 'CAM-203', name: 'Priya Khatun', location: 'Mirpur', status: 'busy', role: 'cameraman', password: '12345678' },
+    { id: 'CAM-204', name: 'Shafin Chowdhury', location: 'Banani', status: 'available', role: 'cameraman', password: '12345678' },
+    { id: 'CAM-205', name: 'Tanisha Rahman', location: 'Jatrabari', status: 'available', role: 'cameraman', password: '12345678' }
+  ];
 
   function severityColor(sev) {
     const v = String(sev || '').toLowerCase();
@@ -1007,6 +1146,232 @@ function openAddVolunteerModal() {
     if (v === 'high') return '#f97316';       // orange
     if (v === 'medium') return '#f59e0b';     // amber
     return '#22c55e';                         // green
+  }
+
+  function randomNearDhaka() {
+    const baseLat = 23.8103;
+    const baseLng = 90.4125;
+    const jitter = () => (Math.random() - 0.5) * 0.12; // ~<7km
+    return { lat: baseLat + jitter(), lng: baseLng + jitter() };
+  }
+
+  function nextCrimeId() {
+    const base = 2000 + demoCrimes.length + 1;
+    return `CR-NEW-${base}`;
+  }
+
+  function pushCrimeFromExternal(payload) {
+    const now = new Date().toISOString();
+    const coords = randomNearDhaka();
+    const row = {
+      id: payload.id || nextCrimeId(),
+      type: payload.type || 'other',
+      severity: payload.severity || 'medium',
+      status: payload.status || 'new',
+      lat: payload.lat ?? coords.lat,
+      lng: payload.lng ?? coords.lng,
+      landmark: payload.landmark || '—',
+      submitted: now,
+      updated_at: now,
+      media: payload.media || [],
+      reporter: payload.reporter || 'Unknown',
+      anonymous: false,
+      token: '',
+      description: payload.description || ''
+    };
+    demoCrimes.push(row);
+    applyFilters();
+  }
+  window.pushCrimeFromExternal = pushCrimeFromExternal;
+
+  async function loadAssignCandidates() {
+    try {
+      const [volRes, camRes] = await Promise.all([
+        fetch('../Php/admin_fetch_volunteers.php', { credentials: 'same-origin', cache: 'no-store' }),
+        fetch('../Php/admin_fetch_cameras.php', { credentials: 'same-origin', cache: 'no-store' })
+      ]);
+
+      const volJson = await volRes.json();
+      const camJson = await camRes.json();
+
+      const volunteers = Array.isArray(volJson?.data)
+        ? volJson.data.map(v => ({
+            id: `VOL-${v.volunteer_id}`,
+            name: v.full_name || v.name || 'Volunteer',
+            location: v.city || v.street || 'Dhaka',
+            status: String(v.status || '').toLowerCase() === 'busy' ? 'busy' : 'available',
+            role: 'volunteer',
+            recipient_entity: 'volunteer',
+            recipient_id: Number(v.volunteer_id || 0)
+          }))
+        : [];
+
+      assignCandidates = volunteers.filter(a => a.recipient_id > 0);
+    } catch (error) {
+      console.error('assign candidates load failed', error);
+      assignCandidates = [];
+    }
+  }
+
+  function closeCrimeAssignModal() {
+    if (assignModal) assignModal.classList.remove('open');
+    currentAssignCaseId = null;
+  }
+  window.closeCrimeAssignModal = closeCrimeAssignModal;
+
+  function renderAssignList(landmark) {
+    if (!assignList) return;
+    const sourceList = assignCandidates.length
+      ? assignCandidates
+      : demoVolunteers.filter(v => String(v.role || '').toLowerCase() === 'volunteer');
+    const term = String(landmark || '').trim().toLowerCase();
+
+    const nearbyAreas = {
+      banani: ['gulshan', 'kawran bazar', 'dhanmondi', 'farmgate'],
+      gulshan: ['banani', 'badda', 'bashundhara'],
+      dhanmondi: ['farmgate', 'mohammadpur', 'kawran bazar', 'banani'],
+      farmgate: ['dhanmondi', 'kawran bazar', 'mohammadpur', 'banani'],
+      uttara: ['mirpur', 'banani'],
+      mirpur: ['uttara', 'mohammadpur', 'farmgate'],
+      jatrabari: ['badda', 'kawran bazar'],
+      mohammadpur: ['dhanmondi', 'farmgate', 'mirpur'],
+      badda: ['gulshan', 'bashundhara', 'jatrabari'],
+      bashundhara: ['badda', 'gulshan', 'banani'],
+      'kawran bazar': ['farmgate', 'banani', 'dhanmondi']
+    };
+
+    const normalized = term
+      .replace('crossing', '')
+      .replace('intersection', '')
+      .replace('bus stand', '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    const allAreas = Object.keys(nearbyAreas);
+    const baseArea = allAreas.find(area => normalized.includes(area)) || '';
+
+    let filtered = [];
+    let matchType = 'All areas';
+
+    if (baseArea) {
+      filtered = sourceList.filter(v => String(v.location || '').toLowerCase().includes(baseArea));
+      if (filtered.length) matchType = 'Exact match';
+
+      if (!filtered.length) {
+        const nearSet = new Set([baseArea, ...(nearbyAreas[baseArea] || [])]);
+        filtered = sourceList.filter(v => {
+          const loc = String(v.location || '').toLowerCase();
+          return Array.from(nearSet).some(area => loc.includes(area));
+        });
+        if (filtered.length) matchType = 'Nearby match';
+      }
+    } else if (normalized) {
+      filtered = sourceList.filter(v => String(v.location || '').toLowerCase().includes(normalized));
+      if (filtered.length) matchType = 'Exact match';
+      if (!filtered.length) {
+        filtered = sourceList.filter(v => {
+          const loc = String(v.location || '').toLowerCase();
+          return normalized.split(' ').some(token => token && loc.includes(token));
+        });
+        if (filtered.length) matchType = 'Nearby match';
+      }
+    }
+
+    if (!filtered.length) {
+      filtered = sourceList;
+      matchType = 'All areas';
+    }
+
+    const header = `<div class="assign-vol-meta" style="padding:4px 8px 10px; font-weight:700;">Showing: ${matchType}</div>`;
+
+    const rows = filtered.map(v => {
+      const disabled = v.status !== 'available';
+      return `
+        <label class="assign-list-item">
+          <span>
+            <input type="checkbox" value="${v.id}" data-recipient-entity="${v.recipient_entity || ''}" data-recipient-id="${v.recipient_id || ''}" data-recipient-name="${v.name || ''}" ${disabled ? 'disabled' : ''}>
+            <strong>${v.name}</strong>
+            <div class="assign-vol-meta">${v.location} • ${v.status} • ${v.role || 'volunteer'}</div>
+          </span>
+          ${disabled ? '<span class="assign-vol-meta">Busy</span>' : ''}
+        </label>
+      `;
+    }).join('');
+    assignList.innerHTML = `${header}${rows}`;
+  }
+
+  function appendVolunteerRowsToTable(volunteerIds, landmark) {
+    const volunteerSection = document.getElementById('volunteer');
+    const tbody = volunteerSection?.querySelector('tbody');
+    if (!tbody) return;
+    const sourceList = assignCandidates.length
+      ? assignCandidates
+      : demoVolunteers.filter(v => String(v.role || '').toLowerCase() === 'volunteer');
+    volunteerIds.forEach(id => {
+      const vol = sourceList.find(v => v.id === id);
+      if (!vol) return;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${vol.name}</td>
+        <td>Crime response at ${landmark || '—'}</td>
+        <td>${new Date().toISOString().slice(0,10)}</td>
+        <td>${vol.location}</td>
+        <td><span class="status-approved">Assigned</span></td>
+        <td>Auto-added from Crime Reporting</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  async function sendAssignNotifications(assignments, context) {
+    if (!assignments.length) return;
+    try {
+      await fetch('../Php/admin_notify_assignments.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assignments, context })
+      });
+    } catch (error) {
+      console.error('assignment notification failed', error);
+    }
+  }
+
+  function openAssignModal(caseId, landmark, media = []) {
+    currentAssignCaseId = caseId;
+    currentAssignMedia = Array.isArray(media) ? media : [];
+    if (assignCaseIdEl) assignCaseIdEl.textContent = caseId;
+    if (assignCaseLandmarkEl) assignCaseLandmarkEl.textContent = landmark || '—';
+    renderAssignList(landmark || '');
+    if (assignModal) assignModal.classList.add('open');
+  }
+  window.openAssignModal = openAssignModal;
+
+  if (assignConfirmBtn) {
+    assignConfirmBtn.addEventListener('click', async () => {
+      if (!currentAssignCaseId) return;
+      const checks = Array.from(assignList?.querySelectorAll('input[type="checkbox"]') || []).filter(ch => ch.checked && !ch.disabled);
+      if (!checks.length) {
+        alert('Select at least one available volunteer.');
+        return;
+      }
+      const ids = checks.map(ch => ch.value);
+      const assignments = checks.map(ch => ({
+        recipient_entity: ch.getAttribute('data-recipient-entity') || '',
+        recipient_id: Number(ch.getAttribute('data-recipient-id') || 0),
+        recipient_name: ch.getAttribute('data-recipient-name') || ''
+      })).filter(a => a.recipient_id > 0 && a.recipient_entity);
+      appendVolunteerRowsToTable(ids, assignCaseLandmarkEl?.textContent || '');
+      await sendAssignNotifications(assignments, {
+        case_id: currentAssignCaseId,
+        landmark: assignCaseLandmarkEl?.textContent || '',
+        media: currentAssignMedia
+      });
+      assignedCrimes.add(currentAssignCaseId);
+      const btn = document.querySelector(`[data-crime-assign="${currentAssignCaseId}"]`);
+      if (btn) btn.disabled = true;
+      closeCrimeAssignModal();
+    });
   }
 
   function severityRadius(sev) {
@@ -1140,7 +1505,7 @@ function openAddVolunteerModal() {
   function renderTable(rows) {
     if (!tableBody) return;
     if (!Array.isArray(rows) || rows.length === 0) {
-      tableBody.innerHTML = '<tr><td colspan="9">No crime reports match the current filters.</td></tr>';
+      tableBody.innerHTML = '<tr><td colspan="10">No crime reports match the current filters.</td></tr>';
       return;
     }
 
@@ -1166,7 +1531,7 @@ function openAddVolunteerModal() {
           </td>
           <td>
             <button type="button" class="view-profile-btn" data-crime-view="${r.id}">View</button>
-            <button type="button" data-crime-assign="${r.id}">Assign Volunteer</button>
+            <button type="button" data-crime-assign="${r.id}" ${assignedCrimes.has(r.id) ? 'disabled' : ''}>Assign Volunteer</button>
             <button type="button" data-crime-cctv="${r.id}">Alert CCTV</button>
           </td>
         </tr>
@@ -1332,7 +1697,7 @@ function openAddVolunteerModal() {
   }
 
   function initMap() {
-    crimeMap = L.map('crime-map').setView([23.8103, 90.4125], 12);
+    crimeMap = L.map('crime-map').setView([23.685, 90.3563], 5); // Bangladesh full map view
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 18,
       attribution: '© OpenStreetMap'
@@ -1399,7 +1764,8 @@ function openAddVolunteerModal() {
       const assignBtn = event.target.closest('[data-crime-assign]');
       if (assignBtn) {
         const id = assignBtn.getAttribute('data-crime-assign');
-        alert(`Assign volunteer for ${id} (hook up backend).`);
+        const crime = demoCrimes.find(c => c.id === id);
+        openAssignModal(id, crime?.landmark || '', crime?.media || []);
         return;
       }
 
@@ -1437,7 +1803,153 @@ function openAddVolunteerModal() {
   }
 
   initMap();
+  loadAssignCandidates();
   bindEvents();
   generateAnonToken();
   applyFilters();
+})();
+
+// Generic table filters for various sections
+(function () {
+  function setupTextFilter(sectionId, filterId, resetId, rowSelector = 'tbody tr') {
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+    const table = section.querySelector('table');
+    const input = document.getElementById(filterId);
+    const reset = document.getElementById(resetId);
+    if (!table || !input) return;
+
+    const apply = () => {
+      const q = input.value.trim().toLowerCase();
+      const rows = Array.from(table.querySelectorAll(rowSelector));
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = q && !text.includes(q) ? 'none' : '';
+      });
+    };
+
+    input.addEventListener('input', apply);
+    if (reset) reset.addEventListener('click', () => { input.value = ''; apply(); });
+  }
+
+  function setupTextStatusFilter(sectionId, textId, statusId, resetId, rowSelector = 'tbody tr', statusCellIndex = null) {
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+    const table = section.querySelector('table');
+    const textInput = document.getElementById(textId);
+    const statusSelect = document.getElementById(statusId);
+    const reset = document.getElementById(resetId);
+    if (!table || !textInput || !statusSelect) return;
+
+    const apply = () => {
+      const q = textInput.value.trim().toLowerCase();
+      const status = statusSelect.value.trim().toLowerCase();
+      const rows = Array.from(table.querySelectorAll(rowSelector));
+
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        let statusText = '';
+        if (statusCellIndex !== null) {
+          const cell = row.querySelectorAll('td, th')[statusCellIndex];
+          statusText = (cell?.innerText || '').trim().toLowerCase();
+        } else {
+          statusText = text;
+        }
+        const textOk = !q || text.includes(q);
+        const statusOk = !status || statusText.includes(status);
+        row.style.display = textOk && statusOk ? '' : 'none';
+      });
+    };
+
+    textInput.addEventListener('input', apply);
+    statusSelect.addEventListener('change', apply);
+    if (reset) reset.addEventListener('click', () => {
+      textInput.value = '';
+      statusSelect.value = '';
+      apply();
+    });
+  }
+
+  // Donations: text filter
+  setupTextFilter('donations', 'donations-filter-text', 'donations-filter-reset');
+
+  // Broadcast: text filter
+  setupTextFilter('broadcast', 'broadcast-filter-text', 'broadcast-filter-reset');
+
+  // Volunteer: text + status (status col index 4)
+  setupTextStatusFilter('volunteer', 'volunteer-filter-text', 'volunteer-filter-status', 'volunteer-filter-reset', 'tbody tr', 4);
+
+  // Withdraw: text + status (status col index 2)
+  setupTextStatusFilter('withdraw', 'withdraw-filter-text', 'withdraw-filter-status', 'withdraw-filter-reset', 'tbody tr', 2);
+})();
+
+// Remove redundant crime assign modal block (logic moved inside crime module)
+
+// Donations export: download current table as CSV
+(function () {
+  const section = document.getElementById('donations');
+  if (!section) return;
+  const table = section.querySelector('table');
+  const exportBtn = section.querySelector('.btn-export-donations');
+  if (!table || !exportBtn) return;
+
+  function toCsvValue(text) {
+    const safe = String(text ?? '').replace(/"/g, '""');
+    return `"${safe}"`;
+  }
+
+  function exportTable() {
+    const rows = Array.from(table.querySelectorAll('tr'));
+    const csv = rows.map(row => {
+      const cells = Array.from(row.querySelectorAll('th, td')).map(cell => toCsvValue(cell.innerText.trim()));
+      return cells.join(',');
+    }).join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `donations_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  exportBtn.addEventListener('click', exportTable);
+})();
+
+// Withdraw export: download current table as CSV
+(function () {
+  const section = document.getElementById('withdraw');
+  if (!section) return;
+
+  const exportBtn = section.querySelector('.btn-export-report');
+  const table = section.querySelector('table');
+  if (!exportBtn || !table) return;
+
+  function toCsvValue(text) {
+    const safe = String(text ?? '').replace(/"/g, '""');
+    return `"${safe}"`;
+  }
+
+  function exportTable() {
+    const rows = Array.from(table.querySelectorAll('tr'));
+    const csv = rows.map(row => {
+      const cells = Array.from(row.querySelectorAll('th, td')).map(cell => toCsvValue(cell.innerText.trim()));
+      return cells.join(',');
+    }).join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `withdrawals_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  exportBtn.addEventListener('click', exportTable);
 })();
