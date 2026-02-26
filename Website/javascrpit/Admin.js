@@ -278,6 +278,15 @@ document.addEventListener('click', function (event) {
     return;
   }
 
+  const sendCrimeBtn = event.target.closest('[data-post-send-crime]');
+  if (sendCrimeBtn) {
+    const row = sendCrimeBtn.closest('tr');
+    const postId = row?.dataset?.id || 'post';
+    const caseId = row?.dataset?.caseId || postId;
+    alert(`Make report for ${caseId} into Crime Reporting queue (hook up backend).`);
+    return;
+  }
+
   const actionButton = event.target.closest('[data-post-action]');
   if (!actionButton) return;
 
@@ -438,6 +447,7 @@ document.addEventListener('click', function (event) {
           <td>${escapeHtml(formatDate(row.created_at || ''))}</td>
           <td>
             <button class="view-profile-btn" data-post-details="1">View Details</button>
+            <button class="ghost" data-post-send-crime="1">Make Report</button>
             <button class="approve-btn" data-post-action="approve" ${statusClass(row.status) !== 'status-pending' ? 'disabled' : ''}>Approve</button>
             <button class="reject-btn" data-post-action="reject" ${statusClass(row.status) !== 'status-pending' ? 'disabled' : ''}>Reject</button>
           </td>
@@ -729,8 +739,8 @@ function openAddVolunteerModal() {
           <td>${escapeHtml(row.reporter_name || '—')}</td>
           <td>${escapeHtml(formatDate(row.created_at))}</td>
           <td>
-            <button type="button">Assign Volunteer</button>
-            <button type="button">Alert CCTV</button>
+            <button type="button" class="danger-btn" data-missing-reject="${escapeHtml(labelId)}">Reject</button>
+            <button type="button" data-send-to-crime="${escapeHtml(labelId)}">Make Report</button>
           </td>
         </tr>
       `;
@@ -825,4 +835,609 @@ function openAddVolunteerModal() {
     });
 
   loadMissingReports();
+
+  document.addEventListener('click', (event) => {
+    const rejectBtn = event.target.closest('[data-missing-reject]');
+    if (rejectBtn) {
+      const caseId = rejectBtn.getAttribute('data-missing-reject') || 'case';
+      alert(`Reject ${caseId} (hook up backend).`);
+      return;
+    }
+
+    const sendBtn = event.target.closest('[data-send-to-crime]');
+    if (sendBtn) {
+      const caseId = sendBtn.getAttribute('data-send-to-crime') || 'case';
+      alert(`Make report for ${caseId} into Crime Reporting queue (hook up backend).`);
+    }
+  });
+})();
+
+// Crime reporting: map, filters, proximity search, geo-tag capture, evidence preview
+(function () {
+  const section = document.getElementById('crime');
+  if (!section) return;
+
+  const mapEl = document.getElementById('crime-map');
+  const tableBody = document.getElementById('crime-table-body');
+
+  const filterText = document.getElementById('crime-filter-text');
+  const filterType = document.getElementById('crime-filter-type');
+  const filterSeverity = document.getElementById('crime-filter-severity');
+  const filterStatus = document.getElementById('crime-filter-status');
+  const filterFrom = document.getElementById('crime-filter-from');
+  const filterTo = document.getElementById('crime-filter-to');
+  const filterReset = document.getElementById('crime-filter-reset');
+
+  const toggleHeatmap = document.getElementById('crime-toggle-heatmap');
+  const toggleLast24 = document.getElementById('crime-toggle-last24');
+  const toggleClosed = document.getElementById('crime-toggle-closed');
+
+  const proximityAddress = document.getElementById('crime-proximity-address');
+  const proximityRadius = document.getElementById('crime-proximity-radius');
+  const proximityRadiusLabel = document.getElementById('crime-proximity-radius-label');
+  const proximityType = document.getElementById('crime-proximity-type');
+  const proximityRun = document.getElementById('crime-proximity-run');
+  const proximityResults = document.getElementById('crime-proximity-results');
+
+  const geolocateBtn = document.getElementById('crime-geolocate-btn');
+  const geotagCoords = document.getElementById('crime-geotag-coords');
+  const geotagLandmark = document.getElementById('crime-geotag-landmark');
+  const geotagType = document.getElementById('crime-geotag-type');
+  const geotagSeverity = document.getElementById('crime-geotag-severity');
+  const geotagAnon = document.getElementById('crime-geotag-anon');
+  const anonToken = document.getElementById('crime-anon-token');
+  const generateTokenBtn = document.getElementById('crime-generate-token');
+
+  const statNew = document.getElementById('crime-stat-new');
+  const statReview = document.getElementById('crime-stat-review');
+  const statActioned = document.getElementById('crime-stat-actioned');
+  const statClosed = document.getElementById('crime-stat-closed');
+
+  const mapWrapper = document.getElementById('crime-map-wrapper');
+  const mapToggle = document.getElementById('crime-map-toggle');
+
+  if (!mapEl || !tableBody) return;
+
+  const demoCrimes = [
+    {
+      id: 'CR-2026-001',
+      type: 'theft',
+      severity: 'medium',
+      status: 'new',
+      lat: 23.8105,
+      lng: 90.4127,
+      landmark: 'Banani Lake Bridge',
+      submitted: '2026-02-25T10:05:00Z',
+      updated_at: '2026-02-25T11:05:00Z',
+      media: [
+        { type: 'photo', url: '../uploads/crime/theft-1.jpg', hash: 'a4f2c7d9' },
+        { type: 'video', url: '../uploads/crime/theft-clip.mp4', hash: 'f1c8e3b2' }
+      ],
+      reporter: 'Anonymous',
+      anonymous: true,
+      token: 'ANON-9F3B',
+      description: 'Bag stolen from parked bike near the bridge.',
+      reward_paid: false
+    },
+    {
+      id: 'CR-2026-002',
+      type: 'robbery',
+      severity: 'high',
+      status: 'under_review',
+      lat: 23.7808,
+      lng: 90.4098,
+      landmark: 'Kawran Bazar crossing',
+      submitted: '2026-02-26T02:40:00Z',
+      updated_at: '2026-02-26T03:10:00Z',
+      media: [{ type: 'photo', url: '../uploads/crime/robbery-1.jpg', hash: 'e29f7caa' }],
+      reporter: 'Md. Rahim',
+      anonymous: false,
+      token: '',
+      description: 'Phone snatched; suspect fled towards Farmgate.',
+      reward_paid: false
+    },
+    {
+      id: 'CR-2026-003',
+      type: 'assault',
+      severity: 'critical',
+      status: 'actioned',
+      lat: 23.744,
+      lng: 90.3735,
+      landmark: 'Jatrabari bus stand',
+      submitted: '2026-02-23T18:25:00Z',
+      updated_at: '2026-02-24T08:00:00Z',
+      media: [
+        { type: 'photo', url: '../uploads/crime/assault-1.jpg', hash: '99a1b3de' },
+        { type: 'audio', url: '../uploads/crime/assault-audio.m4a', hash: 'b7f2ff10' }
+      ],
+      reporter: 'Anonymous',
+      anonymous: true,
+      token: 'ANON-52KD',
+      description: 'Night-time assault near ticket counter.',
+      reward_paid: true
+    },
+    {
+      id: 'CR-2026-004',
+      type: 'vandalism',
+      severity: 'low',
+      status: 'closed',
+      lat: 23.9002,
+      lng: 90.3285,
+      landmark: 'Uttara Sector 7 park',
+      submitted: '2026-02-15T15:10:00Z',
+      updated_at: '2026-02-18T09:20:00Z',
+      media: [{ type: 'photo', url: '../uploads/crime/vandalism-1.jpg', hash: '558e3321' }],
+      reporter: 'Salma H.',
+      anonymous: false,
+      token: '',
+      description: 'Playground equipment damaged; CCTV available from nearby shop.',
+      reward_paid: false
+    }
+  ];
+
+  let filteredCrimes = [...demoCrimes];
+  let crimeMap = null;
+  let crimeMarkers = [];
+  let crimeZones = [];
+  let crimeHeat = null;
+  let geotagMarker = null;
+  let proximityMarker = null;
+  let proximityCircle = null;
+
+  function severityColor(sev) {
+    const v = String(sev || '').toLowerCase();
+    if (v === 'critical') return '#8b5cf6';
+    if (v === 'high') return '#ef4444';
+    if (v === 'medium') return '#f59e0b';
+    return '#9ca3af';
+  }
+
+  function severityWeight(sev) {
+    const v = String(sev || '').toLowerCase();
+    if (v === 'critical') return 0.8;
+    if (v === 'high') return 0.65;
+    if (v === 'medium') return 0.5;
+    return 0.35;
+  }
+
+  // Distinct palette for zone fill/border (keeps markers using severityColor)
+  function severityZoneColor(sev) {
+    const v = String(sev || '').toLowerCase();
+    if (v === 'critical') return '#ef4444';   // red
+    if (v === 'high') return '#f97316';       // orange
+    if (v === 'medium') return '#f59e0b';     // amber
+    return '#22c55e';                         // green
+  }
+
+  function severityRadius(sev) {
+    const v = String(sev || '').toLowerCase();
+    if (v === 'critical') return 850;
+    if (v === 'high') return 650;
+    if (v === 'medium') return 450;
+    return 300;
+  }
+
+  function statusLabel(val) {
+    const v = String(val || '').toLowerCase();
+    if (v === 'under_review') return 'Under Review';
+    if (v === 'actioned') return 'Actioned';
+    if (v === 'closed') return 'Closed';
+    return 'New';
+  }
+
+  function withinLast24(iso) {
+    if (!iso) return false;
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return false;
+    const diff = Date.now() - date.getTime();
+    return diff <= 24 * 60 * 60 * 1000;
+  }
+
+  function formatDateLocal(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
+    return `${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  }
+
+  function parseDateInput(input) {
+    if (!input) return null;
+    const d = new Date(input);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+
+  function distanceKm(aLat, aLng, bLat, bLng) {
+    const toRad = (deg) => deg * Math.PI / 180;
+    const R = 6371;
+    const dLat = toRad(bLat - aLat);
+    const dLon = toRad(bLng - aLng);
+    const lat1 = toRad(aLat);
+    const lat2 = toRad(bLat);
+    const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(h));
+  }
+
+  function createMarker(crime) {
+    const color = severityColor(crime.severity);
+    const isRecent = withinLast24(crime.submitted);
+    const marker = L.circleMarker([crime.lat, crime.lng], {
+      radius: isRecent ? 11 : 9,
+      color,
+      weight: 2,
+      fillColor: isRecent ? '#10b981' : color,
+      fillOpacity: 0.6
+    });
+
+    const mediaList = (crime.media || []).map(m => `<li>${m.type || 'media'} — hash ${m.hash || '—'}</li>`).join('');
+    const popup = `
+      <div style="min-width:220px;">
+        <div style="font-weight:800; margin-bottom:4px;">${crime.id} • ${statusLabel(crime.status)}</div>
+        <div><strong>Type:</strong> ${crime.type}</div>
+        <div><strong>Severity:</strong> ${crime.severity}</div>
+        <div><strong>Landmark:</strong> ${crime.landmark || '—'}</div>
+        <div><strong>Submitted:</strong> ${formatDateLocal(crime.submitted)}</div>
+        <div><strong>Reporter:</strong> ${crime.anonymous ? 'Anonymous' : (crime.reporter || '—')}</div>
+        ${crime.anonymous && crime.token ? `<div><strong>Token:</strong> ${crime.token}</div>` : ''}
+        <div><strong>Evidence:</strong><ul style="padding-left:18px; margin:6px 0 0;">${mediaList || '<li>None</li>'}</ul></div>
+      </div>`;
+
+    marker.bindPopup(popup);
+    return marker;
+  }
+
+  function renderMap(rows) {
+    if (!crimeMap) return;
+    crimeMarkers.forEach(m => crimeMap.removeLayer(m));
+    crimeMarkers = [];
+
+    crimeZones.forEach(z => crimeMap.removeLayer(z));
+    crimeZones = [];
+
+    if (crimeHeat) {
+      crimeMap.removeLayer(crimeHeat);
+      crimeHeat = null;
+    }
+
+    rows.forEach(r => {
+      const zone = L.circle([r.lat, r.lng], {
+        radius: severityRadius(r.severity),
+        color: severityZoneColor(r.severity),
+        weight: 1.4,
+        fillColor: severityZoneColor(r.severity),
+        fillOpacity: 0.12,
+        opacity: 0.9,
+        dashArray: '6 4'
+      });
+      zone.addTo(crimeMap);
+      crimeZones.push(zone);
+
+      const marker = createMarker(r);
+      marker.addTo(crimeMap);
+      crimeMarkers.push(marker);
+    });
+
+    if (toggleHeatmap && toggleHeatmap.checked && typeof L.heatLayer === 'function') {
+      const heatData = rows.map(r => [r.lat, r.lng, severityWeight(r.severity)]);
+      if (heatData.length) {
+        crimeHeat = L.heatLayer(heatData, { radius: 26, blur: 18, maxZoom: 16 });
+        crimeHeat.addTo(crimeMap);
+      }
+    }
+
+    if (rows.length) {
+      const group = L.featureGroup(crimeMarkers);
+      crimeMap.fitBounds(group.getBounds().pad(0.2));
+    } else {
+      crimeMap.setView([23.8103, 90.4125], 12);
+    }
+  }
+
+  function statusBadge(status) {
+    const cls = `status-${String(status || '').toLowerCase()}`;
+    return `<span class="${cls}">${statusLabel(status)}</span>`;
+  }
+
+  function renderTable(rows) {
+    if (!tableBody) return;
+    if (!Array.isArray(rows) || rows.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="9">No crime reports match the current filters.</td></tr>';
+      return;
+    }
+
+    tableBody.innerHTML = rows.map(r => {
+      const mediaCount = Array.isArray(r.media) ? r.media.length : 0;
+      return `
+        <tr data-crime-id="${r.id}">
+          <td>${r.id}</td>
+          <td>${r.type}</td>
+          <td>${r.severity}</td>
+          <td>${r.landmark || '—'}</td>
+          <td>${statusBadge(r.status)}</td>
+          <td>${formatDateLocal(r.submitted)}</td>
+          <td>${mediaCount} file${mediaCount === 1 ? '' : 's'}</td>
+          <td>${r.anonymous ? 'Anonymous' : (r.reporter || '—')}</td>
+          <td>
+            <select class="crime-status-select" data-crime-status="${r.id}">
+              <option value="new" ${r.status === 'new' ? 'selected' : ''}>New</option>
+              <option value="under_review" ${r.status === 'under_review' ? 'selected' : ''}>Under Review</option>
+              <option value="actioned" ${r.status === 'actioned' ? 'selected' : ''}>Actioned</option>
+              <option value="closed" ${r.status === 'closed' ? 'selected' : ''}>Closed</option>
+            </select>
+          </td>
+          <td>
+            <button type="button" class="view-profile-btn" data-crime-view="${r.id}">View</button>
+            <button type="button" data-crime-assign="${r.id}">Assign Volunteer</button>
+            <button type="button" data-crime-cctv="${r.id}">Alert CCTV</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function updateStats(rows) {
+    const counts = { new: 0, under_review: 0, actioned: 0, closed: 0 };
+    rows.forEach(r => {
+      const key = String(r.status || 'new').toLowerCase();
+      if (counts[key] !== undefined) counts[key] += 1;
+    });
+    if (statNew) statNew.textContent = `New: ${counts.new}`;
+    if (statReview) statReview.textContent = `Under Review: ${counts.under_review}`;
+    if (statActioned) statActioned.textContent = `Actioned: ${counts.actioned}`;
+    if (statClosed) statClosed.textContent = `Closed: ${counts.closed}`;
+  }
+
+  function applyFilters() {
+    const q = String(filterText?.value || '').toLowerCase().trim();
+    const type = String(filterType?.value || '').toLowerCase();
+    const severity = String(filterSeverity?.value || '').toLowerCase();
+    const status = String(filterStatus?.value || '').toLowerCase();
+    const fromDate = parseDateInput(filterFrom?.value || '');
+    const toDate = parseDateInput(filterTo?.value || '');
+
+    filteredCrimes = demoCrimes.filter(r => {
+      const statusVal = String(r.status || '').toLowerCase();
+      if (!toggleClosed?.checked && statusVal === 'closed') return false;
+      if (toggleLast24?.checked && !withinLast24(r.submitted)) return false;
+      if (type && String(r.type).toLowerCase() !== type) return false;
+      if (severity && String(r.severity).toLowerCase() !== severity) return false;
+      if (status && statusVal !== status) return false;
+
+      if (fromDate || toDate) {
+        const sub = new Date(r.submitted);
+        if (Number.isNaN(sub.getTime())) return false;
+        if (fromDate && sub < fromDate) return false;
+        if (toDate && sub > toDate) return false;
+      }
+
+      if (q) {
+        const haystack = `${r.id} ${r.type} ${r.landmark || ''} ${r.token || ''} ${statusVal}`.toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
+
+      return true;
+    });
+
+    renderTable(filteredCrimes);
+    renderMap(filteredCrimes);
+    updateStats(filteredCrimes);
+  }
+
+  function updateCrimeStatus(id, newStatus) {
+    const crime = demoCrimes.find(c => c.id === id);
+    if (!crime) return;
+    crime.status = newStatus;
+    crime.updated_at = new Date().toISOString();
+    applyFilters();
+  }
+
+  function setGeotag(lat, lng, label) {
+    if (!crimeMap) return;
+    if (geotagMarker) crimeMap.removeLayer(geotagMarker);
+    geotagMarker = L.marker([lat, lng]).addTo(crimeMap).bindPopup(label || 'Selected location');
+    geotagMarker.openPopup();
+    if (geotagCoords) geotagCoords.textContent = `Lat ${lat.toFixed(5)}, Lng ${lng.toFixed(5)}`;
+  }
+
+  function generateAnonToken() {
+    const token = `ANON-${Math.random().toString(36).slice(2, 6).toUpperCase()}-${Date.now().toString().slice(-4)}`;
+    if (anonToken) anonToken.textContent = token;
+    return token;
+  }
+
+  async function geocode(query) {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
+    const res = await fetch(url);
+    return res.json();
+  }
+
+  async function runProximitySearch() {
+    const radius = parseFloat(proximityRadius?.value || '3') || 3;
+    const typeFilter = String(proximityType?.value || '').toLowerCase();
+    let center = null;
+
+    if (geotagMarker) {
+      center = geotagMarker.getLatLng();
+    }
+
+    const address = (proximityAddress?.value || '').trim();
+    if (!center && address) {
+      try {
+        const results = await geocode(address);
+        if (results && results[0]) {
+          center = { lat: parseFloat(results[0].lat), lng: parseFloat(results[0].lon) };
+        }
+      } catch (err) {
+        console.error('Geocode failed', err);
+      }
+    }
+
+    if (!center) {
+      if (proximityResults) proximityResults.textContent = 'Drop a pin on the map or enter an address first.';
+      return;
+    }
+
+    const hits = filteredCrimes.filter(r => {
+      const dist = distanceKm(center.lat, center.lng, r.lat, r.lng);
+      if (typeFilter && String(r.type).toLowerCase() !== typeFilter) return false;
+      return dist <= radius;
+    }).map(r => ({ ...r, distance: distanceKm(center.lat, center.lng, r.lat, r.lng) }));
+
+    hits.sort((a, b) => a.distance - b.distance);
+
+    if (proximityResults) {
+      if (!hits.length) {
+        proximityResults.textContent = 'No reports within the selected radius.';
+      } else {
+        proximityResults.innerHTML = hits.map(h => `
+          <div class="proximity-hit">
+            <strong>${h.id}</strong> • ${h.type} • ${h.distance.toFixed(2)} km<br>
+            ${h.landmark || '—'}
+          </div>
+        `).join('');
+      }
+    }
+
+    if (proximityMarker) crimeMap.removeLayer(proximityMarker);
+    if (proximityCircle) crimeMap.removeLayer(proximityCircle);
+
+    proximityMarker = L.marker([center.lat, center.lng]).addTo(crimeMap).bindPopup('Search center');
+    proximityCircle = L.circle([center.lat, center.lng], { radius: radius * 1000, color: '#2563eb', fillColor: '#60a5fa', fillOpacity: 0.08 }).addTo(crimeMap);
+    crimeMap.setView([center.lat, center.lng], 14);
+  }
+
+  function openCrimeDetail(id) {
+    const crime = demoCrimes.find(c => c.id === id);
+    if (!crime) return;
+
+    const payload = {
+      __title: `Case ${crime.id}`,
+      case_id: crime.id,
+      type: crime.type,
+      severity: crime.severity,
+      status: statusLabel(crime.status),
+      landmark: crime.landmark,
+      submitted: formatDateLocal(crime.submitted),
+      updated_at: formatDateLocal(crime.updated_at),
+      coordinates: `${crime.lat.toFixed(5)}, ${crime.lng.toFixed(5)}`,
+      reporter: crime.anonymous ? 'Anonymous' : (crime.reporter || '—'),
+      token: crime.anonymous ? (crime.token || '—') : '',
+      reward_paid: crime.reward_paid ? 'Yes' : 'No',
+      description: crime.description || '',
+      media_json: JSON.stringify(crime.media || [])
+    };
+
+    if (typeof window.openProfileModal === 'function') {
+      window.openProfileModal(payload, false);
+    }
+  }
+
+  function initMap() {
+    crimeMap = L.map('crime-map').setView([23.8103, 90.4125], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '© OpenStreetMap'
+    }).addTo(crimeMap);
+
+    setTimeout(() => crimeMap.invalidateSize(), 300);
+  }
+
+  function bindEvents() {
+    if (filterReset) {
+      filterReset.addEventListener('click', () => {
+        if (filterText) filterText.value = '';
+        if (filterType) filterType.value = '';
+        if (filterSeverity) filterSeverity.value = '';
+        if (filterStatus) filterStatus.value = '';
+        if (filterFrom) filterFrom.value = '';
+        if (filterTo) filterTo.value = '';
+        if (toggleLast24) toggleLast24.checked = true;
+        if (toggleClosed) toggleClosed.checked = true;
+        applyFilters();
+      });
+    }
+
+    [filterText, filterType, filterSeverity, filterStatus, filterFrom, filterTo]
+      .filter(Boolean)
+      .forEach(el => {
+        const eventName = el.tagName === 'INPUT' ? 'input' : 'change';
+        el.addEventListener(eventName, applyFilters);
+      });
+
+    [toggleHeatmap, toggleLast24, toggleClosed].forEach(el => {
+      if (el) el.addEventListener('change', applyFilters);
+    });
+
+    if (proximityRadius) {
+      proximityRadius.addEventListener('input', () => {
+        if (proximityRadiusLabel) proximityRadiusLabel.textContent = `${proximityRadius.value} km`;
+      });
+    }
+    if (proximityRun) proximityRun.addEventListener('click', runProximitySearch);
+
+    if (geolocateBtn) {
+      geolocateBtn.addEventListener('click', () => {
+        if (!navigator.geolocation) {
+          alert('Geolocation not supported');
+          return;
+        }
+        navigator.geolocation.getCurrentPosition((pos) => {
+          setGeotag(pos.coords.latitude, pos.coords.longitude, 'Current location');
+          crimeMap.setView([pos.coords.latitude, pos.coords.longitude], 15);
+        }, () => alert('Unable to fetch location'));
+      });
+    }
+
+    if (generateTokenBtn) generateTokenBtn.addEventListener('click', generateAnonToken);
+
+    document.addEventListener('click', (event) => {
+      const viewBtn = event.target.closest('[data-crime-view]');
+      if (viewBtn) {
+        openCrimeDetail(viewBtn.getAttribute('data-crime-view'));
+        return;
+      }
+
+      const assignBtn = event.target.closest('[data-crime-assign]');
+      if (assignBtn) {
+        const id = assignBtn.getAttribute('data-crime-assign');
+        alert(`Assign volunteer for ${id} (hook up backend).`);
+        return;
+      }
+
+      const cctvBtn = event.target.closest('[data-crime-cctv]');
+      if (cctvBtn) {
+        const id = cctvBtn.getAttribute('data-crime-cctv');
+        alert(`Send CCTV alert for ${id} (hook up backend).`);
+        return;
+      }
+    });
+
+    document.addEventListener('change', (event) => {
+      const select = event.target.closest('[data-crime-status]');
+      if (select) {
+        updateCrimeStatus(select.getAttribute('data-crime-status'), select.value);
+      }
+    });
+
+    const crimeNav = document.querySelector('.sidebar li[data-section="crime"]');
+    if (crimeNav) {
+      crimeNav.addEventListener('click', () => {
+        setTimeout(() => crimeMap && crimeMap.invalidateSize(), 320);
+      });
+    }
+
+    if (mapToggle && mapWrapper) {
+      mapToggle.addEventListener('click', () => {
+        const isHidden = mapWrapper.classList.toggle('hidden');
+        mapToggle.textContent = isHidden ? 'Show map' : 'Hide map';
+        if (!isHidden) {
+          setTimeout(() => crimeMap && crimeMap.invalidateSize(), 220);
+        }
+      });
+    }
+  }
+
+  initMap();
+  bindEvents();
+  generateAnonToken();
+  applyFilters();
 })();

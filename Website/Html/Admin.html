@@ -12,6 +12,8 @@
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Leaflet Heatmap plugin -->
+  <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
   <!-- Main CSS -->
   <link rel="stylesheet" href="../css/Admin.css">
   <style>
@@ -607,34 +609,79 @@
 </div>
 <div id="crime" class="main-section">
   <h2>Crime Reporting</h2>
-  <div class="filters-bar">
-    <input type="text" placeholder="Type/location">
-    <select><option>Status</option></select>
-    <input type="date">
-    <input type="date">
-    <button>Filter</button>
+  <div class="filters-bar crime-filters">
+    <input id="crime-filter-text" type="text" placeholder="Search by type, landmark, token">
+    <select id="crime-filter-type">
+      <option value="">Type</option>
+      <option value="theft">Theft</option>
+      <option value="robbery">Robbery</option>
+      <option value="assault">Assault</option>
+      <option value="vandalism">Vandalism</option>
+      <option value="arson">Arson</option>
+      <option value="other">Other</option>
+    </select>
+    <select id="crime-filter-severity">
+      <option value="">Severity</option>
+      <option value="low">Low</option>
+      <option value="medium">Medium</option>
+      <option value="high">High</option>
+      <option value="critical">Critical</option>
+    </select>
+    <select id="crime-filter-status">
+      <option value="">Status</option>
+      <option value="new">New</option>
+      <option value="under_review">Under Review</option>
+      <option value="actioned">Actioned</option>
+      <option value="closed">Closed</option>
+    </select>
+    <input id="crime-filter-from" type="datetime-local">
+    <input id="crime-filter-to" type="datetime-local">
+    <button type="button" id="crime-filter-reset" class="ghost">Reset</button>
   </div>
-  <table class="styled-table">
+  <div class="crime-toggles">
+    <label><input type="checkbox" id="crime-toggle-heatmap"> Heatmap</label>
+    <label><input type="checkbox" id="crime-toggle-last24" checked> Last 24h only</label>
+    <label><input type="checkbox" id="crime-toggle-closed" checked> Show closed</label>
+  </div>
+  <div class="crime-map-toggle-bar">
+    <div class="crime-map-toggle-text">Map + proximity tools (toggle)</div>
+    <button type="button" id="crime-map-toggle" class="ghost">Hide map</button>
+  </div>
+  <div class="crime-hint crime-hint-banner">Map pins are colored by severity; switch to heatmap to see hotspots.</div>
+  <div id="crime-map-wrapper" class="crime-grid">
+    <div class="crime-map-panel">
+      <div id="crime-map"></div>
+      <div class="crime-legend">
+        <span><span class="legend-dot legend-low"></span>Low</span>
+        <span><span class="legend-dot legend-medium"></span>Medium</span>
+        <span><span class="legend-dot legend-high"></span>High</span>
+        <span><span class="legend-dot legend-critical"></span>Critical</span>
+        <span><span class="legend-dot legend-recent"></span>Recent (&lt;24h)</span>
+      </div>
+    </div>
+  </div>
+  <div class="tables-divider"></div>
+  <div class="crime-table-head">
+    <div class="crime-stats">
+      <span id="crime-stat-new" class="pill pill-open">New: 0</span>
+      <span id="crime-stat-review" class="pill pill-review">Under Review: 0</span>
+      <span id="crime-stat-actioned" class="pill pill-actioned">Actioned: 0</span>
+      <span id="crime-stat-closed" class="pill pill-closed">Closed: 0</span>
+    </div>
+  </div>
+  <div class="crime-table-block">
+  <h3 class="crime-table-title">Crime Case Table</h3>
+  <table class="styled-table" id="crime-table">
     <thead>
       <tr>
-        <th>ID</th><th>Type</th><th>Location</th><th>Status</th>
-        <th>Media?</th><th>Submitted</th><th>Reward Paid</th><th>Actions</th>
+        <th>Case</th><th>Type</th><th>Severity</th><th>Landmark</th><th>Status</th>
+        <th>Submitted</th><th>Media</th><th>Reporter</th><th>Update Status</th><th>Actions</th>
       </tr>
     </thead>
-    <tbody>
-      <tr>
-        <td>CR-001</td><td>Theft</td><td>Banani</td><td>Open</td>
-        <td>Yes</td><td>2025-07-26</td><td>No</td>
-        <td>
-          <button>Approve Payment</button>
-          <button>Forward</button>
-        </td>
-      </tr>
-      <!-- More rows... -->
+    <tbody id="crime-table-body">
+      <tr><td colspan="10">Loading crime reports…</td></tr>
     </tbody>
   </table>
-  <div id="crime-map" style="height:130px;background:#fffbe6;margin-top:18px;">
-    <span>Crime-prone zones heatmap</span>
   </div>
 </div>
 
