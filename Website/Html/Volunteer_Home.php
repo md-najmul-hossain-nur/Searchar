@@ -116,6 +116,8 @@ function e($v) {
 
     <button class="view-missions-btn" onclick="openMissionModal()">📋 View Missions</button>
 
+    <div id="rank-assigned-preview" class="rank-assigned-preview" aria-live="polite"></div>
+
     <!-- Certificate Display -->
     <div id="certificate-unlock" class="certificate-box hidden" aria-live="polite">
       <p>🎉 Congratulations! You’ve reached <strong>Silver Responder</strong>!</p>
@@ -141,6 +143,13 @@ function e($v) {
         <div id="mission-proof-preview" class="mission-preview-box"></div>
         <p id="mission-proof-status" class="mission-status-note"></p>
         <button class="submit-proof-btn" data-mission-proof-submit="1">✅ Submit Proof</button>
+      </li>
+
+      <li id="mission-history-single" class="mission-step">
+        <strong>🗂 Completed Missions History</strong><br>
+        See your previously completed missions below.
+        <div id="mission-history-list" class="mission-history-list"></div>
+        <p id="mission-history-empty" class="mission-history-empty">No completed mission yet.</p>
       </li>
     </ul>
   </div>

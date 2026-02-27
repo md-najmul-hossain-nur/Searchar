@@ -106,8 +106,9 @@ try {
             $message = trim((string)($row['message'] ?? ''));
             $level = strtolower((string)($row['level'] ?? 'info'));
             $source = detectSource($title, $message);
+            $metaJson = isset($row['meta_json']) ? trim((string)$row['meta_json']) : '';
 
-            $dedupeKey = strtolower($title . '|' . $message . '|' . $source . '|' . $level);
+            $dedupeKey = strtolower($title . '|' . $message . '|' . $source . '|' . $level . '|' . $metaJson);
             if (isset($seenNotificationKeys[$dedupeKey])) {
                 continue;
             }
@@ -125,7 +126,7 @@ try {
                 'level' => $level,
                 'is_read' => ((int)($row['is_read'] ?? 0)) === 1,
                 'target_post_id' => isset($row['target_post_id']) && is_numeric($row['target_post_id']) ? (int)$row['target_post_id'] : null,
-                'meta_json' => isset($row['meta_json']) ? (string)$row['meta_json'] : '',
+                'meta_json' => $metaJson,
                 'created_at' => (string)($row['created_at'] ?? ''),
                 'time_ago' => timeAgo((string)($row['created_at'] ?? '')),
             ];

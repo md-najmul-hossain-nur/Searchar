@@ -250,7 +250,7 @@ setInterval(loadCameraSeries, 30000);
     });
 
     // Global search: table name / person name / phone => jump to matching section
-    const globalSearchInput = document.querySelector('.navbar-search input[placeholder="Search here..."]');
+    const globalSearchInput = document.getElementById('global-smart-search') || document.querySelector('.navbar-search input');
 
     function findMatchingSection(query) {
       const q = String(query || '').trim().toLowerCase();
@@ -1013,6 +1013,7 @@ function openAddVolunteerModal() {
   const assignList = document.getElementById('assign-volunteer-list');
   const assignCaseIdEl = document.getElementById('assign-case-id');
   const assignCaseLandmarkEl = document.getElementById('assign-case-landmark');
+  const assignMissionTypeEl = document.getElementById('assign-mission-type');
   const assignConfirmBtn = document.getElementById('assign-confirm-btn');
 
   if (!mapEl || !tableBody) return;
@@ -1029,8 +1030,7 @@ function openAddVolunteerModal() {
       submitted: '2026-02-25T10:05:00Z',
       updated_at: '2026-02-25T11:05:00Z',
       media: [
-        { type: 'photo', url: '../uploads/crime/theft-1.jpg', hash: 'a4f2c7d9' },
-        { type: 'video', url: '../uploads/crime/theft-clip.mp4', hash: 'f1c8e3b2' }
+        { type: 'photo', url: '../uploads/posts/f936feb7c60087b442de.jpg', hash: 'a4f2c7d9' }
       ],
       reporter: 'Anonymous',
       anonymous: true,
@@ -1048,7 +1048,7 @@ function openAddVolunteerModal() {
       landmark: 'Kawran Bazar crossing',
       submitted: '2026-02-26T02:40:00Z',
       updated_at: '2026-02-26T03:10:00Z',
-      media: [{ type: 'photo', url: '../uploads/crime/robbery-1.jpg', hash: 'e29f7caa' }],
+      media: [{ type: 'photo', url: '../uploads/posts/f936feb7c60087b442de.jpg', hash: 'e29f7caa' }],
       reporter: 'Md. Rahim',
       anonymous: false,
       token: '',
@@ -1066,8 +1066,7 @@ function openAddVolunteerModal() {
       submitted: '2026-02-23T18:25:00Z',
       updated_at: '2026-02-24T08:00:00Z',
       media: [
-        { type: 'photo', url: '../uploads/crime/assault-1.jpg', hash: '99a1b3de' },
-        { type: 'audio', url: '../uploads/crime/assault-audio.m4a', hash: 'b7f2ff10' }
+        { type: 'photo', url: '../uploads/posts/f936feb7c60087b442de.jpg', hash: '99a1b3de' }
       ],
       reporter: 'Anonymous',
       anonymous: true,
@@ -1085,7 +1084,7 @@ function openAddVolunteerModal() {
       landmark: 'Uttara Sector 7 park',
       submitted: '2026-02-15T15:10:00Z',
       updated_at: '2026-02-18T09:20:00Z',
-      media: [{ type: 'photo', url: '../uploads/crime/vandalism-1.jpg', hash: '558e3321' }],
+      media: [{ type: 'photo', url: '../uploads/posts/f936feb7c60087b442de.jpg', hash: '558e3321' }],
       reporter: 'Salma H.',
       anonymous: false,
       token: '',
@@ -1103,9 +1102,23 @@ function openAddVolunteerModal() {
   let proximityMarker = null;
   let proximityCircle = null;
   let assignedCrimes = new Set();
+  const crimeActionState = new Map();
   let currentAssignCaseId = null;
   let currentAssignMedia = [];
   let assignCandidates = [];
+
+  function getCrimeActionState(caseId) {
+    const key = String(caseId || '');
+    if (!crimeActionState.has(key)) {
+      crimeActionState.set(key, {
+        assigned: false,
+        cctv: false,
+        marked: false,
+        rejected: false
+      });
+    }
+    return crimeActionState.get(key);
+  }
 
   const demoVolunteers = [
     // Volunteers (password 12345678)
@@ -1361,15 +1374,39 @@ function openAddVolunteerModal() {
         recipient_id: Number(ch.getAttribute('data-recipient-id') || 0),
         recipient_name: ch.getAttribute('data-recipient-name') || ''
       })).filter(a => a.recipient_id > 0 && a.recipient_entity);
+
+      const missionType = String(assignMissionTypeEl?.value || 'locate_verify');
+      const missionTextMap = {
+        locate_verify: 'Locate and verify the alert spot, then send a quick ground update.',
+        collect_evidence: 'Collect clear image/video evidence and submit it immediately.',
+        suspect_watch: 'Monitor suspect movement safely and report any live updates.',
+        assist_police: 'Coordinate with police team and assist response at scene.'
+      };
+
+      const missionLabelMap = {
+        locate_verify: 'Locate & Verify Alert',
+        collect_evidence: 'Collect Evidence (Photo/Video)',
+        suspect_watch: 'Suspect Watch & Report',
+        assist_police: 'Assist Police Response'
+      };
+
       appendVolunteerRowsToTable(ids, assignCaseLandmarkEl?.textContent || '');
       await sendAssignNotifications(assignments, {
         case_id: currentAssignCaseId,
         landmark: assignCaseLandmarkEl?.textContent || '',
-        media: currentAssignMedia
+        media: currentAssignMedia,
+        mission_type: missionType,
+        mission_label: missionLabelMap[missionType] || 'Assigned Mission',
+        mission_note: missionTextMap[missionType] || missionTextMap.locate_verify
       });
       assignedCrimes.add(currentAssignCaseId);
+      const state = getCrimeActionState(currentAssignCaseId);
+      state.assigned = true;
       const btn = document.querySelector(`[data-crime-assign="${currentAssignCaseId}"]`);
-      if (btn) btn.disabled = true;
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Assigned';
+      }
       closeCrimeAssignModal();
     });
   }
@@ -1511,6 +1548,7 @@ function openAddVolunteerModal() {
 
     tableBody.innerHTML = rows.map(r => {
       const mediaCount = Array.isArray(r.media) ? r.media.length : 0;
+      const actState = getCrimeActionState(r.id);
       return `
         <tr data-crime-id="${r.id}">
           <td>${r.id}</td>
@@ -1531,8 +1569,8 @@ function openAddVolunteerModal() {
           </td>
           <td>
             <button type="button" class="view-profile-btn" data-crime-view="${r.id}">View</button>
-            <button type="button" data-crime-assign="${r.id}" ${assignedCrimes.has(r.id) ? 'disabled' : ''}>Assign Volunteer</button>
-            <button type="button" data-crime-cctv="${r.id}">Alert CCTV</button>
+            <button type="button" data-crime-assign="${r.id}" ${actState.assigned || assignedCrimes.has(r.id) || actState.rejected ? 'disabled' : ''}>${actState.assigned || assignedCrimes.has(r.id) ? 'Assigned' : 'Assign Volunteer'}</button>
+            <button type="button" data-crime-cctv="${r.id}" ${actState.cctv || actState.rejected ? 'disabled' : ''}>${actState.cctv ? 'CCTV Alerted' : 'Alert CCTV'}</button>
           </td>
         </tr>
       `;
@@ -1764,6 +1802,8 @@ function openAddVolunteerModal() {
       const assignBtn = event.target.closest('[data-crime-assign]');
       if (assignBtn) {
         const id = assignBtn.getAttribute('data-crime-assign');
+        const state = getCrimeActionState(id);
+        if (state.assigned || state.rejected) return;
         const crime = demoCrimes.find(c => c.id === id);
         openAssignModal(id, crime?.landmark || '', crime?.media || []);
         return;
@@ -1772,7 +1812,12 @@ function openAddVolunteerModal() {
       const cctvBtn = event.target.closest('[data-crime-cctv]');
       if (cctvBtn) {
         const id = cctvBtn.getAttribute('data-crime-cctv');
+        const state = getCrimeActionState(id);
+        if (state.cctv || state.rejected) return;
+        state.cctv = true;
         alert(`Send CCTV alert for ${id} (hook up backend).`);
+        cctvBtn.disabled = true;
+        cctvBtn.textContent = 'CCTV Alerted';
         return;
       }
     });

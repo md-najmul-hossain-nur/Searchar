@@ -25,6 +25,9 @@ if (!$assignments) {
 
 $caseId = trim((string)($context['case_id'] ?? ''));
 $landmark = trim((string)($context['landmark'] ?? ''));
+$missionType = trim((string)($context['mission_type'] ?? 'locate_verify'));
+$missionLabel = trim((string)($context['mission_label'] ?? 'Assigned Mission'));
+$missionNote = trim((string)($context['mission_note'] ?? 'Please review and respond.'));
 $media = is_array($context['media'] ?? null) ? $context['media'] : [];
 
 $safeMedia = [];
@@ -37,7 +40,7 @@ foreach ($media as $m) {
     ];
 }
 
-$title = 'New Crime Assignment';
+$title = 'New Crime Assignment • ' . $missionLabel;
 $messageBase = 'You have been assigned to a crime case';
 if ($caseId !== '') {
     $messageBase .= ' (' . $caseId . ')';
@@ -45,7 +48,7 @@ if ($caseId !== '') {
 if ($landmark !== '') {
     $messageBase .= ' near ' . $landmark;
 }
-$messageBase .= '. Please review and respond.';
+$messageBase .= '. ' . $missionNote;
 
 try {
     $pdo->exec("CREATE TABLE IF NOT EXISTS user_notifications (
@@ -76,6 +79,9 @@ try {
     $metaJson = json_encode([
         'case_id' => $caseId,
         'landmark' => $landmark,
+        'mission_type' => $missionType,
+        'mission_label' => $missionLabel,
+        'mission_note' => $missionNote,
         'media' => $safeMedia,
     ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 

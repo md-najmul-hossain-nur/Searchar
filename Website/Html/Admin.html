@@ -276,7 +276,13 @@
     <div class="navbar">
       <div class="navbar-title"></div>
       <div class="navbar-search">
-        <input type="text" placeholder="Search here...">
+        <div class="global-smart-search">
+          <div class="global-smart-search-field">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input id="global-smart-search" type="text" placeholder="Quick search: section/name/phone" aria-label="Quick smart search" title="Type section, person name, phone, or case ID to jump to the matching section. Example: crime, volunteer, 017..., CR-2026-001">
+          </div>
+          <div class="global-smart-search-hint">Search by section, name, phone, or case ID (e.g., crime, volunteer, 017..., CR-2026-001)</div>
+        </div>
         <img class="navbar-avatar" id="admin-avatar" src="../Images/businessman.gif" alt="User Avatar">
         <div id="avatar-panel" class="avatar-panel">
           <div class="avatar-panel__user">Signed in as Admin</div>
@@ -841,6 +847,15 @@
     <div class="assign-modal__context">
       <div><strong>Case:</strong> <span id="assign-case-id">—</span></div>
       <div><strong>Landmark:</strong> <span id="assign-case-landmark">—</span></div>
+    </div>
+    <div class="assign-modal__mission">
+      <label for="assign-mission-type"><strong>Mission Type</strong></label>
+      <select id="assign-mission-type">
+        <option value="locate_verify">Locate & Verify Alert</option>
+        <option value="collect_evidence">Collect Evidence (Photo/Video)</option>
+        <option value="suspect_watch">Suspect Watch & Report</option>
+        <option value="assist_police">Assist Police Response</option>
+      </select>
     </div>
     <div class="assign-list" id="assign-volunteer-list">Loading…</div>
     <div class="assign-actions">

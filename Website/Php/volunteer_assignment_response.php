@@ -36,6 +36,7 @@ if ($notificationId <= 0 || !in_array($action, ['accept', 'reject'], true)) {
 }
 
 $responseTag = $action === 'accept' ? '[Response: accepted]' : '[Response: rejected_busy]';
+$acceptedAt = '';
 
 try {
     $sel = $pdo->prepare('SELECT notification_id, message FROM user_notifications WHERE notification_id = :id AND recipient_entity IN ("volunteer", "volunteers") AND recipient_id = :rid LIMIT 1');
@@ -48,11 +49,29 @@ try {
         exit;
     }
 
+    if ($action === 'reject') {
+        $del = $pdo->prepare('DELETE FROM user_notifications WHERE notification_id = :id AND recipient_id = :rid LIMIT 1');
+        $del->execute([
+            ':id' => $notificationId,
+            ':rid' => $userId,
+        ]);
+
+        echo json_encode(['success' => true, 'action' => $action, 'deleted' => true]);
+        exit;
+    }
+
     $message = (string)($row['message'] ?? '');
     if (!str_contains(strtolower($message), '[response: accepted]') && !str_contains(strtolower($message), '[response: rejected_busy]')) {
         $message = trim($message . ' ' . $responseTag);
     } else {
         $message = preg_replace('/\[Response:\s*(accepted|rejected_busy)\]/i', $responseTag, $message) ?: $message;
+    }
+
+    $acceptedAt = (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format(DateTimeInterface::ATOM);
+    if (preg_match('/\[AcceptedAt:\s*[^\]]+\]/i', $message) === 1) {
+        $message = preg_replace('/\[AcceptedAt:\s*[^\]]+\]/i', '[AcceptedAt: ' . $acceptedAt . ']', $message) ?: $message;
+    } else {
+        $message = trim($message . ' [AcceptedAt: ' . $acceptedAt . ']');
     }
 
     $upd = $pdo->prepare('UPDATE user_notifications SET message = :message, is_read = 1 WHERE notification_id = :id AND recipient_id = :rid');
@@ -62,7 +81,7 @@ try {
         ':rid' => $userId,
     ]);
 
-    echo json_encode(['success' => true, 'action' => $action]);
+    echo json_encode(['success' => true, 'action' => $action, 'accepted_at' => $acceptedAt]);
 } catch (Throwable $e) {
     error_log('volunteer_assignment_response error: ' . $e->getMessage());
     http_response_code(500);

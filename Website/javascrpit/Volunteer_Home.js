@@ -330,6 +330,193 @@ function closeModal() {
 const volunteerMissionModal = document.getElementById('volunteerMissionModal');
 const missionListEl = volunteerMissionModal?.querySelector('.mission-list');
 let missionLoadInFlight = false;
+let missionTimerInterval = null;
+let missionProofSubmitted = false;
+let currentMissionNotificationId = 0;
+let currentMissionCaseId = '';
+let currentMissionContext = null;
+const MISSION_HISTORY_STORAGE_KEY = 'volunteer_completed_mission_history_v1';
+
+function missionProofStorageKey(notificationId, caseId) {
+  const idPart = Number(notificationId) > 0 ? `nid_${Number(notificationId)}` : '';
+  const casePart = String(caseId || '').trim() ? `case_${String(caseId || '').trim()}` : '';
+  const token = [idPart, casePart].filter(Boolean).join('_');
+  return token ? `mission_proof_submitted_${token}` : '';
+}
+
+function isMissionProofSaved(notificationId, caseId) {
+  const key = missionProofStorageKey(notificationId, caseId);
+  if (!key) return false;
+  try {
+    return localStorage.getItem(key) === '1';
+  } catch (_e) {
+    return false;
+  }
+}
+
+function saveMissionProofState(notificationId, caseId) {
+  const key = missionProofStorageKey(notificationId, caseId);
+  if (!key) return;
+  try {
+    localStorage.setItem(key, '1');
+  } catch (_e) {
+    // ignore storage errors
+  }
+}
+
+function readMissionHistory() {
+  try {
+    const raw = localStorage.getItem(MISSION_HISTORY_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (_e) {
+    return [];
+  }
+}
+
+function writeMissionHistory(rows) {
+  try {
+    localStorage.setItem(MISSION_HISTORY_STORAGE_KEY, JSON.stringify(Array.isArray(rows) ? rows : []));
+  } catch (_e) {
+    // ignore storage errors
+  }
+}
+
+function formatHistoryTime(iso) {
+  const d = new Date(String(iso || ''));
+  if (Number.isNaN(d.getTime())) return 'Recently';
+  return d.toLocaleString();
+}
+
+function renderMissionHistory() {
+  const list = document.getElementById('mission-history-list');
+  const empty = document.getElementById('mission-history-empty');
+  if (!list || !empty) return;
+
+  const rows = readMissionHistory();
+  if (!rows.length) {
+    list.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+
+  empty.classList.add('hidden');
+  list.innerHTML = rows
+    .slice()
+    .sort((a, b) => Date.parse(String(b.completed_at || '')) - Date.parse(String(a.completed_at || '')))
+    .map(item => `
+      <div class="mission-history-item">
+        ✅ <strong>${escapeHtmlInline(item.mission_label || 'Mission')}</strong><br>
+        📌 Case: <strong>${escapeHtmlInline(item.case_id || 'N/A')}</strong> • 📍 Area: ${escapeHtmlInline(item.area || 'N/A')}<br>
+        🕒 Completed: ${escapeHtmlInline(formatHistoryTime(item.completed_at || ''))}
+      </div>
+    `).join('');
+}
+
+function saveCompletedMissionHistory(entry) {
+  const caseId = String(entry?.case_id || '').trim();
+  if (!caseId) return;
+
+  const rows = readMissionHistory();
+  const next = {
+    case_id: caseId,
+    area: String(entry?.area || 'N/A').trim(),
+    mission_label: String(entry?.mission_label || 'Mission').trim(),
+    completed_at: String(entry?.completed_at || new Date().toISOString())
+  };
+
+  const idx = rows.findIndex(r => String(r?.case_id || '').trim() === caseId);
+  if (idx >= 0) {
+    rows[idx] = { ...rows[idx], ...next };
+  } else {
+    rows.push(next);
+  }
+
+  writeMissionHistory(rows);
+}
+
+function clearMissionTimer() {
+  if (missionTimerInterval) {
+    clearInterval(missionTimerInterval);
+    missionTimerInterval = null;
+  }
+}
+
+function formatTimerDuration(totalSeconds) {
+  const safe = Math.max(0, Number(totalSeconds) || 0);
+  const hours = String(Math.floor(safe / 3600)).padStart(2, '0');
+  const minutes = String(Math.floor((safe % 3600) / 60)).padStart(2, '0');
+  const seconds = String(Math.floor(safe % 60)).padStart(2, '0');
+  return `${hours}:${minutes}:${seconds}`;
+}
+
+function parseAcceptedAtFromMessage(message) {
+  const match = String(message || '').match(/\[AcceptedAt:\s*([^\]]+)\]/i);
+  return match ? String(match[1] || '').trim() : '';
+}
+
+function setMissionTimer(acceptedAtText) {
+  const wraps = Array.from(document.querySelectorAll('[data-mission-timer-wrap]'));
+  const valueEls = Array.from(document.querySelectorAll('[data-mission-timer-value]'));
+  if (!wraps.length || !valueEls.length) return;
+
+  if (missionProofSubmitted) {
+    clearMissionTimer();
+    wraps.forEach(w => w.classList.add('hidden'));
+    valueEls.forEach(el => { el.textContent = '00:00:00'; });
+    return;
+  }
+
+  const acceptedTs = Date.parse(String(acceptedAtText || ''));
+  if (!Number.isFinite(acceptedTs)) {
+    clearMissionTimer();
+    wraps.forEach(w => w.classList.add('hidden'));
+    valueEls.forEach(el => { el.textContent = '00:00:00'; });
+    return;
+  }
+
+  wraps.forEach(w => w.classList.remove('hidden'));
+  const tick = () => {
+    const elapsedSec = Math.floor((Date.now() - acceptedTs) / 1000);
+    const text = formatTimerDuration(elapsedSec);
+    valueEls.forEach(el => { el.textContent = text; });
+  };
+
+  clearMissionTimer();
+  tick();
+  missionTimerInterval = setInterval(tick, 1000);
+}
+
+function updateMissionProofLock(responseState) {
+  const step = document.getElementById('mission-proof-single');
+  const proofInput = document.getElementById('mission-proof-file');
+  const submitBtn = document.querySelector('[data-mission-proof-submit="1"]');
+  const status = document.getElementById('mission-proof-status');
+
+  if (!step || !proofInput || !submitBtn || !status) return;
+
+  if (step.classList.contains('done')) {
+    proofInput.disabled = true;
+    submitBtn.disabled = true;
+    status.textContent = 'Proof already submitted for this mission.';
+    return;
+  }
+
+  if (responseState === 'accepted') {
+    proofInput.disabled = false;
+    submitBtn.disabled = false;
+    status.textContent = 'Mission accepted. Now you can submit proof.';
+    return;
+  }
+
+  proofInput.disabled = true;
+  submitBtn.disabled = true;
+  if (responseState === 'rejected_busy') {
+    status.textContent = 'Mission rejected (busy). Proof submission is disabled.';
+  } else {
+    status.textContent = 'Please accept the assigned mission first, then submit proof.';
+  }
+}
 
 // Get the button that opens the modal
 const openMissionBtn = document.querySelector('.view-missions-btn');
@@ -341,12 +528,14 @@ const closeButtons = volunteerMissionModal.querySelectorAll('.close');
 function openMissionModal() {
   volunteerMissionModal.classList.remove('hidden');
   volunteerMissionModal.focus(); // for accessibility, focus modal
+  renderMissionHistory();
   loadAssignedMissionDetails();
 }
 
 // Function to close the modal
 function closeMissionModal() {
   volunteerMissionModal.classList.add('hidden');
+  clearMissionTimer();
 }
 
 function buildMissionPreview(file, previewEl) {
@@ -385,18 +574,37 @@ function initMissionFlow() {
 
   if (!step || !proofInput || !preview || !submitBtn) return;
 
+  updateMissionProofLock('pending');
+
   proofInput.addEventListener('change', () => buildMissionPreview(proofInput.files?.[0], preview));
 
   submitBtn.addEventListener('click', () => {
+    if (submitBtn.disabled) {
+      alert('Accept the mission first to submit proof.');
+      return;
+    }
     if (!proofInput.files || !proofInput.files[0]) {
       alert('Please upload a proof file first.');
       return;
     }
 
     step.classList.add('done');
+    missionProofSubmitted = true;
+    saveMissionProofState(currentMissionNotificationId, currentMissionCaseId);
+    if (currentMissionContext) {
+      saveCompletedMissionHistory({
+        case_id: currentMissionContext.case_id,
+        area: currentMissionContext.area,
+        mission_label: currentMissionContext.mission_label,
+        completed_at: new Date().toISOString()
+      });
+      renderMissionHistory();
+    }
     submitBtn.disabled = true;
+    proofInput.disabled = true;
     submitBtn.textContent = '✅ Proof Submitted';
     if (status) status.textContent = 'Proof submitted successfully.';
+    setMissionTimer('');
   });
 }
 
@@ -443,19 +651,149 @@ function renderAssignmentMedia(metaJsonText) {
   const media = Array.isArray(meta?.media) ? meta.media : [];
   if (!media.length) return '';
 
+  const resolveMediaUrl = (rawUrl) => {
+    const url = String(rawUrl || '').trim();
+    if (!url) return '';
+    if (/^https?:\/\//i.test(url)) return url;
+    if (url.startsWith('../') || url.startsWith('./') || url.startsWith('/')) return url;
+    return `../${url}`;
+  };
+
+  const inferKind = (type, url) => {
+    const t = String(type || '').toLowerCase();
+    const u = String(url || '').toLowerCase();
+    if (t.includes('video') || /\.(mp4|webm|mov|m4v)(\?|#|$)/.test(u)) return 'video';
+    if (t.includes('audio') || /\.(mp3|wav|m4a|ogg)(\?|#|$)/.test(u)) return 'audio';
+    if (t.includes('image') || t.includes('photo') || /\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?|#|$)/.test(u)) return 'image';
+    return 'file';
+  };
+
   const mediaHtml = media.map(item => {
     const type = String(item?.type || '').toLowerCase();
-    const url = String(item?.url || '').trim();
+    const url = resolveMediaUrl(item?.url || '');
     if (!url) return '';
+    const kind = inferKind(type, url);
 
-    if (type.includes('video')) {
-      return `<video class="assignment-media" controls src="${escapeHtmlInline(url)}"></video>`;
+    if (kind === 'video') {
+      return `<video class="assignment-media" controls preload="metadata" src="${escapeHtmlInline(url)}"></video>`;
     }
-    return `<img class="assignment-media" src="${escapeHtmlInline(url)}" alt="Mission evidence">`;
+
+    if (kind === 'audio') {
+      return `<audio class="assignment-audio" controls preload="metadata" src="${escapeHtmlInline(url)}"></audio>`;
+    }
+
+    if (kind === 'image') {
+      return `
+        <div class="assignment-media-item">
+          <img class="assignment-media" src="${escapeHtmlInline(url)}" alt="Mission evidence" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
+          <a class="assignment-media-fallback" href="${escapeHtmlInline(url)}" target="_blank" rel="noopener" style="display:none;">Open evidence file</a>
+        </div>
+      `;
+    }
+
+    return `<a class="assignment-media-fallback" href="${escapeHtmlInline(url)}" target="_blank" rel="noopener">Open evidence file</a>`;
   }).join('');
 
   if (!mediaHtml) return '';
   return `<div class="assignment-media-wrap"><div class="assignment-media-title">Evidence</div>${mediaHtml}</div>`;
+}
+
+function parseAssignmentMeta(metaJsonText) {
+  try {
+    return metaJsonText ? JSON.parse(metaJsonText) : null;
+  } catch (_e) {
+    return null;
+  }
+}
+
+function getLatestAssignment(items) {
+  const assignments = (Array.isArray(items) ? items : []).filter(n => String(n.title || '').toLowerCase().includes('new crime assignment'));
+  if (!assignments.length) return null;
+
+  const grouped = new Map();
+  assignments.forEach(n => {
+    const d = parseAssignmentMessage(n.message || '');
+    const key = `${d.caseId}|${d.landmark}`;
+    const current = grouped.get(key);
+
+    let hasMedia = false;
+    try {
+      const parsed = n.meta_json ? JSON.parse(n.meta_json) : null;
+      hasMedia = Array.isArray(parsed?.media) && parsed.media.some(m => String(m?.url || '').trim());
+    } catch (_e) {
+      hasMedia = false;
+    }
+
+    if (!current) {
+      grouped.set(key, { item: n, hasMedia });
+      return;
+    }
+
+    if (!current.hasMedia && hasMedia) {
+      grouped.set(key, { item: n, hasMedia });
+    }
+  });
+
+  const deduped = Array.from(grouped.values()).map(v => v.item);
+  return deduped[0] || assignments[0];
+}
+
+function renderRankAssignedPreview(latestAssignment) {
+  const preview = document.getElementById('rank-assigned-preview');
+  if (!preview) return;
+
+  if (!latestAssignment) {
+    preview.classList.add('empty');
+    preview.innerHTML = 'No assigned crime mission right now.';
+    return;
+  }
+
+  const details = parseAssignmentMessage(latestAssignment.message || '');
+  const meta = parseAssignmentMeta(latestAssignment.meta_json || '');
+  const missionLabel = String(meta?.mission_label || '').trim();
+  const mediaBlock = renderAssignmentMedia(latestAssignment.meta_json || '');
+  const responseState = getAssignmentResponseState(latestAssignment.message || '');
+
+  preview.classList.remove('empty');
+  preview.innerHTML = `
+    <strong>🚨 Assigned Crime Mission</strong><br>
+    ${missionLabel ? `🧭 <strong>Type:</strong> ${escapeHtmlInline(missionLabel)}<br>` : ''}
+    📌 <strong>Case:</strong> ${escapeHtmlInline(details.caseId)}<br>
+    📍 <strong>Area:</strong> ${escapeHtmlInline(details.landmark)}<br>
+    <div class="mission-timer-wrap ${responseState === 'accepted' ? '' : 'hidden'}" data-mission-timer-wrap>⏱ <strong>Mission Timer:</strong> <span data-mission-timer-value>00:00:00</span></div>
+    <div class="mission-response-wrap">${renderAssignmentStatus(responseState)}</div>
+    ${mediaBlock}
+  `;
+}
+
+async function loadRankAssignedPreview() {
+  try {
+    const res = await fetch('../Php/fetch_user_notifications.php', {
+      credentials: 'same-origin',
+      cache: 'no-store'
+    });
+    const json = await res.json();
+    if (!json?.success || !Array.isArray(json.data)) {
+      renderRankAssignedPreview(null);
+      return;
+    }
+
+    const latest = getLatestAssignment(json.data);
+    renderRankAssignedPreview(latest);
+    if (!latest) {
+      setMissionTimer('');
+      return;
+    }
+
+    const responseState = getAssignmentResponseState(latest.message || '');
+    const details = parseAssignmentMessage(latest.message || '');
+    const proofDone = isMissionProofSaved(Number(latest.id || 0), details.caseId);
+    const acceptedAt = parseAcceptedAtFromMessage(latest.message || '') || String(latest.created_at || '').trim();
+    setMissionTimer(responseState === 'accepted' && !proofDone ? acceptedAt : '');
+  } catch (_error) {
+    renderRankAssignedPreview(null);
+    setMissionTimer('');
+  }
 }
 
 async function submitAssignmentResponse(notificationId, action, targetCard) {
@@ -472,12 +810,36 @@ async function submitAssignmentResponse(notificationId, action, targetCard) {
     }
 
     const nextState = action === 'accept' ? 'accepted' : 'rejected_busy';
+
+    if (action === 'reject' || json?.deleted) {
+      missionProofSubmitted = false;
+      currentMissionNotificationId = 0;
+      currentMissionCaseId = '';
+      currentMissionContext = null;
+      setMissionTimer('');
+      targetCard?.remove();
+      await loadAssignedMissionDetails();
+      await loadRankAssignedPreview();
+      return;
+    }
+
     const statusEl = targetCard?.querySelector('.mission-response-wrap');
     if (statusEl) statusEl.innerHTML = renderAssignmentStatus(nextState);
+    updateMissionProofLock(nextState);
+
+    if (nextState === 'accepted') {
+      missionProofSubmitted = false;
+      const acceptedAt = String(json?.accepted_at || '').trim() || new Date().toISOString();
+      setMissionTimer(acceptedAt);
+    } else {
+      setMissionTimer('');
+    }
 
     targetCard?.querySelectorAll('[data-assignment-action]').forEach(btn => {
       btn.disabled = true;
     });
+
+    loadRankAssignedPreview();
   } catch (error) {
     console.error('Failed to submit assignment response', error);
     alert('Could not update mission response right now.');
@@ -499,31 +861,42 @@ async function loadAssignedMissionDetails() {
     const json = await res.json();
     if (!json?.success || !Array.isArray(json.data)) return;
 
-    const assignments = json.data.filter(n => String(n.title || '').toLowerCase().includes('new crime assignment'));
-    if (!assignments.length) return;
+    const latest = getLatestAssignment(json.data);
+    if (!latest) {
+      updateMissionProofLock('pending');
+      setMissionTimer('');
+      renderRankAssignedPreview(null);
+      return;
+    }
 
-    const seenKeys = new Set();
-    const deduped = assignments.filter(n => {
-      const d = parseAssignmentMessage(n.message || '');
-      const key = `${d.caseId}|${d.landmark}`;
-      if (seenKeys.has(key)) return false;
-      seenKeys.add(key);
-      return true;
-    });
-
-    const latest = deduped[0] || assignments[0];
     const details = parseAssignmentMessage(latest.message || '');
+    const meta = parseAssignmentMeta(latest.meta_json || '');
     const responseState = getAssignmentResponseState(latest.message || '');
     const mediaBlock = renderAssignmentMedia(latest.meta_json || '');
+    const missionLabel = String(meta?.mission_label || '').trim();
+    const missionNote = String(meta?.mission_note || '').trim();
+    const acceptedAt = parseAcceptedAtFromMessage(latest.message || '') || String(latest.created_at || '').trim();
+    const latestNotificationId = Number(latest.id || 0);
+    const proofDone = isMissionProofSaved(latestNotificationId, details.caseId);
+    currentMissionNotificationId = latestNotificationId;
+    currentMissionCaseId = details.caseId;
+    currentMissionContext = {
+      case_id: details.caseId,
+      area: details.landmark,
+      mission_label: missionLabel || 'Assigned Mission'
+    };
+    missionProofSubmitted = proofDone;
 
     const li = document.createElement('li');
     li.className = 'dynamic-assignment-item';
     li.innerHTML = `
       <strong>🚨 Assigned Crime Mission</strong><br>
+      ${missionLabel ? `🧭 <strong>Mission Type:</strong> ${escapeHtmlInline(missionLabel)}<br>` : ''}
       📌 <strong>Case ID:</strong> ${escapeHtmlInline(details.caseId)}<br>
       📍 <strong>Area:</strong> ${escapeHtmlInline(details.landmark)}<br>
       🕒 <strong>Assigned:</strong> ${escapeHtmlInline(latest.time_ago || 'Recently')}<br>
-      💬 <strong>Note:</strong> ${escapeHtmlInline(latest.message || '')}
+      💬 <strong>Note:</strong> ${escapeHtmlInline(missionNote || latest.message || '')}
+      <div class="mission-timer-wrap ${responseState === 'accepted' ? '' : 'hidden'}" data-mission-timer-wrap>⏱ <strong>Mission Timer:</strong> <span data-mission-timer-value>00:00:00</span></div>
       ${mediaBlock}
       <div class="mission-response-wrap">${renderAssignmentStatus(responseState)}</div>
       <div class="mission-response-actions">
@@ -540,6 +913,23 @@ async function loadAssignedMissionDetails() {
     });
 
     missionListEl.insertBefore(li, missionListEl.firstChild);
+    const step = document.getElementById('mission-proof-single');
+    const submitBtn = document.querySelector('[data-mission-proof-submit="1"]');
+    const proofInput = document.getElementById('mission-proof-file');
+    const status = document.getElementById('mission-proof-status');
+    if (proofDone) {
+      step?.classList.add('done');
+      if (submitBtn) submitBtn.textContent = '✅ Proof Submitted';
+      if (proofInput) proofInput.disabled = true;
+      if (submitBtn) submitBtn.disabled = true;
+      if (status) status.textContent = 'Proof already submitted for this mission.';
+    } else {
+      step?.classList.remove('done');
+      if (submitBtn) submitBtn.textContent = '✅ Submit Proof';
+    }
+    updateMissionProofLock(responseState);
+    setMissionTimer(responseState === 'accepted' && !proofDone ? acceptedAt : '');
+    renderRankAssignedPreview(latest);
   } catch (error) {
     console.error('Failed to load mission assignment details', error);
   } finally {
@@ -572,6 +962,8 @@ document.addEventListener('keydown', (e) => {
 });
 
 initMissionFlow();
+renderMissionHistory();
+loadRankAssignedPreview();
 function filterPosts(category) {
   // Remove .active from all filter buttons
   document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
