@@ -23,6 +23,7 @@ try {
 	}
 
 	$hasStatus = columnExists($pdo, 'posts', 'status');
+	$hasReportStatus = columnExists($pdo, 'posts', 'report_status');
 	$hasShareAnonymous = columnExists($pdo, 'posts', 'share_anonymous');
 	$hasIsShare = columnExists($pdo, 'posts', 'is_share');
 	$hasSharedPostId = columnExists($pdo, 'posts', 'shared_post_id');
@@ -41,6 +42,7 @@ try {
 		media_json,
 		media_type,
 		" . ($hasStatus ? "status" : "'pending' AS status") . ",
+		" . ($hasReportStatus ? "report_status" : "'not_reported' AS report_status") . ",
 		share_facebook,
 		" . ($hasShareAnonymous ? "share_anonymous" : "0 AS share_anonymous") . ",
 		" . ($hasIsShare ? "is_share" : "0 AS is_share") . ",

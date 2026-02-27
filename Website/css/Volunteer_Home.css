@@ -1352,6 +1352,99 @@ background: linear-gradient(80deg, #d1b75a);
   color: #1a232a;
 }
 
+.rank-game-panel {
+  background: linear-gradient(180deg, #ffffff 0%, #fff7f7 100%);
+  border: 1px solid #ffd2d2;
+  border-radius: 14px;
+  padding: 12px 14px;
+  text-align: left;
+}
+
+.rank-headline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.rank-badge {
+  background: #f05454;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.rank-xp {
+  color: #1a232a;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.rank-progress-wrap {
+  margin: 8px 0 10px;
+}
+
+.rank-progress-bar {
+  width: 100%;
+  height: 12px;
+  background: #ffe1e1;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.rank-progress-fill {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #f05454 0%, #ff9b54 100%);
+  transition: width 0.35s ease;
+}
+
+.rank-progress-meta {
+  margin-top: 6px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  color: #4c555d;
+}
+
+.rank-progress-meta span:first-child {
+  font-weight: 700;
+  color: #f05454;
+}
+
+.rank-milestones {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.rank-milestones span {
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #6d7580;
+  background: #f3f5f8;
+  border-radius: 10px;
+  padding: 4px 2px;
+}
+
+.rank-stats,
+.rank-rules {
+  font-size: 0.86rem !important;
+  margin: 6px 0 !important;
+  color: #3b434b !important;
+}
+
+.rank-rules {
+  color: #b14d4d !important;
+  font-weight: 600;
+}
+
 /* View Missions Button with shine effect */
 .view-missions-btn,
 .view-certificate-btn,

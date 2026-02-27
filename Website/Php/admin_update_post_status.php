@@ -49,6 +49,7 @@ function ensureNotificationsTable(PDO $pdo): void {
 $allowedActions = [
     'approve' => 'approved',
     'reject'  => 'rejected',
+    'make_report' => 'reported',
 ];
 
 try {
@@ -70,8 +71,14 @@ try {
     if (!columnExists($pdo, 'posts', 'status')) {
         $pdo->exec("ALTER TABLE posts ADD COLUMN status VARCHAR(20) DEFAULT 'pending' AFTER share_anonymous");
     }
+    if (!columnExists($pdo, 'posts', 'report_status')) {
+        $pdo->exec("ALTER TABLE posts ADD COLUMN report_status VARCHAR(20) DEFAULT 'not_reported' AFTER status");
+    }
+    if (!columnExists($pdo, 'posts', 'reported_at')) {
+        $pdo->exec("ALTER TABLE posts ADD COLUMN reported_at DATETIME DEFAULT NULL AFTER report_status");
+    }
 
-    $postStmt = $pdo->prepare('SELECT id, author_role, author_id, author_name, status FROM posts WHERE id = :id LIMIT 1');
+    $postStmt = $pdo->prepare('SELECT id, author_role, author_id, author_name, status, report_status FROM posts WHERE id = :id LIMIT 1');
     $postStmt->execute([':id' => $postId]);
     $postRow = $postStmt->fetch(PDO::FETCH_ASSOC);
     if (!$postRow) {
@@ -87,6 +94,36 @@ try {
     ensureNotificationsTable($pdo);
 
     $targetStatus = $allowedActions[$action];
+
+    if ($action === 'make_report') {
+        $stmt = $pdo->prepare("UPDATE posts SET report_status = 'reported', reported_at = NOW() WHERE id = :id AND LOWER(COALESCE(report_status, 'not_reported')) <> 'reported'");
+        $stmt->execute([':id' => $postId]);
+
+        if ($stmt->rowCount() === 0) {
+            $chk = $pdo->prepare("SELECT report_status FROM posts WHERE id = :id LIMIT 1");
+            $chk->execute([':id' => $postId]);
+            $row = $chk->fetch(PDO::FETCH_ASSOC);
+            if (!$row) {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'error' => 'Post not found']);
+                exit;
+            }
+
+            echo json_encode([
+                'success' => false,
+                'error' => 'This post is already reported',
+                'report_status' => $row['report_status'] ?? 'reported',
+            ]);
+            exit;
+        }
+
+        echo json_encode([
+            'success' => true,
+            'status' => (string)($postRow['status'] ?? 'pending'),
+            'report_status' => 'reported',
+        ]);
+        exit;
+    }
 
     if ($action === 'reject') {
         // Delete only if still pending/null

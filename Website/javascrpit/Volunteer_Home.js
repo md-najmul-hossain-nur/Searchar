@@ -334,8 +334,82 @@ let missionTimerInterval = null;
 let missionProofSubmitted = false;
 let currentMissionNotificationId = 0;
 let currentMissionCaseId = '';
+let currentMissionId = 0;
 let currentMissionContext = null;
 const MISSION_HISTORY_STORAGE_KEY = 'volunteer_completed_mission_history_v1';
+
+function escInline(v) {
+  return String(v ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+async function loadVolunteerRankStatus() {
+  try {
+    const res = await fetch('../Php/volunteer_rank_status.php', {
+      credentials: 'same-origin',
+      cache: 'no-store'
+    });
+    const json = await res.json();
+    if (!json?.success) return;
+
+    const stats = json.stats || {};
+    const rankBadge = document.getElementById('rank-badge-name');
+    const rankPoints = document.getElementById('rank-points-value');
+    const rankNext = document.getElementById('rank-next-value');
+    const rankNeed = document.getElementById('rank-needed-value');
+    const rankProgressFill = document.getElementById('rank-progress-fill');
+    const rankProgressPercent = document.getElementById('rank-progress-percent');
+    const rankStats = document.getElementById('rank-stats');
+    const rankRules = document.getElementById('rank-rules');
+    const certificateBox = document.getElementById('certificate-unlock');
+    const certificateMessage = document.getElementById('certificate-message');
+
+    const rank = String(stats.rank || 'Bronze Volunteer');
+    const points = Number(stats.points || 0);
+    const nextRank = stats.next_rank ? String(stats.next_rank) : 'Top Rank';
+    const need = Number(stats.points_to_next_rank ?? 0);
+
+    if (rankBadge) rankBadge.textContent = rank;
+    if (rankPoints) rankPoints.textContent = `${points} XP`;
+    if (rankNext) rankNext.textContent = stats.next_rank ? `Next: ${nextRank}` : 'Next: Top rank achieved';
+    if (rankNeed) rankNeed.textContent = stats.next_rank ? `Need ${need} XP` : 'Max reached';
+
+    const thresholds = [0, 200, 500, 1000];
+    const tierIndex = points >= thresholds[3] ? 3 : points >= thresholds[2] ? 2 : points >= thresholds[1] ? 1 : 0;
+    const tierStart = thresholds[tierIndex];
+    const tierEnd = tierIndex === thresholds.length - 1 ? thresholds[tierIndex] : thresholds[tierIndex + 1];
+    const tierSpan = Math.max(1, tierEnd - tierStart);
+    const tierProgress = tierIndex === thresholds.length - 1 ? 100 : Math.min(100, Math.max(0, ((points - tierStart) / tierSpan) * 100));
+
+    if (rankProgressFill) rankProgressFill.style.width = `${tierProgress}%`;
+    if (rankProgressPercent) rankProgressPercent.textContent = `${Math.round(tierProgress)}%`;
+
+    if (rankStats) {
+      rankStats.textContent = `Accepted ${stats.accepted_missions || 0} • Completed ${stats.completed_missions || 0} • Busy ${stats.busy_missions || 0}`;
+    }
+
+    const acceptedXP = Number(json?.rules?.accepted_mission_xp || 10);
+    const completedXP = Number(json?.rules?.completed_mission_xp || 50);
+    if (rankRules) {
+      rankRules.textContent = `+${acceptedXP} XP (Accept) • +${completedXP} XP (Complete)`;
+    }
+
+    if (certificateBox && certificateMessage) {
+      if (stats.certificate_unlocked) {
+        certificateBox.classList.remove('hidden');
+        certificateMessage.innerHTML = `🎉 Congratulations! You’ve reached <strong>${escInline(rank)}</strong>! Certificate unlocked.`;
+      } else {
+        certificateBox.classList.add('hidden');
+      }
+    }
+  } catch (_e) {
+    // ignore panel load errors
+  }
+}
 
 function missionProofStorageKey(notificationId, caseId) {
   const idPart = Number(notificationId) > 0 ? `nid_${Number(notificationId)}` : '';
@@ -578,7 +652,7 @@ function initMissionFlow() {
 
   proofInput.addEventListener('change', () => buildMissionPreview(proofInput.files?.[0], preview));
 
-  submitBtn.addEventListener('click', () => {
+  submitBtn.addEventListener('click', async () => {
     if (submitBtn.disabled) {
       alert('Accept the mission first to submit proof.');
       return;
@@ -588,23 +662,54 @@ function initMissionFlow() {
       return;
     }
 
-    step.classList.add('done');
-    missionProofSubmitted = true;
-    saveMissionProofState(currentMissionNotificationId, currentMissionCaseId);
-    if (currentMissionContext) {
-      saveCompletedMissionHistory({
-        case_id: currentMissionContext.case_id,
-        area: currentMissionContext.area,
-        mission_label: currentMissionContext.mission_label,
-        completed_at: new Date().toISOString()
-      });
-      renderMissionHistory();
-    }
+    const proofFile = proofInput.files[0];
+    const fd = new FormData();
+    fd.append('proof_file', proofFile);
+    fd.append('notification_id', String(Number(currentMissionNotificationId) || 0));
+    fd.append('mission_id', String(Number(currentMissionId) || 0));
+
     submitBtn.disabled = true;
-    proofInput.disabled = true;
-    submitBtn.textContent = '✅ Proof Submitted';
-    if (status) status.textContent = 'Proof submitted successfully.';
-    setMissionTimer('');
+    submitBtn.textContent = 'Uploading...';
+    if (status) status.textContent = 'Uploading mission proof...';
+
+    try {
+      const res = await fetch('../Php/volunteer_submit_mission_proof.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        body: fd
+      });
+      const json = await res.json();
+      if (!json?.success) {
+        throw new Error(json?.error || 'Failed to submit proof');
+      }
+
+      currentMissionId = Number(json?.mission_id || currentMissionId || 0);
+
+      step.classList.add('done');
+      missionProofSubmitted = true;
+      saveMissionProofState(currentMissionNotificationId, currentMissionCaseId);
+      if (currentMissionContext) {
+        saveCompletedMissionHistory({
+          case_id: currentMissionContext.case_id,
+          area: currentMissionContext.area,
+          mission_label: currentMissionContext.mission_label,
+          completed_at: new Date().toISOString()
+        });
+        renderMissionHistory();
+      }
+      submitBtn.disabled = true;
+      proofInput.disabled = true;
+      submitBtn.textContent = '✅ Proof Submitted';
+      if (status) status.textContent = 'Proof submitted successfully.';
+      setMissionTimer('');
+      loadVolunteerRankStatus();
+    } catch (error) {
+      console.error('Failed to submit mission proof', error);
+      alert(error?.message || 'Failed to submit proof right now.');
+      submitBtn.disabled = false;
+      submitBtn.textContent = '✅ Submit Proof';
+      if (status) status.textContent = 'Proof submit failed. Try again.';
+    }
   });
 }
 
@@ -678,10 +783,6 @@ function renderAssignmentMedia(metaJsonText) {
       return `<video class="assignment-media" controls preload="metadata" src="${escapeHtmlInline(url)}"></video>`;
     }
 
-    if (kind === 'audio') {
-      return `<audio class="assignment-audio" controls preload="metadata" src="${escapeHtmlInline(url)}"></audio>`;
-    }
-
     if (kind === 'image') {
       return `
         <div class="assignment-media-item">
@@ -691,7 +792,7 @@ function renderAssignmentMedia(metaJsonText) {
       `;
     }
 
-    return `<a class="assignment-media-fallback" href="${escapeHtmlInline(url)}" target="_blank" rel="noopener">Open evidence file</a>`;
+    return '';
   }).join('');
 
   if (!mediaHtml) return '';
@@ -710,39 +811,15 @@ function getLatestAssignment(items) {
   const assignments = (Array.isArray(items) ? items : []).filter(n => String(n.title || '').toLowerCase().includes('new crime assignment'));
   if (!assignments.length) return null;
 
-  const grouped = new Map();
-  assignments.forEach(n => {
-    const d = parseAssignmentMessage(n.message || '');
-    const key = `${d.caseId}|${d.landmark}`;
-    const current = grouped.get(key);
-
-    let hasMedia = false;
-    try {
-      const parsed = n.meta_json ? JSON.parse(n.meta_json) : null;
-      hasMedia = Array.isArray(parsed?.media) && parsed.media.some(m => String(m?.url || '').trim());
-    } catch (_e) {
-      hasMedia = false;
-    }
-
-    if (!current) {
-      grouped.set(key, { item: n, hasMedia });
-      return;
-    }
-
-    if (!current.hasMedia && hasMedia) {
-      grouped.set(key, { item: n, hasMedia });
-    }
-  });
-
-  const deduped = Array.from(grouped.values()).map(v => v.item);
-  return deduped[0] || assignments[0];
+  assignments.sort((a, b) => Number(b.id || 0) - Number(a.id || 0));
+  return assignments[0] || null;
 }
 
-function renderRankAssignedPreview(latestAssignment) {
+function renderRankAssignedPreview(latestAssignment, options = {}) {
   const preview = document.getElementById('rank-assigned-preview');
   if (!preview) return;
 
-  if (!latestAssignment) {
+  if (!latestAssignment || options.hidden) {
     preview.classList.add('empty');
     preview.innerHTML = 'No assigned crime mission right now.';
     return;
@@ -751,14 +828,14 @@ function renderRankAssignedPreview(latestAssignment) {
   const details = parseAssignmentMessage(latestAssignment.message || '');
   const meta = parseAssignmentMeta(latestAssignment.meta_json || '');
   const missionLabel = String(meta?.mission_label || '').trim();
-  const mediaBlock = renderAssignmentMedia(latestAssignment.meta_json || '');
-  const responseState = getAssignmentResponseState(latestAssignment.message || '');
+  const responseState = String(options.responseState || getAssignmentResponseState(latestAssignment.message || ''));
+  const proofDone = Boolean(options.proofDone);
+  const mediaBlock = proofDone ? '' : renderAssignmentMedia(latestAssignment.meta_json || '');
 
   preview.classList.remove('empty');
   preview.innerHTML = `
     <strong>🚨 Assigned Crime Mission</strong><br>
     ${missionLabel ? `🧭 <strong>Type:</strong> ${escapeHtmlInline(missionLabel)}<br>` : ''}
-    📌 <strong>Case:</strong> ${escapeHtmlInline(details.caseId)}<br>
     📍 <strong>Area:</strong> ${escapeHtmlInline(details.landmark)}<br>
     <div class="mission-timer-wrap ${responseState === 'accepted' ? '' : 'hidden'}" data-mission-timer-wrap>⏱ <strong>Mission Timer:</strong> <span data-mission-timer-value>00:00:00</span></div>
     <div class="mission-response-wrap">${renderAssignmentStatus(responseState)}</div>
@@ -775,12 +852,13 @@ async function loadRankAssignedPreview() {
     const json = await res.json();
     if (!json?.success || !Array.isArray(json.data)) {
       renderRankAssignedPreview(null);
+      setMissionTimer('');
       return;
     }
 
     const latest = getLatestAssignment(json.data);
-    renderRankAssignedPreview(latest);
     if (!latest) {
+      renderRankAssignedPreview(null);
       setMissionTimer('');
       return;
     }
@@ -788,6 +866,14 @@ async function loadRankAssignedPreview() {
     const responseState = getAssignmentResponseState(latest.message || '');
     const details = parseAssignmentMessage(latest.message || '');
     const proofDone = isMissionProofSaved(Number(latest.id || 0), details.caseId);
+
+    if (responseState === 'rejected_busy' || proofDone) {
+      renderRankAssignedPreview(null, { hidden: true });
+      setMissionTimer('');
+      return;
+    }
+
+    renderRankAssignedPreview(latest, { responseState, proofDone });
     const acceptedAt = parseAcceptedAtFromMessage(latest.message || '') || String(latest.created_at || '').trim();
     setMissionTimer(responseState === 'accepted' && !proofDone ? acceptedAt : '');
   } catch (_error) {
@@ -815,11 +901,13 @@ async function submitAssignmentResponse(notificationId, action, targetCard) {
       missionProofSubmitted = false;
       currentMissionNotificationId = 0;
       currentMissionCaseId = '';
+      currentMissionId = 0;
       currentMissionContext = null;
       setMissionTimer('');
       targetCard?.remove();
       await loadAssignedMissionDetails();
       await loadRankAssignedPreview();
+      await loadVolunteerRankStatus();
       return;
     }
 
@@ -840,6 +928,7 @@ async function submitAssignmentResponse(notificationId, action, targetCard) {
     });
 
     loadRankAssignedPreview();
+    loadVolunteerRankStatus();
   } catch (error) {
     console.error('Failed to submit assignment response', error);
     alert('Could not update mission response right now.');
@@ -863,6 +952,7 @@ async function loadAssignedMissionDetails() {
 
     const latest = getLatestAssignment(json.data);
     if (!latest) {
+      currentMissionId = 0;
       updateMissionProofLock('pending');
       setMissionTimer('');
       renderRankAssignedPreview(null);
@@ -872,14 +962,16 @@ async function loadAssignedMissionDetails() {
     const details = parseAssignmentMessage(latest.message || '');
     const meta = parseAssignmentMeta(latest.meta_json || '');
     const responseState = getAssignmentResponseState(latest.message || '');
-    const mediaBlock = renderAssignmentMedia(latest.meta_json || '');
     const missionLabel = String(meta?.mission_label || '').trim();
     const missionNote = String(meta?.mission_note || '').trim();
+    const missionId = Number(meta?.mission_id || 0);
     const acceptedAt = parseAcceptedAtFromMessage(latest.message || '') || String(latest.created_at || '').trim();
     const latestNotificationId = Number(latest.id || 0);
     const proofDone = isMissionProofSaved(latestNotificationId, details.caseId);
+
     currentMissionNotificationId = latestNotificationId;
     currentMissionCaseId = details.caseId;
+    currentMissionId = missionId;
     currentMissionContext = {
       case_id: details.caseId,
       area: details.landmark,
@@ -887,12 +979,41 @@ async function loadAssignedMissionDetails() {
     };
     missionProofSubmitted = proofDone;
 
+    if (responseState === 'rejected_busy') {
+      currentMissionNotificationId = 0;
+      currentMissionCaseId = '';
+      currentMissionId = 0;
+      currentMissionContext = null;
+      missionProofSubmitted = false;
+      updateMissionProofLock('pending');
+      setMissionTimer('');
+      renderRankAssignedPreview(null, { hidden: true });
+      return;
+    }
+
+    if (proofDone) {
+      const step = document.getElementById('mission-proof-single');
+      const submitBtn = document.querySelector('[data-mission-proof-submit="1"]');
+      const proofInput = document.getElementById('mission-proof-file');
+      const status = document.getElementById('mission-proof-status');
+      step?.classList.add('done');
+      if (submitBtn) submitBtn.textContent = '✅ Proof Submitted';
+      if (proofInput) proofInput.disabled = true;
+      if (submitBtn) submitBtn.disabled = true;
+      if (status) status.textContent = 'Proof already submitted for this mission.';
+      updateMissionProofLock('accepted');
+      setMissionTimer('');
+      renderRankAssignedPreview(null, { hidden: true });
+      return;
+    }
+
+    const mediaBlock = proofDone ? '' : renderAssignmentMedia(latest.meta_json || '');
+
     const li = document.createElement('li');
     li.className = 'dynamic-assignment-item';
     li.innerHTML = `
       <strong>🚨 Assigned Crime Mission</strong><br>
       ${missionLabel ? `🧭 <strong>Mission Type:</strong> ${escapeHtmlInline(missionLabel)}<br>` : ''}
-      📌 <strong>Case ID:</strong> ${escapeHtmlInline(details.caseId)}<br>
       📍 <strong>Area:</strong> ${escapeHtmlInline(details.landmark)}<br>
       🕒 <strong>Assigned:</strong> ${escapeHtmlInline(latest.time_ago || 'Recently')}<br>
       💬 <strong>Note:</strong> ${escapeHtmlInline(missionNote || latest.message || '')}
@@ -929,7 +1050,7 @@ async function loadAssignedMissionDetails() {
     }
     updateMissionProofLock(responseState);
     setMissionTimer(responseState === 'accepted' && !proofDone ? acceptedAt : '');
-    renderRankAssignedPreview(latest);
+    renderRankAssignedPreview(latest, { responseState, proofDone });
   } catch (error) {
     console.error('Failed to load mission assignment details', error);
   } finally {
@@ -944,7 +1065,17 @@ if (openMissionBtn && !openMissionBtn.hasAttribute('onclick')) {
 
 // Event listeners to close modal on close button click
 closeButtons.forEach(btn => {
-  btn.addEventListener('click', closeMissionModal);
+      const responseState = getAssignmentResponseState(latest.message || '');
+      const details = parseAssignmentMessage(latest.message || '');
+      const proofDone = isMissionProofSaved(Number(latest.id || 0), details.caseId);
+
+      if (responseState === 'rejected_busy') {
+        renderRankAssignedPreview(null, { hidden: true });
+        setMissionTimer('');
+        return;
+      }
+
+      renderRankAssignedPreview(latest, { responseState, proofDone });
 });
 
 // Optional: close modal on clicking outside modal-content
@@ -964,6 +1095,7 @@ document.addEventListener('keydown', (e) => {
 initMissionFlow();
 renderMissionHistory();
 loadRankAssignedPreview();
+loadVolunteerRankStatus();
 function filterPosts(category) {
   // Remove .active from all filter buttons
   document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));

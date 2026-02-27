@@ -108,10 +108,32 @@ function e($v) {
   <div class="volunteer-rank-box">
     <h3>🎖️ Real-Life Missions</h3>
 
-    <div class="rank-info">
-      <p>🔰 <strong>Rank:</strong> Bronze Volunteer</p>
-      <p>⭐ <strong>Points:</strong> 120 XP</p>
-      <p>🎯 <strong>Next Rank:</strong> Silver Responder (Needs 200 XP)</p>
+    <div class="rank-game-panel" id="rank-game-panel">
+      <div class="rank-headline">
+        <span class="rank-badge" id="rank-badge-name">Bronze Volunteer</span>
+        <span class="rank-xp" id="rank-points-value">0 XP</span>
+      </div>
+
+      <div class="rank-progress-wrap" aria-label="Rank progress">
+        <div class="rank-progress-bar">
+          <div class="rank-progress-fill" id="rank-progress-fill" style="width:0%"></div>
+        </div>
+        <div class="rank-progress-meta">
+          <span id="rank-progress-percent">0%</span>
+          <span id="rank-next-value">Next: Silver Responder</span>
+          <span id="rank-needed-value">Need 200 XP</span>
+        </div>
+      </div>
+
+      <div class="rank-milestones" id="rank-milestones" aria-hidden="true">
+        <span>Bronze</span>
+        <span>Silver</span>
+        <span>Gold</span>
+        <span>Platinum</span>
+      </div>
+
+      <p id="rank-stats" class="rank-stats">Accepted 0 • Completed 0 • Busy 0</p>
+      <p id="rank-rules" class="rank-rules">+10 XP (Accept) • +50 XP (Complete)</p>
     </div>
 
     <button class="view-missions-btn" onclick="openMissionModal()">📋 View Missions</button>
@@ -120,7 +142,7 @@ function e($v) {
 
     <!-- Certificate Display -->
     <div id="certificate-unlock" class="certificate-box hidden" aria-live="polite">
-      <p>🎉 Congratulations! You’ve reached <strong>Silver Responder</strong>!</p>
+      <p id="certificate-message">🎉 Congratulations! You’ve reached <strong>Silver Responder</strong>!</p>
       <button class="view-certificate-btn">🏅 View & Download Certificate</button>
     </div>
   </div>

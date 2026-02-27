@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -623,6 +623,7 @@
       <option value="assault">Assault</option>
       <option value="vandalism">Vandalism</option>
       <option value="arson">Arson</option>
+      <option value="missing_person">Missing Person</option>
       <option value="other">Other</option>
     </select>
     <select id="crime-filter-severity">
@@ -645,7 +646,7 @@
   </div>
   <div class="crime-toggles">
     <label><input type="checkbox" id="crime-toggle-heatmap"> Heatmap</label>
-    <label><input type="checkbox" id="crime-toggle-last24" checked> Last 24h only</label>
+    <label><input type="checkbox" id="crime-toggle-last24"> Last 24h only</label>
     <label><input type="checkbox" id="crime-toggle-closed" checked> Show closed</label>
   </div>
   <div class="crime-map-toggle-bar">
@@ -665,7 +666,7 @@
       </div>
     </div>
   </div>
-  <div class="tables-divider"></d aiv>
+  <div class="tables-divider"></div>
   <div class="crime-table-head">
     <div class="crime-stats">
       <span id="crime-stat-new" class="pill pill-open">New: 0</span>
@@ -703,7 +704,7 @@
         <th>Message</th><th>Actions</th>
       </tr>
     </thead>
-    <tbody>
+    <tbody id="donations-table-body">
       <tr>
         <td>John S.</td><td>৳5,000</td><td>2025-07-20</td><td>No</td>
         <td>"Good luck!"</td>
@@ -728,31 +729,40 @@
     <input id="volunteer-filter-text" type="text" placeholder="Search volunteer, mission, location">
     <select id="volunteer-filter-status">
       <option value="">Status</option>
+      <option value="assigned">Assigned</option>
+      <option value="accepted">Accepted</option>
+      <option value="rejected_busy">Rejected (Busy)</option>
       <option value="completed">Completed</option>
-      <option value="pending">Pending</option>
-      <option value="cancelled">Cancelled</option>
     </select>
     <button type="button" id="volunteer-filter-reset" class="ghost">Reset</button>
   </div>
   <table class="styled-table">
     <thead>
       <tr>
-        <th>Volunteer Name</th>
+        <th>Volunteer Profile</th>
         <th>Mission Title</th>
-        <th>Date Completed</th>
+        <th>Assigned On</th>
         <th>Location</th>
+        <th>Rank</th>
+        <th>Points</th>
+        <th>Response</th>
         <th>Status</th>
-        <th>Remarks</th>
+        <th>Proof</th>
+        <th>Action</th>
       </tr>
     </thead>
-    <tbody>
+    <tbody id="volunteer-mission-body">
       <tr>
-        <td>Rafiq A.</td>
+        <td>Rafiq A. • <a href="#" target="_blank" rel="noopener">View Profile</a></td>
         <td>Missing Child Assistance</td>
         <td>2025-08-03</td>
         <td>Dhaka</td>
+        <td>Silver Responder</td>
+        <td>220</td>
+        <td><span class="status-info">Accepted</span></td>
         <td><span class="status-approved">Completed</span></td>
-        <td>Efficient and timely</td>
+        <td><a href="#">View Proof</a></td>
+        <td><button type="button" class="ghost">Mark Complete +50XP</button></td>
       </tr>
       <!-- More rows... -->
     </tbody>
@@ -784,7 +794,7 @@
         <th>Actions</th>
       </tr>
     </thead>
-    <tbody>
+    <tbody id="withdraw-table-body">
       <tr>
         <td>Arif Hasan</td>
         <td>৳500</td>
@@ -821,7 +831,7 @@
         <th>Sent On</th><th>Actions</th>
       </tr>
     </thead>
-    <tbody>
+    <tbody id="broadcast-table-body">
       <tr>
         <td>Amber Alert</td><td>Child missing in Dhanmondi</td><td>Dhanmondi</td>
         <td>All</td><td>2025-07-27 13:00</td>
@@ -2110,6 +2120,6 @@
   </script>
   <!-- Chart.js CDN for demo chart drawing (remove if you use your own chart lib) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-      <script src="../javascrpit/Admin.js?v=20260226"></script>
+      <script src="../javascrpit/Admin.js?v=20260227b"></script>
 </body>
 </html>

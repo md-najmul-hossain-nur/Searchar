@@ -1,0 +1,207 @@
+<?php
+declare(strict_types=1);
+
+header('Content-Type: application/json; charset=utf-8');
+require_once __DIR__ . '/db.php';
+
+function tableExists(PDO $pdo, string $tableName): bool {
+    $stmt = $pdo->prepare("SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :t LIMIT 1");
+    $stmt->execute([':t' => $tableName]);
+    return (bool)$stmt->fetchColumn();
+}
+
+function columnExists(PDO $pdo, string $tableName, string $columnName): bool {
+    $stmt = $pdo->prepare("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :t AND COLUMN_NAME = :c LIMIT 1");
+    $stmt->execute([':t' => $tableName, ':c' => $columnName]);
+    return (bool)$stmt->fetchColumn();
+}
+
+function parseResponseState(string $message): array {
+    $text = strtolower($message);
+    if (str_contains($text, '[response: accepted]')) {
+        return ['status' => 'accepted', 'response_status' => 'accepted'];
+    }
+    if (str_contains($text, '[response: rejected_busy]')) {
+        return ['status' => 'rejected_busy', 'response_status' => 'rejected_busy'];
+    }
+    return ['status' => 'assigned', 'response_status' => 'pending'];
+}
+
+function syncMissionsFromNotifications(PDO $pdo): void {
+    if (!tableExists($pdo, 'user_notifications') || !tableExists($pdo, 'volunteer_missions')) {
+        return;
+    }
+
+    $hasResponseStatus = columnExists($pdo, 'volunteer_missions', 'response_status');
+    $hasCaseRef = columnExists($pdo, 'volunteer_missions', 'case_ref');
+    $hasSourceNotificationId = columnExists($pdo, 'volunteer_missions', 'source_notification_id');
+    $hasProofFile = columnExists($pdo, 'volunteer_missions', 'proof_file');
+    $hasProofSubmittedAt = columnExists($pdo, 'volunteer_missions', 'proof_submitted_at');
+    $hasCompletedAt = columnExists($pdo, 'volunteer_missions', 'completed_at');
+
+    if (!$hasResponseStatus) {
+        $pdo->exec("ALTER TABLE volunteer_missions ADD COLUMN response_status VARCHAR(30) NOT NULL DEFAULT 'pending' AFTER status");
+    }
+    if (!$hasCaseRef) {
+        $pdo->exec("ALTER TABLE volunteer_missions ADD COLUMN case_ref VARCHAR(80) DEFAULT NULL AFTER response_status");
+    }
+    if (!$hasSourceNotificationId) {
+        $pdo->exec("ALTER TABLE volunteer_missions ADD COLUMN source_notification_id INT UNSIGNED DEFAULT NULL AFTER case_ref");
+    }
+    if (!$hasProofFile) {
+        $pdo->exec("ALTER TABLE volunteer_missions ADD COLUMN proof_file VARCHAR(255) DEFAULT NULL AFTER source_notification_id");
+    }
+    if (!$hasProofSubmittedAt) {
+        $pdo->exec("ALTER TABLE volunteer_missions ADD COLUMN proof_submitted_at DATETIME DEFAULT NULL AFTER proof_file");
+    }
+    if (!$hasCompletedAt) {
+        $pdo->exec("ALTER TABLE volunteer_missions ADD COLUMN completed_at DATETIME DEFAULT NULL AFTER proof_submitted_at");
+    }
+
+    $sel = $pdo->query("SELECT notification_id, recipient_id, title, message, meta_json, created_at
+                        FROM user_notifications
+                        WHERE recipient_entity IN ('volunteer','volunteers')
+                          AND LOWER(title) LIKE '%assignment%'
+                        ORDER BY notification_id DESC
+                        LIMIT 500");
+    $rows = $sel->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    if (!$rows) {
+        return;
+    }
+
+    $checkBySource = $pdo->prepare('SELECT mission_id FROM volunteer_missions WHERE source_notification_id = :nid LIMIT 1');
+    $checkById = $pdo->prepare('SELECT mission_id FROM volunteer_missions WHERE mission_id = :mid LIMIT 1');
+    $updById = $pdo->prepare('UPDATE volunteer_missions SET status = :status, response_status = :response_status, source_notification_id = COALESCE(source_notification_id, :nid) WHERE mission_id = :mid LIMIT 1');
+    $updBySource = $pdo->prepare('UPDATE volunteer_missions SET status = :status, response_status = :response_status WHERE source_notification_id = :nid LIMIT 1');
+    $ins = $pdo->prepare('INSERT INTO volunteer_missions (volunteer_id, mission_title, mission_details, mission_location, status, response_status, case_ref, source_notification_id, assigned_by, assigned_at) VALUES (:volunteer_id, :mission_title, :mission_details, :mission_location, :status, :response_status, :case_ref, :source_notification_id, :assigned_by, :assigned_at)');
+
+    foreach ($rows as $r) {
+        $nid = (int)($r['notification_id'] ?? 0);
+        if ($nid <= 0) {
+            continue;
+        }
+
+        $meta = [];
+        $metaRaw = (string)($r['meta_json'] ?? '');
+        if ($metaRaw !== '') {
+            $decoded = json_decode($metaRaw, true);
+            if (is_array($decoded)) {
+                $meta = $decoded;
+            }
+        }
+
+        $state = parseResponseState((string)($r['message'] ?? ''));
+        $missionTitle = trim((string)($meta['mission_label'] ?? $r['title'] ?? 'Assigned Mission'));
+        $missionDetails = trim((string)($meta['mission_note'] ?? $r['message'] ?? ''));
+        $missionLocation = trim((string)($meta['landmark'] ?? ''));
+        $caseRef = trim((string)($meta['case_id'] ?? ''));
+        $metaMissionId = (int)($meta['mission_id'] ?? 0);
+
+        if ($metaMissionId > 0) {
+            $checkById->execute([':mid' => $metaMissionId]);
+            if ($checkById->fetchColumn()) {
+                $updById->execute([
+                    ':status' => $state['status'],
+                    ':response_status' => $state['response_status'],
+                    ':nid' => $nid,
+                    ':mid' => $metaMissionId,
+                ]);
+                continue;
+            }
+        }
+
+        $checkBySource->execute([':nid' => $nid]);
+        if ($checkBySource->fetchColumn()) {
+            $updBySource->execute([
+                ':status' => $state['status'],
+                ':response_status' => $state['response_status'],
+                ':nid' => $nid,
+            ]);
+            continue;
+        }
+
+        $ins->execute([
+            ':volunteer_id' => (int)($r['recipient_id'] ?? 0),
+            ':mission_title' => $missionTitle !== '' ? $missionTitle : 'Assigned Mission',
+            ':mission_details' => $missionDetails !== '' ? $missionDetails : null,
+            ':mission_location' => $missionLocation !== '' ? $missionLocation : null,
+            ':status' => $state['status'],
+            ':response_status' => $state['response_status'],
+            ':case_ref' => $caseRef !== '' ? $caseRef : null,
+            ':source_notification_id' => $nid,
+            ':assigned_by' => 'admin',
+            ':assigned_at' => (string)($r['created_at'] ?? date('Y-m-d H:i:s')),
+        ]);
+    }
+}
+
+try {
+    syncMissionsFromNotifications($pdo);
+
+    $donations = [];
+    if (tableExists($pdo, 'donations')) {
+        $stmt = $pdo->query("SELECT donor_name, amount, date, anonymous, message FROM donations ORDER BY date DESC LIMIT 100");
+        $donations = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    $broadcasts = [];
+    if (tableExists($pdo, 'user_notifications')) {
+        $stmt = $pdo->query("SELECT title, message, recipient_entity, created_at FROM user_notifications WHERE recipient_entity IN ('broadcast','all') ORDER BY created_at DESC LIMIT 100");
+        $broadcasts = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    $missions = [];
+    if (tableExists($pdo, 'volunteer_missions')) {
+        $hasResponseStatus = columnExists($pdo, 'volunteer_missions', 'response_status');
+        $hasCaseRef = columnExists($pdo, 'volunteer_missions', 'case_ref');
+        $hasProofFile = columnExists($pdo, 'volunteer_missions', 'proof_file');
+        $hasProofSubmittedAt = columnExists($pdo, 'volunteer_missions', 'proof_submitted_at');
+        $hasCompletedAt = columnExists($pdo, 'volunteer_missions', 'completed_at');
+
+        $responseExpr = $hasResponseStatus ? 'vm.response_status' : 'NULL';
+        $caseExpr = $hasCaseRef ? 'vm.case_ref' : 'NULL';
+        $proofExpr = $hasProofFile ? 'vm.proof_file' : 'NULL';
+        $proofAtExpr = $hasProofSubmittedAt ? 'vm.proof_submitted_at' : 'NULL';
+        $completedExpr = $hasCompletedAt ? 'vm.completed_at' : 'NULL';
+
+        $stmt = $pdo->query("SELECT vm.mission_id, vm.volunteer_id, vm.mission_title, vm.mission_location, vm.status, {$responseExpr} AS response_status, {$caseExpr} AS case_ref, {$proofExpr} AS proof_file, {$proofAtExpr} AS proof_submitted_at, {$completedExpr} AS completed_at, vm.assigned_at, vm.mission_details, COALESCE(v.full_name, CONCAT('Volunteer #', vm.volunteer_id)) AS volunteer_name, v.profile_photo,
+        COALESCE(vmcount.total_points, 0) AS volunteer_points,
+        CASE
+            WHEN COALESCE(vmcount.total_points, 0) >= 1000 THEN 'Platinum Responder'
+            WHEN COALESCE(vmcount.total_points, 0) >= 500 THEN 'Gold Responder'
+            WHEN COALESCE(vmcount.total_points, 0) >= 200 THEN 'Silver Responder'
+            ELSE 'Bronze Volunteer'
+        END AS volunteer_rank
+        FROM volunteer_missions vm
+        LEFT JOIN volunteers v ON v.volunteer_id = vm.volunteer_id
+        LEFT JOIN (
+            SELECT volunteer_id,
+                   SUM(CASE WHEN LOWER(status) = 'completed' OR LOWER(COALESCE(response_status,'')) = 'completed' THEN 50 WHEN LOWER(status) = 'accepted' OR LOWER(COALESCE(response_status,'')) = 'accepted' THEN 10 ELSE 0 END) AS total_points,
+                   SUM(CASE WHEN LOWER(status) = 'completed' OR LOWER(COALESCE(response_status,'')) = 'completed' THEN 1 ELSE 0 END) AS completed_count
+            FROM volunteer_missions
+            GROUP BY volunteer_id
+        ) vmcount ON vmcount.volunteer_id = vm.volunteer_id
+        ORDER BY vm.assigned_at DESC LIMIT 150");
+        $missions = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    $withdraws = [];
+    if (tableExists($pdo, 'withdraw_requests')) {
+        $stmt = $pdo->query("SELECT requester_name, amount, status, request_date FROM withdraw_requests ORDER BY request_date DESC LIMIT 100");
+        $withdraws = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    echo json_encode([
+        'success' => true,
+        'donations' => $donations,
+        'broadcasts' => $broadcasts,
+        'missions' => $missions,
+        'withdraws' => $withdraws,
+    ]);
+} catch (Throwable $e) {
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Failed to load admin sections',
+    ]);
+}
