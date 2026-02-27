@@ -217,7 +217,29 @@ try {
 
     $withdraws = [];
     if (tableExists($pdo, 'withdraw_requests')) {
-        $stmt = $pdo->query("SELECT requester_name, amount, status, request_date FROM withdraw_requests ORDER BY request_date DESC LIMIT 100");
+        $idColumn = null;
+        if (columnExists($pdo, 'withdraw_requests', 'withdraw_id')) {
+            $idColumn = 'withdraw_id';
+        } elseif (columnExists($pdo, 'withdraw_requests', 'id')) {
+            $idColumn = 'id';
+        }
+
+        $dateColumn = 'request_date';
+        if (!columnExists($pdo, 'withdraw_requests', 'request_date') && columnExists($pdo, 'withdraw_requests', 'created_at')) {
+            $dateColumn = 'created_at';
+        }
+
+        $selectParts = [];
+        if ($idColumn !== null) {
+            $selectParts[] = "{$idColumn} AS request_id";
+        }
+        $selectParts[] = 'requester_name';
+        $selectParts[] = 'amount';
+        $selectParts[] = 'status';
+        $selectParts[] = "{$dateColumn} AS request_date";
+
+        $sql = 'SELECT ' . implode(', ', $selectParts) . " FROM withdraw_requests ORDER BY {$dateColumn} DESC LIMIT 100";
+        $stmt = $pdo->query($sql);
         $withdraws = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 

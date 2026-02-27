@@ -2131,6 +2131,10 @@ function openAddVolunteerModal() {
   const withdrawBody = document.getElementById('withdraw-table-body');
   const volunteerTotalMissions = document.getElementById('volunteer-total-missions');
   const volunteerThisMonth = document.getElementById('volunteer-this-month');
+  const donationsTotalAmount = document.getElementById('donations-total-amount');
+  const donationsTopDonor = document.getElementById('donations-top-donor');
+  const withdrawTotalAmount = document.getElementById('withdraw-total-amount');
+  const withdrawPendingCount = document.getElementById('withdraw-pending-count');
 
   if (!donationsBody && !broadcastBody && !missionsBody && !withdrawBody) return;
 
@@ -2172,6 +2176,13 @@ function openAddVolunteerModal() {
     return `<span class="status-pending">${esc(state || 'pending')}</span>`;
   }
 
+  function renderWithdrawStatusChip(state) {
+    const s = String(state || 'pending').toLowerCase();
+    if (s === 'approved') return '<span class="status-approved">Approved</span>';
+    if (s === 'rejected') return '<span class="status-rejected">Rejected</span>';
+    return '<span class="status-pending">Pending</span>';
+  }
+
   function missionProofUrl(rawPath) {
     const path = String(rawPath || '').trim();
     if (!path) return '';
@@ -2201,6 +2212,22 @@ function openAddVolunteerModal() {
       const broadcasts = Array.isArray(json.broadcasts) ? json.broadcasts : [];
       const missions = Array.isArray(json.missions) ? json.missions : [];
       const withdraws = Array.isArray(json.withdraws) ? json.withdraws : [];
+      const totalDonationAmount = donations.reduce((sum, d) => sum + Number(d?.amount || 0), 0);
+      const topDonorRow = donations.reduce((top, row) => {
+        const topAmount = Number(top?.amount || 0);
+        const rowAmount = Number(row?.amount || 0);
+        return rowAmount > topAmount ? row : top;
+      }, null);
+      const totalWithdrawAmount = withdraws.reduce((sum, w) => sum + Number(w?.amount || 0), 0);
+      const pendingWithdrawCount = withdraws.filter(w => String(w?.status || '').toLowerCase() === 'pending').length;
+
+      if (donationsTotalAmount) donationsTotalAmount.textContent = `৳${totalDonationAmount.toFixed(2)}`;
+      if (donationsTopDonor) {
+        const topDonorName = String(topDonorRow?.donor_name || '').trim() || 'Anonymous';
+        donationsTopDonor.textContent = topDonorName;
+      }
+      if (withdrawTotalAmount) withdrawTotalAmount.textContent = `৳${totalWithdrawAmount.toFixed(2)}`;
+      if (withdrawPendingCount) withdrawPendingCount.textContent = String(pendingWithdrawCount);
       const now = new Date();
       const thisMonthCount = missions.filter(m => {
         const dt = new Date(m?.assigned_at || '');
@@ -2223,9 +2250,35 @@ function openAddVolunteerModal() {
               <td>${esc(fmtDate(d.date))}</td>
               <td>${Number(d.anonymous || 0) === 1 ? 'Yes' : 'No'}</td>
               <td>${esc(d.message || '—')}</td>
-              <td><button type="button">Report</button></td>
+              <td><button type="button" data-donation-report="1" data-donor-name="${esc(d.donor_name || 'Anonymous')}" data-donation-amount="${esc(Number(d.amount || 0).toFixed(2))}" data-donation-date="${esc(d.date || '')}" data-donation-anon="${esc(Number(d.anonymous || 0))}" data-donation-message="${esc(d.message || '')}">Report</button></td>
             </tr>
           `).join('');
+
+          donationsBody.querySelectorAll('[data-donation-report]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const donorName = String(btn.getAttribute('data-donor-name') || 'Anonymous');
+              const amount = String(btn.getAttribute('data-donation-amount') || '0.00');
+              const dateText = String(btn.getAttribute('data-donation-date') || '');
+              const anonymous = String(btn.getAttribute('data-donation-anon') || '0') === '1' ? 'Yes' : 'No';
+              const message = String(btn.getAttribute('data-donation-message') || '').trim() || '—';
+
+              const popup = window.open('', '_blank', 'width=760,height=640');
+              if (!popup) {
+                alert('Please allow popups to view donation report.');
+                return;
+              }
+
+              const safe = (v) => String(v)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+
+              popup.document.write(`<!doctype html><html><head><title>Donation Report</title><style>body{font-family:Arial,sans-serif;padding:20px;color:#1f2937}h2{margin-top:0}table{border-collapse:collapse;width:100%;margin-top:12px}th,td{border:1px solid #d1d5db;padding:10px;text-align:left}th{background:#f3f4f6}</style></head><body><h2>Donation Report</h2><table><tr><th>Donor</th><td>${safe(donorName)}</td></tr><tr><th>Amount</th><td>৳${safe(amount)}</td></tr><tr><th>Date</th><td>${safe(fmtDate(dateText))}</td></tr><tr><th>Anonymous</th><td>${safe(anonymous)}</td></tr><tr><th>Message</th><td>${safe(message)}</td></tr></table><p style="margin-top:16px;color:#6b7280">Generated from SEARCHAR Admin Panel</p></body></html>`);
+              popup.document.close();
+            });
+          });
         }
       }
 
@@ -2415,11 +2468,55 @@ function openAddVolunteerModal() {
             <tr>
               <td>${esc(w.requester_name || 'Volunteer')}</td>
               <td>৳${esc(Number(w.amount || 0).toFixed(2))}</td>
-              <td><span class="status-pending">${esc(w.status || 'pending')}</span></td>
+              <td>${renderWithdrawStatusChip(w.status)}</td>
               <td>${esc(fmtDate(w.request_date))}</td>
-              <td><button type="button">Approve</button> <button type="button">Reject</button></td>
+              <td>
+                <button type="button" data-withdraw-action="approve" data-withdraw-id="${esc(w.request_id || '')}" data-requester-name="${esc(w.requester_name || '')}" data-request-amount="${esc(w.amount || 0)}" data-request-date="${esc(w.request_date || '')}" ${String(w.status || 'pending').toLowerCase() === 'pending' ? '' : 'disabled'}>Approve</button>
+                <button type="button" data-withdraw-action="reject" data-withdraw-id="${esc(w.request_id || '')}" data-requester-name="${esc(w.requester_name || '')}" data-request-amount="${esc(w.amount || 0)}" data-request-date="${esc(w.request_date || '')}" ${String(w.status || 'pending').toLowerCase() === 'pending' ? '' : 'disabled'}>Reject</button>
+              </td>
             </tr>
           `).join('');
+
+          withdrawBody.querySelectorAll('[data-withdraw-action]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+              const action = String(btn.getAttribute('data-withdraw-action') || '').toLowerCase();
+              if (action !== 'approve' && action !== 'reject') return;
+
+              const row = btn.closest('tr');
+              const requestId = Number(btn.getAttribute('data-withdraw-id') || 0);
+              const requesterName = String(btn.getAttribute('data-requester-name') || '').trim();
+              const amount = Number(btn.getAttribute('data-request-amount') || 0);
+              const requestDate = String(btn.getAttribute('data-request-date') || '').trim();
+
+              const approveBtn = row?.querySelector('[data-withdraw-action="approve"]');
+              const rejectBtn = row?.querySelector('[data-withdraw-action="reject"]');
+              if (approveBtn) approveBtn.disabled = true;
+              if (rejectBtn) rejectBtn.disabled = true;
+
+              try {
+                const res = await fetch('../Php/admin_update_withdraw_status.php', {
+                  method: 'POST',
+                  credentials: 'same-origin',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    action,
+                    request_id: requestId,
+                    requester_name: requesterName,
+                    amount,
+                    request_date: requestDate
+                  })
+                });
+
+                const json = await res.json();
+                if (!json?.success) throw new Error(json?.error || 'Failed to update withdrawal');
+                await loadMiscSections();
+              } catch (e) {
+                if (approveBtn) approveBtn.disabled = false;
+                if (rejectBtn) rejectBtn.disabled = false;
+                alert(e?.message || 'Could not update withdrawal status.');
+              }
+            });
+          });
         }
       }
     } catch (error) {
@@ -2427,6 +2524,10 @@ function openAddVolunteerModal() {
       if (broadcastBody) setNoData(broadcastBody, 6, 'Failed to load broadcast notifications.');
       if (missionsBody) setNoData(missionsBody, 9, 'Failed to load volunteer missions.');
       if (withdrawBody) setNoData(withdrawBody, 5, 'Failed to load withdrawals.');
+      if (donationsTotalAmount) donationsTotalAmount.textContent = '৳0.00';
+      if (donationsTopDonor) donationsTopDonor.textContent = '—';
+      if (withdrawTotalAmount) withdrawTotalAmount.textContent = '৳0.00';
+      if (withdrawPendingCount) withdrawPendingCount.textContent = '0';
       if (volunteerTotalMissions) volunteerTotalMissions.textContent = '0';
       if (volunteerThisMonth) volunteerThisMonth.textContent = '0';
       console.error('misc section load failed', error);

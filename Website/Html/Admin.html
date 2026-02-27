@@ -395,6 +395,9 @@
       Police Officer Profiles
     </label>
   </div>
+  <p style="margin: -4px 0 12px; color:#666; font-size: 13px;">
+    Select one or more options to show only those tables. Uncheck to hide any table section.
+  </p>
   <p id="table-selection-empty-note" style="display:none; margin: 0 0 12px; color:#666;">Select at least one table to display.</p>
 
   <!-- Users Table -->
@@ -745,7 +748,7 @@
     </tbody>
   </table>
   <div class="widget-bar">
-    <div class="widget">Total Donations: <span>৳00,000</span></div>
+    <div class="widget">Total Donations: <span id="donations-total-amount">৳0.00</span></div>
   </div>
   <div class="donations-actions">
     <button class="btn-export-donations"><i class="fa-solid fa-file-export"></i> Export Report</button>
@@ -835,8 +838,8 @@
     </tbody>
   </table>
   <div class="widget-bar">
-    <div class="widget">Total Withdrawals: <span>৳12,500</span></div>
-    <div class="widget">Pending Requests: <span>3</span></div>
+    <div class="widget">Total Withdrawals: <span id="withdraw-total-amount">৳0.00</span></div>
+    <div class="widget">Pending Requests: <span id="withdraw-pending-count">0</span></div>
   </div>
   <div class="withdraw-actions">
     <button class="btn-export-report"><i class="fa-solid fa-file-export"></i> Export Report</button>
