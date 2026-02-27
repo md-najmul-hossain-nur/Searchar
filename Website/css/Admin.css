@@ -2061,6 +2061,81 @@ h4 {
   color: #b4232f;
 }
 
+#volunteer .mission-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  margin-right: 6px;
+  margin-bottom: 4px;
+}
+
+#volunteer .mission-toggle-btn {
+  min-width: 108px;
+  font-size: 12px;
+  padding: 5px 9px;
+}
+
+#volunteer .mission-detail-row td {
+  border-bottom: 1px solid #edf1f7;
+}
+
+#volunteer .mission-detail-cell {
+  background: #fcfcfd;
+  border: 1px solid #edf2f7;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+#volunteer .mission-detail-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #334155;
+}
+
+#volunteer .mission-detail-head {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr 1fr 1fr;
+  gap: 8px;
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+#volunteer .mission-detail-item {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr 1fr 1fr;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px dashed #e5e7eb;
+  align-items: center;
+  border-radius: 6px;
+}
+
+#volunteer .mission-detail-item:last-child {
+  border-bottom: none;
+}
+
+#volunteer .mission-detail-odd {
+  background: #ffffff;
+}
+
+#volunteer .mission-detail-even {
+  background: #f8fbff;
+}
+
+#volunteer .mission-case {
+  color: #64748b;
+}
+
+#volunteer .mission-compact-btn {
+  padding: 5px 8px;
+  font-size: 12px;
+  margin-right: 0;
+}
+
 .share-status {
   display: inline-flex;
   align-items: center;

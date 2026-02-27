@@ -1513,6 +1513,17 @@ background: linear-gradient(80deg, #d1b75a);
   font-weight: 600;
 }
 
+#certificate-unlock.hidden {
+  display: none;
+}
+
+.certificate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
 /* Modal styles */
 .modal {
   position: fixed;

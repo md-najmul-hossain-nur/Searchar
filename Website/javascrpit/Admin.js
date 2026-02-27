@@ -265,7 +265,7 @@ setInterval(loadCameraSeries, 30000);
         { terms: ['post', 'post control'], id: 'post-control' },
         { terms: ['donation', 'donations control'], id: 'donations' },
         { terms: ['broadcast', 'notifications'], id: 'broadcast' },
-        { terms: ['volunteer', 'volunteer mission complete table'], id: 'volunteer' },
+        { terms: ['volunteer', 'volunteer missions'], id: 'volunteer' },
         { terms: ['withdraw', 'withdraw control'], id: 'withdraw' }
       ];
 
@@ -1116,7 +1116,7 @@ function openAddVolunteerModal() {
       id: 'CR-2026-002',
       type: 'robbery',
       severity: 'high',
-      status: 'under_review',
+      status: 'new',
       lat: 23.7808,
       lng: 90.4098,
       landmark: 'Kawran Bazar crossing',
@@ -1170,11 +1170,13 @@ function openAddVolunteerModal() {
   const CRIME_STORAGE_KEY = 'searchar_admin_crime_reports_v1';
 
   function normalizeCrimeRow(row) {
+    const rawStatus = String(row?.status || 'new').toLowerCase();
+    const normalizedStatus = rawStatus === 'under_review' ? 'actioned' : rawStatus;
     return {
       id: row?.id || '',
       type: row?.type || 'other',
       severity: row?.severity || 'medium',
-      status: row?.status || 'new',
+      status: normalizedStatus || 'new',
       lat: Number(row?.lat ?? 23.8103),
       lng: Number(row?.lng ?? 90.4125),
       landmark: row?.landmark || '—',
@@ -1238,7 +1240,7 @@ function openAddVolunteerModal() {
           id: caseId,
           type: 'missing_person',
           severity: 'high',
-          status: 'under_review',
+          status: 'new',
           landmark: row?.last_seen_location || '—',
           reporter: row?.reporter_name || 'Unknown',
           submitted: row?.created_at || new Date().toISOString(),
@@ -1653,7 +1655,7 @@ function openAddVolunteerModal() {
       if (crimeRow) {
         const currentStatus = String(crimeRow.status || 'new').toLowerCase();
         if (currentStatus === 'new') {
-          updateCrimeStatus(currentAssignCaseId, 'under_review');
+          updateCrimeStatus(currentAssignCaseId, 'actioned');
         }
       }
 
@@ -1676,7 +1678,6 @@ function openAddVolunteerModal() {
 
   function statusLabel(val) {
     const v = String(val || '').toLowerCase();
-    if (v === 'under_review') return 'Under Review';
     if (v === 'actioned') return 'Actioned';
     if (v === 'closed') return 'Closed';
     return 'New';
@@ -1797,13 +1798,16 @@ function openAddVolunteerModal() {
   function renderTable(rows) {
     if (!tableBody) return;
     if (!Array.isArray(rows) || rows.length === 0) {
-      tableBody.innerHTML = '<tr><td colspan="10">No crime reports match the current filters.</td></tr>';
+      tableBody.innerHTML = '<tr><td colspan="9">No crime reports match the current filters.</td></tr>';
       return;
     }
 
     tableBody.innerHTML = rows.map(r => {
       const mediaCount = Array.isArray(r.media) ? r.media.length : 0;
       const actState = getCrimeActionState(r.id);
+      const isClosed = String(r.status || '').toLowerCase() === 'closed';
+      const assignDisabled = isClosed || actState.assigned || assignedCrimes.has(r.id) || actState.rejected;
+      const cctvDisabled = isClosed || actState.cctv || actState.rejected;
       return `
         <tr data-crime-id="${r.id}">
           <td>${r.id}</td>
@@ -1815,17 +1819,9 @@ function openAddVolunteerModal() {
           <td>${mediaCount} file${mediaCount === 1 ? '' : 's'}</td>
           <td>${r.anonymous ? 'Anonymous' : (r.reporter || '—')}</td>
           <td>
-            <select class="crime-status-select" data-crime-status="${r.id}">
-              <option value="new" ${r.status === 'new' ? 'selected' : ''}>New</option>
-              <option value="under_review" ${r.status === 'under_review' ? 'selected' : ''}>Under Review</option>
-              <option value="actioned" ${r.status === 'actioned' ? 'selected' : ''}>Actioned</option>
-              <option value="closed" ${r.status === 'closed' ? 'selected' : ''}>Closed</option>
-            </select>
-          </td>
-          <td>
             <button type="button" class="view-profile-btn" data-crime-view="${r.id}">View</button>
-            <button type="button" data-crime-assign="${r.id}" ${actState.assigned || assignedCrimes.has(r.id) || actState.rejected ? 'disabled' : ''}>${actState.assigned || assignedCrimes.has(r.id) ? 'Assigned' : 'Assign Volunteer'}</button>
-            <button type="button" data-crime-cctv="${r.id}" ${actState.cctv || actState.rejected ? 'disabled' : ''}>${actState.cctv ? 'CCTV Alerted' : 'Alert CCTV'}</button>
+            <button type="button" data-crime-assign="${r.id}" ${assignDisabled ? 'disabled' : ''}>${isClosed ? 'Closed' : (actState.assigned || assignedCrimes.has(r.id) ? 'Assigned' : 'Assign Volunteer')}</button>
+            <button type="button" data-crime-cctv="${r.id}" ${cctvDisabled ? 'disabled' : ''}>${isClosed ? 'Closed' : (actState.cctv ? 'CCTV Alerted' : 'Alert CCTV')}</button>
           </td>
         </tr>
       `;
@@ -1833,13 +1829,13 @@ function openAddVolunteerModal() {
   }
 
   function updateStats(rows) {
-    const counts = { new: 0, under_review: 0, actioned: 0, closed: 0 };
+    const counts = { new: 0, actioned: 0, closed: 0 };
     rows.forEach(r => {
       const key = String(r.status || 'new').toLowerCase();
       if (counts[key] !== undefined) counts[key] += 1;
     });
     if (statNew) statNew.textContent = `New: ${counts.new}`;
-    if (statReview) statReview.textContent = `Under Review: ${counts.under_review}`;
+    if (statReview) statReview.textContent = `Actioned (Assigned): ${counts.actioned}`;
     if (statActioned) statActioned.textContent = `Actioned: ${counts.actioned}`;
     if (statClosed) statClosed.textContent = `Closed: ${counts.closed}`;
   }
@@ -1875,6 +1871,18 @@ function openAddVolunteerModal() {
       return true;
     });
 
+    filteredCrimes.sort((a, b) => {
+      const aClosed = String(a?.status || '').toLowerCase() === 'closed';
+      const bClosed = String(b?.status || '').toLowerCase() === 'closed';
+      if (aClosed !== bClosed) return aClosed ? 1 : -1;
+
+      const aTime = Date.parse(String(a?.updated_at || a?.submitted || ''));
+      const bTime = Date.parse(String(b?.updated_at || b?.submitted || ''));
+      const aSafe = Number.isNaN(aTime) ? 0 : aTime;
+      const bSafe = Number.isNaN(bTime) ? 0 : bTime;
+      return bSafe - aSafe;
+    });
+
     renderTable(filteredCrimes);
     renderMap(filteredCrimes);
     updateStats(filteredCrimes);
@@ -1888,6 +1896,12 @@ function openAddVolunteerModal() {
     saveCrimeReports(demoCrimes);
     applyFilters();
   }
+  window.updateCrimeCaseStatusFromMission = function (id, status = 'closed') {
+    const caseId = String(id || '').trim();
+    const nextStatus = String(status || 'closed').toLowerCase();
+    if (!caseId) return;
+    updateCrimeStatus(caseId, nextStatus);
+  };
 
   function setGeotag(lat, lng, label) {
     if (!crimeMap) return;
@@ -2057,31 +2071,29 @@ function openAddVolunteerModal() {
 
       const assignBtn = event.target.closest('[data-crime-assign]');
       if (assignBtn) {
+        if (assignBtn.disabled) return;
         const id = assignBtn.getAttribute('data-crime-assign');
         const state = getCrimeActionState(id);
         if (state.assigned || state.rejected) return;
         const crime = demoCrimes.find(c => c.id === id);
+        if (String(crime?.status || '').toLowerCase() === 'closed') return;
         openAssignModal(id, crime?.landmark || '', crime?.media || []);
         return;
       }
 
       const cctvBtn = event.target.closest('[data-crime-cctv]');
       if (cctvBtn) {
+        if (cctvBtn.disabled) return;
         const id = cctvBtn.getAttribute('data-crime-cctv');
         const state = getCrimeActionState(id);
         if (state.cctv || state.rejected) return;
+        const crime = demoCrimes.find(c => c.id === id);
+        if (String(crime?.status || '').toLowerCase() === 'closed') return;
         state.cctv = true;
         alert(`Send CCTV alert for ${id} (hook up backend).`);
         cctvBtn.disabled = true;
         cctvBtn.textContent = 'CCTV Alerted';
         return;
-      }
-    });
-
-    document.addEventListener('change', (event) => {
-      const select = event.target.closest('[data-crime-status]');
-      if (select) {
-        updateCrimeStatus(select.getAttribute('data-crime-status'), select.value);
       }
     });
 
@@ -2117,6 +2129,8 @@ function openAddVolunteerModal() {
   const broadcastBody = document.getElementById('broadcast-table-body');
   const missionsBody = document.getElementById('volunteer-mission-body');
   const withdrawBody = document.getElementById('withdraw-table-body');
+  const volunteerTotalMissions = document.getElementById('volunteer-total-missions');
+  const volunteerThisMonth = document.getElementById('volunteer-this-month');
 
   if (!donationsBody && !broadcastBody && !missionsBody && !withdrawBody) return;
 
@@ -2187,6 +2201,16 @@ function openAddVolunteerModal() {
       const broadcasts = Array.isArray(json.broadcasts) ? json.broadcasts : [];
       const missions = Array.isArray(json.missions) ? json.missions : [];
       const withdraws = Array.isArray(json.withdraws) ? json.withdraws : [];
+      const now = new Date();
+      const thisMonthCount = missions.filter(m => {
+        const dt = new Date(m?.assigned_at || '');
+        return !Number.isNaN(dt.getTime())
+          && dt.getFullYear() === now.getFullYear()
+          && dt.getMonth() === now.getMonth();
+      }).length;
+
+      if (volunteerTotalMissions) volunteerTotalMissions.textContent = String(missions.length);
+      if (volunteerThisMonth) volunteerThisMonth.textContent = String(thisMonthCount);
 
       if (donationsBody) {
         if (!donations.length) {
@@ -2224,30 +2248,140 @@ function openAddVolunteerModal() {
 
       if (missionsBody) {
         if (!missions.length) {
-          setNoData(missionsBody, 10, 'No volunteer missions found.');
+          setNoData(missionsBody, 9, 'No volunteer missions found.');
         } else {
-          missionsBody.innerHTML = missions.map(m => `
-            <tr data-mission-id="${esc(m.mission_id || '')}">
-              <td>
-                ${esc(m.volunteer_name || 'Volunteer')}
-                ${m.profile_photo ? ` • <a href="${esc(volunteerProfileUrl(m.profile_photo))}" target="_blank" rel="noopener">View Profile</a>` : ''}
-              </td>
-              <td>${esc(m.mission_title || 'Mission')}</td>
-              <td>${esc(fmtDate(m.assigned_at))}</td>
-              <td>${esc(m.mission_location || '—')}</td>
-              <td>${esc(m.volunteer_rank || 'Junior')}</td>
-              <td>${esc(Number(m.volunteer_points || 0))}</td>
-              <td>${renderStatusChip(normalizeMissionState(m.status, m.response_status).responseState)}</td>
-              <td>${renderStatusChip(normalizeMissionState(m.status, m.response_status).lifeState)}</td>
-              <td>${m.proof_file ? `<a href="${esc(missionProofUrl(m.proof_file))}" target="_blank" rel="noopener">View Proof</a>` : '—'}</td>
-              <td>${normalizeMissionState(m.status, m.response_status).lifeState === 'completed' ? '<span class="status-approved">Done</span>' : '<button type="button" data-mission-action="complete">Mark Complete +50XP</button>'}</td>
-            </tr>
-          `).join('');
+          const sortedMissions = [...missions].sort((a, b) => {
+            const aState = normalizeMissionState(a?.status, a?.response_status).lifeState;
+            const bState = normalizeMissionState(b?.status, b?.response_status).lifeState;
+            const aRejected = aState === 'rejected_busy';
+            const bRejected = bState === 'rejected_busy';
+            if (aRejected !== bRejected) return aRejected ? 1 : -1;
+
+            const aTime = Date.parse(String(a?.assigned_at || ''));
+            const bTime = Date.parse(String(b?.assigned_at || ''));
+            const aSafe = Number.isNaN(aTime) ? 0 : aTime;
+            const bSafe = Number.isNaN(bTime) ? 0 : bTime;
+            return bSafe - aSafe;
+          });
+
+          const groupsMap = new Map();
+          sortedMissions.forEach(m => {
+            const key = String(m?.volunteer_id || '') || String(m?.volunteer_name || 'volunteer').toLowerCase();
+            if (!groupsMap.has(key)) {
+              groupsMap.set(key, {
+                volunteer_name: m?.volunteer_name || 'Volunteer',
+                profile_photo: m?.profile_photo || '',
+                volunteer_rank: m?.volunteer_rank || 'Junior',
+                volunteer_points: Number(m?.volunteer_points || 0),
+                missions: []
+              });
+            }
+            const g = groupsMap.get(key);
+            g.volunteer_points = Math.max(Number(g.volunteer_points || 0), Number(m?.volunteer_points || 0));
+            g.volunteer_rank = m?.volunteer_rank || g.volunteer_rank;
+            g.profile_photo = g.profile_photo || (m?.profile_photo || '');
+            g.missions.push(m);
+          });
+
+          const groupedRows = Array.from(groupsMap.values()).sort((a, b) => {
+            const pointsDiff = Number(b?.volunteer_points || 0) - Number(a?.volunteer_points || 0);
+            if (pointsDiff !== 0) return pointsDiff;
+            const aLatest = Date.parse(String(a?.missions?.[0]?.assigned_at || ''));
+            const bLatest = Date.parse(String(b?.missions?.[0]?.assigned_at || ''));
+            const aSafe = Number.isNaN(aLatest) ? 0 : aLatest;
+            const bSafe = Number.isNaN(bLatest) ? 0 : bLatest;
+            return bSafe - aSafe;
+          });
+
+          missionsBody.innerHTML = groupedRows.map((g, groupIndex) => {
+            const missionCount = Array.isArray(g.missions) ? g.missions.length : 0;
+            const done = g.missions.filter(m => normalizeMissionState(m.status, m.response_status).lifeState === 'completed').length;
+            const busy = g.missions.filter(m => normalizeMissionState(m.status, m.response_status).lifeState === 'rejected_busy').length;
+            const pending = Math.max(0, missionCount - done - busy);
+            const proofDone = g.missions.filter(m => String(m.proof_file || '').trim() !== '').length;
+            const latest = g.missions[0] || {};
+
+            const detailsHtml = g.missions.map((m, idx) => {
+              const state = normalizeMissionState(m.status, m.response_status).lifeState;
+              const hasProof = String(m.proof_file || '').trim() !== '';
+              let actionHtml = '';
+              let stateHtml = '';
+              if (state === 'completed') actionHtml = '<span class="status-approved mission-badge">Done</span>';
+              else if (state === 'rejected_busy') actionHtml = '<span class="status-rejected mission-badge">Busy</span>';
+              else if (!hasProof) actionHtml = '<span class="status-pending mission-badge">Proof Required</span>';
+              else actionHtml = `<button type="button" class="mission-compact-btn" data-mission-action="complete" data-mission-id="${esc(m.mission_id || '')}" data-case-ref="${esc(m.case_ref || '')}">Verify Proof & Give +20XP</button>`;
+
+              if (state === 'completed') stateHtml = '<span class="status-approved mission-badge">Completed</span>';
+              else if (state === 'rejected_busy') stateHtml = '<span class="status-rejected mission-badge">Rejected (Busy)</span>';
+              else if (state === 'accepted') stateHtml = '<span class="status-pending mission-badge">Accepted</span>';
+              else stateHtml = '<span class="status-pending mission-badge">Pending</span>';
+
+              const caseText = String(m.case_ref || '').trim() ? `Case ${esc(m.case_ref)}` : `Mission #${esc(m.mission_id || '')}`;
+              const rowClass = idx % 2 === 0 ? 'mission-detail-item mission-detail-odd' : 'mission-detail-item mission-detail-even';
+              return `
+                <div class="${rowClass}">
+                  <div><strong>${esc(m.mission_title || 'Mission')}</strong><br><small class="mission-case">${caseText}</small></div>
+                  <div>${esc(fmtDate(m.assigned_at))}</div>
+                  <div>${esc(m.mission_location || '—')}</div>
+                  <div>${stateHtml}</div>
+                  <div>${hasProof ? `<a href="${esc(missionProofUrl(m.proof_file))}" target="_blank" rel="noopener">View Proof</a>` : '—'}</div>
+                  <div>${actionHtml}</div>
+                </div>
+              `;
+            }).join('');
+
+            return `
+              <tr>
+                <td>
+                  ${esc(g.volunteer_name || 'Volunteer')} <small>(${missionCount} missions)</small>
+                  ${g.profile_photo ? ` • <a href="${esc(volunteerProfileUrl(g.profile_photo))}" target="_blank" rel="noopener">View Profile</a>` : ''}
+                </td>
+                <td><strong>${esc(latest.mission_title || 'Mission')}</strong></td>
+                <td>${esc(fmtDate(latest.assigned_at))}</td>
+                <td>${esc(latest.mission_location || '—')}</td>
+                <td>${esc(g.volunteer_rank || 'Junior')}</td>
+                <td>${esc(Number(g.volunteer_points || 0))}</td>
+                <td>
+                  <span class="status-pending mission-badge">Pending ${pending}</span>
+                  <span class="status-approved mission-badge">Completed ${done}</span>
+                  <span class="status-rejected mission-badge">Busy ${busy}</span>
+                </td>
+                <td>${proofDone}/${missionCount} proofs</td>
+                <td><button type="button" class="ghost mission-toggle-btn" data-volunteer-toggle="${groupIndex}">View Missions</button></td>
+              </tr>
+              <tr data-volunteer-detail="${groupIndex}" class="mission-detail-row" style="display:none;">
+                <td colspan="9" class="mission-detail-cell">
+                  <div class="mission-detail-title">Mission Details</div>
+                  <div class="mission-detail-head">
+                    <div>Mission / Case</div><div>Assigned</div><div>Location</div><div>Status</div><div>Proof</div><div>Action</div>
+                  </div>
+                  ${detailsHtml || '<div>—</div>'}
+                </td>
+              </tr>
+            `;
+          }).join('');
+
+          missionsBody.querySelectorAll('[data-volunteer-toggle]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const idx = String(btn.getAttribute('data-volunteer-toggle') || '');
+              const detailRow = missionsBody.querySelector(`tr[data-volunteer-detail="${idx}"]`);
+              if (!detailRow) return;
+              const expanded = btn.getAttribute('data-expanded') === '1';
+              if (expanded) {
+                detailRow.style.display = 'none';
+                btn.setAttribute('data-expanded', '0');
+                btn.textContent = 'View Missions';
+              } else {
+                detailRow.style.display = 'table-row';
+                btn.setAttribute('data-expanded', '1');
+                btn.textContent = 'Hide Missions';
+              }
+            });
+          });
 
           missionsBody.querySelectorAll('[data-mission-action="complete"]').forEach(btn => {
             btn.addEventListener('click', async () => {
-              const row = btn.closest('tr');
-              const missionId = Number(row?.getAttribute('data-mission-id') || 0);
+              const missionId = Number(btn.getAttribute('data-mission-id') || 0);
               if (!missionId) return;
               btn.disabled = true;
               try {
@@ -2259,10 +2393,14 @@ function openAddVolunteerModal() {
                 });
                 const json = await res.json();
                 if (!json?.success) throw new Error(json?.error || 'Failed');
+                const caseRef = String(btn.getAttribute('data-case-ref') || '').trim();
+                if (caseRef && typeof window.updateCrimeCaseStatusFromMission === 'function') {
+                  window.updateCrimeCaseStatusFromMission(caseRef, 'closed');
+                }
                 await loadMiscSections();
-              } catch (_e) {
+              } catch (e) {
                 btn.disabled = false;
-                alert('Could not mark mission complete.');
+                alert(e?.message || 'Could not mark mission complete.');
               }
             });
           });
@@ -2287,8 +2425,10 @@ function openAddVolunteerModal() {
     } catch (error) {
       if (donationsBody) setNoData(donationsBody, 6, 'Failed to load donations.');
       if (broadcastBody) setNoData(broadcastBody, 6, 'Failed to load broadcast notifications.');
-      if (missionsBody) setNoData(missionsBody, 10, 'Failed to load volunteer missions.');
+      if (missionsBody) setNoData(missionsBody, 9, 'Failed to load volunteer missions.');
       if (withdrawBody) setNoData(withdrawBody, 5, 'Failed to load withdrawals.');
+      if (volunteerTotalMissions) volunteerTotalMissions.textContent = '0';
+      if (volunteerThisMonth) volunteerThisMonth.textContent = '0';
       console.error('misc section load failed', error);
     }
   }
@@ -2363,8 +2503,8 @@ function openAddVolunteerModal() {
   // Broadcast: text filter
   setupTextFilter('broadcast', 'broadcast-filter-text', 'broadcast-filter-reset');
 
-  // Volunteer: text + status (status col index 4)
-  setupTextStatusFilter('volunteer', 'volunteer-filter-text', 'volunteer-filter-status', 'volunteer-filter-reset', 'tbody tr', 7);
+  // Volunteer: text + status (status col index 6)
+  setupTextStatusFilter('volunteer', 'volunteer-filter-text', 'volunteer-filter-status', 'volunteer-filter-reset', 'tbody tr', 6);
 
   // Withdraw: text + status (status col index 2)
   setupTextStatusFilter('withdraw', 'withdraw-filter-text', 'withdraw-filter-status', 'withdraw-filter-reset', 'tbody tr', 2);

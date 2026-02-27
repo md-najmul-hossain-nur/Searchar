@@ -152,11 +152,22 @@ try {
     }
 
     $relativeProofPath = 'uploads/mission_proofs/' . $safeName;
-    $upd = $pdo->prepare('UPDATE volunteer_missions SET proof_file = :proof_file, proof_submitted_at = NOW(), completed_at = NOW(), status = :status, response_status = :response_status WHERE mission_id = :mid AND volunteer_id = :vid LIMIT 1');
+    $upd = $pdo->prepare('UPDATE volunteer_missions SET
+        proof_file = :proof_file,
+        proof_submitted_at = NOW(),
+        status = CASE
+            WHEN LOWER(COALESCE(status, "")) IN ("completed", "rejected_busy") THEN status
+            ELSE :status
+        END,
+        response_status = CASE
+            WHEN LOWER(COALESCE(response_status, "")) IN ("completed", "rejected_busy") THEN response_status
+            ELSE :response_status
+        END
+        WHERE mission_id = :mid AND volunteer_id = :vid LIMIT 1');
     $upd->execute([
         ':proof_file' => $relativeProofPath,
-        ':status' => 'completed',
-        ':response_status' => 'completed',
+        ':status' => 'accepted',
+        ':response_status' => 'accepted',
         ':mid' => $missionId,
         ':vid' => $volunteerId,
     ]);

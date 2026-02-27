@@ -29,13 +29,13 @@ function pointsToRank(int $points): array {
     if ($points >= 1000) {
         return ['rank' => 'Platinum Responder', 'next_rank' => null, 'next_points' => null];
     }
-    if ($points >= 500) {
+    if ($points >= 700) {
         return ['rank' => 'Gold Responder', 'next_rank' => 'Platinum Responder', 'next_points' => 1000];
     }
-    if ($points >= 200) {
-        return ['rank' => 'Silver Responder', 'next_rank' => 'Gold Responder', 'next_points' => 500];
+    if ($points >= 380) {
+        return ['rank' => 'Silver Responder', 'next_rank' => 'Gold Responder', 'next_points' => 700];
     }
-    return ['rank' => 'Bronze Volunteer', 'next_rank' => 'Silver Responder', 'next_points' => 200];
+    return ['rank' => 'Bronze Volunteer', 'next_rank' => 'Silver Responder', 'next_points' => 380];
 }
 
 try {
@@ -59,7 +59,7 @@ try {
         $busy = (int)($row['busy_count'] ?? 0);
     }
 
-    $points = ($completed * 50) + ($accepted * 10);
+    $points = ($completed * 20) + ($accepted * 10);
     $rankInfo = pointsToRank($points);
 
     $pointsToNext = null;
@@ -73,11 +73,11 @@ try {
         'success' => true,
         'rules' => [
             'accepted_mission_xp' => 10,
-            'completed_mission_xp' => 50,
+            'completed_mission_xp' => 20,
             'ranks' => [
-                ['name' => 'Bronze Volunteer', 'min_points' => 0],
-                ['name' => 'Silver Responder', 'min_points' => 200],
-                ['name' => 'Gold Responder', 'min_points' => 500],
+                ['name' => 'Bronze Volunteer', 'min_points' => 100],
+                ['name' => 'Silver Responder', 'min_points' => 380],
+                ['name' => 'Gold Responder', 'min_points' => 700],
                 ['name' => 'Platinum Responder', 'min_points' => 1000],
             ],
         ],

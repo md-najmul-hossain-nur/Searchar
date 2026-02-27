@@ -78,13 +78,25 @@ try {
         $pdo->exec("ALTER TABLE volunteer_missions ADD COLUMN completed_at DATETIME DEFAULT NULL AFTER proof_submitted_at");
     }
 
-    $selMission = $pdo->prepare('SELECT mission_id, volunteer_id, mission_title, status, response_status FROM volunteer_missions WHERE mission_id = :mid LIMIT 1');
+    $selMission = $pdo->prepare('SELECT mission_id, volunteer_id, mission_title, status, response_status, proof_file FROM volunteer_missions WHERE mission_id = :mid LIMIT 1');
     $selMission->execute([':mid' => $missionId]);
     $mission = $selMission->fetch(PDO::FETCH_ASSOC);
     if (!$mission) {
         http_response_code(404);
         echo json_encode(['success' => false, 'error' => 'Mission not found']);
         exit;
+    }
+
+    if ($action === 'complete') {
+        $proofFile = trim((string)($mission['proof_file'] ?? ''));
+        if ($proofFile === '') {
+            http_response_code(422);
+            echo json_encode([
+                'success' => false,
+                'error' => 'Proof is required before marking mission complete'
+            ]);
+            exit;
+        }
     }
 
     $setCompleted = $action === 'complete' ? ', completed_at = NOW()' : '';
@@ -123,12 +135,12 @@ try {
             ':entity' => 'volunteer',
             ':rid' => (int)($mission['volunteer_id'] ?? 0),
             ':title' => '🎉 Mission Completed & XP Added',
-            ':message' => 'Thanks for your service! Admin reviewed and marked your mission as complete. You earned +50 XP for "' . (string)($mission['mission_title'] ?? 'Mission') . '".',
+            ':message' => 'Thanks for your service! Admin reviewed and marked your mission as complete. You earned +20 XP for "' . (string)($mission['mission_title'] ?? 'Mission') . '".',
             ':level' => 'success',
             ':meta_json' => json_encode([
                 'mission_id' => $missionId,
                 'event' => 'admin_mark_complete',
-                'xp' => 50,
+                'xp' => 20,
             ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
         ]);
     }

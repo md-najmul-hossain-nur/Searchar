@@ -27,6 +27,31 @@ function parseResponseState(string $message): array {
     return ['status' => 'assigned', 'response_status' => 'pending'];
 }
 
+function repairAutoCompletedProofMissions(PDO $pdo): void {
+    if (!tableExists($pdo, 'volunteer_missions')) {
+        return;
+    }
+
+    $hasProofFile = columnExists($pdo, 'volunteer_missions', 'proof_file');
+    $hasProofSubmittedAt = columnExists($pdo, 'volunteer_missions', 'proof_submitted_at');
+    $hasCompletedAt = columnExists($pdo, 'volunteer_missions', 'completed_at');
+    $hasResponseStatus = columnExists($pdo, 'volunteer_missions', 'response_status');
+
+    if (!$hasProofFile || !$hasProofSubmittedAt || !$hasCompletedAt || !$hasResponseStatus) {
+        return;
+    }
+
+    $pdo->exec("UPDATE volunteer_missions
+        SET status = 'accepted', response_status = 'accepted', completed_at = NULL
+        WHERE LOWER(COALESCE(status,'')) = 'completed'
+          AND LOWER(COALESCE(response_status,'')) = 'completed'
+          AND proof_file IS NOT NULL
+          AND proof_file <> ''
+          AND proof_submitted_at IS NOT NULL
+          AND completed_at IS NOT NULL
+          AND completed_at = proof_submitted_at");
+}
+
 function syncMissionsFromNotifications(PDO $pdo): void {
     if (!tableExists($pdo, 'user_notifications') || !tableExists($pdo, 'volunteer_missions')) {
         return;
@@ -71,8 +96,8 @@ function syncMissionsFromNotifications(PDO $pdo): void {
 
     $checkBySource = $pdo->prepare('SELECT mission_id FROM volunteer_missions WHERE source_notification_id = :nid LIMIT 1');
     $checkById = $pdo->prepare('SELECT mission_id FROM volunteer_missions WHERE mission_id = :mid LIMIT 1');
-    $updById = $pdo->prepare('UPDATE volunteer_missions SET status = :status, response_status = :response_status, source_notification_id = COALESCE(source_notification_id, :nid) WHERE mission_id = :mid LIMIT 1');
-    $updBySource = $pdo->prepare('UPDATE volunteer_missions SET status = :status, response_status = :response_status WHERE source_notification_id = :nid LIMIT 1');
+    $updById = $pdo->prepare('UPDATE volunteer_missions SET status = :status, response_status = :response_status, source_notification_id = COALESCE(source_notification_id, :nid) WHERE mission_id = :mid AND LOWER(COALESCE(status,\'assigned\')) <> \'completed\' AND LOWER(COALESCE(response_status,\'pending\')) <> \'completed\' LIMIT 1');
+    $updBySource = $pdo->prepare('UPDATE volunteer_missions SET status = :status, response_status = :response_status WHERE source_notification_id = :nid AND LOWER(COALESCE(status,\'assigned\')) <> \'completed\' AND LOWER(COALESCE(response_status,\'pending\')) <> \'completed\' LIMIT 1');
     $ins = $pdo->prepare('INSERT INTO volunteer_missions (volunteer_id, mission_title, mission_details, mission_location, status, response_status, case_ref, source_notification_id, assigned_by, assigned_at) VALUES (:volunteer_id, :mission_title, :mission_details, :mission_location, :status, :response_status, :case_ref, :source_notification_id, :assigned_by, :assigned_at)');
 
     foreach ($rows as $r) {
@@ -137,6 +162,7 @@ function syncMissionsFromNotifications(PDO $pdo): void {
 
 try {
     syncMissionsFromNotifications($pdo);
+    repairAutoCompletedProofMissions($pdo);
 
     $donations = [];
     if (tableExists($pdo, 'donations')) {
@@ -168,15 +194,19 @@ try {
         COALESCE(vmcount.total_points, 0) AS volunteer_points,
         CASE
             WHEN COALESCE(vmcount.total_points, 0) >= 1000 THEN 'Platinum Responder'
-            WHEN COALESCE(vmcount.total_points, 0) >= 500 THEN 'Gold Responder'
-            WHEN COALESCE(vmcount.total_points, 0) >= 200 THEN 'Silver Responder'
+            WHEN COALESCE(vmcount.total_points, 0) >= 700 THEN 'Gold Responder'
+            WHEN COALESCE(vmcount.total_points, 0) >= 380 THEN 'Silver Responder'
             ELSE 'Bronze Volunteer'
         END AS volunteer_rank
         FROM volunteer_missions vm
         LEFT JOIN volunteers v ON v.volunteer_id = vm.volunteer_id
         LEFT JOIN (
             SELECT volunteer_id,
-                   SUM(CASE WHEN LOWER(status) = 'completed' OR LOWER(COALESCE(response_status,'')) = 'completed' THEN 50 WHEN LOWER(status) = 'accepted' OR LOWER(COALESCE(response_status,'')) = 'accepted' THEN 10 ELSE 0 END) AS total_points,
+                   SUM(CASE
+                       WHEN LOWER(status) = 'completed' OR LOWER(COALESCE(response_status,'')) = 'completed' THEN 20
+                       WHEN LOWER(status) = 'accepted' OR LOWER(COALESCE(response_status,'')) = 'accepted' THEN 10
+                       ELSE 0
+                   END) AS total_points,
                    SUM(CASE WHEN LOWER(status) = 'completed' OR LOWER(COALESCE(response_status,'')) = 'completed' THEN 1 ELSE 0 END) AS completed_count
             FROM volunteer_missions
             GROUP BY volunteer_id

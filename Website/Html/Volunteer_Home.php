@@ -133,7 +133,7 @@ function e($v) {
       </div>
 
       <p id="rank-stats" class="rank-stats">Accepted 0 • Completed 0 • Busy 0</p>
-      <p id="rank-rules" class="rank-rules">+10 XP (Accept) • +50 XP (Complete)</p>
+      <p id="rank-rules" class="rank-rules">+10 XP (Accept) • +20 XP (Complete)</p>
     </div>
 
     <button class="view-missions-btn" onclick="openMissionModal()">📋 View Missions</button>
@@ -141,9 +141,11 @@ function e($v) {
     <div id="rank-assigned-preview" class="rank-assigned-preview" aria-live="polite"></div>
 
     <!-- Certificate Display -->
-    <div id="certificate-unlock" class="certificate-box hidden" aria-live="polite">
+    <div id="certificate-unlock" class="certificate-box hidden" aria-live="polite" data-volunteer-name="<?= e($volunteer['full_name'] ?? 'Volunteer') ?>">
       <p id="certificate-message">🎉 Congratulations! You’ve reached <strong>Silver Responder</strong>!</p>
-      <button class="view-certificate-btn">🏅 View & Download Certificate</button>
+      <div class="certificate-actions">
+        <button id="view-certificate-btn" class="view-certificate-btn" type="button">🏅 Certificate</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1078,7 +1080,8 @@ function e($v) {
   
 
 
-    </body>
+     </body>
+       <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
        <script src="../javascrpit/Volunteer_Home.js"></script>
        <script src="../javascrpit/notifications_shared.js"></script>
 

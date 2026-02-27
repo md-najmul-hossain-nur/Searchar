@@ -347,6 +347,269 @@ function escInline(v) {
     .replace(/'/g, '&#39;');
 }
 
+let certificateSnapshot = {
+  unlocked: false,
+  rank: 'Bronze Volunteer',
+  points: 0,
+  completedMissions: 0,
+  volunteerName: 'Volunteer'
+};
+
+function getCertificateVolunteerName() {
+  const certificateBox = document.getElementById('certificate-unlock');
+  const dataName = String(certificateBox?.dataset?.volunteerName || '').trim();
+  if (dataName) return dataName;
+
+  const profileName = document.querySelector('.profile-card h2')?.childNodes?.[0]?.textContent;
+  const cleaned = String(profileName || '').trim();
+  return cleaned || 'Volunteer';
+}
+
+function getCertificateRankTheme(rankRaw) {
+  const rank = String(rankRaw || '').toLowerCase();
+
+  if (rank.includes('platinum')) {
+    return {
+      key: 'platinum',
+      ribbon: 'PLATINUM',
+      bg: [246, 251, 255],
+      watermark: [222, 235, 246],
+      primary: [39, 84, 122],
+      secondary: [146, 186, 214],
+      nameColor: [26, 78, 125],
+      bodyColor: [23, 37, 51],
+      divider: [147, 197, 253],
+      sealStroke: [30, 64, 175],
+      sealText: [30, 64, 175],
+      signatureText: 'Platinum Board Approval'
+    };
+  }
+
+  if (rank.includes('gold')) {
+    return {
+      key: 'gold',
+      ribbon: 'GOLD',
+      bg: [255, 252, 241],
+      watermark: [252, 242, 205],
+      primary: [161, 98, 7],
+      secondary: [253, 224, 71],
+      nameColor: [146, 64, 14],
+      bodyColor: [69, 26, 3],
+      divider: [251, 191, 36],
+      sealStroke: [180, 83, 9],
+      sealText: [146, 64, 14],
+      signatureText: 'Gold Tier Approval'
+    };
+  }
+
+  if (rank.includes('silver')) {
+    return {
+      key: 'silver',
+      ribbon: 'SILVER',
+      bg: [248, 250, 252],
+      watermark: [226, 232, 240],
+      primary: [71, 85, 105],
+      secondary: [203, 213, 225],
+      nameColor: [51, 65, 85],
+      bodyColor: [30, 41, 59],
+      divider: [148, 163, 184],
+      sealStroke: [100, 116, 139],
+      sealText: [51, 65, 85],
+      signatureText: 'Silver Tier Approval'
+    };
+  }
+
+  return {
+    key: 'bronze',
+    ribbon: 'BRONZE',
+    bg: [255, 248, 244],
+    watermark: [252, 228, 221],
+    primary: [146, 64, 14],
+    secondary: [253, 186, 116],
+    nameColor: [180, 83, 9],
+    bodyColor: [67, 20, 7],
+    divider: [234, 179, 122],
+    sealStroke: [180, 83, 9],
+    sealText: [146, 64, 14],
+    signatureText: 'Bronze Tier Approval'
+  };
+}
+
+function getRankUnlockMessage(rankRaw) {
+  const rank = String(rankRaw || '').trim();
+  if (rank === 'Silver Responder') {
+    return {
+      en: `🎉 Congratulations! You’ve reached <strong>${escInline(rank)}</strong>! Certificate unlocked.`,
+      bn: `অভিনন্দন! আপনি <strong>${escInline(rank)}</strong> র‍্যাঙ্ক অর্জন করেছেন। আপনার সার্টিফিকেট এখন প্রস্তুত।`
+    };
+  }
+  if (rank === 'Gold Responder') {
+    return {
+      en: `🏆 Incredible progress! You are now <strong>${escInline(rank)}</strong>. Your upgraded certificate is ready.`,
+      bn: `দারুণ অগ্রগতি! আপনি এখন <strong>${escInline(rank)}</strong> র‍্যাঙ্কে আছেন। আপনার আপগ্রেডেড সার্টিফিকেট প্রস্তুত।`
+    };
+  }
+  if (rank === 'Platinum Responder') {
+    return {
+      en: `👑 Legendary achievement! You reached <strong>${escInline(rank)}</strong>. Your elite certificate is ready.`,
+      bn: `অসাধারণ সাফল্য! আপনি <strong>${escInline(rank)}</strong> র‍্যাঙ্কে পৌঁছেছেন। আপনার এলিট সার্টিফিকেট প্রস্তুত।`
+    };
+  }
+  return null;
+}
+
+function buildVolunteerCertificatePdf() {
+  const jsPdfLib = window.jspdf?.jsPDF;
+  if (!jsPdfLib) {
+    throw new Error('Certificate PDF library is not loaded.');
+  }
+
+  const doc = new jsPdfLib({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const theme = getCertificateRankTheme(certificateSnapshot.rank);
+
+  doc.setFillColor(...theme.bg);
+  doc.rect(0, 0, pageWidth, pageHeight, 'F');
+
+  doc.setTextColor(...theme.watermark);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(96);
+  doc.text('SEARCHAR', pageWidth / 2, pageHeight / 2 + 18, { align: 'center', angle: 16 });
+
+  doc.setDrawColor(...theme.primary);
+  doc.setLineWidth(3);
+  doc.rect(24, 24, pageWidth - 48, pageHeight - 48);
+
+  doc.setDrawColor(...theme.secondary);
+  doc.setLineWidth(1.2);
+  doc.rect(36, 36, pageWidth - 72, pageHeight - 72);
+
+  doc.setFillColor(...theme.primary);
+  doc.roundedRect((pageWidth / 2) - 54, 46, 108, 28, 8, 8, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text(theme.ribbon, pageWidth / 2, 64, { align: 'center' });
+
+  doc.setTextColor(...theme.primary);
+  doc.setFont('times', 'bolditalic');
+  doc.setFontSize(22);
+  doc.text('SEARCHAR VOLUNTEER HONOR', pageWidth / 2, 104, { align: 'center' });
+
+  doc.setTextColor(55, 65, 81);
+  doc.setFontSize(17);
+  doc.setFont('times', 'normal');
+  doc.text('Certificate of Achievement', pageWidth / 2, 132, { align: 'center' });
+  doc.setTextColor(113, 113, 122);
+  doc.setFontSize(11);
+  doc.text('Proshongsha Potro (Volunteer Service)', pageWidth / 2, 150, { align: 'center' });
+
+  doc.setTextColor(...theme.bodyColor);
+  doc.setFont('times', 'normal');
+  doc.setFontSize(15);
+  doc.text('This is proudly presented to', pageWidth / 2, 184, { align: 'center' });
+  doc.setFontSize(11);
+  doc.setTextColor(107, 114, 128);
+  doc.text('Eyi shonodti sommaner sathe prodan kora holo', pageWidth / 2, 202, { align: 'center' });
+
+  doc.setTextColor(...theme.nameColor);
+  doc.setFont('times', 'bold');
+  doc.setFontSize(36);
+  doc.text(certificateSnapshot.volunteerName, pageWidth / 2, 246, { align: 'center' });
+
+  doc.setTextColor(...theme.bodyColor);
+  doc.setFont('times', 'normal');
+  doc.setFontSize(16);
+  doc.text(`in recognition of outstanding service as a ${certificateSnapshot.rank}`, pageWidth / 2, 286, { align: 'center' });
+  doc.text(`and successfully completing ${certificateSnapshot.completedMissions} mission(s) with dedication and courage`, pageWidth / 2, 314, { align: 'center' });
+
+  doc.setDrawColor(...theme.divider);
+  doc.setLineWidth(1.1);
+  doc.line((pageWidth / 2) - 215, 332, (pageWidth / 2) + 215, 332);
+
+  const sealX = pageWidth - 136;
+  const sealY = pageHeight - 170;
+  doc.setDrawColor(...theme.sealStroke);
+  doc.setLineWidth(1.6);
+  doc.circle(sealX, sealY, 44);
+  doc.circle(sealX, sealY, 36);
+  doc.setTextColor(...theme.sealText);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('OFFICIAL', sealX, sealY - 8, { align: 'center' });
+  doc.text('VOLUNTEER', sealX, sealY + 5, { align: 'center' });
+  doc.text('CERTIFIED', sealX, sealY + 18, { align: 'center' });
+
+  const issuedOn = new Date().toLocaleDateString();
+  doc.setTextColor(31, 41, 55);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(12);
+  doc.text(`Issued on: ${issuedOn}`, 78, pageHeight - 114);
+
+  doc.setDrawColor(120, 120, 120);
+  doc.line(68, pageHeight - 120, 210, pageHeight - 120);
+  doc.setFontSize(10);
+  doc.setTextColor(107, 114, 128);
+  doc.text('Date of Recognition', 78, pageHeight - 104);
+
+  doc.setDrawColor(120, 120, 120);
+  doc.line(pageWidth - 288, pageHeight - 120, pageWidth - 82, pageHeight - 120);
+  doc.setTextColor(...theme.bodyColor);
+  doc.setFont('times', 'italic');
+  doc.setFontSize(14);
+  doc.text('SEARCHAR Admin', pageWidth - 182, pageHeight - 128, { align: 'center' });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(107, 114, 128);
+  doc.text(theme.signatureText, pageWidth - 182, pageHeight - 104, { align: 'center' });
+
+  doc.setFontSize(10);
+  doc.setTextColor(107, 114, 128);
+  doc.text('This certificate is digitally generated and verifiable in SEARCHAR records.', pageWidth / 2, pageHeight - 58, { align: 'center' });
+
+  return doc;
+}
+
+function certificateFileName() {
+  const safeName = String(certificateSnapshot.volunteerName || 'Volunteer')
+    .trim()
+    .replace(/[^a-z0-9]+/gi, '_')
+    .replace(/^_+|_+$/g, '') || 'Volunteer';
+  const theme = getCertificateRankTheme(certificateSnapshot.rank);
+  return `SEARCHAR_${theme.key}_Certificate_${safeName}.pdf`;
+}
+
+function viewCertificatePdf() {
+  const doc = buildVolunteerCertificatePdf();
+  doc.output('dataurlnewwindow');
+}
+
+function downloadCertificatePdf() {
+  const doc = buildVolunteerCertificatePdf();
+  doc.save(certificateFileName());
+}
+
+function bindCertificateActions() {
+  const viewBtn = document.getElementById('view-certificate-btn');
+  if (!viewBtn) return;
+
+  const canUse = !!certificateSnapshot.unlocked;
+  viewBtn.disabled = !canUse;
+
+  viewBtn.onclick = () => {
+    if (!certificateSnapshot.unlocked) {
+      alert('Complete more XP to unlock the certificate.');
+      return;
+    }
+    try {
+      viewCertificatePdf();
+    } catch (e) {
+      alert(e?.message || 'Could not open certificate PDF.');
+    }
+  };
+}
+
 async function loadVolunteerRankStatus() {
   try {
     const res = await fetch('../Php/volunteer_rank_status.php', {
@@ -373,12 +636,22 @@ async function loadVolunteerRankStatus() {
     const nextRank = stats.next_rank ? String(stats.next_rank) : 'Top Rank';
     const need = Number(stats.points_to_next_rank ?? 0);
 
+    const unlockMessage = getRankUnlockMessage(rank);
+
+    certificateSnapshot = {
+      unlocked: !!stats.certificate_unlocked && rank !== 'Bronze Volunteer',
+      rank,
+      points,
+      completedMissions: Number(stats.completed_missions || 0),
+      volunteerName: getCertificateVolunteerName()
+    };
+
     if (rankBadge) rankBadge.textContent = rank;
     if (rankPoints) rankPoints.textContent = `${points} XP`;
     if (rankNext) rankNext.textContent = stats.next_rank ? `Next: ${nextRank}` : 'Next: Top rank achieved';
     if (rankNeed) rankNeed.textContent = stats.next_rank ? `Need ${need} XP` : 'Max reached';
 
-    const thresholds = [0, 200, 500, 1000];
+    const thresholds = [100, 380, 700, 1000];
     const tierIndex = points >= thresholds[3] ? 3 : points >= thresholds[2] ? 2 : points >= thresholds[1] ? 1 : 0;
     const tierStart = thresholds[tierIndex];
     const tierEnd = tierIndex === thresholds.length - 1 ? thresholds[tierIndex] : thresholds[tierIndex + 1];
@@ -393,19 +666,23 @@ async function loadVolunteerRankStatus() {
     }
 
     const acceptedXP = Number(json?.rules?.accepted_mission_xp || 10);
-    const completedXP = Number(json?.rules?.completed_mission_xp || 50);
+    const completedXP = Number(json?.rules?.completed_mission_xp || 20);
     if (rankRules) {
       rankRules.textContent = `+${acceptedXP} XP (Accept) • +${completedXP} XP (Complete)`;
     }
 
     if (certificateBox && certificateMessage) {
-      if (stats.certificate_unlocked) {
+      if (certificateSnapshot.unlocked && unlockMessage) {
         certificateBox.classList.remove('hidden');
-        certificateMessage.innerHTML = `🎉 Congratulations! You’ve reached <strong>${escInline(rank)}</strong>! Certificate unlocked.`;
+        certificateBox.removeAttribute('hidden');
+        certificateMessage.innerHTML = `${unlockMessage.en}<br><small>${unlockMessage.bn}</small>`;
       } else {
         certificateBox.classList.add('hidden');
+        certificateBox.setAttribute('hidden', 'hidden');
       }
     }
+
+    bindCertificateActions();
   } catch (_e) {
     // ignore panel load errors
   }

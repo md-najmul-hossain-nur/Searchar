@@ -263,7 +263,7 @@
     <span class="icon"><i class="fa-solid fa-bullhorn"></i></span> Broadcast & Notifications
   </li>
   <li data-section="volunteer">
-    <span class="icon"><i class="fa-solid fa-handshake-angle"></i></span> Volunteer Mission Complete Table
+    <span class="icon"><i class="fa-solid fa-handshake-angle"></i></span> Volunteer Missions
   </li>
   <li data-section="withdraw">
     <span class="icon"><i class="fa-solid fa-money-bill-transfer"></i></span> Withdraw Control
@@ -376,7 +376,29 @@
   <!-- Tables Section -->
 <div id="tables" class="main-section">
 
+  <div class="filters-bar" style="margin-bottom: 14px; gap: 16px; flex-wrap: wrap; align-items: center;">
+    <strong>Show Tables:</strong>
+    <label style="display:inline-flex; align-items:center; gap:6px;">
+      <input type="checkbox" class="table-visibility-checkbox" data-table-target="users-table-section" checked>
+      Users
+    </label>
+    <label style="display:inline-flex; align-items:center; gap:6px;">
+      <input type="checkbox" class="table-visibility-checkbox" data-table-target="volunteers-table-section" checked>
+      Volunteers
+    </label>
+    <label style="display:inline-flex; align-items:center; gap:6px;">
+      <input type="checkbox" class="table-visibility-checkbox" data-table-target="cctv-table-section" checked>
+      CCTV Management
+    </label>
+    <label style="display:inline-flex; align-items:center; gap:6px;">
+      <input type="checkbox" class="table-visibility-checkbox" data-table-target="police-table-section" checked>
+      Police Officer Profiles
+    </label>
+  </div>
+  <p id="table-selection-empty-note" style="display:none; margin: 0 0 12px; color:#666;">Select at least one table to display.</p>
+
   <!-- Users Table -->
+  <div id="users-table-section">
   <h2>Users Table</h2>
   <div class="filters-bar">
     <input id="user-filter-text" type="text" placeholder="Search by name/email/location" style="min-width: 320px;">
@@ -395,8 +417,10 @@
       <tr><td colspan="5">Loading...</td></tr>
     </tbody>
   </table>
+  </div>
 
   <!-- Volunteers Table -->
+  <div id="volunteers-table-section">
   <div class="tables-divider"></div>
   <h2>Volunteers</h2>
   <div class="filters-bar">
@@ -431,8 +455,10 @@
     </tbody>
   </table>
   <div id="volunteer-map" style="height:320px; margin-top:18px; background:#f8f8f8;"></div>
+  </div>
 
   <!-- CCTV Management Table -->
+  <div id="cctv-table-section">
   <div class="tables-divider"></div>
   <h2>CCTV Management</h2>
   <div class="filters-bar">
@@ -465,8 +491,10 @@
     <div class="widget">Active Cameras: <span>00</span></div>
     <div class="widget">Top Zones: <span>---</span></div>
   </div>
+  </div>
 
   <!-- Police Officer Profiles Table -->
+  <div id="police-table-section">
   <div class="tables-divider"></div>
   <h2>Police Officer Profiles</h2>
   <p>List of verified police officers</p>
@@ -488,6 +516,7 @@
       <tr><td colspan="6">Loading...</td></tr>
     </tbody>
   </table>
+  </div>
 </div>
 
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -636,7 +665,6 @@
     <select id="crime-filter-status">
       <option value="">Status</option>
       <option value="new">New</option>
-      <option value="under_review">Under Review</option>
       <option value="actioned">Actioned</option>
       <option value="closed">Closed</option>
     </select>
@@ -651,10 +679,10 @@
   </div>
   <div class="crime-map-toggle-bar">
     <div class="crime-map-toggle-text">Map + proximity tools (toggle)</div>
-    <button type="button" id="crime-map-toggle" class="ghost">Hide map</button>
+    <button type="button" id="crime-map-toggle" class="ghost">Show map</button>
   </div>
   <div class="crime-hint crime-hint-banner">Map pins are colored by severity; switch to heatmap to see hotspots.</div>
-  <div id="crime-map-wrapper" class="crime-grid">
+  <div id="crime-map-wrapper" class="crime-grid hidden">
     <div class="crime-map-panel">
       <div id="crime-map"></div>
       <div class="crime-legend">
@@ -670,7 +698,7 @@
   <div class="crime-table-head">
     <div class="crime-stats">
       <span id="crime-stat-new" class="pill pill-open">New: 0</span>
-      <span id="crime-stat-review" class="pill pill-review">Under Review: 0</span>
+      <span id="crime-stat-review" class="pill pill-review">Actioned (Assigned): 0</span>
       <span id="crime-stat-actioned" class="pill pill-actioned">Actioned: 0</span>
       <span id="crime-stat-closed" class="pill pill-closed">Closed: 0</span>
     </div>
@@ -681,11 +709,11 @@
     <thead>
       <tr>
         <th>Case</th><th>Type</th><th>Severity</th><th>Landmark</th><th>Status</th>
-        <th>Submitted</th><th>Media</th><th>Reporter</th><th>Update Status</th><th>Actions</th>
+        <th>Submitted</th><th>Media</th><th>Reporter</th><th>Actions</th>
       </tr>
     </thead>
     <tbody id="crime-table-body">
-      <tr><td colspan="10">Loading crime reports…</td></tr>
+      <tr><td colspan="9">Loading crime reports…</td></tr>
     </tbody>
   </table>
   </div>
@@ -724,7 +752,7 @@
   </div>
 </div>
 <div id="volunteer" class="main-section">
-  <h2>Volunteer Mission Complete Table</h2>
+  <h2>Volunteer Missions</h2>
   <div class="filters-bar" id="volunteer-filters">
     <input id="volunteer-filter-text" type="text" placeholder="Search volunteer, mission, location">
     <select id="volunteer-filter-status">
@@ -745,7 +773,6 @@
         <th>Location</th>
         <th>Rank</th>
         <th>Points</th>
-        <th>Response</th>
         <th>Status</th>
         <th>Proof</th>
         <th>Action</th>
@@ -759,7 +786,6 @@
         <td>Dhaka</td>
         <td>Silver Responder</td>
         <td>220</td>
-        <td><span class="status-info">Accepted</span></td>
         <td><span class="status-approved">Completed</span></td>
         <td><a href="#">View Proof</a></td>
         <td><button type="button" class="ghost">Mark Complete +50XP</button></td>
@@ -768,8 +794,8 @@
     </tbody>
   </table>
   <div class="widget-bar">
-    <div class="widget">Total Missions: <span>152</span></div>
-    <div class="widget">This Month: <span>12</span></div>
+    <div class="widget">Total Missions: <span id="volunteer-total-missions">0</span></div>
+    <div class="widget">This Month: <span id="volunteer-this-month">0</span></div>
   </div>
 </div>
 <div id="withdraw" class="main-section">
@@ -1994,6 +2020,58 @@
     attachUserFilterListeners();
     attachVolunteerFilterListeners();
     attachCctvFilterListeners();
+
+    function applyTablesVisibilityFromCheckboxes() {
+      const checkboxes = Array.from(document.querySelectorAll('.table-visibility-checkbox'));
+      if (!checkboxes.length) return;
+
+      const selectedTargets = [];
+      checkboxes.forEach(cb => {
+        const targetId = cb.dataset.tableTarget;
+        if (!targetId) return;
+        const section = document.getElementById(targetId);
+        if (!section) return;
+        const isVisible = Boolean(cb.checked);
+        section.style.display = isVisible ? '' : 'none';
+        if (isVisible) selectedTargets.push(targetId);
+      });
+
+      const emptyNote = document.getElementById('table-selection-empty-note');
+      if (emptyNote) {
+        emptyNote.style.display = selectedTargets.length ? 'none' : '';
+      }
+
+      try {
+        localStorage.setItem('admin_tables_visible_sections', JSON.stringify(selectedTargets));
+      } catch (_err) {}
+    }
+
+    function bindTablesVisibilityControls() {
+      const checkboxes = Array.from(document.querySelectorAll('.table-visibility-checkbox'));
+      if (!checkboxes.length) return;
+
+      let restoredTargets = null;
+      try {
+        const raw = localStorage.getItem('admin_tables_visible_sections');
+        const parsed = raw ? JSON.parse(raw) : null;
+        if (Array.isArray(parsed)) restoredTargets = new Set(parsed);
+      } catch (_err) {}
+
+      if (restoredTargets) {
+        checkboxes.forEach(cb => {
+          const targetId = cb.dataset.tableTarget;
+          cb.checked = restoredTargets.has(targetId);
+        });
+      }
+
+      checkboxes.forEach(cb => {
+        cb.addEventListener('change', applyTablesVisibilityFromCheckboxes);
+      });
+
+      applyTablesVisibilityFromCheckboxes();
+    }
+
+    bindTablesVisibilityControls();
 
   loadDashboardCounts();
   setInterval(loadDashboardCounts, 30000);
