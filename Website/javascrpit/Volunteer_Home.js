@@ -1065,17 +1065,7 @@ if (openMissionBtn && !openMissionBtn.hasAttribute('onclick')) {
 
 // Event listeners to close modal on close button click
 closeButtons.forEach(btn => {
-      const responseState = getAssignmentResponseState(latest.message || '');
-      const details = parseAssignmentMessage(latest.message || '');
-      const proofDone = isMissionProofSaved(Number(latest.id || 0), details.caseId);
-
-      if (responseState === 'rejected_busy') {
-        renderRankAssignedPreview(null, { hidden: true });
-        setMissionTimer('');
-        return;
-      }
-
-      renderRankAssignedPreview(latest, { responseState, proofDone });
+  btn.addEventListener('click', closeMissionModal);
 });
 
 // Optional: close modal on clicking outside modal-content
