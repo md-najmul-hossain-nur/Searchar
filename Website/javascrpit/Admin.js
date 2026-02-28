@@ -269,7 +269,9 @@ setInterval(loadCameraSeries, 30000);
         { terms: ['donation', 'donations control'], id: 'donations' },
         { terms: ['broadcast', 'notifications'], id: 'broadcast' },
         { terms: ['volunteer', 'volunteer missions'], id: 'volunteer' },
-        { terms: ['withdraw', 'withdraw control'], id: 'withdraw' }
+        { terms: ['withdraw', 'withdraw control'], id: 'withdraw' },
+        { terms: ['review'], id: 'review' },
+        { terms: ['report', 'reports'], id: 'reports' }
       ];
 
       const direct = sectionNameMap.find(s => s.terms.some(t => t.includes(q) || q.includes(t)));
@@ -312,6 +314,80 @@ setInterval(loadCameraSeries, 30000);
         }
       });
     }
+
+// Tables section visibility controls
+(function () {
+  const tablesSection = document.getElementById('tables');
+  if (!tablesSection) return;
+
+  const tableCheckboxes = Array.from(tablesSection.querySelectorAll('.table-visibility-checkbox'));
+  const allCheckbox = tablesSection.querySelector('#tables-visibility-all');
+  const emptyNote = document.getElementById('table-selection-empty-note');
+
+  if (!tableCheckboxes.length) return;
+
+  function setSectionVisible(targetId, visible) {
+    if (!targetId) return;
+    const block = document.getElementById(targetId);
+    if (!block) return;
+    block.style.display = visible ? '' : 'none';
+  }
+
+  function syncAllCheckbox() {
+    if (!allCheckbox) return;
+    const checkedCount = tableCheckboxes.filter(cb => cb.checked).length;
+    if (checkedCount === tableCheckboxes.length) {
+      allCheckbox.checked = true;
+      allCheckbox.indeterminate = false;
+      return;
+    }
+    if (checkedCount === 0) {
+      allCheckbox.checked = false;
+      allCheckbox.indeterminate = false;
+      return;
+    }
+    allCheckbox.checked = false;
+    allCheckbox.indeterminate = true;
+  }
+
+  function applyTableVisibility() {
+    let checkedCount = 0;
+    tableCheckboxes.forEach(cb => {
+      const visible = cb.checked;
+      if (visible) checkedCount += 1;
+      setSectionVisible(cb.getAttribute('data-table-target'), visible);
+    });
+
+    if (checkedCount === 0) {
+      const first = tableCheckboxes[0];
+      first.checked = true;
+      setSectionVisible(first.getAttribute('data-table-target'), true);
+      checkedCount = 1;
+      if (emptyNote) emptyNote.style.display = '';
+    } else if (emptyNote) {
+      emptyNote.style.display = 'none';
+    }
+
+    syncAllCheckbox();
+  }
+
+  tableCheckboxes.forEach(cb => {
+    cb.addEventListener('change', applyTableVisibility);
+  });
+
+  if (allCheckbox) {
+    allCheckbox.addEventListener('change', () => {
+      const checked = allCheckbox.checked;
+      allCheckbox.indeterminate = false;
+      tableCheckboxes.forEach(cb => {
+        cb.checked = checked;
+      });
+      applyTableVisibility();
+    });
+  }
+
+  applyTableVisibility();
+})();
 
 // Post control actions (Approve / Reject)
 let applyPostControlFilters = null;
@@ -512,6 +588,7 @@ document.addEventListener('click', function (event) {
   const toInput = document.getElementById('post-filter-to');
   const applyButton = document.getElementById('post-filter-apply');
   const roleCheckboxes = Array.from(section.querySelectorAll('input[name="post-filter-role"]'));
+  const allRoleCheckbox = section.querySelector('input[name="post-filter-role-all"]');
   const tableBody = document.getElementById('post-control-body') || section.querySelector('#post-control-table tbody');
 
   if (!keywordInput || !statusSelect || !fromInput || !toInput || !tableBody) return;
@@ -696,6 +773,7 @@ document.addEventListener('click', function (event) {
         .filter(input => input.checked)
         .map(input => normalizeRoleKey(input.value))
     );
+    const allRolesSelected = !!allRoleCheckbox && allRoleCheckbox.checked;
 
     Array.from(tableBody.querySelectorAll('.post-filter-empty-row')).forEach(row => row.remove());
 
@@ -732,7 +810,7 @@ document.addEventListener('click', function (event) {
         const keywordHaystack = `${postId} ${category} ${postedBy} ${role}`;
         const keywordOk = !keyword || keywordHaystack.includes(keyword);
         const statusOk = selectedStatus === 'all' || statusText === selectedStatus;
-        const roleOk = roleCheckboxes.length === 0
+        const roleOk = roleCheckboxes.length === 0 || allRolesSelected
           ? true
           : selectedRoles.size > 0 && selectedRoles.has(roleKey);
         const fromOk = !fromDate || (submittedDate && submittedDate >= fromDate);
@@ -762,6 +840,23 @@ document.addEventListener('click', function (event) {
       noMatchRow.innerHTML = '<td colspan="9">No posts match the selected filters.</td>';
       tableBody.appendChild(noMatchRow);
     }
+  }
+
+  function syncAllRoleCheckboxState() {
+    if (!allRoleCheckbox) return;
+    const checkedCount = roleCheckboxes.filter(input => input.checked).length;
+    if (checkedCount === roleCheckboxes.length) {
+      allRoleCheckbox.checked = true;
+      allRoleCheckbox.indeterminate = false;
+      return;
+    }
+    if (checkedCount === 0) {
+      allRoleCheckbox.checked = false;
+      allRoleCheckbox.indeterminate = false;
+      return;
+    }
+    allRoleCheckbox.checked = false;
+    allRoleCheckbox.indeterminate = true;
   }
 
   function getStatusSortWeight(statusText) {
@@ -802,8 +897,21 @@ document.addEventListener('click', function (event) {
   fromInput.addEventListener('change', filterRows);
   toInput.addEventListener('change', filterRows);
   roleCheckboxes.forEach(input => {
-    input.addEventListener('change', filterRows);
+    input.addEventListener('change', () => {
+      syncAllRoleCheckboxState();
+      filterRows();
+    });
   });
+  if (allRoleCheckbox) {
+    allRoleCheckbox.addEventListener('change', () => {
+      const checked = allRoleCheckbox.checked;
+      allRoleCheckbox.indeterminate = false;
+      roleCheckboxes.forEach(input => {
+        input.checked = checked;
+      });
+      filterRows();
+    });
+  }
   keywordInput.addEventListener('input', filterRows);
   keywordInput.addEventListener('keydown', function (event) {
     if (event.key === 'Enter') {
@@ -815,6 +923,7 @@ document.addEventListener('click', function (event) {
   applyPostControlFilters = filterRows;
   const applyPostControlFiltersWithOrder = () => {
     reorderPostDetailsByStatus();
+    syncAllRoleCheckboxState();
     filterRows();
   };
   applyPostControlFilters = applyPostControlFiltersWithOrder;
@@ -2786,6 +2895,12 @@ function openAddVolunteerModal() {
 
   // Withdraw: text + status (status col index 2)
   setupTextStatusFilter('withdraw', 'withdraw-filter-text', 'withdraw-filter-status', 'withdraw-filter-reset', 'tbody tr', 2);
+
+  // Review: text + status (status col index 4)
+  setupTextStatusFilter('review', 'review-filter-text', 'review-filter-status', 'review-filter-reset', 'tbody tr', 4);
+
+  // Reports: text filter
+  setupTextFilter('reports', 'reports-filter-text', 'reports-filter-reset');
 })();
 
 // Remove redundant crime assign modal block (logic moved inside crime module)

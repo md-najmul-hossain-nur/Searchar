@@ -212,39 +212,122 @@ body {
 }
 
 .post-role-filters {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   flex-wrap: wrap;
-  padding: 6px 10px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  background: #fff;
+  padding: 10px 12px;
+  border: 1px solid #dbe5f3;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  min-width: 360px;
 }
 
 .post-role-filters__label {
   font-size: 12px;
-  font-weight: 700;
-  color: #4b5563;
+  font-weight: 800;
+  color: #334155;
+  letter-spacing: 0.2px;
 }
 
-.post-role-filters label {
+.post-role-filters__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.post-role-chip {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   font-size: 13px;
   color: #1f2937;
+  padding: 6px 10px;
+  border: 1px solid #d8e1f0;
+  border-radius: 999px;
+  background: #fff;
   cursor: pointer;
+  font-weight: 600;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-.post-role-filters input[type="checkbox"] {
+.post-role-chip:hover {
+  background: #f1f6ff;
+  border-color: #b9cdf2;
+}
+
+.post-role-chip--all {
+  border-color: #9db7e8;
+  background: #edf4ff;
+}
+
+.post-role-chip input[type="checkbox"] {
   cursor: pointer;
 }
 
 .post-role-filters__hint {
   width: 100%;
   font-size: 12px;
-  color: #4b5563;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.tables-visibility-box {
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border: 1px solid #dbe5f3;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+}
+
+.tables-visibility-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #334155;
+  margin-bottom: 8px;
+  letter-spacing: 0.2px;
+}
+
+.tables-visibility-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tables-visibility-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid #d8e1f0;
+  border-radius: 999px;
+  background: #fff;
+  color: #1f2937;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.tables-visibility-chip:hover {
+  background: #f1f6ff;
+  border-color: #b9cdf2;
+}
+
+.tables-visibility-chip--all {
+  border-color: #9db7e8;
+  background: #edf4ff;
+}
+
+.tables-visibility-chip input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.tables-visibility-hint,
+.tables-visibility-empty {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 12px;
   line-height: 1.4;
 }
 

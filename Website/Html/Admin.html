@@ -268,6 +268,12 @@
   <li data-section="withdraw">
     <span class="icon"><i class="fa-solid fa-money-bill-transfer"></i></span> Withdraw Control
   </li>
+  <li data-section="review">
+    <span class="icon"><i class="fa-solid fa-star-half-stroke"></i></span> Review
+  </li>
+  <li data-section="reports">
+    <span class="icon"><i class="fa-solid fa-file-lines"></i></span> Reports
+  </li>
 </ul>
 
     </div>
@@ -376,29 +382,35 @@
   <!-- Tables Section -->
 <div id="tables" class="main-section">
 
-  <div class="filters-bar" style="margin-bottom: 14px; gap: 16px; flex-wrap: wrap; align-items: center;">
-    <strong>Show Tables:</strong>
-    <label style="display:inline-flex; align-items:center; gap:6px;">
-      <input type="checkbox" class="table-visibility-checkbox" data-table-target="users-table-section" checked>
-      Users
-    </label>
-    <label style="display:inline-flex; align-items:center; gap:6px;">
-      <input type="checkbox" class="table-visibility-checkbox" data-table-target="volunteers-table-section" checked>
-      Volunteers
-    </label>
-    <label style="display:inline-flex; align-items:center; gap:6px;">
-      <input type="checkbox" class="table-visibility-checkbox" data-table-target="cctv-table-section" checked>
-      CCTV Management
-    </label>
-    <label style="display:inline-flex; align-items:center; gap:6px;">
-      <input type="checkbox" class="table-visibility-checkbox" data-table-target="police-table-section" checked>
-      Police Officer Profiles
-    </label>
+  <div class="tables-visibility-box" id="tables-visibility-box">
+    <div class="tables-visibility-title">Show Tables</div>
+    <div class="tables-visibility-chips">
+      <label class="tables-visibility-chip tables-visibility-chip--all">
+        <input type="checkbox" id="tables-visibility-all" checked>
+        All
+      </label>
+      <label class="tables-visibility-chip">
+        <input type="checkbox" class="table-visibility-checkbox" data-table-target="users-table-section" checked>
+        Users
+      </label>
+      <label class="tables-visibility-chip">
+        <input type="checkbox" class="table-visibility-checkbox" data-table-target="volunteers-table-section" checked>
+        Volunteers
+      </label>
+      <label class="tables-visibility-chip">
+        <input type="checkbox" class="table-visibility-checkbox" data-table-target="cctv-table-section" checked>
+        CCTV Management
+      </label>
+      <label class="tables-visibility-chip">
+        <input type="checkbox" class="table-visibility-checkbox" data-table-target="police-table-section" checked>
+        Police Officer Profiles
+      </label>
+    </div>
+    <p class="tables-visibility-hint">
+      Select one or more options to show only those tables. Uncheck to hide any table section.
+    </p>
+    <p id="table-selection-empty-note" class="tables-visibility-empty" style="display:none;">Select at least one table to display.</p>
   </div>
-  <p style="margin: -4px 0 12px; color:#666; font-size: 13px;">
-    Select one or more options to show only those tables. Uncheck to hide any table section.
-  </p>
-  <p id="table-selection-empty-note" style="display:none; margin: 0 0 12px; color:#666;">Select at least one table to display.</p>
 
   <!-- Users Table -->
   <div id="users-table-section">
@@ -629,12 +641,15 @@
       <option value="rejected">Rejected</option>
     </select>
     <div class="post-role-filters" id="post-role-filters">
-      <span class="post-role-filters__label">Role:</span>
-      <label><input type="checkbox" name="post-filter-role" value="user" checked> User</label>
-      <label><input type="checkbox" name="post-filter-role" value="volunteer" checked> Volunteer</label>
-      <label><input type="checkbox" name="post-filter-role" value="policeman" checked> Policeman</label>
-      <label><input type="checkbox" name="post-filter-role" value="camera_contribution" checked> Camera Contribution</label>
-      <div class="post-role-filters__hint">Select Role: User, Volunteer, Policeman, Camera Contribution. Only selected role posts will be shown.</div>
+      <span class="post-role-filters__label">Role Filter</span>
+      <div class="post-role-filters__chips">
+        <label class="post-role-chip post-role-chip--all"><input type="checkbox" name="post-filter-role-all" value="all" checked> All</label>
+        <label class="post-role-chip"><input type="checkbox" name="post-filter-role" value="user" checked> User</label>
+        <label class="post-role-chip"><input type="checkbox" name="post-filter-role" value="volunteer" checked> Volunteer</label>
+        <label class="post-role-chip"><input type="checkbox" name="post-filter-role" value="policeman" checked> Policeman</label>
+        <label class="post-role-chip"><input type="checkbox" name="post-filter-role" value="camera_contribution" checked> Camera Contribution</label>
+      </div>
+      <div class="post-role-filters__hint">Select one or more roles. Choose All to show every role post.</div>
     </div>
     <input type="date" id="post-filter-from">
     <input type="date" id="post-filter-to">
@@ -888,6 +903,78 @@
   <div class="broadcast-actions">
     <button class="btn-alert"><i class="fa-solid fa-bullhorn"></i> Send New Alert</button>
     <button class="btn-schedule"><i class="fa-regular fa-calendar-check"></i> Schedule Broadcast</button>
+  </div>
+</div>
+
+<div id="review" class="main-section">
+  <h2>Review</h2>
+  <div class="filters-bar" id="review-filters">
+    <input id="review-filter-text" type="text" placeholder="Search user, module, note">
+    <select id="review-filter-status">
+      <option value="">Status</option>
+      <option value="pending">Pending</option>
+      <option value="in progress">In Progress</option>
+      <option value="completed">Completed</option>
+    </select>
+    <button type="button" id="review-filter-reset" class="ghost">Reset</button>
+  </div>
+  <div class="section-table-block">
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th>Review ID</th>
+          <th>Requested By</th>
+          <th>Module</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th>Created On</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="review-table-body">
+        <tr>
+          <td>RV-001</td>
+          <td>Kamal Hasan</td>
+          <td>Post Control</td>
+          <td>High</td>
+          <td><span class="status-pending">Pending</span></td>
+          <td>2026-02-28</td>
+          <td><button type="button">Open</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div id="reports" class="main-section">
+  <h2>Reports</h2>
+  <div class="filters-bar" id="reports-filters">
+    <input id="reports-filter-text" type="text" placeholder="Search report title, type, date">
+    <button type="button" id="reports-filter-reset" class="ghost">Reset</button>
+  </div>
+  <div class="section-table-block">
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th>Report ID</th>
+          <th>Title</th>
+          <th>Type</th>
+          <th>Generated On</th>
+          <th>Prepared By</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="reports-table-body">
+        <tr>
+          <td>RP-001</td>
+          <td>Monthly Activity Summary</td>
+          <td>Operations</td>
+          <td>2026-02-28</td>
+          <td>Admin</td>
+          <td><button type="button">Download</button></td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>
 
