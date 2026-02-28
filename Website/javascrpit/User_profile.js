@@ -54,13 +54,74 @@ function createPost() {
     return;
   }
 
-  const post = document.createElement("div");
-  post.classList.add("card", "post");
+  const category = document.querySelector('input[name="category"]:checked')?.value || "general";
+  const fd = new FormData();
+  fd.append("text", text);
+  fd.append("category", category);
+  fd.append("case_id", "1");
+  fd.append("share_facebook", document.getElementById("facebookShareToggle")?.checked ? "1" : "0");
+  fd.append("share_anonymous", document.getElementById("anonToggle")?.checked ? "1" : "0");
 
-  if (text) post.innerHTML = `<p>${text}</p>`;
-  if (selectedImage) post.innerHTML += `<img src="${URL.createObjectURL(selectedImage)}" style="width:100%; border-radius:8px;">`;
-  if (selectedVideo) post.innerHTML += `<video src="${URL.createObjectURL(selectedVideo)}" controls style="width:100%; border-radius:8px;"></video>`;
+  if (selectedImage) {
+    fd.append("media_images[]", selectedImage, selectedImage.name);
+  }
+  if (selectedVideo) {
+    fd.append("media_video", selectedVideo, selectedVideo.name);
+  }
 
-  document.getElementById("post-feed").prepend(post);
-  closeModal();
+  fetch("../Php/save_post.php", {
+    method: "POST",
+    body: fd,
+    credentials: "same-origin"
+  })
+    .then((r) => r.json())
+    .then((res) => {
+      if (res && res.success) {
+        alert("Post submitted successfully. It will appear after admin approval.");
+        closeModal();
+        window.location.reload();
+      } else {
+        alert("Save failed: " + (res?.error || "Unknown error"));
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      alert("Network error while saving.");
+    });
 }
+
+document.addEventListener("click", async (event) => {
+  const likeBtn = event.target.closest(".like-btn");
+  if (likeBtn) {
+    const active = likeBtn.dataset.liked === "1";
+    likeBtn.dataset.liked = active ? "0" : "1";
+    likeBtn.innerHTML = active ? '<i class="fa fa-heart"></i> Like' : '<i class="fa fa-heart"></i> Liked';
+    likeBtn.style.color = active ? "#444" : "#e74c3c";
+    return;
+  }
+
+  const commentBtn = event.target.closest(".comment-btn");
+  if (commentBtn) {
+    const post = commentBtn.closest(".post");
+    const box = post?.querySelector(".comment-module");
+    if (box) {
+      box.style.display = box.style.display === "none" || !box.style.display ? "block" : "none";
+    }
+    return;
+  }
+
+  const sendBtn = event.target.closest(".comment-send-btn");
+  if (sendBtn) {
+    const post = sendBtn.closest(".post");
+    const input = post?.querySelector(".comment-editor");
+    const list = post?.querySelector(".comment-module ul");
+    const text = input?.innerText?.trim();
+    if (!text || !list || !input) return;
+    const item = document.createElement("li");
+    item.textContent = text;
+    list.prepend(item);
+    input.innerText = "";
+    return;
+  }
+
+});

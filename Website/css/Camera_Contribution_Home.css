@@ -1360,67 +1360,81 @@ background: linear-gradient(80deg, #d1b75a);
 
 .money-withdrawal {
   background: #fff;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  text-align: center;
+  border: 1px solid #eceff3;
+  border-top: 3px solid #f05454;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(17, 24, 39, 0.1);
+  padding: 16px;
+  text-align: left;
   margin-bottom: 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #1a232a;
 }
 
-/* Heading */
 .money-withdrawal h2 {
-  font-size: 1.4rem;
-  margin-bottom: 10px;
+  font-size: 1.18rem;
+  margin-bottom: 8px;
   color: #1a232a;
+  line-height: 1.35;
 }
 
-/* Paragraph */
 .money-withdrawal p {
-  font-size: 1rem;
-  color: #555;
-  margin-bottom: 20px;
-  line-height: 1.5;
+  font-size: 0.92rem;
+  color: #5f6b7a;
+  margin-bottom: 14px;
+  line-height: 1.45;
 }
 
-/* Streamer info list */
 .streamer-info {
   list-style: none;
   padding: 0;
-  margin: 0 0 20px 0;
-  color: #555;
-  font-size: 1rem;
+  margin: 0 0 14px 0;
   text-align: left;
-  max-width: 320px;
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 100%;
 }
 
 .streamer-info li {
   margin-bottom: 8px;
+  color: #435164;
+  font-size: 0.92rem;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #edf2f7;
+  border-left: 3px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .streamer-info strong {
-  color: #1a232a;
+  color: #1f2937;
+  font-weight: 700;
+  min-width: 145px;
+  display: inline-block;
 }
 
-/* Withdraw button with shine effect */
+.streamer-info li:nth-child(4) {
+  border-color: #d9efe2;
+  border-left-color: #34a853;
+  background: #f3fbf6;
+}
+
 .withdraw-btn {
   position: relative;
-  background: #f05454;
+  border: 1px solid #ea4335;
+  background: linear-gradient(90deg, #f05454 0%, #e3471c 100%);
   color: #fff;
-  border: none;
-  padding: 10px 24px;
-  font-size: 1rem;
-  border-radius: 25px;
+  padding: 9px 22px;
+  font-size: 0.95rem;
+  border-radius: 24px;
   cursor: pointer;
   overflow: hidden;
-  z-index: 0;
-  transition: background 0.3s ease;
-  margin: 0 auto;
+  transition: transform 0.2s ease, box-shadow 0.25s ease, background-color 0.2s ease;
+  margin: 2px auto 0;
   display: inline-block;
-  font-weight: 600;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
 }
 
 .withdraw-btn::before {
@@ -1430,29 +1444,27 @@ background: linear-gradient(80deg, #d1b75a);
   left: -75px;
   width: 50px;
   height: 100%;
-  background: linear-gradient(
-    120deg,
-    transparent,
-    rgba(255, 255, 255, 0.6),
-    transparent
-  );
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.55), transparent);
   transform: skewX(-25deg);
   animation: youtube-shine 2s ease-in-out infinite;
-  z-index: 1;
   pointer-events: none;
 }
 
-@keyframes youtube-shine {
-  0% {
-    left: -75px;
-  }
-  100% {
-    left: 125%;
-  }
+.withdraw-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 7px 16px rgba(239, 68, 68, 0.28);
 }
 
-.withdraw-btn:hover {
-  background: #e3471c;
+@media (max-width: 640px) {
+  .streamer-info strong {
+    min-width: 120px;
+    font-size: 0.9rem;
+  }
+
+  .streamer-info li {
+    padding: 7px 9px;
+    font-size: 0.88rem;
+  }
 }
 
 
@@ -1473,6 +1485,7 @@ background: linear-gradient(80deg, #d1b75a);
 /* Modal Content Box */
 .withdrawal-modal-content {
   background: #fff;
+  border: 1px solid #eef2f7;
   padding: 30px 25px;
   border-radius: 12px;
   width: 900px;
@@ -1521,6 +1534,8 @@ background: linear-gradient(80deg, #d1b75a);
   padding: 10px 12px;
   margin-bottom: 18px;
   border: 1.5px solid #ddd;
+  background: #fff;
+  color: #333;
   border-radius: 6px;
   font-size: 1rem;
   transition: border-color 0.3s ease;
@@ -1537,7 +1552,7 @@ background: linear-gradient(80deg, #d1b75a);
   position: relative;
   width: 100%;
   padding: 12px 0;
-  background: #f05454;
+  background: linear-gradient(90deg, #f05454 0%, #e3471c 100%);
   color: white;
   font-weight: 700;
   font-size: 1.1rem;
@@ -1570,7 +1585,7 @@ background: linear-gradient(80deg, #d1b75a);
 }
 
 .confirm-btn:hover {
-  background: #e3471c;
+  background: linear-gradient(90deg, #e94b4b 0%, #d63f17 100%);
 }
 
 /* Keep your existing youtube-shine animation */

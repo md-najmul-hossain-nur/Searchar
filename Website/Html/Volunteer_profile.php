@@ -35,10 +35,56 @@ function e($v) {
     return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
+function profileTimeAgo(?string $dateTime): string {
+  if (empty($dateTime)) {
+    return 'Just now';
+  }
+  $ts = strtotime($dateTime);
+  if (!$ts) {
+    return 'Just now';
+  }
+  $diff = time() - $ts;
+  if ($diff < 60) return 'Just now';
+  if ($diff < 3600) return floor($diff / 60) . ' min ago';
+  if ($diff < 86400) return floor($diff / 3600) . ' hour ago';
+  if ($diff < 604800) return floor($diff / 86400) . ' day ago';
+  return date('M d, Y', $ts);
+}
+
 // 6. Fallback images and bio
 $profile_pic = !empty($volunteer['profile_photo']) ? '../uploads/volunteer/' . e($volunteer['profile_photo']) : '../Images/default_profile.png';
 $cover_pic   = !empty($volunteer['cover_photo'])   ? '../uploads/volunteer/' . e($volunteer['cover_photo'])   : '../Images/cover_default.jpg';
 $bio_text    = !empty($volunteer['bio']) ? e($volunteer['bio']) : "💬 Bio not added yet. Go to <a href='../Html/Volunteer_Edit_profile.html'>edit profile</a> to add your bio!";
+
+$profilePosts = [];
+try {
+  $hasStatus = false;
+  $hasMediaJson = false;
+
+  $statusCol = $pdo->query("SHOW COLUMNS FROM posts LIKE 'status'");
+  if ($statusCol && $statusCol->fetch(PDO::FETCH_ASSOC)) {
+    $hasStatus = true;
+  }
+
+  $mediaJsonCol = $pdo->query("SHOW COLUMNS FROM posts LIKE 'media_json'");
+  if ($mediaJsonCol && $mediaJsonCol->fetch(PDO::FETCH_ASSOC)) {
+    $hasMediaJson = true;
+  }
+
+  $selectCols = "id, author_name, text, media_path, media_type, category, created_at";
+  if ($hasMediaJson) {
+    $selectCols .= ", media_json";
+  }
+  if ($hasStatus) {
+    $selectCols .= ", status";
+  }
+
+  $postStmt = $pdo->prepare("SELECT {$selectCols} FROM posts WHERE author_id = :author_id AND author_role = 'volunteer' ORDER BY id DESC LIMIT 50");
+  $postStmt->execute(['author_id' => $volunteer_id]);
+  $profilePosts = $postStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+} catch (Throwable $e) {
+  $profilePosts = [];
+}
 ?>
 
 <!DOCTYPE html>
@@ -120,39 +166,83 @@ $bio_text    = !empty($volunteer['bio']) ? e($volunteer['bio']) : "💬 Bio not 
     <input type="text" placeholder="What's on your mind?"  onclick="openModal()">
   </div>
 
-  <div class="card post">
-    <div class="post-header">
-    <img class="mini-profile" 
-         src="<?= !empty($volunteer['profile_photo']) 
-                ? '../uploads/volunteer/' . e($volunteer['profile_photo']) 
-                : 'https://randomuser.me/api/portraits/men/20.jpg' ?>" 
-         alt="Profile">
-    <div>
-        <div class="username"><?= e($volunteer['full_name'] ?? 'Unknown User') ?></div>
-        <div class="post-time">
-            <?php
-            // If you have a created_at timestamp, format "x min ago"
-            if (!empty($post['created_at'])) {
-                $post_time = strtotime($post['created_at']);
-                $diff = time() - $post_time;
-                if ($diff < 3600) {
-                    echo intval($diff / 60) . ' min ago';
-                } elseif ($diff < 86400) {
-                    echo intval($diff / 3600) . ' hour ago';
-                } else {
-                    echo date('M d, Y', $post_time);
-                }
-            } else {
-                echo 'Just now';
-            }
-            ?>
+  <div id="post-feed">
+    <?php if (empty($profilePosts)): ?>
+      <div class="card post">
+        <p>No posts yet. Share your first update.</p>
+      </div>
+    <?php else: ?>
+      <?php foreach ($profilePosts as $post): ?>
+        <?php
+          $postAuthorName = (string)($post['author_name'] ?? ($volunteer['full_name'] ?? 'Volunteer Name'));
+          $postText = (string)($post['text'] ?? '');
+          $postMediaType = (string)($post['media_type'] ?? '');
+          $postMediaPath = (string)($post['media_path'] ?? '');
+          $postMediaUrl = $postMediaPath !== '' ? ('../' . ltrim($postMediaPath, '/')) : '';
+          $postMediaJson = isset($post['media_json']) ? (string)$post['media_json'] : '';
+          $postImageUrls = [];
+          if ($postMediaJson !== '') {
+              $decodedImages = json_decode($postMediaJson, true);
+              if (is_array($decodedImages)) {
+                  foreach ($decodedImages as $imgPath) {
+                      if (is_string($imgPath) && trim($imgPath) !== '') {
+                          $postImageUrls[] = '../' . ltrim($imgPath, '/');
+                      }
+                  }
+              }
+          }
+          if (empty($postImageUrls) && $postMediaType === 'image' && $postMediaUrl !== '') {
+              $postImageUrls[] = $postMediaUrl;
+          }
+          $postStatus = isset($post['status']) ? (string)$post['status'] : '';
+        ?>
+        <div class="card post" data-post-id="<?= (int)($post['id'] ?? 0) ?>">
+          <div class="post-header">
+            <img class="mini-profile" src="<?= !empty($volunteer['profile_photo']) ? '../uploads/volunteer/' . e($volunteer['profile_photo']) : '../Images/default_profile.png' ?>" alt="Profile">
+            <div>
+              <div class="username"><?= e($postAuthorName) ?></div>
+              <div class="post-time"><?= e(profileTimeAgo((string)($post['created_at'] ?? ''))) ?></div>
+              <?php if ($postStatus !== ''): ?>
+                <div class="post-time">Status: <?= e(ucfirst($postStatus)) ?></div>
+              <?php endif; ?>
+            </div>
+          </div>
+
+          <?php if ($postText !== ''): ?>
+            <p><?= nl2br(e($postText)) ?></p>
+          <?php endif; ?>
+
+          <?php foreach ($postImageUrls as $imgUrl): ?>
+            <div class="post-image">
+              <img src="<?= e($imgUrl) ?>" alt="Post Image">
+            </div>
+          <?php endforeach; ?>
+
+          <?php if ($postMediaUrl !== '' && $postMediaType === 'video'): ?>
+            <div class="post-image">
+              <video controls style="width:100%; border-radius:8px;">
+                <source src="<?= e($postMediaUrl) ?>" type="video/mp4">
+              </video>
+            </div>
+          <?php endif; ?>
+
+          <div class="post-actions">
+            <span class="like-btn"><i class="fa fa-heart"></i> Like</span>
+            <span class="comment-btn"><i class="fa fa-comment"></i> Comment</span>
+          </div>
+          <section class="comment-module" style="display:none;">
+            <div class="comment-input-area">
+              <div class="comment-editor" contenteditable="true" data-placeholder="Write a comment..."></div>
+              <button class="comment-send-btn">
+                <img src="../Images/send.png" alt="Send">
+              </button>
+            </div>
+            <h4 class="comments-title">All Comments</h4>
+            <ul></ul>
+          </section>
         </div>
-    </div>
-</div>
-    <p>Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text.</p>
-    <div class="post-image">
-      <img src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=700&q=80" alt="Post Image">
-    </div>
+      <?php endforeach; ?>
+    <?php endif; ?>
   </div>
 </div>
 
