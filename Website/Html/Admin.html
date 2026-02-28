@@ -628,9 +628,16 @@
       <option value="approved">Approved</option>
       <option value="rejected">Rejected</option>
     </select>
+    <div class="post-role-filters" id="post-role-filters">
+      <span class="post-role-filters__label">Role:</span>
+      <label><input type="checkbox" name="post-filter-role" value="user" checked> User</label>
+      <label><input type="checkbox" name="post-filter-role" value="volunteer" checked> Volunteer</label>
+      <label><input type="checkbox" name="post-filter-role" value="policeman" checked> Policeman</label>
+      <label><input type="checkbox" name="post-filter-role" value="camera_contribution" checked> Camera Contribution</label>
+      <div class="post-role-filters__hint">Select Role: User, Volunteer, Policeman, Camera Contribution. Only selected role posts will be shown.</div>
+    </div>
     <input type="date" id="post-filter-from">
     <input type="date" id="post-filter-to">
-    <button type="button" id="post-filter-refresh">Refresh</button>
   </div>
   <table class="styled-table" id="post-control-table">
     <thead>

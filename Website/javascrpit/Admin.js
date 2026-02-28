@@ -239,6 +239,9 @@ setInterval(loadCameraSeries, 30000);
 
       document.querySelectorAll('.main-section').forEach(sec => sec.classList.remove('active'));
       section.classList.add('active');
+      document.dispatchEvent(new CustomEvent('admin:section-activated', {
+        detail: { sectionId }
+      }));
       return true;
     }
 
@@ -487,7 +490,7 @@ document.addEventListener('click', function (event) {
   const fromInput = document.getElementById('post-filter-from');
   const toInput = document.getElementById('post-filter-to');
   const applyButton = document.getElementById('post-filter-apply');
-    const refreshButton = document.getElementById('post-filter-refresh');
+  const roleCheckboxes = Array.from(section.querySelectorAll('input[name="post-filter-role"]'));
   const tableBody = document.getElementById('post-control-body') || section.querySelector('#post-control-table tbody');
 
   if (!keywordInput || !statusSelect || !fromInput || !toInput || !tableBody) return;
@@ -534,6 +537,16 @@ document.addEventListener('click', function (event) {
     return raw.charAt(0).toUpperCase() + raw.slice(1);
   }
 
+  function normalizeRoleKey(value) {
+    const raw = String(value || '').trim().toLowerCase().replace(/[\s-]+/g, '_');
+    if (!raw) return 'user';
+    if (raw.includes('camera')) return 'camera_contribution';
+    if (raw.includes('police')) return 'policeman';
+    if (raw.includes('volunteer')) return 'volunteer';
+    if (raw.includes('user')) return 'user';
+    return raw;
+  }
+
   function renderPostRows(rows) {
     if (!Array.isArray(rows) || rows.length === 0) {
       tableBody.innerHTML = '<tr><td colspan="9">No posts found.</td></tr>';
@@ -573,11 +586,6 @@ document.addEventListener('click', function (event) {
   }
 
   async function loadPostRows() {
-    const prevLabel = refreshButton ? refreshButton.textContent : '';
-    if (refreshButton) {
-      refreshButton.disabled = true;
-      refreshButton.textContent = 'Refreshing…';
-    }
     try {
       const res = await fetch('../Php/admin_fetch_pending_posts.php', {
         credentials: 'same-origin',
@@ -593,10 +601,6 @@ document.addEventListener('click', function (event) {
       console.error('Post control fetch failed', error);
       tableBody.innerHTML = '<tr><td colspan="9">Failed to load posts.</td></tr>';
     }
-    if (refreshButton) {
-      refreshButton.disabled = false;
-      refreshButton.textContent = prevLabel || 'Refresh';
-    }
   }
 
   function filterRows() {
@@ -604,6 +608,11 @@ document.addEventListener('click', function (event) {
     const selectedStatus = statusSelect.value.trim().toLowerCase();
     const fromDate = parseDateOnly(fromInput.value);
     const toDate = parseDateOnly(toInput.value);
+    const selectedRoles = new Set(
+      roleCheckboxes
+        .filter(input => input.checked)
+        .map(input => normalizeRoleKey(input.value))
+    );
 
     const rows = Array.from(tableBody.querySelectorAll('tr'));
     let visibleCount = 0;
@@ -625,6 +634,7 @@ document.addEventListener('click', function (event) {
       const category = (cells[1]?.textContent || '').trim().toLowerCase();
       const postedBy = (cells[2]?.textContent || '').trim().toLowerCase();
       const role = (cells[3]?.textContent || '').trim().toLowerCase();
+      const roleKey = normalizeRoleKey(row.dataset.authorRole || role);
       const statusText = (row.querySelector('.post-status')?.textContent || '').trim().toLowerCase();
       const submittedText = (cells[7]?.textContent || '').trim();
       const submittedDate = parseDateOnly(submittedText);
@@ -632,10 +642,13 @@ document.addEventListener('click', function (event) {
       const keywordHaystack = `${postId} ${category} ${postedBy} ${role}`;
       const keywordOk = !keyword || keywordHaystack.includes(keyword);
       const statusOk = selectedStatus === 'all' || statusText === selectedStatus;
+      const roleOk = roleCheckboxes.length === 0
+        ? true
+        : selectedRoles.size > 0 && selectedRoles.has(roleKey);
       const fromOk = !fromDate || (submittedDate && submittedDate >= fromDate);
       const toOk = !toDate || (submittedDate && submittedDate <= toDate);
 
-      const isVisible = keywordOk && statusOk && fromOk && toOk;
+      const isVisible = keywordOk && statusOk && roleOk && fromOk && toOk;
       row.style.display = isVisible ? '' : 'none';
       if (isVisible) visibleCount += 1;
     });
@@ -654,6 +667,9 @@ document.addEventListener('click', function (event) {
   statusSelect.addEventListener('change', filterRows);
   fromInput.addEventListener('change', filterRows);
   toInput.addEventListener('change', filterRows);
+  roleCheckboxes.forEach(input => {
+    input.addEventListener('change', filterRows);
+  });
   keywordInput.addEventListener('input', filterRows);
   keywordInput.addEventListener('keydown', function (event) {
     if (event.key === 'Enter') {
@@ -662,13 +678,13 @@ document.addEventListener('click', function (event) {
     }
   });
 
-  if (refreshButton) {
-    refreshButton.addEventListener('click', function () {
-      loadPostRows();
-    });
-  }
-
   applyPostControlFilters = filterRows;
+  document.addEventListener('admin:section-activated', function (event) {
+    const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
+    if (sectionId === 'post-control') {
+      loadPostRows();
+    }
+  });
   loadPostRows();
 })();
 
@@ -2016,7 +2032,7 @@ function openAddVolunteerModal() {
 
   function bindEvents() {
     if (filterReset) {
-      filterReset.addEventListener('click', () => {
+      filterReset.addEventListener('click', async () => {
         if (filterText) filterText.value = '';
         if (filterType) filterType.value = '';
         if (filterSeverity) filterSeverity.value = '';
@@ -2025,6 +2041,7 @@ function openAddVolunteerModal() {
         if (filterTo) filterTo.value = '';
         if (toggleLast24) toggleLast24.checked = false;
         if (toggleClosed) toggleClosed.checked = true;
+        await syncCrimesFromMissingReports();
         applyFilters();
       });
     }
@@ -2535,6 +2552,14 @@ function openAddVolunteerModal() {
   }
 
   loadMiscSections();
+
+  document.addEventListener('admin:refresh-section', (event) => {
+    const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
+    if (!sectionId) return;
+    if (['donations', 'broadcast', 'volunteer', 'withdraw'].includes(sectionId)) {
+      loadMiscSections();
+    }
+  });
 })();
 
 // Generic table filters for various sections
@@ -2557,7 +2582,15 @@ function openAddVolunteerModal() {
     };
 
     input.addEventListener('input', apply);
-    if (reset) reset.addEventListener('click', () => { input.value = ''; apply(); });
+    if (reset) {
+      reset.addEventListener('click', () => {
+        input.value = '';
+        apply();
+        document.dispatchEvent(new CustomEvent('admin:refresh-section', {
+          detail: { sectionId }
+        }));
+      });
+    }
   }
 
   function setupTextStatusFilter(sectionId, textId, statusId, resetId, rowSelector = 'tbody tr', statusCellIndex = null) {
@@ -2591,11 +2624,16 @@ function openAddVolunteerModal() {
 
     textInput.addEventListener('input', apply);
     statusSelect.addEventListener('change', apply);
-    if (reset) reset.addEventListener('click', () => {
-      textInput.value = '';
-      statusSelect.value = '';
-      apply();
-    });
+    if (reset) {
+      reset.addEventListener('click', () => {
+        textInput.value = '';
+        statusSelect.value = '';
+        apply();
+        document.dispatchEvent(new CustomEvent('admin:refresh-section', {
+          detail: { sectionId }
+        }));
+      });
+    }
   }
 
   // Donations: text filter
