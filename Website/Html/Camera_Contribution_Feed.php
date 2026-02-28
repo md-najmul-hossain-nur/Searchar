@@ -26,13 +26,78 @@ function timeAgo(?string $dateTime): string {
     return date('d M Y', $ts);
 }
 
+  function hourlyRate(string $feedType): int {
+    return strtolower($feedType) === 'live' ? 100 : 60;
+  }
+
+  function accruedSeconds(array $feed): int {
+    $acc = (int)($feed['accumulated_seconds'] ?? 0);
+    $isActive = (int)($feed['is_active'] ?? 0) === 1;
+    if (!$isActive) {
+      return max(0, $acc);
+    }
+
+    $startRaw = (string)($feed['active_started_at'] ?? '');
+    if ($startRaw === '') {
+      $startRaw = (string)($feed['created_at'] ?? '');
+    }
+    $startTs = strtotime($startRaw ?: 'now');
+    if (!$startTs) {
+      return max(0, $acc);
+    }
+    return max(0, $acc + max(0, time() - $startTs));
+  }
+
 $user = [];
 $feedPosts = [];
+$cctvFeeds = [];
 
 try {
-    $stmt = $pdo->prepare("SELECT camera_id, full_name, profile_photo, cover_photo, camera_location, camera_type, stream_type, created_at FROM camera_contributors WHERE camera_id = :id LIMIT 1");
+    $stmt = $pdo->prepare("SELECT camera_id, full_name, email, profile_photo, cover_photo, camera_location, camera_type, stream_type, created_at FROM camera_contributors WHERE camera_id = :id LIMIT 1");
     $stmt->execute(['id' => $userId]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS camera_cctv_feeds (
+      feed_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      camera_id INT UNSIGNED NOT NULL,
+      feed_label VARCHAR(150) NOT NULL,
+      feed_type VARCHAR(20) NOT NULL DEFAULT 'live',
+      stream_scope VARCHAR(20) NOT NULL DEFAULT 'private',
+      live_url VARCHAR(1200) DEFAULT NULL,
+      video_path VARCHAR(600) DEFAULT NULL,
+      camera_location VARCHAR(255) DEFAULT NULL,
+      streaming_hours VARCHAR(80) DEFAULT 'continuous',
+      allow_ai_detection TINYINT(1) NOT NULL DEFAULT 0,
+      allow_public_viewing TINYINT(1) NOT NULL DEFAULT 0,
+      ai_alerts_to_volunteers TINYINT(1) NOT NULL DEFAULT 0,
+      accumulated_seconds BIGINT UNSIGNED NOT NULL DEFAULT 0,
+      active_started_at DATETIME DEFAULT NULL,
+      is_active TINYINT(1) NOT NULL DEFAULT 1,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (feed_id),
+      KEY idx_camera_active (camera_id, is_active),
+      KEY idx_camera_created (camera_id, created_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $scopeCol = $pdo->query("SHOW COLUMNS FROM camera_cctv_feeds LIKE 'stream_scope'");
+    if (!$scopeCol || !$scopeCol->fetch(PDO::FETCH_ASSOC)) {
+      $pdo->exec("ALTER TABLE camera_cctv_feeds ADD COLUMN stream_scope VARCHAR(20) NOT NULL DEFAULT 'private' AFTER feed_type");
+    }
+
+    $accCol = $pdo->query("SHOW COLUMNS FROM camera_cctv_feeds LIKE 'accumulated_seconds'");
+    if (!$accCol || !$accCol->fetch(PDO::FETCH_ASSOC)) {
+      $pdo->exec("ALTER TABLE camera_cctv_feeds ADD COLUMN accumulated_seconds BIGINT UNSIGNED NOT NULL DEFAULT 0 AFTER ai_alerts_to_volunteers");
+    }
+
+    $startedCol = $pdo->query("SHOW COLUMNS FROM camera_cctv_feeds LIKE 'active_started_at'");
+    if (!$startedCol || !$startedCol->fetch(PDO::FETCH_ASSOC)) {
+      $pdo->exec("ALTER TABLE camera_cctv_feeds ADD COLUMN active_started_at DATETIME DEFAULT NULL AFTER accumulated_seconds");
+    }
+
+    $cctvStmt = $pdo->prepare("SELECT feed_id, feed_label, feed_type, stream_scope, live_url, video_path, camera_location, streaming_hours, allow_ai_detection, allow_public_viewing, ai_alerts_to_volunteers, accumulated_seconds, active_started_at, is_active, created_at FROM camera_cctv_feeds WHERE camera_id = :camera_id ORDER BY feed_id DESC LIMIT 40");
+    $cctvStmt->execute(['camera_id' => $userId]);
+    $cctvFeeds = $cctvStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
     $mediaJsonCol = $pdo->query("SHOW COLUMNS FROM posts LIKE 'media_json'");
     $hasMediaJson = (bool)($mediaJsonCol && $mediaJsonCol->fetch(PDO::FETCH_ASSOC));
@@ -54,27 +119,36 @@ try {
 $profilePhoto = !empty($user['profile_photo']) ? '../uploads/camera/' . e($user['profile_photo']) : '../Images/default_profile.png';
 $coverPhoto = !empty($user['cover_photo']) ? '../uploads/camera/' . e($user['cover_photo']) : '../Images/cover_default.jpg';
 $displayName = !empty($user['full_name']) ? (string)$user['full_name'] : 'Camera Contributor';
+$emailText = !empty($user['email']) ? (string)$user['email'] : 'Guest';
 $cameraLocation = !empty($user['camera_location']) ? (string)$user['camera_location'] : 'Unknown Location';
-$cameraType = !empty($user['camera_type']) ? (string)$user['camera_type'] : 'Standard Camera';
 $streamType = !empty($user['stream_type']) ? (string)$user['stream_type'] : 'Live Stream';
 
-$totalFeeds = count($feedPosts);
+$totalFeeds = count($cctvFeeds);
 $liveReadyCount = 0;
-foreach ($feedPosts as $post) {
-    $mediaPath = (string)($post['media_path'] ?? '');
-    if ($mediaPath !== '') $liveReadyCount++;
+$totalEarnings = 0.0;
+$runningHourlyRate = 0;
+foreach ($cctvFeeds as $feed) {
+  $rate = hourlyRate((string)($feed['feed_type'] ?? 'recorded'));
+  $earned = (accruedSeconds($feed) / 3600) * $rate;
+  $totalEarnings += $earned;
+  if ((int)($feed['is_active'] ?? 0) === 1) {
+    $liveReadyCount++;
+    $runningHourlyRate += $rate;
+  }
 }
 
-$latestFeed = $feedPosts[0] ?? null;
+$latestFeed = $cctvFeeds[0] ?? null;
 $latestMedia = '';
 $latestMediaType = '';
 $latestText = '';
 if ($latestFeed) {
-    $latestMediaType = (string)($latestFeed['media_type'] ?? '');
-    $latestText = (string)($latestFeed['text'] ?? '');
-    $raw = (string)($latestFeed['media_path'] ?? '');
-    if ($raw !== '') {
-        $latestMedia = '../' . ltrim($raw, '/');
+  $latestMediaType = (string)($latestFeed['feed_type'] ?? '');
+  $latestText = (string)($latestFeed['feed_label'] ?? '');
+  $raw = (string)($latestFeed['video_path'] ?? '');
+  if ($latestMediaType === 'recorded' && $raw !== '') {
+    $latestMedia = '../' . ltrim($raw, '/');
+  } elseif ($latestMediaType === 'live') {
+    $latestMedia = (string)($latestFeed['live_url'] ?? '');
     }
 }
 ?>
@@ -97,6 +171,13 @@ if ($latestFeed) {
       <a href="../Html/Camera_Contribution_Home.php">
         <img src="../Images/logo.png" alt="SearchAR Logo" class="navbar-logo-img" id="logo" />
       </a>
+    </div>
+    <div class="navbar-user-actions">
+      <span class="navbar-user-email"><?= e($emailText) ?></span>
+      <button class="navbar-donate" type="button" onclick="window.location.href='../Php/logout.php';">
+        LOG OUT
+        <img src="../Images/import.gif" alt="Logout" class="logout-gif">
+      </button>
     </div>
   </nav>
 
@@ -122,7 +203,8 @@ if ($latestFeed) {
           <div class="user-stats">
             <span><?= (int)$totalFeeds ?> <small>Total Feeds</small></span>
             <span><?= (int)$liveReadyCount ?> <small>Live Ready</small></span>
-            <span><?= e($cameraType) ?> <small>Camera Type</small></span>
+            <span>৳<?= e(number_format($totalEarnings, 2)) ?> <small>Total Earnings</small></span>
+            <span>৳<?= (int)$runningHourlyRate ?>/hr <small>Running Rate</small></span>
           </div>
         </div>
       </div>
@@ -133,41 +215,65 @@ if ($latestFeed) {
       </div>
     </section>
 
-    <section class="cameras" aria-label="Your feed posts">
-      <?php if (empty($feedPosts)): ?>
+    <section class="cameras" aria-label="Your CCTV sources">
+      <?php if (empty($cctvFeeds)): ?>
         <div class="empty-state">
-          <h3>No feed posts yet</h3>
-          <p>Your uploaded camera posts will appear here.</p>
+          <h3>No CCTV source yet</h3>
+          <p>Add camera source from Camera Home (Start Live / Upload Recorded Feed).</p>
         </div>
       <?php else: ?>
-        <?php foreach ($feedPosts as $post): ?>
+        <?php foreach ($cctvFeeds as $feed): ?>
           <?php
-            $mediaType = (string)($post['media_type'] ?? '');
-            $mediaPath = (string)($post['media_path'] ?? '');
+            $mediaType = (string)($feed['feed_type'] ?? 'live');
+            $mediaPath = (string)($feed['video_path'] ?? '');
             $mediaUrl = $mediaPath !== '' ? ('../' . ltrim($mediaPath, '/')) : '';
-            $status = (string)($post['status'] ?? 'pending');
-            $statusClass = strtolower($status) === 'approved' ? 'status-approved' : (strtolower($status) === 'rejected' ? 'status-rejected' : 'status-pending');
+            $liveUrl = (string)($feed['live_url'] ?? '');
+            $scope = (string)($feed['stream_scope'] ?? 'private');
+            $isActive = (int)($feed['is_active'] ?? 0) === 1;
+            $statusText = $isActive ? 'Active' : 'Closed';
+            $statusClass = $isActive ? 'status-approved' : 'status-rejected';
+            $rate = hourlyRate($mediaType);
+            $earned = (accruedSeconds($feed) / 3600) * $rate;
           ?>
           <article class="camera-card">
-            <?php if ($mediaUrl !== '' && $mediaType === 'video'): ?>
+            <?php if ($mediaType === 'recorded' && $mediaUrl !== ''): ?>
               <div class="camera-video-wrap">
                 <video class="camera-video" controls preload="metadata">
                   <source src="<?= e($mediaUrl) ?>" type="video/mp4">
                 </video>
               </div>
-            <?php elseif ($mediaUrl !== ''): ?>
-              <img src="<?= e($mediaUrl) ?>" alt="Feed media" class="camera-img">
+            <?php elseif ($mediaType === 'live' && $liveUrl !== ''): ?>
+              <div class="camera-video-wrap">
+                <video class="camera-video live-video" controls muted playsinline preload="metadata" data-live-src="<?= e($liveUrl) ?>" title="<?= e((string)($feed['feed_label'] ?? 'Live CCTV')) ?>"></video>
+              </div>
             <?php else: ?>
               <img src="<?= $coverPhoto ?>" alt="Camera cover" class="camera-img">
             <?php endif; ?>
 
-            <span class="feed-status <?= e($statusClass) ?>"><?= e(ucfirst($status)) ?></span>
+            <span class="feed-status <?= e($statusClass) ?>"><?= e($statusText) ?></span>
 
             <div class="camera-info">
-              <span class="camera-title"><?= e(ucfirst((string)($post['category'] ?? 'general'))) ?> Feed</span>
-              <span class="camera-time"><i class="fa-regular fa-clock"></i> <?= e(timeAgo((string)($post['created_at'] ?? ''))) ?></span>
-              <?php if (!empty($post['text'])): ?>
-                <p class="camera-caption"><?= nl2br(e((string)$post['text'])) ?></p>
+              <span class="camera-title"><?= e((string)($feed['feed_label'] ?? 'CCTV Feed')) ?></span>
+              <span class="camera-time"><i class="fa-regular fa-clock"></i> <?= e(timeAgo((string)($feed['created_at'] ?? ''))) ?></span>
+              <p class="camera-caption"><?= e((string)($feed['camera_location'] ?? 'Location not set')) ?></p>
+              <p class="camera-earning">Earned: ৳<?= e(number_format($earned, 2)) ?> · Rate: ৳<?= (int)$rate ?>/hr · <?= e(ucfirst($scope)) ?></p>
+              <div class="feed-controls">
+                <form method="post" action="../Php/camera_cctv_feeds.php">
+                  <input type="hidden" name="action" value="toggle">
+                  <input type="hidden" name="feed_id" value="<?= (int)($feed['feed_id'] ?? 0) ?>">
+                  <input type="hidden" name="is_active" value="<?= $isActive ? '0' : '1' ?>">
+                  <input type="hidden" name="return_to" value="../Html/Camera_Contribution_Feed.php">
+                  <button type="submit" class="feed-action-btn"><?= $isActive ? 'Close CCTV' : 'Reopen CCTV' ?></button>
+                </form>
+                <form method="post" action="../Php/camera_cctv_feeds.php" onsubmit="return confirm('Remove this CCTV source?');">
+                  <input type="hidden" name="action" value="delete">
+                  <input type="hidden" name="feed_id" value="<?= (int)($feed['feed_id'] ?? 0) ?>">
+                  <input type="hidden" name="return_to" value="../Html/Camera_Contribution_Feed.php">
+                  <button type="submit" class="feed-action-btn danger">Remove</button>
+                </form>
+              </div>
+              <?php if ($mediaType === 'live' && $liveUrl !== ''): ?>
+                <a class="live-link" href="<?= e($liveUrl) ?>" target="_blank" rel="noopener">Open live source</a>
               <?php endif; ?>
             </div>
           </article>
@@ -181,11 +287,15 @@ if ($latestFeed) {
           <span class="broadcast-title">Latest Feed Preview</span>
         </div>
 
-        <?php if ($latestMedia !== '' && $latestMediaType === 'video'): ?>
+        <?php if ($latestMedia !== '' && $latestMediaType === 'recorded'): ?>
           <div class="video-player">
             <video class="video-preview" controls preload="metadata">
               <source src="<?= e($latestMedia) ?>" type="video/mp4">
             </video>
+          </div>
+        <?php elseif ($latestMedia !== '' && $latestMediaType === 'live'): ?>
+          <div class="video-player">
+            <video class="video-preview live-video" controls muted playsinline preload="metadata" data-live-src="<?= e($latestMedia) ?>" title="Latest live CCTV preview"></video>
           </div>
         <?php elseif ($latestMedia !== ''): ?>
           <div class="video-player">
@@ -197,7 +307,7 @@ if ($latestFeed) {
 
         <div class="ai-title">Feed Summary</div>
         <button class="secondary-btn" type="button" aria-label="Latest post info">
-          <span><?= $latestFeed ? e(timeAgo((string)($latestFeed['created_at'] ?? ''))) : 'No post yet' ?></span>
+          <span><?= $latestFeed ? e(timeAgo((string)($latestFeed['created_at'] ?? ''))) : 'No source yet' ?></span>
           <span class="badge"><?= (int)$totalFeeds ?></span>
         </button>
         <?php if ($latestText !== ''): ?>
@@ -207,6 +317,7 @@ if ($latestFeed) {
     </section>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
   <script src="../javascrpit/Camera_Contribution_Feed.js"></script>
 </body>
 </html>

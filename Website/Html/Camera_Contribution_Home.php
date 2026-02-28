@@ -549,11 +549,12 @@ try {
   <div class="cam-form-content">
     <span class="cam-form-close">&times;</span>
     <h3>Upload or Start Live Feed</h3>
+    <p class="cam-form-subtitle">Add one by one, your camera name will auto increment (Camera 1, Camera 2, ...).</p>
 
     <form id="camFeedForm">
       <!-- Live / Recorded Selection -->
       <label>
-        <input type="radio" name="feedType" value="live" required>
+        <input type="radio" name="feedType" value="live" required checked>
         Start Live Feed
       </label>
       <label>
@@ -561,52 +562,73 @@ try {
         Upload Recorded Video
       </label>
 
+      <div class="cam-auto-label-box">
+        Camera Name: <strong id="camAutoLabel">Camera 1</strong>
+      </div>
+
       <!-- URL input for Live -->
       <div id="camLiveInputSection">
-        <input type="text" id="camLiveURL" placeholder="Enter live video URL (MP4/HLS)">
+        <label>
+          Stream Access Type
+          <select id="camStreamScope" name="stream_scope">
+            <option value="private">Private (owner permission)</option>
+            <option value="public">Public (open URL)</option>
+          </select>
+        </label>
+        <input type="url" id="camLiveURL" name="live_url" placeholder="Enter live video URL (MP4/HLS)">
+        <div class="cam-live-help">
+          <h5>Where to get a real Live CCTV URL?</h5>
+          <ul>
+            <li><strong>Private stream:</strong> collect URL from your own camera/NVR dashboard and keep owner permission.</li>
+            <li><strong>Public stream:</strong> ask provider for public playback URL (HLS <code>.m3u8</code> preferred).</li>
+            <li>Without owner permission, private CCTV access is not allowed.</li>
+          </ul>
+          <div class="cam-live-help-links">
+            <a href="https://www.earthcam.com/" target="_blank" rel="noopener">EarthCam</a>
+            <a href="https://www.skylinewebcams.com/" target="_blank" rel="noopener">Skyline Webcams</a>
+            <a href="https://www.livebeaches.com/" target="_blank" rel="noopener">Live Beaches</a>
+          </div>
+          <small>Tip: Public mode blocks local/private network URLs; Private mode allows owner-authorized internal URLs.</small>
+        </div>
       </div>
 
       <!-- File Upload Section for Recorded -->
       <div id="camUploadSection">
-        <input type="file" accept="video/*" id="camFileInput">
+        <input type="file" accept="video/*" id="camFileInput" name="recorded_video">
+        <small class="cam-form-hint">Long recorded footage is supported (depending on server upload limit).</small>
+        <div id="camRecordedPreviewWrap" class="cam-recorded-preview-wrap" style="display:none;">
+          <video id="camRecordedPreview" class="cam-recorded-preview" controls preload="metadata"></video>
+        </div>
       </div>
 
-      <!-- Permissions & Agreement -->
-      <fieldset>
-        <legend>Permissions & Agreement</legend>
+      <label>
+        Estimated Duration
+        <select name="streaming_hours">
+          <option value="30min">Up to 30 min</option>
+          <option value="1to2h">1-2 hours</option>
+          <option value="2to6h">2-6 hours</option>
+          <option value="6to12h">6-12 hours</option>
+          <option value="12to24h">12-24 hours</option>
+          <option value="24plus">24+ hours</option>
+        </select>
+      </label>
 
-        <label>Streaming Hours:
-          <select>
-            <option>Continuous</option>
-            <option>Scheduled</option>
-          </select>
-        </label>
-
-        <label>
-          <input type="checkbox"> Allow AI Detection
-        </label>
-
-        <label>
-          <input type="checkbox"> Allow Public Viewing
-        </label>
-
-        <label>
-          <input type="checkbox"> AI Alerts to Volunteers
-        </label>
-
-        <label>
-          <input type="checkbox" required> Agree to Terms & Conditions
-        </label>
-
-        <label>
-          <input type="checkbox" required> Confirm Ownership of camera/footage
-        </label>
-      </fieldset>
+      <label class="cam-owner-consent">
+        <input type="checkbox" id="camPermissionConfirm" name="permission_confirmed" required>
+        I confirm this CCTV/live stream is mine or I have owner permission.
+      </label>
 
       <button type="submit" class="cam-submit-btn">
-        Submit
+        Add CCTV Feed
       </button>
     </form>
+
+    <div class="cam-pricing-rules">
+      <h4>Feed Payment Rule</h4>
+      <p><strong>Recorded Feed:</strong> ৳60 per hour</p>
+      <p><strong>Live Feed:</strong> ৳100 per hour</p>
+      <small>Live feed pays more because real-time monitoring demand is higher.</small>
+    </div>
   </div>
 </div>
 

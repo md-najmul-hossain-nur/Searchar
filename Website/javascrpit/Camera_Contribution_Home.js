@@ -400,77 +400,282 @@ function filterPosts(category) {
   });
 }
 document.addEventListener("DOMContentLoaded", () => {
-  // Elements
   const feedForm = document.getElementById("camFeedForm");
   const uploadSection = document.getElementById("camUploadSection");
   const liveInputSection = document.getElementById("camLiveInputSection");
   const fileInput = document.getElementById("camFileInput");
   const liveURLInput = document.getElementById("camLiveURL");
+  const sourceList = document.getElementById("camSourceList");
+  const refreshBtn = document.getElementById("camRefreshFeedsBtn");
+  const autoLabelEl = document.getElementById("camAutoLabel");
+  const permissionConfirm = document.getElementById("camPermissionConfirm");
+  const recordedPreviewWrap = document.getElementById("camRecordedPreviewWrap");
+  const recordedPreview = document.getElementById("camRecordedPreview");
 
   const feedFormModal = document.getElementById("camFeedFormModal");
   const feedFormClose = feedFormModal.querySelector(".cam-form-close");
-
   const startFeedBtn = document.getElementById("startFeedBtn");
 
-  // Helpers
-  const openModal = () => feedFormModal.classList.add("show");
-  const closeModal = () => {
-    feedFormModal.classList.remove("show");
-    // Reset form and hide sections
-    feedForm.reset();
-    uploadSection.style.display = "none";
-    liveInputSection.style.display = "none";
+  if (!feedForm || !feedFormModal || !startFeedBtn) {
+    return;
+  }
+
+  let currentFeeds = [];
+
+  const getNextCameraLabel = () => {
+    if (!Array.isArray(currentFeeds) || currentFeeds.length === 0) {
+      return 'Camera 1';
+    }
+    let maxIndex = 0;
+    currentFeeds.forEach((feed) => {
+      const label = String(feed?.feed_label || '').trim();
+      const match = label.match(/(\d+)$/);
+      if (match) {
+        const n = Number(match[1]);
+        if (Number.isFinite(n) && n > maxIndex) {
+          maxIndex = n;
+        }
+      }
+    });
+    return `Camera ${maxIndex + 1}`;
   };
 
-  // Open feed form modal
-  startFeedBtn.addEventListener("click", openModal);
+  const updateAutoLabel = () => {
+    if (autoLabelEl) {
+      autoLabelEl.textContent = getNextCameraLabel();
+    }
+  };
 
-  // Toggle input sections based on radio selection
-  feedForm.addEventListener("change", (e) => {
-    const type = feedForm.feedType?.value;
+  const applyTypeUI = () => {
+    const type = feedForm.feedType?.value || "live";
     if (type === "live") {
       liveInputSection.style.display = "block";
       uploadSection.style.display = "none";
-    } else if (type === "recorded") {
+      liveURLInput.required = true;
+      fileInput.required = false;
+    } else {
       uploadSection.style.display = "block";
       liveInputSection.style.display = "none";
+      liveURLInput.required = false;
+      fileInput.required = true;
     }
-  });
+  };
 
-  // Form submit
-  feedForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const type = feedForm.feedType?.value;
+  const formHardReset = () => {
+    feedForm.reset();
+    const liveRadio = feedForm.querySelector('input[name="feedType"][value="live"]');
+    if (liveRadio) liveRadio.checked = true;
+    applyTypeUI();
+    if (recordedPreview) recordedPreview.removeAttribute('src');
+    if (recordedPreviewWrap) recordedPreviewWrap.style.display = 'none';
+    updateAutoLabel();
+  };
 
-    if (type === "live") {
-      const url = liveURLInput.value.trim();
-      if (url) {
-        alert("Video link has been submitted!");
-      } else {
-        try {
-          await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-          alert("Live feed has started!");
-        } catch (err) {
-          alert("Camera/Mic permission denied or unavailable.\n" + err);
+  const renderFeeds = (feeds) => {
+    currentFeeds = Array.isArray(feeds) ? feeds : [];
+    updateAutoLabel();
+
+    if (!sourceList) return;
+    if (!Array.isArray(feeds) || feeds.length === 0) {
+      sourceList.innerHTML = '<div class="cam-empty">No CCTV source added yet.</div>';
+      return;
+    }
+
+    sourceList.innerHTML = feeds.map((feed) => {
+      const typeText = (feed.feed_type || 'live').toLowerCase() === 'recorded' ? 'Recorded Video' : 'Live URL';
+      const statusText = Number(feed.is_active) === 1 ? 'Active' : 'Closed';
+      const toggleText = Number(feed.is_active) === 1 ? 'Close CCTV' : 'Reopen CCTV';
+      const feedLink = feed.feed_type === 'live' && feed.live_url
+        ? `<a href="${feed.live_url}" target="_blank" rel="noopener">Open URL</a>`
+        : (feed.video_url ? `<a href="${feed.video_url}" target="_blank" rel="noopener">Open Video</a>` : 'No media');
+
+      return `
+        <article class="cam-source-item" data-feed-id="${feed.feed_id}">
+          <div class="cam-source-main">
+            <strong>${feed.feed_label || 'Camera Feed'}</strong>
+            <span>${typeText}</span>
+            <span>${feed.camera_location || 'Location not set'}</span>
+            <span class="cam-source-status ${Number(feed.is_active) === 1 ? 'is-active' : 'is-closed'}">${statusText}</span>
+            <span class="cam-source-link">${feedLink}</span>
+          </div>
+          <div class="cam-source-actions">
+            <button type="button" class="cam-source-toggle" data-action="toggle" data-next="${Number(feed.is_active) === 1 ? 0 : 1}">${toggleText}</button>
+            <button type="button" class="cam-source-delete" data-action="delete">Remove</button>
+          </div>
+        </article>
+      `;
+    }).join('');
+  };
+
+  const fetchFeeds = async () => {
+    try {
+      const response = await fetch('../Php/camera_cctv_feeds.php', {
+        method: 'GET',
+        credentials: 'same-origin',
+        headers: { 'Accept': 'application/json' }
+      });
+      const data = await response.json();
+      if (!response.ok || !data?.success) {
+        currentFeeds = [];
+        updateAutoLabel();
+        if (sourceList) {
+          sourceList.innerHTML = '<div class="cam-empty">Failed to load CCTV sources.</div>';
         }
+        return;
       }
-    } else if (type === "recorded") {
-      const file = fileInput.files[0];
-      if (file) {
-        alert("Video file has been uploaded!");
+      const feeds = Array.isArray(data.feeds) ? data.feeds : [];
+      if (sourceList) {
+        renderFeeds(feeds);
       } else {
-        alert("Please select a video file.");
+        currentFeeds = feeds;
+        updateAutoLabel();
+      }
+    } catch (error) {
+      if (sourceList) {
+        sourceList.innerHTML = '<div class="cam-empty">Network error while loading CCTV sources.</div>';
       }
     }
+  };
 
-    closeModal();
+  const openFeedModal = async () => {
+    feedFormModal.classList.add('show');
+    applyTypeUI();
+    await fetchFeeds();
+  };
+
+  const closeFeedModal = () => {
+    feedFormModal.classList.remove('show');
+    formHardReset();
+  };
+
+  startFeedBtn.addEventListener('click', openFeedModal);
+
+  feedForm.addEventListener('change', () => {
+    applyTypeUI();
   });
 
-  // Close button
-  feedFormClose.addEventListener("click", closeModal);
+  if (fileInput) {
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+      if (!file || !recordedPreview || !recordedPreviewWrap) {
+        if (recordedPreview) recordedPreview.removeAttribute('src');
+        if (recordedPreviewWrap) recordedPreviewWrap.style.display = 'none';
+        return;
+      }
 
-  // Close modal on outside click
-  window.addEventListener("click", (e) => {
-    if (e.target === feedFormModal) closeModal();
+      const previewUrl = URL.createObjectURL(file);
+      recordedPreview.src = previewUrl;
+      recordedPreviewWrap.style.display = 'block';
+      recordedPreview.onloadeddata = () => {
+        URL.revokeObjectURL(previewUrl);
+      };
+    });
+  }
+
+  feedForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!permissionConfirm || !permissionConfirm.checked) {
+      alert('Owner permission confirmation is required.');
+      return;
+    }
+
+    const submitBtn = feedForm.querySelector('.cam-submit-btn');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Saving...';
+    }
+
+    try {
+      const fd = new FormData();
+      fd.append('action', 'create');
+      fd.append('feed_type', feedForm.feedType?.value || 'live');
+      fd.append('feed_label', getNextCameraLabel());
+      fd.append('stream_scope', feedForm.stream_scope?.value || 'private');
+      fd.append('live_url', liveURLInput.value.trim());
+      fd.append('streaming_hours', feedForm.streaming_hours?.value || 'continuous');
+      fd.append('permission_confirmed', '1');
+      if (fileInput.files[0]) fd.append('recorded_video', fileInput.files[0], fileInput.files[0].name);
+
+      const response = await fetch('../Php/camera_cctv_feeds.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        body: fd,
+        headers: { 'Accept': 'application/json' }
+      });
+      const data = await response.json();
+      if (!response.ok || !data?.success) {
+        alert(data?.error || 'Failed to save CCTV feed.');
+        return;
+      }
+
+      alert('CCTV feed added successfully.');
+      formHardReset();
+      await fetchFeeds();
+    } catch (error) {
+      alert('Network error while saving CCTV feed.');
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Add CCTV Feed';
+      }
+    }
   });
+
+  if (sourceList) {
+    sourceList.addEventListener('click', async (e) => {
+      const button = e.target.closest('button[data-action]');
+      if (!button) return;
+      const item = e.target.closest('.cam-source-item');
+      const feedId = Number(item?.getAttribute('data-feed-id') || '0');
+      if (!feedId) return;
+
+      const action = button.getAttribute('data-action');
+      const fd = new FormData();
+      fd.append('action', action || '');
+      fd.append('feed_id', String(feedId));
+
+      if (action === 'toggle') {
+        fd.append('is_active', button.getAttribute('data-next') || '0');
+      }
+
+      if (action === 'delete') {
+        const ok = window.confirm('Do you want to remove this CCTV source?');
+        if (!ok) return;
+      }
+
+      button.disabled = true;
+      try {
+        const response = await fetch('../Php/camera_cctv_feeds.php', {
+          method: 'POST',
+          credentials: 'same-origin',
+          body: fd,
+          headers: { 'Accept': 'application/json' }
+        });
+        const data = await response.json();
+        if (!response.ok || !data?.success) {
+          alert(data?.error || 'Action failed.');
+          return;
+        }
+        await fetchFeeds();
+      } catch (error) {
+        alert('Network error while updating source.');
+      } finally {
+        button.disabled = false;
+      }
+    });
+  }
+
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', fetchFeeds);
+  }
+
+  feedFormClose.addEventListener('click', closeFeedModal);
+
+  window.addEventListener('click', (e) => {
+    if (e.target === feedFormModal) {
+      closeFeedModal();
+    }
+  });
+
+  formHardReset();
 });

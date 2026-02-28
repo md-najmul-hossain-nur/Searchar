@@ -11,6 +11,8 @@ CREATE DATABASE IF NOT EXISTS `searchar`
 USE `searchar`;
 
 DROP TABLE IF EXISTS `traffic_logs`;
+DROP TABLE IF EXISTS `camera_cctv_feeds`;
+DROP TABLE IF EXISTS `withdraw_requests`;
 DROP TABLE IF EXISTS `donations`;
 DROP TABLE IF EXISTS `auth_users`;
 DROP TABLE IF EXISTS `signup_blacklist`;
@@ -160,6 +162,8 @@ CREATE TABLE `posts` (
 	`share_facebook` TINYINT(1) NOT NULL DEFAULT 0,
 	`share_anonymous` TINYINT(1) NOT NULL DEFAULT 0,
 	`status` VARCHAR(20) DEFAULT 'pending',
+	`report_status` VARCHAR(20) DEFAULT 'not_reported',
+	`reported_at` DATETIME DEFAULT NULL,
 	`is_share` TINYINT(1) NOT NULL DEFAULT 0,
 	`shared_post_id` INT UNSIGNED DEFAULT NULL,
 	`shared_payload` LONGTEXT DEFAULT NULL,
@@ -169,7 +173,31 @@ CREATE TABLE `posts` (
 	KEY `idx_posts_author` (`author_role`, `author_id`),
 	KEY `idx_posts_category` (`category`),
 	KEY `idx_posts_status` (`status`),
+	KEY `idx_posts_report_status` (`report_status`),
 	KEY `idx_posts_created` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `camera_cctv_feeds` (
+	`feed_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+	`camera_id` INT UNSIGNED NOT NULL,
+	`feed_label` VARCHAR(150) NOT NULL,
+	`feed_type` VARCHAR(20) NOT NULL DEFAULT 'live',
+	`stream_scope` VARCHAR(20) NOT NULL DEFAULT 'private',
+	`live_url` VARCHAR(1200) DEFAULT NULL,
+	`video_path` VARCHAR(600) DEFAULT NULL,
+	`camera_location` VARCHAR(255) DEFAULT NULL,
+	`streaming_hours` VARCHAR(80) NOT NULL DEFAULT 'continuous',
+	`allow_ai_detection` TINYINT(1) NOT NULL DEFAULT 0,
+	`allow_public_viewing` TINYINT(1) NOT NULL DEFAULT 0,
+	`ai_alerts_to_volunteers` TINYINT(1) NOT NULL DEFAULT 0,
+	`accumulated_seconds` BIGINT UNSIGNED NOT NULL DEFAULT 0,
+	`active_started_at` DATETIME DEFAULT NULL,
+	`is_active` TINYINT(1) NOT NULL DEFAULT 1,
+	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updated_at` TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+	PRIMARY KEY (`feed_id`),
+	KEY `idx_camera_active` (`camera_id`, `is_active`),
+	KEY `idx_camera_created` (`camera_id`, `created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `missing_person_reports` (
@@ -221,11 +249,19 @@ CREATE TABLE `volunteer_missions` (
 	`mission_details` TEXT DEFAULT NULL,
 	`mission_location` VARCHAR(255) DEFAULT NULL,
 	`status` VARCHAR(30) NOT NULL DEFAULT 'assigned',
+	`response_status` VARCHAR(30) NOT NULL DEFAULT 'pending',
+	`case_ref` VARCHAR(80) DEFAULT NULL,
+	`source_notification_id` INT UNSIGNED DEFAULT NULL,
+	`proof_file` VARCHAR(255) DEFAULT NULL,
+	`proof_submitted_at` DATETIME DEFAULT NULL,
+	`completed_at` DATETIME DEFAULT NULL,
 	`assigned_by` VARCHAR(100) NOT NULL DEFAULT 'admin',
 	`assigned_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (`mission_id`),
 	KEY `idx_vm_volunteer` (`volunteer_id`),
-	KEY `idx_vm_status` (`status`)
+	KEY `idx_vm_status` (`status`),
+	KEY `idx_vm_response` (`response_status`),
+	KEY `idx_vm_source_notification` (`source_notification_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `signup_blacklist` (
@@ -266,6 +302,19 @@ CREATE TABLE `donations` (
 	`message` TEXT DEFAULT NULL,
 	PRIMARY KEY (`donation_id`),
 	KEY `idx_donations_date` (`date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `withdraw_requests` (
+	`withdraw_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+	`requester_name` VARCHAR(150) NOT NULL,
+	`amount` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+	`status` VARCHAR(30) NOT NULL DEFAULT 'pending',
+	`request_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`request_note` VARCHAR(120) DEFAULT NULL,
+	`updated_at` DATETIME DEFAULT NULL,
+	PRIMARY KEY (`withdraw_id`),
+	KEY `idx_withdraw_status` (`status`),
+	KEY `idx_withdraw_request_date` (`request_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `traffic_logs` (

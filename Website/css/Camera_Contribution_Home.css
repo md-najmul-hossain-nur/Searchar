@@ -85,6 +85,14 @@ body {
 .navbar-donate:hover {
   background: #e3471c;
 }
+
+:root {
+  --cc-home-btn-radius: 2px;
+}
+
+button:not(.edit-btn):not(.notifications-drawer-close):not(.post-modal-close):not(.cam-form-close) {
+  border-radius: var(--cc-home-btn-radius) !important;
+}
 /* Reset/normalize */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -1902,32 +1910,40 @@ background: linear-gradient(80deg, #d1b75a);
 /* Camera Contributor Panel (Matching Volunteer Section Style) */
 .camera-contributor-panel {
   background: #fff;
-  padding: 15px;
+  padding: 16px;
+  border: 1px solid #eceff3;
+  border-top: 3px solid #f05454;
   border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  text-align: left;
 }
 
 .camera-contributor-panel h4 {
-  font-size: 1.1rem;
-  margin-bottom: 8px;
+  font-size: 1.05rem;
+  margin-bottom: 10px;
   color: #1a232a;
+  font-weight: 700;
 }
 
 .camera-btn {
-  background: #f05454;  /* Same red as volunteer button */
+  background: linear-gradient(90deg, #f05454 0%, #e3471c 100%);
   color: #fff;
   border: none;
-  padding: 8px 18px;
+  padding: 10px 14px;
   font-size: 0.9rem;
-  border-radius: 25px;
+  border-radius: var(--cc-home-btn-radius);
   cursor: pointer;
-  transition: background 0.2s ease-in-out;
-  margin: 5px;
+  transition: background 0.2s ease-in-out, transform 0.18s ease;
+  margin: 6px 0;
+  width: 100%;
+  text-align: center;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(240, 84, 84, 0.22);
 }
 
 .camera-btn:hover {
-  background: #e3471c; /* Hover color */
+  background: linear-gradient(90deg, #e94b4b 0%, #d63f17 100%);
+  transform: translateY(-1px);
 }
 
 /* =========================
@@ -1991,6 +2007,7 @@ background: linear-gradient(80deg, #d1b75a);
 
 /* Form Inputs */
 #camFeedForm input[type="text"],
+#camFeedForm input[type="url"],
 #camFeedForm input[type="file"],
 #camFeedForm select {
   width: 100%;
@@ -2005,6 +2022,7 @@ background: linear-gradient(80deg, #d1b75a);
 }
 
 #camFeedForm input[type="text"]:focus,
+#camFeedForm input[type="url"]:focus,
 #camFeedForm input[type="file"]:focus,
 #camFeedForm select:focus {
   border-color: #f05454;
@@ -2094,4 +2112,294 @@ legend {
 .user-bio:hover {
     background-color: #f0f0f0;
     border-color: #d0d0d0;
+}
+
+.cam-form-subtitle {
+  font-size: 0.86rem;
+  color: #637282;
+  margin: -2px 0 12px;
+}
+
+.cam-auto-label-box {
+  margin: 6px 0 12px;
+  font-size: 0.9rem;
+  color: #2a3a4e;
+  background: #f8fbff;
+  border: 1px solid #e4edf7;
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+
+.cam-auto-label-box strong {
+  color: #f05454;
+}
+
+.cam-form-hint {
+  display: block;
+  margin-top: -4px;
+  margin-bottom: 6px;
+  font-size: 0.78rem;
+  color: #6b7a89;
+}
+
+.cam-source-manager {
+  margin-top: 16px;
+  border-top: 1px solid #ebeff4;
+  padding-top: 12px;
+}
+
+.cam-source-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.cam-source-head h4 {
+  font-size: 0.95rem;
+  color: #2a3a4e;
+}
+
+.cam-refresh-btn {
+  border: 1px solid #d9e2ec;
+  background: #fff;
+  color: #2a3a4e;
+  font-size: 0.82rem;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.cam-source-list {
+  max-height: 220px;
+  overflow: auto;
+  display: grid;
+  gap: 8px;
+}
+
+.cam-source-item {
+  border: 1px solid #e8edf3;
+  background: #fbfdff;
+  border-radius: 8px;
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.cam-source-main {
+  display: grid;
+  gap: 3px;
+  font-size: 0.82rem;
+  color: #5a6a7c;
+}
+
+.cam-source-main strong {
+  color: #1f2f42;
+  font-size: 0.9rem;
+}
+
+.cam-source-link a {
+  color: #f05454;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.cam-source-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.cam-source-actions button {
+  border: 1px solid #d9e2ec;
+  background: #fff;
+  color: #1f2f42;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.cam-source-delete {
+  color: #a73636 !important;
+  border-color: #f0d4d4 !important;
+}
+
+.cam-source-status {
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+}
+
+.cam-source-status.is-active {
+  background: #e8f7ef;
+  color: #1c7a47;
+}
+
+.cam-source-status.is-closed {
+  background: #fff2f2;
+  color: #b03a3a;
+}
+
+.cam-empty {
+  font-size: 0.83rem;
+  color: #6b7a89;
+  text-align: center;
+  padding: 10px 0;
+}
+
+/* Camera feed modal redesign overrides */
+.cam-form-popup {
+  align-items: flex-start;
+  padding-top: 132px;
+  padding-bottom: 28px;
+}
+
+.cam-form-content {
+  width: min(860px, 94vw);
+  max-height: calc(100vh - 160px);
+  overflow-y: auto;
+  border-radius: 14px;
+  box-shadow: 0 10px 26px rgba(0,0,0,0.22);
+}
+
+#camFeedForm {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 14px;
+}
+
+#camFeedForm > label,
+#camFeedForm > #camLiveInputSection,
+#camFeedForm > #camUploadSection,
+#camFeedForm > .cam-auto-label-box,
+#camFeedForm > .cam-submit-btn {
+  grid-column: 1 / -1;
+}
+
+#camFeedForm > label:first-child,
+#camFeedForm > label:nth-child(2) {
+  grid-column: span 1;
+  border: 1px solid #e4ecf4;
+  background: #f8fbff;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.cam-recorded-preview-wrap {
+  margin-top: 8px;
+  border: 1px solid #e3ebf3;
+  border-radius: 10px;
+  background: #f7fbff;
+  padding: 8px;
+}
+
+.cam-recorded-preview {
+  width: 100%;
+  max-height: 260px;
+  border-radius: 8px;
+  background: #111;
+}
+
+.cam-pricing-rules {
+  margin-top: 14px;
+  border: 1px solid #e5edf6;
+  background: #f9fcff;
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.cam-pricing-rules h4 {
+  font-size: 0.95rem;
+  color: #243648;
+  margin-bottom: 6px;
+}
+
+.cam-pricing-rules p {
+  font-size: 0.88rem;
+  color: #334a5f;
+  margin: 4px 0;
+}
+
+.cam-pricing-rules small {
+  display: block;
+  margin-top: 6px;
+  color: #6b7a89;
+}
+
+.cam-live-help {
+  margin-top: 8px;
+  border: 1px solid #e4edf7;
+  border-radius: 10px;
+  background: #f8fbff;
+  padding: 10px 12px;
+}
+
+.cam-live-help h5 {
+  margin: 0 0 6px;
+  font-size: 0.88rem;
+  color: #223446;
+}
+
+.cam-live-help ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.cam-live-help li {
+  font-size: 0.8rem;
+  color: #44586f;
+  margin: 3px 0;
+}
+
+.cam-live-help-links {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.cam-live-help-links a {
+  text-decoration: none;
+  border: 1px solid #d8e4f0;
+  background: #fff;
+  color: #2a3a4e;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.cam-live-help small {
+  display: block;
+  margin-top: 8px;
+  color: #6d7b89;
+  font-size: 0.75rem;
+}
+
+.cam-owner-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  border: 1px solid #e3ebf3;
+  background: #f8fbff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.84rem;
+  color: #2b3f53;
+}
+
+.cam-owner-consent input[type="checkbox"] {
+  margin-top: 2px;
+}
+
+@media (max-width: 640px) {
+  #camFeedForm {
+    grid-template-columns: 1fr;
+  }
+
+  .cam-form-content {
+    width: 94vw;
+    max-height: calc(100vh - 110px);
+  }
 }

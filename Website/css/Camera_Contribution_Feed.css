@@ -13,6 +13,7 @@ body {
   background: #ffffff;
   color: #1a232a;
   display: flex;
+  justify-content: space-between;
   align-items: center;
   padding: 0 32px;
   height: 104px;
@@ -30,6 +31,24 @@ body {
   font-size: 1.15rem;
   letter-spacing: 2px;
   gap: 10px;
+}
+
+.navbar-user-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 40px;
+}
+
+.navbar-user-email {
+  color: #2a3a4e;
+  font-size: 0.9rem;
+}
+
+.logout-gif {
+  height: 1.5em;
+  border-radius: 6px;
+  margin-left: 6px;
 }
 
 .navbar-logo-img {
@@ -160,6 +179,10 @@ header {
   object-fit: cover;
   background: #eaeaea;
 }
+iframe.camera-video,
+iframe.video-preview {
+  border: 0;
+}
 .live-badge {
   position: absolute;
   top: 10px;
@@ -170,6 +193,40 @@ header {
   font-weight: 600;
   border-radius: 8px;
   padding: 4px 10px;
+}
+.feed-controls {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.feed-controls form {
+  margin: 0;
+}
+
+.feed-action-btn {
+  border: 1px solid #dce5ef;
+  background: #fff;
+  color: #2a3a4e;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.feed-action-btn.danger {
+  color: #b13d3d;
+  border-color: #f0d3d3;
+}
+
+.live-link {
+  display: inline-block;
+  margin-top: 6px;
+  color: #f75c3c;
+  font-size: 0.84rem;
+  text-decoration: none;
+  font-weight: 600;
 }
 .online-badge {
   position: absolute;
@@ -505,4 +562,240 @@ header {
 .back-btn:hover {
   background-color: #f05454;
   color: #fff;
+}
+
+/* =========================
+   Feed Redesign Override v2
+========================= */
+body {
+  background: #f6f8fb;
+  color: #1f2f42;
+}
+
+.container {
+  max-width: 1320px;
+  margin-top: 120px;
+  padding: 18px 20px 28px;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+header {
+  text-align: left;
+  margin-bottom: 18px;
+}
+
+.header-top {
+  gap: 14px;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e8edf4;
+  border-radius: 14px;
+  padding: 16px 18px;
+  box-shadow: 0 3px 10px rgba(17, 24, 39, 0.05);
+}
+
+.main-title {
+  margin: 0 0 4px;
+  font-size: 1.75rem;
+  color: #203246;
+  letter-spacing: 0.2px;
+}
+
+.subtitle {
+  margin: 0;
+  color: #617286;
+  font-size: 0.94rem;
+}
+
+.back-btn {
+  border-radius: 10px;
+  box-shadow: none;
+  font-weight: 600;
+  padding: 9px 14px;
+}
+
+.user-card {
+  border-radius: 14px;
+  border: 1px solid #e8edf4;
+  box-shadow: 0 3px 12px rgba(17, 24, 39, 0.05);
+  margin-bottom: 18px;
+}
+
+.user-name {
+  color: #1f3043;
+}
+
+.user-role {
+  color: #6b7c90;
+  font-size: 0.95rem;
+}
+
+.user-stats span {
+  border-radius: 8px;
+  background: #f7fafc;
+}
+
+.cameras {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.camera-card {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid #e5ebf3;
+  box-shadow: 0 4px 14px rgba(17, 24, 39, 0.05);
+  overflow: hidden;
+}
+
+.camera-video-wrap,
+.camera-img {
+  height: 196px;
+}
+
+.camera-video {
+  object-fit: cover;
+  background: #0f172a;
+}
+
+.feed-status {
+  top: 12px;
+  right: 12px;
+  font-size: 0.72rem;
+  padding: 5px 10px;
+  backdrop-filter: blur(2px);
+}
+
+.camera-info {
+  padding: 12px 14px 14px;
+  gap: 6px;
+}
+
+.camera-title {
+  font-size: 1rem;
+  color: #223447;
+}
+
+.camera-time {
+  font-size: 0.82rem;
+  color: #72849a;
+}
+
+.camera-caption {
+  margin-top: 2px;
+  font-size: 0.86rem;
+  color: #53667e;
+}
+
+.camera-earning {
+  margin-top: 3px;
+  font-size: 0.81rem;
+  color: #2c465f;
+  background: #f5f9ff;
+  border: 1px solid #e2ecf8;
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+
+.feed-controls {
+  margin-top: 8px;
+}
+
+.feed-action-btn {
+  border-radius: 8px;
+  font-size: 0.79rem;
+  font-weight: 600;
+  padding: 7px 10px;
+  transition: all 0.2s ease;
+}
+
+.feed-action-btn:hover {
+  border-color: #f2b2a8;
+  color: #f05454;
+}
+
+.feed-action-btn.danger:hover {
+  border-color: #e8a2a2;
+  color: #a02e2e;
+}
+
+.live-link {
+  margin-top: 3px;
+  font-size: 0.78rem;
+}
+
+.broadcast {
+  margin-top: 4px;
+}
+
+.broadcast-video {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 14px;
+  border: 1px solid #e5ebf3;
+  box-shadow: 0 3px 12px rgba(17, 24, 39, 0.05);
+  padding: 16px;
+}
+
+.video-player {
+  height: 300px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.broadcast-title {
+  font-size: 1.08rem;
+}
+
+.secondary-btn {
+  border-radius: 10px;
+  font-size: 0.95rem;
+  padding: 10px 14px;
+}
+
+.latest-caption {
+  margin-top: 8px;
+  color: #495f75;
+}
+
+.empty-state {
+  border-style: solid;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 3px 10px rgba(17, 24, 39, 0.04);
+}
+
+@media (max-width: 920px) {
+  .header-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .video-player {
+    height: 230px;
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    margin-top: 110px;
+    padding: 10px 10px 18px;
+  }
+
+  .cameras {
+    grid-template-columns: 1fr;
+  }
+
+  .camera-video-wrap,
+  .camera-img {
+    height: 186px;
+  }
+
+  .video-player {
+    height: 200px;
+  }
 }
