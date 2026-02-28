@@ -317,6 +317,27 @@ setInterval(loadCameraSeries, 30000);
 let applyPostControlFilters = null;
 
 document.addEventListener('click', function (event) {
+  const groupToggleButton = event.target.closest('[data-post-group-toggle]');
+  if (groupToggleButton) {
+    const groupKey = groupToggleButton.getAttribute('data-post-group-toggle');
+    if (!groupKey) return;
+
+    const detailRow = document.querySelector(`[data-post-group-detail="${groupKey}"]`);
+    if (!detailRow) return;
+
+    const expanded = groupToggleButton.getAttribute('data-expanded') === '1';
+    if (expanded) {
+      detailRow.style.display = 'none';
+      groupToggleButton.setAttribute('data-expanded', '0');
+      groupToggleButton.textContent = 'View Details';
+    } else {
+      detailRow.style.display = '';
+      groupToggleButton.setAttribute('data-expanded', '1');
+      groupToggleButton.textContent = 'Hide Details';
+    }
+    return;
+  }
+
   const detailsButton = event.target.closest('[data-post-details]');
   if (detailsButton) {
     const row = detailsButton.closest('tr');
@@ -540,7 +561,7 @@ document.addEventListener('click', function (event) {
   function normalizeRoleKey(value) {
     const raw = String(value || '').trim().toLowerCase().replace(/[\s-]+/g, '_');
     if (!raw) return 'user';
-    if (raw.includes('camera')) return 'camera_contribution';
+    if (raw.includes('camera') || raw === 'contributor' || raw.includes('cameraman') || raw.includes('camera_contributor')) return 'camera_contribution';
     if (raw.includes('police')) return 'policeman';
     if (raw.includes('volunteer')) return 'volunteer';
     if (raw.includes('user')) return 'user';
@@ -553,32 +574,93 @@ document.addEventListener('click', function (event) {
       return;
     }
 
-    tableBody.innerHTML = rows.map(row => {
-      const id = Number(row.id || 0);
-      const postIdText = id > 0 ? `PT-${String(id).padStart(3, '0')}` : '—';
-      const statusText = titleCase(row.status || 'pending');
-      const roleText = titleCase(row.author_role || 'user');
-      const reportStatus = String(row.report_status || 'not_reported').toLowerCase();
-      const isReported = reportStatus === 'reported';
+    const groups = new Map();
+    rows.forEach((row) => {
+      const groupKey = `${String(row.author_role || '').toLowerCase()}|${String(row.author_id || '')}|${String(row.author_name || '')}`;
+      if (!groups.has(groupKey)) groups.set(groupKey, []);
+      groups.get(groupKey).push(row);
+    });
+
+    const groupEntries = Array.from(groups.entries());
+
+    tableBody.innerHTML = groupEntries.map(([groupKey, groupRows], index) => {
+      const first = groupRows[0] || {};
+      const roleText = titleCase(first.author_role || 'user');
+      const authorName = first.author_name || 'Unknown';
+      const latestDate = formatDate(first.created_at || '');
+
+      const counts = {
+        total: groupRows.length,
+        pending: groupRows.filter(r => String(r.status || 'pending').toLowerCase() === 'pending').length,
+        approved: groupRows.filter(r => String(r.status || '').toLowerCase() === 'approved').length,
+        rejected: groupRows.filter(r => String(r.status || '').toLowerCase() === 'rejected').length
+      };
+
+      const detailRows = groupRows.map((row) => {
+        const id = Number(row.id || 0);
+        const postIdText = id > 0 ? `PT-${String(id).padStart(3, '0')}` : '—';
+        const statusText = titleCase(row.status || 'pending');
+        const reportStatus = String(row.report_status || 'not_reported').toLowerCase();
+        const isReported = reportStatus === 'reported';
+
+        return `
+          <tr class="post-detail-item" data-id="${escapeHtml(row.id || '')}" data-case-id="${escapeHtml(row.case_id || '')}" data-author-role="${escapeHtml(row.author_role || '')}" data-author-id="${escapeHtml(row.author_id || '')}" data-author-name="${escapeHtml(row.author_name || '')}"
+              data-category="${escapeHtml(row.category || '')}" data-text="${escapeHtml(row.text || '')}" data-media-path="${escapeHtml(row.media_path || '')}"
+              data-media-json='${escapeHtml(row.media_json || '')}' data-media-type="${escapeHtml(row.media_type || '')}" data-status="${escapeHtml((row.status || 'pending').toLowerCase())}" data-share-facebook="${escapeHtml(row.share_facebook || 0)}"
+              data-share-anonymous="${escapeHtml(row.share_anonymous || 0)}" data-is-share="${escapeHtml(row.is_share || 0)}" data-shared-post-id="${escapeHtml(row.shared_post_id || '')}" data-shared-payload='${escapeHtml(row.shared_payload || '')}' data-report-status="${escapeHtml(reportStatus)}">
+            <td>${escapeHtml(postIdText)}</td>
+            <td>${escapeHtml(titleCase(row.category || 'general'))}</td>
+            <td>${escapeHtml(row.author_name || 'Unknown')}</td>
+            <td>${escapeHtml(titleCase(row.author_role || 'user'))}</td>
+            <td>${yesNoBadge(row.share_facebook || 0)}</td>
+            <td>${yesNoBadge(row.share_anonymous || 0)}</td>
+            <td><span class="post-status ${statusClass(row.status)}">${escapeHtml(statusText)}</span></td>
+            <td>${escapeHtml(formatDate(row.created_at || ''))}</td>
+            <td>
+              <button class="view-profile-btn" data-post-details="1">View Details</button>
+              <button class="ghost" data-post-send-crime="1" ${isReported ? 'disabled' : ''}>${isReported ? 'Reported' : 'Make Report'}</button>
+              <button class="approve-btn" data-post-action="approve" ${statusClass(row.status) !== 'status-pending' ? 'disabled' : ''}>Approve</button>
+              <button class="reject-btn" data-post-action="reject" ${statusClass(row.status) !== 'status-pending' ? 'disabled' : ''}>Reject</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      const safeGroupKey = `post-group-${index}`;
 
       return `
-        <tr data-id="${escapeHtml(row.id || '')}" data-case-id="${escapeHtml(row.case_id || '')}" data-author-role="${escapeHtml(row.author_role || '')}" data-author-id="${escapeHtml(row.author_id || '')}" data-author-name="${escapeHtml(row.author_name || '')}"
-            data-category="${escapeHtml(row.category || '')}" data-text="${escapeHtml(row.text || '')}" data-media-path="${escapeHtml(row.media_path || '')}"
-            data-media-json='${escapeHtml(row.media_json || '')}' data-media-type="${escapeHtml(row.media_type || '')}" data-status="${escapeHtml((row.status || 'pending').toLowerCase())}" data-share-facebook="${escapeHtml(row.share_facebook || 0)}"
-            data-share-anonymous="${escapeHtml(row.share_anonymous || 0)}" data-is-share="${escapeHtml(row.is_share || 0)}" data-shared-post-id="${escapeHtml(row.shared_post_id || '')}" data-shared-payload='${escapeHtml(row.shared_payload || '')}' data-report-status="${escapeHtml(reportStatus)}">
-          <td>${escapeHtml(postIdText)}</td>
-          <td>${escapeHtml(titleCase(row.category || 'general'))}</td>
-          <td>${escapeHtml(row.author_name || 'Unknown')}</td>
+        <tr class="post-group-row" data-post-group="${safeGroupKey}">
+          <td><strong>${escapeHtml(`GRP-${String(index + 1).padStart(3, '0')}`)}</strong></td>
+          <td>${escapeHtml(`${counts.total} Posts`)}</td>
+          <td>${escapeHtml(authorName)}</td>
           <td>${escapeHtml(roleText)}</td>
-          <td>${yesNoBadge(row.share_facebook || 0)}</td>
-          <td>${yesNoBadge(row.share_anonymous || 0)}</td>
-          <td><span class="post-status ${statusClass(row.status)}">${escapeHtml(statusText)}</span></td>
-          <td>${escapeHtml(formatDate(row.created_at || ''))}</td>
-          <td>
-            <button class="view-profile-btn" data-post-details="1">View Details</button>
-            <button class="ghost" data-post-send-crime="1" ${isReported ? 'disabled' : ''}>${isReported ? 'Reported' : 'Make Report'}</button>
-            <button class="approve-btn" data-post-action="approve" ${statusClass(row.status) !== 'status-pending' ? 'disabled' : ''}>Approve</button>
-            <button class="reject-btn" data-post-action="reject" ${statusClass(row.status) !== 'status-pending' ? 'disabled' : ''}>Reject</button>
+          <td><span class="share-status share-yes">Total ${counts.total}</span></td>
+          <td><span class="status-pending">Pending ${counts.pending}</span></td>
+          <td><span class="status-approved">A ${counts.approved}</span> <span class="status-rejected">R ${counts.rejected}</span></td>
+          <td>${escapeHtml(latestDate)}</td>
+          <td><button class="ghost" type="button" data-post-group-toggle="${safeGroupKey}" data-expanded="0">View Details</button></td>
+        </tr>
+        <tr class="post-group-detail-row" data-post-group-detail="${safeGroupKey}" style="display:none;">
+          <td colspan="9" class="post-group-detail-cell">
+            <div class="post-group-detail-title">Post Details</div>
+            <table class="styled-table post-group-detail-table">
+              <thead>
+                <tr>
+                  <th>Post ID</th>
+                  <th>Category</th>
+                  <th>Posted By</th>
+                  <th>Role</th>
+                  <th>Share Facebook</th>
+                  <th>Share Anonymous</th>
+                  <th>Status</th>
+                  <th>Submitted</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${detailRows}
+              </tbody>
+            </table>
           </td>
         </tr>
       `;
@@ -596,6 +678,7 @@ document.addEventListener('click', function (event) {
         throw new Error(json?.error || 'Fetch failed');
       }
       renderPostRows(Array.isArray(json.rows) ? json.rows : []);
+      reorderPostDetailsByStatus();
       filterRows();
     } catch (error) {
       console.error('Post control fetch failed', error);
@@ -614,43 +697,63 @@ document.addEventListener('click', function (event) {
         .map(input => normalizeRoleKey(input.value))
     );
 
-    const rows = Array.from(tableBody.querySelectorAll('tr'));
+    Array.from(tableBody.querySelectorAll('.post-filter-empty-row')).forEach(row => row.remove());
+
+    const groupRows = Array.from(tableBody.querySelectorAll('.post-group-row'));
     let visibleCount = 0;
 
-    rows.forEach(row => {
-      if (row.classList.contains('post-filter-empty-row')) {
-        row.remove();
-        return;
+    groupRows.forEach(groupRow => {
+      const groupKey = groupRow.getAttribute('data-post-group');
+      const detailRow = groupKey
+        ? tableBody.querySelector(`.post-group-detail-row[data-post-group-detail="${groupKey}"]`)
+        : null;
+      const detailItems = Array.from(detailRow?.querySelectorAll('tr[data-id]') || []);
+
+      let groupVisiblePosts = 0;
+
+      detailItems.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length < 9) {
+          row.style.display = '';
+          groupVisiblePosts += 1;
+          visibleCount += 1;
+          return;
+        }
+
+        const postId = (cells[0]?.textContent || '').trim().toLowerCase();
+        const category = (cells[1]?.textContent || '').trim().toLowerCase();
+        const postedBy = (cells[2]?.textContent || '').trim().toLowerCase();
+        const role = (cells[3]?.textContent || '').trim().toLowerCase();
+        const roleKey = normalizeRoleKey(row.dataset.authorRole || role);
+        const statusText = (row.querySelector('.post-status')?.textContent || '').trim().toLowerCase();
+        const submittedText = (cells[7]?.textContent || '').trim();
+        const submittedDate = parseDateOnly(submittedText);
+
+        const keywordHaystack = `${postId} ${category} ${postedBy} ${role}`;
+        const keywordOk = !keyword || keywordHaystack.includes(keyword);
+        const statusOk = selectedStatus === 'all' || statusText === selectedStatus;
+        const roleOk = roleCheckboxes.length === 0
+          ? true
+          : selectedRoles.size > 0 && selectedRoles.has(roleKey);
+        const fromOk = !fromDate || (submittedDate && submittedDate >= fromDate);
+        const toOk = !toDate || (submittedDate && submittedDate <= toDate);
+
+        const isVisible = keywordOk && statusOk && roleOk && fromOk && toOk;
+        row.style.display = isVisible ? '' : 'none';
+        if (isVisible) {
+          groupVisiblePosts += 1;
+          visibleCount += 1;
+        }
+      });
+
+      const toggleBtn = groupRow.querySelector('[data-post-group-toggle]');
+      const expanded = toggleBtn?.getAttribute('data-expanded') === '1';
+      const groupVisible = groupVisiblePosts > 0;
+
+      groupRow.style.display = groupVisible ? '' : 'none';
+      if (detailRow) {
+        detailRow.style.display = groupVisible && expanded ? '' : 'none';
       }
-
-      const cells = row.querySelectorAll('td');
-      if (cells.length < 9) {
-        row.style.display = '';
-        visibleCount += 1;
-        return;
-      }
-
-      const postId = (cells[0]?.textContent || '').trim().toLowerCase();
-      const category = (cells[1]?.textContent || '').trim().toLowerCase();
-      const postedBy = (cells[2]?.textContent || '').trim().toLowerCase();
-      const role = (cells[3]?.textContent || '').trim().toLowerCase();
-      const roleKey = normalizeRoleKey(row.dataset.authorRole || role);
-      const statusText = (row.querySelector('.post-status')?.textContent || '').trim().toLowerCase();
-      const submittedText = (cells[7]?.textContent || '').trim();
-      const submittedDate = parseDateOnly(submittedText);
-
-      const keywordHaystack = `${postId} ${category} ${postedBy} ${role}`;
-      const keywordOk = !keyword || keywordHaystack.includes(keyword);
-      const statusOk = selectedStatus === 'all' || statusText === selectedStatus;
-      const roleOk = roleCheckboxes.length === 0
-        ? true
-        : selectedRoles.size > 0 && selectedRoles.has(roleKey);
-      const fromOk = !fromDate || (submittedDate && submittedDate >= fromDate);
-      const toOk = !toDate || (submittedDate && submittedDate <= toDate);
-
-      const isVisible = keywordOk && statusOk && roleOk && fromOk && toOk;
-      row.style.display = isVisible ? '' : 'none';
-      if (isVisible) visibleCount += 1;
     });
 
     if (visibleCount === 0) {
@@ -659,6 +762,37 @@ document.addEventListener('click', function (event) {
       noMatchRow.innerHTML = '<td colspan="9">No posts match the selected filters.</td>';
       tableBody.appendChild(noMatchRow);
     }
+  }
+
+  function getStatusSortWeight(statusText) {
+    const status = String(statusText || '').trim().toLowerCase();
+    if (status === 'approved') return 2;
+    if (status === 'rejected') return 1;
+    return 0;
+  }
+
+  function parseSortableDate(text) {
+    const d = new Date(String(text || '').trim());
+    return Number.isNaN(d.getTime()) ? 0 : d.getTime();
+  }
+
+  function reorderPostDetailsByStatus() {
+    const detailBodies = Array.from(section.querySelectorAll('.post-group-detail-table tbody'));
+    detailBodies.forEach((tbody) => {
+      const rows = Array.from(tbody.querySelectorAll('tr[data-id]'));
+      rows.sort((a, b) => {
+        const aStatus = (a.querySelector('.post-status')?.textContent || '').trim();
+        const bStatus = (b.querySelector('.post-status')?.textContent || '').trim();
+        const statusOrder = getStatusSortWeight(aStatus) - getStatusSortWeight(bStatus);
+        if (statusOrder !== 0) return statusOrder;
+
+        const aDateText = a.querySelectorAll('td')[7]?.textContent || '';
+        const bDateText = b.querySelectorAll('td')[7]?.textContent || '';
+        return parseSortableDate(bDateText) - parseSortableDate(aDateText);
+      });
+
+      rows.forEach(row => tbody.appendChild(row));
+    });
   }
 
   if (applyButton) {
@@ -679,6 +813,11 @@ document.addEventListener('click', function (event) {
   });
 
   applyPostControlFilters = filterRows;
+  const applyPostControlFiltersWithOrder = () => {
+    reorderPostDetailsByStatus();
+    filterRows();
+  };
+  applyPostControlFilters = applyPostControlFiltersWithOrder;
   document.addEventListener('admin:section-activated', function (event) {
     const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
     if (sectionId === 'post-control') {

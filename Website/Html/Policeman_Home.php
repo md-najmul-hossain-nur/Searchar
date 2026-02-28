@@ -21,6 +21,87 @@ try {
 }
 
 function e($v) { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
+
+function timeAgo(?string $datetime): string {
+  if (!$datetime) return 'Just now';
+  try {
+    $created = new DateTime($datetime);
+    $now = new DateTime();
+    $diff = $now->getTimestamp() - $created->getTimestamp();
+    if ($diff < 60) return 'Just now';
+    if ($diff < 3600) return floor($diff / 60) . ' min ago';
+    if ($diff < 86400) return floor($diff / 3600) . ' hr ago';
+    if ($diff < 2592000) return floor($diff / 86400) . ' day ago';
+    return $created->format('d M Y');
+  } catch (Exception $e) {
+    return 'Just now';
+  }
+}
+
+function getAuthorPhoto(PDO $pdo, string $authorRole, int $authorId): string {
+  static $roleMap = [
+    'user' => ['table' => 'users', 'id_col' => 'user_id', 'folder' => 'user'],
+    'police' => ['table' => 'policemen', 'id_col' => 'police_id', 'folder' => 'police'],
+    'volunteer' => ['table' => 'volunteers', 'id_col' => 'volunteer_id', 'folder' => 'volunteer'],
+    'contributor' => ['table' => 'camera_contributors', 'id_col' => 'camera_id', 'folder' => 'camera'],
+  ];
+  static $cache = [];
+
+  $cacheKey = $authorRole . ':' . $authorId;
+  if (isset($cache[$cacheKey])) {
+    return $cache[$cacheKey];
+  }
+
+  if (!isset($roleMap[$authorRole]) || $authorId <= 0) {
+    return $cache[$cacheKey] = '../Images/default_profile.png';
+  }
+
+  $table = $roleMap[$authorRole]['table'];
+  $idCol = $roleMap[$authorRole]['id_col'];
+  $folder = $roleMap[$authorRole]['folder'];
+
+  try {
+    $stmt = $pdo->prepare("SELECT profile_photo FROM {$table} WHERE {$idCol} = :id LIMIT 1");
+    $stmt->execute(['id' => $authorId]);
+    $photo = (string)($stmt->fetchColumn() ?: '');
+    if ($photo !== '') {
+      return $cache[$cacheKey] = '../uploads/' . $folder . '/' . e($photo);
+    }
+  } catch (Exception $e) {
+  }
+
+  return $cache[$cacheKey] = '../Images/default_profile.png';
+}
+
+$posts = [];
+try {
+  $hasMediaJson = false;
+  $hasStatus = false;
+
+  $mediaJsonCol = $pdo->query("SHOW COLUMNS FROM posts LIKE 'media_json'");
+  if ($mediaJsonCol && $mediaJsonCol->fetch(PDO::FETCH_ASSOC)) {
+    $hasMediaJson = true;
+  }
+
+  $statusCol = $pdo->query("SHOW COLUMNS FROM posts LIKE 'status'");
+  if ($statusCol && $statusCol->fetch(PDO::FETCH_ASSOC)) {
+    $hasStatus = true;
+  }
+
+  $selectCols = "id, author_role, author_id, author_name, category, text, media_path, media_type, created_at";
+  if ($hasMediaJson) {
+    $selectCols .= ", media_json";
+  }
+  if ($hasStatus) {
+    $selectCols .= ", status";
+  }
+
+  $whereClause = $hasStatus ? "WHERE status = 'approved'" : '';
+  $postStmt = $pdo->query("SELECT {$selectCols} FROM posts {$whereClause} ORDER BY id DESC LIMIT 50");
+  $posts = $postStmt ? $postStmt->fetchAll(PDO::FETCH_ASSOC) : [];
+} catch (Exception $e) {
+  $posts = [];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -206,10 +287,86 @@ function e($v) { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE
   </nav>
 </div>
 
+<?php if (!empty($posts)): ?>
+  <?php foreach ($posts as $post): ?>
+    <?php
+      $postId = (int)($post['id'] ?? 0);
+      $postCategory = (string)($post['category'] ?? 'general');
+      $postAuthorName = (string)($post['author_name'] ?? 'Unknown User');
+      $postText = (string)($post['text'] ?? '');
+      $postMediaType = (string)($post['media_type'] ?? '');
+      $postMediaPath = (string)($post['media_path'] ?? '');
+      $postMediaUrl = $postMediaPath !== '' ? ('../' . ltrim($postMediaPath, '/')) : '';
+      $postMediaJson = isset($post['media_json']) ? (string)$post['media_json'] : '';
+      $postImageUrls = [];
+      if ($postMediaJson !== '') {
+        $decodedImages = json_decode($postMediaJson, true);
+        if (is_array($decodedImages)) {
+          foreach ($decodedImages as $imgPath) {
+            if (is_string($imgPath) && trim($imgPath) !== '') {
+              $postImageUrls[] = '../' . ltrim($imgPath, '/');
+            }
+          }
+        }
+      }
+      if (empty($postImageUrls) && $postMediaType === 'image' && $postMediaUrl !== '') {
+        $postImageUrls[] = $postMediaUrl;
+      }
+      $authorRole = (string)($post['author_role'] ?? '');
+      $authorId = (int)($post['author_id'] ?? 0);
+      $authorPhoto = getAuthorPhoto($pdo, $authorRole, $authorId);
+    ?>
+    <div class="post" id="post-<?= $postId ?>" data-post-id="<?= $postId ?>" data-category="<?= e($postCategory) ?>" data-status="<?= e((string)($post['status'] ?? 'approved')) ?>">
+      <div class="post-header">
+        <img src="<?= $authorPhoto ?>" alt="Author Photo">
+        <div>
+          <h5><?= e($postAuthorName) ?></h5>
+          <small class="post-time" data-created-at="<?= e((string)($post['created_at'] ?? '')) ?>"><?= e(timeAgo((string)($post['created_at'] ?? ''))) ?></small>
+        </div>
+      </div>
 
+      <?php if ($postText !== ''): ?>
+        <p><?= nl2br(e($postText)) ?></p>
+      <?php endif; ?>
 
+      <?php if (!empty($postImageUrls)): ?>
+        <?php if (count($postImageUrls) === 1): ?>
+          <img src="<?= e($postImageUrls[0]) ?>" class="post-img" alt="Post Image">
+        <?php else: ?>
+          <div class="post-image-grid">
+            <?php foreach ($postImageUrls as $imgUrl): ?>
+              <img src="<?= e($imgUrl) ?>" class="post-grid-img" alt="Post Image">
+            <?php endforeach; ?>
+          </div>
+        <?php endif; ?>
+      <?php elseif ($postMediaUrl !== '' && $postMediaType === 'video'): ?>
+        <video class="post-video" controls preload="metadata">
+          <source src="<?= e($postMediaUrl) ?>" type="video/mp4">
+          Your browser does not support video.
+        </video>
+      <?php endif; ?>
 
-<div class="post" id="post-1" data-post-id="1" data-category="mission">
+      <div class="post-actions">
+        <span class="like-btn"><i class="fa fa-heart"></i> Like</span>
+        <span class="comment-btn"><i class="fa fa-comment"></i> Comment</span>
+        <span class="share-btn"><i class="fa fa-share"></i> Share</span>
+      </div>
+
+      <section class="comment-module" style="display:none;">
+        <div class="comment-input-area">
+          <div class="comment-editor" contenteditable="true" data-placeholder="Write a comment..."></div>
+          <button class="comment-send-btn">
+            <img src="../Images/send.png" alt="Send">
+          </button>
+        </div>
+        <h4 class="comments-title">All Comments</h4>
+        <ul></ul>
+      </section>
+    </div>
+  <?php endforeach; ?>
+<?php endif; ?>
+
+<div class="post static-demo-post" id="post-1" data-post-id="1" data-category="mission" style="display:none;">
   <div class="post-header">
     <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg">
     <div>

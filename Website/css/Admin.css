@@ -630,6 +630,20 @@ body {
   color: #1f2937;
 }
 
+.section-table-block {
+  margin-top: 16px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 10px 24px rgba(16, 30, 54, 0.08);
+}
+
+.section-table-block .styled-table {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
 .danger-btn {
   background: #fee2e2;
   color: #b91c1c;
@@ -2096,6 +2110,61 @@ h4 {
 .status-rejected {
   background: #ffecee;
   color: #b4232f;
+}
+
+#post-control .post-group-row {
+  background: #f8fbff;
+}
+
+#post-control .post-group-row td {
+  border-bottom: 1px solid #e6edf8;
+}
+
+#post-control .post-group-detail-cell {
+  background: #fcfcfd;
+  border: 1px solid #edf2f7;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+#post-control .post-group-detail-title {
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #334155;
+}
+
+#post-control .post-group-detail-table {
+  margin-top: 0;
+  margin-bottom: 0;
+  border: 1px solid #e5eaf4;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+#post-control .post-group-detail-table thead tr {
+  background: #edf3ff;
+}
+
+#post-control .post-group-detail-table th {
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+  letter-spacing: 0.2px;
+}
+
+#post-control .post-group-detail-table td {
+  background: #fff;
+}
+
+#post-control .post-group-detail-table tbody tr:nth-child(even) td {
+  background: #fbfdff;
+}
+
+#post-control .post-group-detail-table .approve-btn,
+#post-control .post-group-detail-table .reject-btn,
+#post-control .post-group-detail-table .ghost,
+#post-control .post-group-detail-table .view-profile-btn {
+  margin-bottom: 4px;
 }
 
 #volunteer .mission-badge {

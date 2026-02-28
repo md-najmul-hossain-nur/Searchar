@@ -48,26 +48,38 @@ function createPost() {
     alert("Please add text or media to post!");
     return;
   }
-
-  const post = document.createElement("div");
-  post.classList.add("post");
-  if (text) post.innerHTML = `<p>${text}</p>`;
+  const category = document.querySelector('input[name="category"]:checked')?.value || 'general';
+  const fd = new FormData();
+  fd.append('text', text);
+  fd.append('category', category);
+  fd.append('case_id', '1');
+  fd.append('share_facebook', document.getElementById('facebookShareToggle')?.checked ? '1' : '0');
+  fd.append('share_anonymous', '0');
 
   if (selectedImage) {
-    const img = document.createElement("img");
-    img.src = URL.createObjectURL(selectedImage);
-    post.appendChild(img);
+    fd.append('media_images[]', selectedImage, selectedImage.name);
   }
-
   if (selectedVideo) {
-    const video = document.createElement("video");
-    video.src = URL.createObjectURL(selectedVideo);
-    video.controls = true;
-    post.appendChild(video);
+    fd.append('media_video', selectedVideo, selectedVideo.name);
   }
 
-  feed.prepend(post);
-  closeModal();
+  fetch('../Php/save_post.php', {
+    method: 'POST',
+    body: fd,
+    credentials: 'same-origin'
+  }).then(r => r.json())
+    .then(res => {
+      if (res && res.success) {
+        alert('Post submitted successfully. It will appear after admin approval.');
+        closeModal();
+        window.location.reload();
+      } else {
+        alert('Save failed: ' + (res?.error || 'Unknown error'));
+      }
+    }).catch(err => {
+      console.error(err);
+      alert('Network error while saving.');
+    });
 }
 function openMissingForm() {
   document.getElementById("missingFormModal").style.display = "flex";

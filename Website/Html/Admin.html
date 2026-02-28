@@ -639,17 +639,19 @@
     <input type="date" id="post-filter-from">
     <input type="date" id="post-filter-to">
   </div>
-  <table class="styled-table" id="post-control-table">
-    <thead>
-      <tr>
-        <th>Post ID</th><th>Category</th><th>Posted By</th>
-        <th>Role</th><th>Share Facebook</th><th>Share Anonymous</th><th>Status</th><th>Submitted</th><th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="post-control-body">
-      <tr><td colspan="9">Loading posts...</td></tr>
-    </tbody>
-  </table>
+  <div class="section-table-block">
+    <table class="styled-table" id="post-control-table">
+      <thead>
+        <tr>
+          <th>Post ID</th><th>Category</th><th>Posted By</th>
+          <th>Role</th><th>Share Facebook</th><th>Share Anonymous</th><th>Status</th><th>Submitted</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="post-control-body">
+        <tr><td colspan="9">Loading posts...</td></tr>
+      </tbody>
+    </table>
+  </div>
 </div>
 <div id="crime" class="main-section">
   <h2>Crime Reporting</h2>
@@ -735,25 +737,27 @@
     <input id="donations-filter-text" type="text" placeholder="Search donor, amount, message">
     <button type="button" id="donations-filter-reset" class="ghost">Reset</button>
   </div>
-  <table class="styled-table">
-    <thead>
-      <tr>
-        <th>Donor Name</th><th>Amount</th><th>Date</th><th>Anonymous</th>
-        <th>Message</th><th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="donations-table-body">
-      <tr>
-        <td>John S.</td><td>৳5,000</td><td>2025-07-20</td><td>No</td>
-        <td>"Good luck!"</td>
-        <td>
-          <button>Allocate</button>
-          <button>Report</button>
-        </td>
-      </tr>
-      <!-- More rows... -->
-    </tbody>
-  </table>
+  <div class="section-table-block">
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th>Donor Name</th><th>Amount</th><th>Date</th><th>Anonymous</th>
+          <th>Message</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="donations-table-body">
+        <tr>
+          <td>John S.</td><td>৳5,000</td><td>2025-07-20</td><td>No</td>
+          <td>"Good luck!"</td>
+          <td>
+            <button>Allocate</button>
+            <button>Report</button>
+          </td>
+        </tr>
+        <!-- More rows... -->
+      </tbody>
+    </table>
+  </div>
   <div class="widget-bar">
     <div class="widget">Total Donations: <span id="donations-total-amount">৳0.00</span></div>
   </div>
@@ -774,35 +778,37 @@
     </select>
     <button type="button" id="volunteer-filter-reset" class="ghost">Reset</button>
   </div>
-  <table class="styled-table">
-    <thead>
-      <tr>
-        <th>Volunteer Profile</th>
-        <th>Mission Title</th>
-        <th>Assigned On</th>
-        <th>Location</th>
-        <th>Rank</th>
-        <th>Points</th>
-        <th>Status</th>
-        <th>Proof</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody id="volunteer-mission-body">
-      <tr>
-        <td>Rafiq A. • <a href="#" target="_blank" rel="noopener">View Profile</a></td>
-        <td>Missing Child Assistance</td>
-        <td>2025-08-03</td>
-        <td>Dhaka</td>
-        <td>Silver Responder</td>
-        <td>220</td>
-        <td><span class="status-approved">Completed</span></td>
-        <td><a href="#">View Proof</a></td>
-        <td><button type="button" class="ghost">Mark Complete +50XP</button></td>
-      </tr>
-      <!-- More rows... -->
-    </tbody>
-  </table>
+  <div class="section-table-block">
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th>Volunteer Profile</th>
+          <th>Mission Title</th>
+          <th>Assigned On</th>
+          <th>Location</th>
+          <th>Rank</th>
+          <th>Points</th>
+          <th>Status</th>
+          <th>Proof</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="volunteer-mission-body">
+        <tr>
+          <td>Rafiq A. • <a href="#" target="_blank" rel="noopener">View Profile</a></td>
+          <td>Missing Child Assistance</td>
+          <td>2025-08-03</td>
+          <td>Dhaka</td>
+          <td>Silver Responder</td>
+          <td>220</td>
+          <td><span class="status-approved">Completed</span></td>
+          <td><a href="#">View Proof</a></td>
+          <td><button type="button" class="ghost">Mark Complete +50XP</button></td>
+        </tr>
+        <!-- More rows... -->
+      </tbody>
+    </table>
+  </div>
   <div class="widget-bar">
     <div class="widget">Total Missions: <span id="volunteer-total-missions">0</span></div>
     <div class="widget">This Month: <span id="volunteer-this-month">0</span></div>
@@ -820,30 +826,32 @@
     </select>
     <button type="button" id="withdraw-filter-reset" class="ghost">Reset</button>
   </div>
-  <table class="styled-table">
-    <thead>
-      <tr>
-        <th>Volunteer Name</th>
-        <th>Withdrawal Amount</th>
-        <th>Status</th>
-        <th>Request Date</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="withdraw-table-body">
-      <tr>
-        <td>Arif Hasan</td>
-        <td>৳500</td>
-        <td><span class="status-pending">Pending</span></td>
-        <td>2025-08-09</td>
-        <td>
-          <button>Approve</button>
-          <button>Reject</button>
-        </td>
-      </tr>
-      <!-- More rows... -->
-    </tbody>
-  </table>
+    <div class="section-table-block">
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>Volunteer Name</th>
+            <th>Withdrawal Amount</th>
+            <th>Status</th>
+            <th>Request Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="withdraw-table-body">
+          <tr>
+            <td>Arif Hasan</td>
+            <td>৳500</td>
+            <td><span class="status-pending">Pending</span></td>
+            <td>2025-08-09</td>
+            <td>
+              <button>Approve</button>
+              <button>Reject</button>
+            </td>
+          </tr>
+          <!-- More rows... -->
+        </tbody>
+      </table>
+    </div>
   <div class="widget-bar">
     <div class="widget">Total Withdrawals: <span id="withdraw-total-amount">৳0.00</span></div>
     <div class="widget">Pending Requests: <span id="withdraw-pending-count">0</span></div>
