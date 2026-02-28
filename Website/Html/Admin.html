@@ -1624,6 +1624,74 @@
       btn.title = 'Warning already sent';
     }
 
+    function smsActionMarkup(entity, recordId, name) {
+      return `
+        <div class="sms-action" data-entity="${entity}" data-id="${recordId}" data-name="${name}">
+          <input type="text" class="sms-message-input" placeholder="Type SMS message..." maxlength="220">
+          <button type="button" class="sms-send-btn"><i class="fa-solid fa-paper-plane"></i> Send SMS</button>
+        </div>
+      `;
+    }
+
+    async function handleSendSms(entity, id, displayName, message, btn = null) {
+      const msg = String(message || '').trim();
+      if (!msg) {
+        alert('Please type an SMS message first.');
+        return false;
+      }
+
+      if (btn) {
+        btn.disabled = true;
+      }
+
+      try {
+        const res = await fetch('../Php/admin_send_sms_notification.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({
+            entity,
+            id,
+            message: msg
+          })
+        });
+
+        const json = await res.json();
+        if (!json || !json.success) {
+          throw new Error(json?.error || 'SMS send failed');
+        }
+
+        alert(`SMS sent to ${displayName}. Notification delivered.`);
+        return true;
+      } catch (e) {
+        console.error('SMS send failed', e);
+        alert(e?.message || 'Could not send SMS right now.');
+        return false;
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+        }
+      }
+    }
+
+    function bindSmsButtons(scope) {
+      if (!scope) return;
+      scope.querySelectorAll('.sms-send-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const wrap = btn.closest('.sms-action');
+          if (!wrap) return;
+          const entity = wrap.dataset.entity;
+          const id = Number(wrap.dataset.id || 0);
+          const name = wrap.dataset.name || 'User';
+          const input = wrap.querySelector('.sms-message-input');
+          const message = input?.value || '';
+          if (!entity || !id) return;
+          const sent = await handleSendSms(entity, id, name, message, btn);
+          if (sent && input) input.value = '';
+        });
+      });
+    }
+
     async function handleWarn(entity, id, displayName, btn = null) {
       if (btn && btn.dataset.warned === '1') {
         return true;
@@ -1804,6 +1872,7 @@
                 <button class="edit-profile-btn" data-profile="${profileData}">Edit</button>
                 <button class="delete-btn delete-action-btn" data-entity="${entity}" data-id="${recordId}" data-name="${name}"><i class="fa-solid fa-trash"></i></button>
                 ${warnButtonMarkup(entity, recordId, name, warnedByAdmin)}
+                ${smsActionMarkup(entity, recordId, name)}
               </div>
             </td>
           </tr>`;
@@ -1812,6 +1881,7 @@
       bindViewProfileButtons(tbody);
       bindEditProfileButtons(tbody);
       bindWarnDeleteButtons(tbody);
+      bindSmsButtons(tbody);
     }
 
     function applyUserFilters() {
@@ -1882,6 +1952,7 @@
                 <button class="assign-btn assign-mission-btn" data-id="${recordId}" data-name="${name}"><i class="fa-solid fa-bullseye"></i> Assign</button>
                 <button class="delete-btn delete-action-btn" data-entity="${entity}" data-id="${recordId}" data-name="${name}"><i class="fa-solid fa-trash"></i></button>
                 ${warnButtonMarkup(entity, recordId, name, warnedByAdmin)}
+                ${smsActionMarkup(entity, recordId, name)}
               </div>
             </td>
           </tr>`;
@@ -1891,6 +1962,7 @@
       bindEditProfileButtons(tbody);
       bindAssignMissionButtons(tbody);
       bindWarnDeleteButtons(tbody);
+      bindSmsButtons(tbody);
     }
 
     function renderCameraTable(rows) {
@@ -1941,6 +2013,7 @@
                 <button class="edit-profile-btn" data-profile="${profileData}">Edit</button>
                 <button class="delete-btn delete-action-btn" data-entity="${entity}" data-id="${recordId}" data-name="${ownerName}"><i class="fa-solid fa-trash"></i></button>
                 ${warnButtonMarkup(entity, recordId, ownerName, warnedByAdmin)}
+                ${smsActionMarkup(entity, recordId, ownerName)}
               </div>
             </td>
           </tr>`;
@@ -1950,6 +2023,7 @@
       bindViewProfileButtons(tbody);
       bindEditProfileButtons(tbody);
       bindWarnDeleteButtons(tbody);
+      bindSmsButtons(tbody);
     }
 
     function applyCctvFilters() {
@@ -2029,6 +2103,7 @@
                 <button class="edit-profile-btn" data-profile="${profileData}">Edit</button>
                 <button class="delete-btn delete-action-btn" data-entity="${entity}" data-id="${recordId}" data-name="${name}"><i class="fa-solid fa-trash"></i></button>
                 ${warnButtonMarkup(entity, recordId, name, warnedByAdmin)}
+                ${smsActionMarkup(entity, recordId, name)}
               </div>
             </td>
           </tr>`;
@@ -2038,6 +2113,7 @@
       bindViewProfileButtons(tbody);
       bindEditProfileButtons(tbody);
       bindWarnDeleteButtons(tbody);
+      bindSmsButtons(tbody);
     }
 
     function applyVolunteerFilters() {
