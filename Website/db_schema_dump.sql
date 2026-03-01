@@ -177,6 +177,32 @@ CREATE TABLE `posts` (
 	KEY `idx_posts_created` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE `post_likes` (
+	`like_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+	`post_id` INT UNSIGNED NOT NULL,
+	`actor_role` VARCHAR(50) NOT NULL,
+	`actor_id` INT UNSIGNED NOT NULL,
+	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY (`like_id`),
+	UNIQUE KEY `uq_post_actor` (`post_id`, `actor_role`, `actor_id`),
+	KEY `idx_post_likes_post` (`post_id`),
+	KEY `idx_post_likes_actor` (`actor_role`, `actor_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `post_comments` (
+	`comment_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+	`post_id` INT UNSIGNED NOT NULL,
+	`parent_comment_id` BIGINT UNSIGNED DEFAULT NULL,
+	`actor_role` VARCHAR(50) NOT NULL,
+	`actor_id` INT UNSIGNED NOT NULL,
+	`comment_text` TEXT NOT NULL,
+	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY (`comment_id`),
+	KEY `idx_post_comments_post` (`post_id`),
+	KEY `idx_post_comments_parent` (`parent_comment_id`),
+	KEY `idx_post_comments_actor` (`actor_role`, `actor_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE `camera_cctv_feeds` (
 	`feed_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 	`camera_id` INT UNSIGNED NOT NULL,

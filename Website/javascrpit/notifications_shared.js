@@ -55,12 +55,19 @@
 
     if (compact) {
       return list.map(item => {
+        let targetCommentId = '';
+        try {
+          const meta = item && item.meta_json ? JSON.parse(item.meta_json) : null;
+          if (meta && Number(meta.comment_id) > 0) {
+            targetCommentId = String(Number(meta.comment_id));
+          }
+        } catch (_) {}
         const levelClass = item.level === 'warning' || item.source === 'admin' || item.source === 'police'
           ? 'notification-item warning'
           : 'notification-item';
         const readClass = item.is_read ? 'is-read' : 'is-unread';
         return `
-          <li class="${levelClass} ${readClass}" data-notification-id="${item.id || 0}" data-target-post-id="${item.target_post_id || ''}">
+          <li class="${levelClass} ${readClass}" data-notification-id="${item.id || 0}" data-target-post-id="${item.target_post_id || ''}" data-target-comment-id="${targetCommentId}">
             <div class="notification-icon">${notificationIconBySource(item.source)}</div>
             <div class="notification-body">
               <div class="notification-title">${item.title || 'Notification'}</div>
@@ -73,12 +80,19 @@
     }
 
     return list.map(item => {
+      let targetCommentId = '';
+      try {
+        const meta = item && item.meta_json ? JSON.parse(item.meta_json) : null;
+        if (meta && Number(meta.comment_id) > 0) {
+          targetCommentId = String(Number(meta.comment_id));
+        }
+      } catch (_) {}
       const levelClass = item.level === 'warning' || item.source === 'admin' || item.source === 'police'
         ? 'drawer-notification warning'
         : 'drawer-notification';
       const readClass = item.is_read ? 'is-read' : 'is-unread';
       return `
-        <article class="${levelClass} ${readClass}" data-notification-id="${item.id || 0}" data-target-post-id="${item.target_post_id || ''}">
+        <article class="${levelClass} ${readClass}" data-notification-id="${item.id || 0}" data-target-post-id="${item.target_post_id || ''}" data-target-comment-id="${targetCommentId}">
           <div class="drawer-notification-icon">${notificationIconBySource(item.source)}</div>
           <div class="drawer-notification-content">
             <h4>${item.title || 'Notification'}</h4>
@@ -188,28 +202,16 @@
   async function handleNotificationClick(row) {
     const notificationId = Number(row.getAttribute('data-notification-id'));
     const targetPostId = Number(row.getAttribute('data-target-post-id'));
+    const targetCommentId = Number(row.getAttribute('data-target-comment-id'));
     await markNotificationRead(notificationId);
 
     if (targetPostId > 0) {
       closeNotificationsDrawer();
-      goToTargetPost(targetPostId);
-    }
-  }
-
-  async function notifyPostInteraction(postId, actionType) {
-    const id = Number(postId);
-    if (!id || id <= 0) return;
-    if (!['like', 'comment', 'share'].includes(actionType)) return;
-
-    try {
-      await fetch('../Php/notify_post_interaction.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'same-origin',
-        body: JSON.stringify({ post_id: id, action_type: actionType })
-      });
-    } catch (error) {
-      console.error('notify interaction failed', error);
+      if (window.SearcharPostInteractions && typeof window.SearcharPostInteractions.goToTarget === 'function') {
+        window.SearcharPostInteractions.goToTarget(targetPostId, targetCommentId || 0);
+      } else {
+        goToTargetPost(targetPostId);
+      }
     }
   }
 
@@ -257,27 +259,6 @@
     if (event.key === 'Escape') {
       closeNotificationsDrawer();
     }
-  });
-
-  document.querySelectorAll('.like-btn').forEach(btn => {
-    btn.addEventListener('click', function () {
-      const post = this.closest('.post');
-      notifyPostInteraction(post && post.dataset ? post.dataset.postId : null, 'like');
-    });
-  });
-
-  document.querySelectorAll('.comment-btn').forEach(btn => {
-    btn.addEventListener('click', function () {
-      const post = this.closest('.post');
-      notifyPostInteraction(post && post.dataset ? post.dataset.postId : null, 'comment');
-    });
-  });
-
-  document.querySelectorAll('.share-btn').forEach(btn => {
-    btn.addEventListener('click', function () {
-      const post = this.closest('.post');
-      notifyPostInteraction(post && post.dataset ? post.dataset.postId : null, 'share');
-    });
   });
 
   loadUserNotifications();

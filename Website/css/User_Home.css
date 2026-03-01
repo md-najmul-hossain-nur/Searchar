@@ -1014,6 +1014,13 @@ background: linear-gradient(80deg, #d1b75a);
   border-radius: 0 0 8px 8px; /* rounded bottom corners */
 }
 
+.post-actions .like-btn,
+.post-actions .comment-btn,
+.post-actions .share-btn {
+  cursor: pointer;
+  user-select: none;
+}
+
 
 .post-actions i {
   margin-right: 6px;
@@ -2375,4 +2382,113 @@ body button {
 .user-bio:hover {
     background-color: #f0f0f0;
     border-color: #d0d0d0;
+}
+
+/* Match like/comment design with User_profile */
+.post .post-actions {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 12px;
+  border-top: 1px solid #eee;
+  padding: 10px 0 0;
+  background: transparent;
+  border-radius: 0;
+  color: #333;
+}
+
+.post .post-actions .like-btn,
+.post .post-actions .comment-btn,
+.post .post-actions .share-btn {
+  color: #333;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+}
+
+.post .post-actions .like-btn:hover,
+.post .post-actions .comment-btn:hover,
+.post .post-actions .share-btn:hover,
+.post .post-actions .like-btn.active {
+  color: #f75c3c;
+}
+
+.post .comment-module {
+  margin-top: 10px;
+  background: #f9f9f9;
+  border: 1px solid #ececec;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: none;
+}
+
+.post .comment-input-area {
+  display: flex;
+  gap: 8px;
+  background: transparent;
+  border: 0;
+  margin-bottom: 8px;
+  padding: 0;
+}
+
+.post .comment-editor {
+  flex: 1;
+  min-height: 38px;
+  max-height: 150px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 14px;
+  padding: 9px 12px;
+  outline: none;
+}
+
+.post .comment-send-btn {
+  border: none;
+  background: #f75c3c;
+  border-radius: 12px;
+  width: 42px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.post .comment-send-btn img {
+  width: 18px;
+  height: 18px;
+}
+
+.post .comments-title {
+  margin: 10px 0 6px;
+  font-size: 13px;
+  color: #666;
+  border: 0;
+  padding: 0;
+  display: block;
+}
+
+.post .comment-module ul {
+  margin: 0;
+  padding-left: 18px;
+  gap: 6px;
+}
+
+.post .comment-module ul li {
+  margin-bottom: 6px;
+  padding-left: 0;
+}
+
+.post .comment-module ul li::before {
+  display: none;
+}
+
+.post .comment-module ul li ul {
+  margin-top: 6px;
+  margin-left: 14px;
+}
+
+.post .reply-input-area {
+  margin-left: 0;
 }

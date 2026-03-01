@@ -62,7 +62,8 @@ try {
     $selectCols .= ", status";
   }
 
-  $postStmt = $pdo->prepare("SELECT {$selectCols} FROM posts WHERE author_id = :author_id AND author_role = 'user' ORDER BY id DESC LIMIT 50");
+  $statusWhere = $hasStatus ? " AND status = 'approved'" : '';
+  $postStmt = $pdo->prepare("SELECT {$selectCols} FROM posts WHERE author_id = :author_id AND author_role = 'user'{$statusWhere} ORDER BY id DESC LIMIT 50");
   $postStmt->execute(['author_id' => $user_id]);
   $profilePosts = $postStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 } catch (Throwable $e) {
@@ -439,7 +440,8 @@ try {
   <div class="notifications-drawer-footer"></div>
 </aside>
 </body>
-       <script src="../javascrpit/User_profile.js"></script>
+  <script src="../javascrpit/User_profile.js"></script>
+  <script src="../javascrpit/post_interactions_shared.js?v=20260301"></script>
        <script src="../javascrpit/notifications_shared.js"></script>
 
 </html>

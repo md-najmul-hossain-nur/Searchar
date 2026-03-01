@@ -90,41 +90,6 @@ function createPost() {
     });
 }
 
-document.addEventListener("click", async (event) => {
-  const likeBtn = event.target.closest(".like-btn");
-  if (likeBtn) {
-    const active = likeBtn.dataset.liked === "1";
-    likeBtn.dataset.liked = active ? "0" : "1";
-    likeBtn.innerHTML = active ? '<i class="fa fa-heart"></i> Like' : '<i class="fa fa-heart"></i> Liked';
-    likeBtn.style.color = active ? "#444" : "#e74c3c";
-    return;
-  }
-
-  const commentBtn = event.target.closest(".comment-btn");
-  if (commentBtn) {
-    const post = commentBtn.closest(".post");
-    const box = post?.querySelector(".comment-module");
-    if (box) {
-      box.style.display = box.style.display === "none" || !box.style.display ? "block" : "none";
-    }
-    return;
-  }
-
-  const sendBtn = event.target.closest(".comment-send-btn");
-  if (sendBtn) {
-    const post = sendBtn.closest(".post");
-    const input = post?.querySelector(".comment-editor");
-    const list = post?.querySelector(".comment-module ul");
-    const text = input?.innerText?.trim();
-    if (!text || !list || !input) return;
-    const item = document.createElement("li");
-    item.textContent = text;
-    list.prepend(item);
-    input.innerText = "";
-    return;
-  }
-
-});
 document.getElementById('anonToggle').addEventListener('change', function () {
   if (this.checked) {
     console.log("Anonymous mode enabled");

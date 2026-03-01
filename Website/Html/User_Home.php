@@ -900,10 +900,6 @@ try {
   <div class="notifications-drawer-footer"></div>
 </aside>
 
-
-
-
-    </body>
        <script>
          (function () {
            const params = new URLSearchParams(window.location.search);
@@ -925,6 +921,8 @@ try {
            window.history.replaceState({}, document.title, cleanUrl);
          })();
        </script>
-       <script src="../javascrpit/User_Home.js"></script>
+       <script src="../javascrpit/User_Home.js?v=20260301"></script>
+       <script src="../javascrpit/post_interactions_shared.js?v=20260301"></script>
+    </body>
 
 </html>

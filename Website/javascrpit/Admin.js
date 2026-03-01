@@ -2810,6 +2810,200 @@ function openAddVolunteerModal() {
   });
 })();
 
+// Dashboard pending action queue
+(function () {
+  const queueBody = document.getElementById('admin-action-queue-body');
+  const summaryEl = document.getElementById('action-queue-summary');
+  if (!queueBody) return;
+
+  function esc(v) {
+    return String(v ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function fmtDate(v) {
+    if (!v) return '—';
+    const d = new Date(v);
+    if (Number.isNaN(d.getTime())) return esc(v);
+    return d.toLocaleString();
+  }
+
+  function setSummary(summary) {
+    if (!summaryEl) return;
+    const postPending = Number(summary?.post_pending || 0);
+    const missingPending = Number(summary?.missing_pending || 0);
+    const withdrawPending = Number(summary?.withdraw_pending || 0);
+    const missionPending = Number(summary?.mission_proof_pending || 0);
+    summaryEl.textContent = `Post ${postPending} • Missing ${missingPending} • Withdraw ${withdrawPending} • Proof ${missionPending}`;
+  }
+
+  function statusChip(statusText) {
+    const status = String(statusText || '').toLowerCase();
+    if (status.includes('verify')) return '<span class="status-pending">Needs verification</span>';
+    if (status.includes('pending')) return '<span class="status-pending">Pending</span>';
+    if (status.includes('open') || status.includes('active') || status.includes('search')) return `<span class="status active">${esc(statusText)}</span>`;
+    return `<span class="status-pending">${esc(statusText || 'Pending')}</span>`;
+  }
+
+  function renderRows(rows) {
+    if (!Array.isArray(rows) || rows.length === 0) {
+      queueBody.innerHTML = '<tr><td colspan="6">No pending approvals right now.</td></tr>';
+      return;
+    }
+
+    queueBody.innerHTML = rows.slice(0, 40).map((row) => {
+      const type = String(row?.type || 'Task').trim() || 'Task';
+      const actor = String(row?.submitted_by || 'Unknown').trim() || 'Unknown';
+      const role = String(row?.actor_role || '').trim();
+      const itemRef = String(row?.item_ref || '—').trim() || '—';
+      const itemLabel = String(row?.item_label || '—').trim() || '—';
+      const section = String(row?.section || '').trim().toLowerCase();
+      const searchKey = String(row?.search_key || '').trim();
+
+      return `
+        <tr>
+          <td>${esc(type)}</td>
+          <td>${esc(actor)}${role ? ` <small>(${esc(role)})</small>` : ''}</td>
+          <td><strong>${esc(itemRef)}</strong><br><small>${esc(itemLabel)}</small></td>
+          <td>${statusChip(String(row?.status || 'Pending'))}</td>
+          <td>${esc(fmtDate(row?.submitted_at || ''))}</td>
+          <td><button type="button" class="ghost" data-queue-open="1" data-queue-section="${esc(section)}" data-queue-search="${esc(searchKey)}" data-queue-ref="${esc(itemRef)}">Open</button></td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function jumpHighlight(element) {
+    if (!element) return;
+    element.classList.add('queue-jump-highlight');
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => {
+      element.classList.remove('queue-jump-highlight');
+    }, 2200);
+  }
+
+  function openQueueTarget(section, searchKey, itemRef) {
+    const targetSection = String(section || '').trim().toLowerCase();
+    if (!targetSection) return;
+
+    if (typeof activateSection === 'function') {
+      activateSection(targetSection);
+    } else {
+      const nav = document.querySelector(`.sidebar li[data-section="${targetSection}"]`);
+      if (nav) nav.click();
+    }
+
+    setTimeout(() => {
+      if (targetSection === 'post-control') {
+        const keywordInput = document.getElementById('post-filter-keyword');
+        if (keywordInput && searchKey) {
+          keywordInput.value = searchKey;
+          keywordInput.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        if (typeof applyPostControlFilters === 'function') {
+          applyPostControlFilters();
+        }
+        const targetCell = Array.from(document.querySelectorAll('#post-control-body tr[data-id] td:first-child'))
+          .find(td => (td.textContent || '').trim() === String(itemRef || '').trim());
+        const targetRow = targetCell?.closest('tr');
+        if (targetRow) {
+          const detailRow = targetRow.closest('[data-post-group-detail]');
+          if (detailRow && detailRow.style.display === 'none') {
+            const detailKey = detailRow.getAttribute('data-post-group-detail');
+            const toggleBtn = detailKey
+              ? document.querySelector(`[data-post-group-toggle="${detailKey}"]`)
+              : null;
+            if (toggleBtn) toggleBtn.click();
+          }
+          setTimeout(() => jumpHighlight(targetRow), 100);
+        }
+        return;
+      }
+
+      if (targetSection === 'missing') {
+        const row = Array.from(document.querySelectorAll('#missing-table-body tr'))
+          .find(tr => {
+            const first = tr.querySelector('td:first-child');
+            return first && (first.textContent || '').trim() === String(itemRef || '').trim();
+          });
+        if (row) jumpHighlight(row);
+        return;
+      }
+
+      if (targetSection === 'withdraw') {
+        const input = document.getElementById('withdraw-filter-text');
+        if (input && searchKey) {
+          input.value = searchKey;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        const row = Array.from(document.querySelectorAll('#withdraw-table-body tr'))
+          .find(tr => (tr.textContent || '').toLowerCase().includes(String(searchKey || '').toLowerCase()));
+        if (row) jumpHighlight(row);
+        return;
+      }
+
+      if (targetSection === 'volunteer') {
+        const input = document.getElementById('volunteer-filter-text');
+        if (input && searchKey) {
+          input.value = searchKey;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        const row = Array.from(document.querySelectorAll('#volunteer-mission-body tr'))
+          .find(tr => (tr.textContent || '').toLowerCase().includes(String(searchKey || '').toLowerCase()));
+        if (row) jumpHighlight(row);
+      }
+    }, 350);
+  }
+
+  async function loadActionQueue() {
+    try {
+      const res = await fetch('../Php/admin_fetch_action_queue.php', {
+        credentials: 'same-origin',
+        cache: 'no-store'
+      });
+      const json = await res.json();
+      if (!json?.success) throw new Error(json?.error || 'Failed to load action queue');
+      setSummary(json.summary || {});
+      renderRows(Array.isArray(json.rows) ? json.rows : []);
+    } catch (error) {
+      console.error('action queue load failed', error);
+      if (summaryEl) summaryEl.textContent = 'Load failed';
+      queueBody.innerHTML = '<tr><td colspan="6">Failed to load pending actions.</td></tr>';
+    }
+  }
+
+  queueBody.addEventListener('click', (event) => {
+    const btn = event.target.closest('[data-queue-open]');
+    if (!btn) return;
+    openQueueTarget(
+      btn.getAttribute('data-queue-section') || '',
+      btn.getAttribute('data-queue-search') || '',
+      btn.getAttribute('data-queue-ref') || ''
+    );
+  });
+
+  document.addEventListener('admin:section-activated', (event) => {
+    const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
+    if (sectionId === 'dashboard') {
+      loadActionQueue();
+    }
+  });
+
+  document.addEventListener('admin:refresh-section', (event) => {
+    const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
+    if (['post-control', 'missing', 'volunteer', 'withdraw', 'dashboard'].includes(sectionId)) {
+      loadActionQueue();
+    }
+  });
+
+  loadActionQueue();
+  setInterval(loadActionQueue, 25000);
+})();
+
 // Generic table filters for various sections
 (function () {
   function setupTextFilter(sectionId, filterId, resetId, rowSelector = 'tbody tr') {

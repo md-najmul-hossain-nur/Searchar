@@ -843,6 +843,7 @@ try {
 
     </body>
       <script src="../javascrpit/Policeman_Home.js?v=callbtn1"></script>
+      <script src="../javascrpit/post_interactions_shared.js"></script>
       <script src="../javascrpit/notifications_shared.js"></script>
 
 </html>

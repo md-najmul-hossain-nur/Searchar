@@ -1261,6 +1261,31 @@ body {
   background: none;
 }
 
+.action-queue-card {
+  min-width: 520px;
+}
+
+.action-queue-summary {
+  color: #4b5563;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.action-queue-table td small {
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.queue-jump-highlight {
+  animation: queuePulse 1.2s ease;
+  background: rgba(67, 57, 242, 0.09) !important;
+}
+
+@keyframes queuePulse {
+  0% { background: rgba(67, 57, 242, 0.2); }
+  100% { background: transparent; }
+}
+
 .pv-table tr {
   border-bottom: 1px solid #f0f0f0;
 }
