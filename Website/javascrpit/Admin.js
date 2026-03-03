@@ -941,15 +941,48 @@ document.addEventListener('click', function (event) {
 (function () {
   const textInput = document.getElementById('admin-post-text');
   const categoryInput = document.getElementById('admin-post-category');
+  const mediaInput = document.getElementById('admin-post-media');
+  const mediaName = document.getElementById('admin-post-media-name');
+  const shareFacebookInput = document.getElementById('admin-post-share-facebook');
+  const mediaPreview = document.getElementById('admin-post-media-preview');
   const submitBtn = document.getElementById('admin-post-submit');
   if (!textInput || !categoryInput || !submitBtn) return;
+
+  if (mediaInput && mediaPreview) {
+    mediaInput.addEventListener('change', () => {
+      const file = mediaInput.files && mediaInput.files[0] ? mediaInput.files[0] : null;
+      if (!file) {
+        if (mediaName) mediaName.textContent = 'No file chosen';
+        mediaPreview.innerHTML = 'Media preview will appear here';
+        return;
+      }
+
+      if (mediaName) {
+        mediaName.textContent = file.name;
+      }
+
+      const url = URL.createObjectURL(file);
+      if (file.type.startsWith('video/')) {
+        mediaPreview.innerHTML = `<video src="${url}" controls></video>`;
+      } else {
+        mediaPreview.innerHTML = `<img src="${url}" alt="Admin post media preview">`;
+      }
+    });
+  }
 
   submitBtn.addEventListener('click', async () => {
     const text = String(textInput.value || '').trim();
     const category = String(categoryInput.value || 'general').trim().toLowerCase();
+    const mediaFile = mediaInput && mediaInput.files && mediaInput.files[0] ? mediaInput.files[0] : null;
+    const shareFacebook = shareFacebookInput && shareFacebookInput.checked ? '1' : '0';
 
-    if (!text) {
-      alert('Please write post text first.');
+    if (!text && !mediaFile) {
+      alert('Please write post text or add image/video.');
+      return;
+    }
+
+    if (mediaFile && mediaFile.size > 20 * 1024 * 1024) {
+      alert('Media file is too large. Max 20MB allowed.');
       return;
     }
 
@@ -958,11 +991,17 @@ document.addEventListener('click', function (event) {
     submitBtn.textContent = 'Publishing…';
 
     try {
-      const body = new URLSearchParams({ text, category });
+      const body = new FormData();
+      body.append('text', text);
+      body.append('category', category);
+      body.append('share_facebook', shareFacebook);
+      if (mediaFile) {
+        body.append('media_file', mediaFile, mediaFile.name);
+      }
+
       const res = await fetch('../Php/admin_publish_feed_post.php', {
         method: 'POST',
         credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body
       });
       const json = await res.json();
@@ -971,11 +1010,20 @@ document.addEventListener('click', function (event) {
       }
 
       textInput.value = '';
+      if (mediaInput) mediaInput.value = '';
+      if (mediaName) mediaName.textContent = 'No file chosen';
+      if (shareFacebookInput) shareFacebookInput.checked = true;
+      if (mediaPreview) {
+        mediaPreview.innerHTML = 'Media preview will appear here';
+      }
       alert('Admin post published successfully.');
 
       document.dispatchEvent(new CustomEvent('admin:section-activated', {
         detail: { sectionId: 'post-control' }
       }));
+      if (typeof window.loadAdminPostActivity === 'function') {
+        window.loadAdminPostActivity();
+      }
     } catch (error) {
       console.error('Admin post publish failed', error);
       alert(error?.message || 'Could not publish admin post right now.');
@@ -984,6 +1032,91 @@ document.addEventListener('click', function (event) {
       submitBtn.textContent = prevLabel;
     }
   });
+})();
+
+// Admin post activity (likes/comments/share + latest comments)
+(function () {
+  const tableBody = document.getElementById('admin-post-activity-body');
+  if (!tableBody) return;
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function formatDateTime(value) {
+    const date = new Date(value || '');
+    if (Number.isNaN(date.getTime())) return '—';
+    return date.toLocaleString();
+  }
+
+  function renderRows(rows) {
+    if (!Array.isArray(rows) || rows.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="8">No published admin posts found.</td></tr>';
+      return;
+    }
+
+    tableBody.innerHTML = rows.map((row) => {
+      const comments = Array.isArray(row.comments) ? row.comments : [];
+      const commentsHtml = comments.length
+        ? `<ul class="admin-post-activity-comments">${comments.map((commentRow) => {
+            const actor = escapeHtml(commentRow.actor_name || 'Someone');
+            const text = escapeHtml(commentRow.comment_text || '');
+            return `<li><strong>${actor}:</strong> ${text}</li>`;
+          }).join('')}</ul>`
+        : '<span class="admin-post-activity-empty">No comments yet</span>';
+
+      const shareHtml = Number(row.share_facebook || 0) === 1
+        ? '<span class="status active">Facebook On</span>'
+        : '<span class="status inactive">Facebook Off</span>';
+
+      return `
+        <tr>
+          <td>#${Number(row.id || 0)}</td>
+          <td class="admin-post-message-cell">${escapeHtml(row.text || '')}</td>
+          <td>${escapeHtml(row.category || 'general')}</td>
+          <td>${Number(row.likes_count || 0)}</td>
+          <td>${Number(row.comments_count || 0)}</td>
+          <td>${shareHtml}</td>
+          <td>${commentsHtml}</td>
+          <td>${escapeHtml(formatDateTime(row.created_at))}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function loadAdminPostActivity() {
+    tableBody.innerHTML = '<tr><td colspan="8">Loading admin post activity...</td></tr>';
+    try {
+      const res = await fetch('../Php/admin_fetch_admin_posts_activity.php', {
+        credentials: 'same-origin',
+        cache: 'no-store'
+      });
+      const json = await res.json();
+      if (!json?.success) {
+        throw new Error(json?.error || 'Failed to load admin post activity');
+      }
+      renderRows(Array.isArray(json.rows) ? json.rows : []);
+    } catch (error) {
+      console.error('admin post activity load failed', error);
+      tableBody.innerHTML = '<tr><td colspan="8">Failed to load admin post activity.</td></tr>';
+    }
+  }
+
+  window.loadAdminPostActivity = loadAdminPostActivity;
+
+  document.addEventListener('admin:section-activated', function (event) {
+    const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
+    if (sectionId === 'admin-post') {
+      loadAdminPostActivity();
+    }
+  });
+
+  loadAdminPostActivity();
 })();
 
 // Initialize the map

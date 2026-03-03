@@ -31,10 +31,65 @@ if (!$isAdminSession && !$isAdminPanelRef) {
 
 $text = trim((string)($_POST['text'] ?? ''));
 $category = strtolower(trim((string)($_POST['category'] ?? 'general')));
+$shareFacebook = (int)((string)($_POST['share_facebook'] ?? '0') === '1');
 
-if ($text === '') {
+$mediaPath = null;
+$mediaJson = null;
+$mediaType = null;
+
+if (isset($_FILES['media_file']) && is_array($_FILES['media_file']) && (int)($_FILES['media_file']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+    $file = $_FILES['media_file'];
+    if ((int)($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Failed to upload media file']);
+        exit;
+    }
+
+    $size = (int)($file['size'] ?? 0);
+    if ($size <= 0 || $size > 20 * 1024 * 1024) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Media must be between 1B and 20MB']);
+        exit;
+    }
+
+    $ext = strtolower((string)pathinfo((string)($file['name'] ?? ''), PATHINFO_EXTENSION));
+    $imgExt = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+    $vidExt = ['mp4', 'mov', 'avi', 'webm', 'mkv'];
+
+    if (in_array($ext, $imgExt, true)) {
+        $mediaType = 'image';
+    } elseif (in_array($ext, $vidExt, true)) {
+        $mediaType = 'video';
+    } else {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Unsupported media type']);
+        exit;
+    }
+
+    $uploadDir = __DIR__ . '/../uploads/posts/';
+    if (!is_dir($uploadDir) && !mkdir($uploadDir, 0777, true) && !is_dir($uploadDir)) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => 'Could not create upload directory']);
+        exit;
+    }
+
+    $basename = uniqid('admin_', true);
+    $target = $uploadDir . $basename . '.' . $ext;
+    if (!move_uploaded_file((string)$file['tmp_name'], $target)) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => 'Could not save media file']);
+        exit;
+    }
+
+    $mediaPath = 'uploads/posts/' . $basename . '.' . $ext;
+    if ($mediaType === 'image') {
+        $mediaJson = json_encode([$mediaPath], JSON_UNESCAPED_SLASHES);
+    }
+}
+
+if ($text === '' && $mediaPath === null) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'Post text is required']);
+    echo json_encode(['success' => false, 'error' => 'Post text or media is required']);
     exit;
 }
 
@@ -82,12 +137,16 @@ try {
         $pdo->exec("ALTER TABLE posts ADD COLUMN status VARCHAR(20) DEFAULT 'pending' AFTER share_anonymous");
     }
 
-    $ins = $pdo->prepare('INSERT INTO posts (case_id, author_role, author_id, author_name, category, text, media_path, media_json, media_type, share_facebook, share_anonymous, status) VALUES (1, :author_role, 0, :author_name, :category, :text, NULL, NULL, NULL, 0, 0, :status)');
+    $ins = $pdo->prepare('INSERT INTO posts (case_id, author_role, author_id, author_name, category, text, media_path, media_json, media_type, share_facebook, share_anonymous, status) VALUES (1, :author_role, 0, :author_name, :category, :text, :media_path, :media_json, :media_type, :share_facebook, 0, :status)');
     $ins->execute([
         ':author_role' => 'admin',
         ':author_name' => 'Admin',
         ':category' => $category,
         ':text' => $text,
+        ':media_path' => $mediaPath,
+        ':media_json' => $mediaJson,
+        ':media_type' => $mediaType,
+        ':share_facebook' => $shareFacebook,
         ':status' => 'approved',
     ]);
 

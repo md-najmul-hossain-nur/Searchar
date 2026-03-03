@@ -101,6 +101,10 @@ function timeAgo(?string $datetime): string {
 }
 
 function getAuthorPhoto(PDO $pdo, string $authorRole, int $authorId): string {
+  if (strtolower(trim($authorRole)) === 'admin') {
+    return '../Images/businessman.gif';
+  }
+
   static $roleMap = [
     'user' => ['table' => 'users', 'id_col' => 'user_id'],
     'police' => ['table' => 'policemen', 'id_col' => 'police_id'],

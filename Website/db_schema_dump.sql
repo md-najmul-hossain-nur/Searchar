@@ -19,6 +19,8 @@ DROP TABLE IF EXISTS `signup_blacklist`;
 DROP TABLE IF EXISTS `volunteer_missions`;
 DROP TABLE IF EXISTS `user_notifications`;
 DROP TABLE IF EXISTS `missing_person_reports`;
+DROP TABLE IF EXISTS `post_comments`;
+DROP TABLE IF EXISTS `post_likes`;
 DROP TABLE IF EXISTS `posts`;
 DROP TABLE IF EXISTS `camera_contributors`;
 DROP TABLE IF EXISTS `volunteers`;
@@ -164,6 +166,7 @@ CREATE TABLE `posts` (
 	`status` VARCHAR(20) DEFAULT 'pending',
 	`report_status` VARCHAR(20) DEFAULT 'not_reported',
 	`reported_at` DATETIME DEFAULT NULL,
+	`report_closed_at` DATETIME DEFAULT NULL,
 	`is_share` TINYINT(1) NOT NULL DEFAULT 0,
 	`shared_post_id` INT UNSIGNED DEFAULT NULL,
 	`shared_payload` LONGTEXT DEFAULT NULL,
@@ -174,6 +177,7 @@ CREATE TABLE `posts` (
 	KEY `idx_posts_category` (`category`),
 	KEY `idx_posts_status` (`status`),
 	KEY `idx_posts_report_status` (`report_status`),
+	KEY `idx_posts_report_closed_at` (`report_closed_at`),
 	KEY `idx_posts_created` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

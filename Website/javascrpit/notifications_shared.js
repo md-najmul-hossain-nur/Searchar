@@ -34,7 +34,7 @@
   }
 
   function notificationIconBySource(source) {
-    if (source === 'admin') return '🛡️';
+    if (source === 'admin') return '<img src="../Images/businessman.gif" alt="Admin" style="width:22px;height:22px;border-radius:999px;object-fit:cover;">';
     if (source === 'police') return '👮';
     if (source === 'comment') return '💬';
     if (source === 'like') return '❤️';

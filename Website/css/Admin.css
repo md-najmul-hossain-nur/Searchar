@@ -727,6 +727,219 @@ body {
   margin-bottom: 0;
 }
 
+.admin-post-card {
+  margin-top: 10px;
+  margin-bottom: 12px;
+  max-width: 860px;
+  margin-left: auto;
+  margin-right: auto;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  border: 1px solid #dbe5f2;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 12px 26px rgba(16, 30, 54, 0.08);
+}
+
+.admin-post-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  grid-template-areas:
+    "message message"
+    "media category"
+    "toggle toggle";
+  gap: 12px;
+}
+
+.admin-post-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-post-field label {
+  font-weight: 700;
+  color: #1f2937;
+  font-size: 13px;
+}
+
+.admin-post-field textarea,
+.admin-post-field input[type="text"],
+.admin-post-field select {
+  width: 100%;
+  border: 1px solid #dbe2ef;
+  border-radius: 8px;
+  padding: 9px 10px;
+  font-size: 13px;
+  background: #fff;
+}
+
+.admin-post-field textarea:focus,
+.admin-post-field input[type="text"]:focus,
+.admin-post-field select:focus {
+  border-color: #93c5fd;
+  outline: 2px solid #dbeafe;
+}
+
+.admin-post-field input[type="text"] {
+  min-height: 40px;
+}
+
+.admin-post-field--message {
+  grid-area: message;
+}
+
+.admin-post-field--media {
+  grid-area: media;
+}
+
+.admin-post-field--category {
+  grid-area: category;
+}
+
+.admin-post-field--toggle {
+  grid-area: toggle;
+  justify-content: flex-end;
+}
+
+.admin-post-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #1f2937;
+  font-weight: 700;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.admin-post-file-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  border: 1px solid #dbe2ef;
+  border-radius: 8px;
+  padding: 6px 8px;
+  background: #fff;
+}
+
+.admin-post-file-btn {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  border-radius: 7px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.admin-post-file-btn:hover {
+  background: #e2e8f0;
+}
+
+.admin-post-file-name {
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#admin-post-media {
+  display: none;
+}
+
+.admin-post-media-preview {
+  margin-top: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f8fafc;
+  padding: 8px;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.admin-post-media-preview img,
+.admin-post-media-preview video {
+  max-width: 100%;
+  max-height: 220px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.admin-post-actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+#admin-post-submit {
+  min-width: 200px;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #0f766e, #0ea5a4);
+  border: none;
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(13, 148, 136, 0.26);
+}
+
+#admin-post-submit:hover {
+  transform: translateY(-1px);
+}
+
+.admin-post-activity-comments {
+  margin: 0;
+  padding-left: 16px;
+  color: #334155;
+  font-size: 12px;
+}
+
+.admin-post-activity-comments li {
+  margin: 2px 0;
+  line-height: 1.35;
+}
+
+.admin-post-activity-empty {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.admin-post-message-cell {
+  max-width: 300px;
+  white-space: normal;
+  line-height: 1.35;
+}
+
+@media (max-width: 900px) {
+  .admin-post-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "message"
+      "media"
+      "category"
+      "toggle";
+  }
+  .admin-post-file-wrap {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  #admin-post-submit {
+    width: 100%;
+  }
+}
+
 .danger-btn {
   background: #fee2e2;
   color: #b91c1c;

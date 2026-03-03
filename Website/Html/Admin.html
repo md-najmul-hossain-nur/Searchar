@@ -657,21 +657,68 @@
 
 <div id="admin-post" class="main-section">
   <h2>Admin Post</h2>
-  <div class="filters-bar" id="admin-post-composer" style="align-items:flex-end; margin-bottom:12px;">
-    <div style="flex:1; min-width:280px;">
-      <label for="admin-post-text" style="display:block; margin-bottom:6px; font-weight:700;">Post Message (All Feed)</label>
-      <textarea id="admin-post-text" placeholder="Write admin update..." style="width:100%; min-height:74px; padding:10px; border:1px solid #dbe2ef; border-radius:8px;"></textarea>
+  <div id="admin-post-composer" class="admin-post-card">
+    <div class="admin-post-grid">
+      <div class="admin-post-field admin-post-field--message">
+        <label for="admin-post-text">Post Message</label>
+        <input type="text" id="admin-post-text" placeholder="Write admin update...">
+      </div>
+
+      <div class="admin-post-field admin-post-field--media">
+        <label for="admin-post-media">Image / Video</label>
+        <div class="admin-post-file-wrap">
+          <label for="admin-post-media" class="admin-post-file-btn">Choose File</label>
+          <span id="admin-post-media-name" class="admin-post-file-name">No file chosen</span>
+          <input type="file" id="admin-post-media" accept="image/*,video/*">
+        </div>
+      </div>
+
+      <div class="admin-post-field admin-post-field--category">
+        <label for="admin-post-category">Category</label>
+        <select id="admin-post-category">
+          <option value="general">General</option>
+          <option value="alert">Alert</option>
+          <option value="missing_person">Missing Person</option>
+          <option value="criminal_found">Criminal Found</option>
+        </select>
+      </div>
+
+      <div class="admin-post-field admin-post-field--toggle">
+        <label class="admin-post-checkbox">
+          <input type="checkbox" id="admin-post-share-facebook" checked>
+          <span>Share to Facebook</span>
+        </label>
+      </div>
     </div>
-    <select id="admin-post-category" style="min-width:170px;">
-      <option value="general">General</option>
-      <option value="alert">Alert</option>
-      <option value="missing_person">Missing Person</option>
-      <option value="criminal_found">Criminal Found</option>
-    </select>
-    <button type="button" id="admin-post-submit" class="approve-btn">Publish</button>
+
+    <div id="admin-post-media-preview" class="admin-post-media-preview">Media preview will appear here</div>
+
+    <div class="admin-post-actions">
+      <button type="button" id="admin-post-submit" class="approve-btn">Publish Admin Post</button>
+    </div>
   </div>
   <div class="section-table-block">
-    <p style="margin:0; color:#4b5563; font-weight:600;">Published posts will go to feed instantly with approved status.</p>
+    <p style="margin:0; color:#4b5563; font-weight:600;">Published admin posts are auto-approved and visible in User, Volunteer, Policeman, and Camera feeds.</p>
+  </div>
+  <div class="section-table-block">
+    <h3 style="margin:0 0 10px; color:#1f2937;">Admin Post Activity</h3>
+    <table class="styled-table" id="admin-post-activity-table">
+      <thead>
+        <tr>
+          <th>Post ID</th>
+          <th>Message</th>
+          <th>Category</th>
+          <th>Likes</th>
+          <th>Comments</th>
+          <th>Share</th>
+          <th>Latest Comments</th>
+          <th>Published</th>
+        </tr>
+      </thead>
+      <tbody id="admin-post-activity-body">
+        <tr><td colspan="8">Loading admin posts...</td></tr>
+      </tbody>
+    </table>
   </div>
 </div>
 
