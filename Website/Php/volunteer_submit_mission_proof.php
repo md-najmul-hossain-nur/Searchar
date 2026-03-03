@@ -156,11 +156,11 @@ try {
         proof_file = :proof_file,
         proof_submitted_at = NOW(),
         status = CASE
-            WHEN LOWER(COALESCE(status, "")) IN ("completed", "rejected_busy") THEN status
+            WHEN LOWER(COALESCE(status, "")) IN ("completed", "rejected_busy", "closed_by_police") THEN status
             ELSE :status
         END,
         response_status = CASE
-            WHEN LOWER(COALESCE(response_status, "")) IN ("completed", "rejected_busy") THEN response_status
+            WHEN LOWER(COALESCE(response_status, "")) IN ("completed", "rejected_busy", "closed_by_police") THEN response_status
             ELSE :response_status
         END
         WHERE mission_id = :mid AND volunteer_id = :vid LIMIT 1');

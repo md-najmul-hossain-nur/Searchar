@@ -53,7 +53,7 @@ try {
     $stmt = $pdo->query("SELECT {$selectCols} FROM missing_person_reports ORDER BY created_at DESC LIMIT 1000");
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
-    $activeStatuses = ['open', 'active', 'pending', 'searching'];
+    $activeStatuses = ['open', 'active', 'pending', 'searching', 'under_review'];
     $resolvedStatuses = ['resolved', 'closed', 'found'];
 
     $totalActive = 0;

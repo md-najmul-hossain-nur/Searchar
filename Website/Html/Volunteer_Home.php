@@ -214,7 +214,7 @@ try {
       </div>
 
       <p id="rank-stats" class="rank-stats">Accepted 0 • Completed 0 • Busy 0</p>
-      <p id="rank-rules" class="rank-rules">+10 XP (Accept) • +20 XP (Complete)</p>
+      <p id="rank-rules" class="rank-rules">+10 XP (Accept) • +20 XP (Complete) • +2 XP (Auto-close by Police)</p>
     </div>
 
     <button class="view-missions-btn" onclick="openMissionModal()">📋 View Missions</button>

@@ -265,6 +265,7 @@ setInterval(loadCameraSeries, 30000);
         { terms: ['missing', 'missing persons'], id: 'missing' },
         { terms: ['ai', 'ai detection logs'], id: 'ai' },
         { terms: ['crime', 'crime reporting'], id: 'crime' },
+        { terms: ['admin post', 'admin update'], id: 'admin-post' },
         { terms: ['post', 'post control'], id: 'post-control' },
         { terms: ['donation', 'donations control'], id: 'donations' },
         { terms: ['broadcast', 'notifications'], id: 'broadcast' },
@@ -936,6 +937,55 @@ document.addEventListener('click', function (event) {
   loadPostRows();
 })();
 
+// Admin direct post publish
+(function () {
+  const textInput = document.getElementById('admin-post-text');
+  const categoryInput = document.getElementById('admin-post-category');
+  const submitBtn = document.getElementById('admin-post-submit');
+  if (!textInput || !categoryInput || !submitBtn) return;
+
+  submitBtn.addEventListener('click', async () => {
+    const text = String(textInput.value || '').trim();
+    const category = String(categoryInput.value || 'general').trim().toLowerCase();
+
+    if (!text) {
+      alert('Please write post text first.');
+      return;
+    }
+
+    const prevLabel = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Publishing…';
+
+    try {
+      const body = new URLSearchParams({ text, category });
+      const res = await fetch('../Php/admin_publish_feed_post.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body
+      });
+      const json = await res.json();
+      if (!json?.success) {
+        throw new Error(json?.error || 'Failed to publish post');
+      }
+
+      textInput.value = '';
+      alert('Admin post published successfully.');
+
+      document.dispatchEvent(new CustomEvent('admin:section-activated', {
+        detail: { sectionId: 'post-control' }
+      }));
+    } catch (error) {
+      console.error('Admin post publish failed', error);
+      alert(error?.message || 'Could not publish admin post right now.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = prevLabel;
+    }
+  });
+})();
+
 // Initialize the map
 const map = L.map('map').setView([23.8103, 90.4125], 13); // Dhaka default
 
@@ -1250,7 +1300,7 @@ function openAddVolunteerModal() {
           if (idx >= 0) {
             missingRows[idx] = { ...missingRows[idx], status: nextStatus };
           }
-          applyFilters();
+          loadMissingReports();
         })
         .catch((error) => {
           console.error('missing reject failed', error);
@@ -1286,7 +1336,7 @@ function openAddVolunteerModal() {
             if (idx >= 0) {
               missingRows[idx] = { ...missingRows[idx], status: nextStatus };
             }
-            applyFilters();
+            loadMissingReports();
 
             const crimeNav = document.querySelector('.sidebar li[data-section="crime"]');
             if (crimeNav) {

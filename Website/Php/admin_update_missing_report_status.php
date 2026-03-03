@@ -22,6 +22,27 @@ function normalizeStatus(string $status): string {
     return $status === '' ? 'open' : $status;
 }
 
+function ensureNotificationsTable(PDO $pdo): void {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS user_notifications (
+        notification_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        recipient_entity VARCHAR(60) NOT NULL,
+        recipient_id INT UNSIGNED NOT NULL,
+        title VARCHAR(190) NOT NULL,
+        message TEXT NOT NULL,
+        level VARCHAR(30) NOT NULL DEFAULT 'info',
+        is_read TINYINT(1) NOT NULL DEFAULT 0,
+        target_post_id INT UNSIGNED DEFAULT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (notification_id),
+        INDEX idx_recipient (recipient_entity, recipient_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $hasTarget = $pdo->query("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user_notifications' AND COLUMN_NAME = 'target_post_id' LIMIT 1")->fetchColumn();
+    if (!$hasTarget) {
+        $pdo->exec("ALTER TABLE user_notifications ADD COLUMN target_post_id INT UNSIGNED DEFAULT NULL AFTER is_read");
+    }
+}
+
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         http_response_code(405);
@@ -100,6 +121,26 @@ try {
             'error' => 'This report is already processed',
         ]);
         exit;
+    }
+
+    ensureNotificationsTable($pdo);
+    $notifyPolice = $pdo->prepare('INSERT INTO user_notifications (recipient_entity, recipient_id, title, message, level, is_read, target_post_id) VALUES (:entity, :rid, :title, :message, :level, 0, NULL)');
+    if ($action === 'reject') {
+        $notifyPolice->execute([
+            ':entity' => 'policeman',
+            ':rid' => 0,
+            ':title' => 'Case Closed by Admin',
+            ':message' => 'Admin closed a missing person case. Live board will auto-sync to solved history.',
+            ':level' => 'info',
+        ]);
+    } else {
+        $notifyPolice->execute([
+            ':entity' => 'policeman',
+            ':rid' => 0,
+            ':title' => 'Admin Missing Case Alert',
+            ':message' => 'Admin escalated a missing person report for police review. Check All Cases.',
+            ':level' => 'warning',
+        ]);
     }
 
     echo json_encode([

@@ -38,6 +38,16 @@ function timeAgo(?string $datetime): string {
   }
 }
 
+function formatDateTimeDisplay(?string $datetime): string {
+  if (!$datetime) return '—';
+  try {
+    $dt = new DateTime($datetime);
+    return $dt->format('Y-m-d H:i');
+  } catch (Exception $e) {
+    return (string)$datetime;
+  }
+}
+
 function getAuthorPhoto(PDO $pdo, string $authorRole, int $authorId): string {
   static $roleMap = [
     'user' => ['table' => 'users', 'id_col' => 'user_id', 'folder' => 'user'],
@@ -73,6 +83,18 @@ function getAuthorPhoto(PDO $pdo, string $authorRole, int $authorId): string {
   return $cache[$cacheKey] = '../Images/default_profile.png';
 }
 
+function tableExists(PDO $pdo, string $table): bool {
+  $stmt = $pdo->prepare("SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :table LIMIT 1");
+  $stmt->execute(['table' => $table]);
+  return (bool)$stmt->fetchColumn();
+}
+
+function columnExists(PDO $pdo, string $table, string $column): bool {
+  $stmt = $pdo->prepare("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :table AND COLUMN_NAME = :column LIMIT 1");
+  $stmt->execute(['table' => $table, 'column' => $column]);
+  return (bool)$stmt->fetchColumn();
+}
+
 $posts = [];
 try {
   $hasMediaJson = false;
@@ -102,6 +124,112 @@ try {
 } catch (Exception $e) {
   $posts = [];
 }
+
+$allCases = [];
+$caseCounts = ['post' => 0, 'missing' => 0];
+try {
+  if (tableExists($pdo, 'missing_person_reports')) {
+    $missingStmt = $pdo->query("SELECT report_id, full_name, gender, age, last_seen_location, status, created_at, photo_filename, reporter_mobile, mental_condition, medical_notes FROM missing_person_reports WHERE LOWER(COALESCE(status, 'open')) = 'under_review' ORDER BY report_id DESC LIMIT 100");
+    $missingRows = $missingStmt ? $missingStmt->fetchAll(PDO::FETCH_ASSOC) : [];
+    foreach ($missingRows as $row) {
+      $photoFile = trim((string)($row['photo_filename'] ?? ''));
+      $imageUrl = $photoFile !== '' ? ('../uploads/missing_person/' . $photoFile) : '';
+      $allCases[] = [
+        'case_no' => 'MP-' . str_pad((string)((int)($row['report_id'] ?? 0)), 4, '0', STR_PAD_LEFT),
+        'type' => 'Missing Person',
+        'details' => (string)($row['full_name'] ?? 'Unknown') . ' • Last seen: ' . (string)($row['last_seen_location'] ?? 'Unknown'),
+        'status' => (string)($row['status'] ?? 'open'),
+        'source' => 'Missing Desk',
+        'source_key' => 'missing',
+        'image_url' => $imageUrl,
+        'contact_mobile' => (string)($row['reporter_mobile'] ?? ''),
+        'missing_name' => (string)($row['full_name'] ?? ''),
+        'extra_details' => trim((string)($row['gender'] ?? '') . ' • Age: ' . (string)($row['age'] ?? '') . ' • Mental: ' . (string)($row['mental_condition'] ?? '') . ' • Medical: ' . (string)($row['medical_notes'] ?? '')),
+        'created_at' => (string)($row['created_at'] ?? ''),
+      ];
+      $caseCounts['missing'] += 1;
+    }
+  }
+
+  if (tableExists($pdo, 'posts')) {
+    $hasReportStatus = columnExists($pdo, 'posts', 'report_status');
+    $hasStatus = columnExists($pdo, 'posts', 'status');
+
+    $statusSelect = $hasStatus ? ', status' : ", 'approved' AS status";
+    $reportSelect = $hasReportStatus ? ', report_status' : ", 'not_reported' AS report_status";
+
+    $where = $hasReportStatus
+      ? "WHERE LOWER(COALESCE(report_status,'not_reported')) = 'reported'"
+      : 'WHERE 1 = 0';
+
+    $postStmt = $pdo->query("SELECT id, case_id, category, text, media_path, media_json, media_type, created_at{$statusSelect}{$reportSelect} FROM posts {$where} ORDER BY id DESC LIMIT 120");
+    $postRows = $postStmt ? $postStmt->fetchAll(PDO::FETCH_ASSOC) : [];
+    foreach ($postRows as $row) {
+      $categoryRaw = strtolower((string)($row['category'] ?? 'case'));
+      $type = match ($categoryRaw) {
+        'missing_person' => 'Missing Person',
+        'criminal_found' => 'Criminal Found',
+        'disaster' => 'Disaster',
+        'mission' => 'Mission',
+        default => ucfirst(str_replace('_', ' ', $categoryRaw)),
+      };
+
+      $statusText = (string)($row['report_status'] ?? '');
+      if ($statusText === '' || strtolower($statusText) === 'not_reported') {
+        $statusText = (string)($row['status'] ?? 'approved');
+      }
+
+      $imageUrl = '';
+      $mediaType = strtolower((string)($row['media_type'] ?? ''));
+      $mediaPath = trim((string)($row['media_path'] ?? ''));
+      $mediaJson = trim((string)($row['media_json'] ?? ''));
+
+      if ($mediaJson !== '') {
+        $decodedMedia = json_decode($mediaJson, true);
+        if (is_array($decodedMedia)) {
+          foreach ($decodedMedia as $mediaItem) {
+            $path = trim((string)$mediaItem);
+            if ($path === '') continue;
+            if (preg_match('/\.(jpg|jpeg|png|webp|gif)$/i', $path)) {
+              $imageUrl = '../' . ltrim($path, '/');
+              break;
+            }
+          }
+        }
+      }
+
+      if ($imageUrl === '' && $mediaPath !== '' && ($mediaType === 'image' || preg_match('/\.(jpg|jpeg|png|webp|gif)$/i', $mediaPath))) {
+        $imageUrl = '../' . ltrim($mediaPath, '/');
+      }
+
+      $allCases[] = [
+        'case_no' => 'PT-' . str_pad((string)((int)($row['id'] ?? 0)), 4, '0', STR_PAD_LEFT),
+        'type' => $type,
+        'details' => trim((string)($row['text'] ?? 'Case details pending')),
+        'status' => $statusText,
+        'source' => 'Crime Reporting',
+        'source_key' => 'post',
+        'image_url' => $imageUrl,
+        'contact_mobile' => '',
+        'missing_name' => '',
+        'extra_details' => '',
+        'created_at' => (string)($row['created_at'] ?? ''),
+      ];
+      $caseCounts['post'] += 1;
+    }
+  }
+
+  usort($allCases, function (array $a, array $b): int {
+    return strcmp((string)($b['created_at'] ?? ''), (string)($a['created_at'] ?? ''));
+  });
+
+  if (count($allCases) > 200) {
+    $allCases = array_slice($allCases, 0, 200);
+  }
+} catch (Exception $e) {
+  $allCases = [];
+  $caseCounts = ['post' => 0, 'missing' => 0];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -114,6 +242,207 @@ try {
   <!-- Main CSS -->
   <link rel="stylesheet" href="../css/Policman_Home.css?=2">
   <link rel="stylesheet" href="../css/notifications_shared.css">
+  <style>
+    .all-cases-table-wrap {
+      border: 1px solid #e6ebf4;
+      border-radius: 12px;
+      overflow: auto;
+      background: #fff;
+    }
+    .all-cases-admin-table {
+      width: 100%;
+      min-width: 860px;
+      border-collapse: collapse;
+      font-size: 13px;
+      color: #1f2937;
+    }
+    .all-cases-admin-table thead th {
+      background: #f4f7fc;
+      color: #1f3b64;
+      font-weight: 800;
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid #dbe4f0;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    .all-cases-admin-table tbody td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #edf1f7;
+      vertical-align: top;
+      background: #fff;
+    }
+    .all-cases-admin-table tbody tr:nth-child(even) td {
+      background: #fbfcff;
+    }
+    .all-cases-admin-table tbody tr:hover td {
+      background: #f6f9ff;
+    }
+    .all-cases-case-id {
+      font-weight: 800;
+      color: #274690;
+      letter-spacing: .2px;
+    }
+    .all-cases-type-chip {
+      display: inline-block;
+      border-radius: 0;
+      background: transparent;
+      color: #374151;
+      padding: 0;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .all-cases-source-chip {
+      display: inline-block;
+      border-radius: 0;
+      padding: 0;
+      font-size: 12px;
+      font-weight: 700;
+      background: transparent;
+      border: none;
+      color: #374151;
+    }
+    .all-cases-source-chip.post {
+      color: #374151;
+    }
+    .all-cases-source-chip.missing {
+      color: #374151;
+    }
+    .all-cases-details-cell {
+      max-width: 340px;
+      white-space: normal;
+      line-height: 1.35;
+      color: #374151;
+    }
+    .all-cases-thumb {
+      width: 78px;
+      height: 58px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      display: block;
+      margin-bottom: 6px;
+      background: #f8fafc;
+    }
+    .all-cases-created {
+      color: #4b5563;
+      white-space: nowrap;
+      font-weight: 600;
+    }
+    .all-cases-actions {
+      white-space: nowrap;
+    }
+    .all-cases-action-btn {
+      border: none;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-right: 6px;
+    }
+    .all-cases-action-btn.preview {
+      background: #e0ecff;
+      color: #1e3a8a;
+    }
+    .all-cases-action-btn.publish {
+      background: #0f766e;
+      color: #fff;
+    }
+    .case-section-card {
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      background: #ffffff;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
+    }
+    .case-section-title {
+      text-align: center;
+      color: #1f2937;
+      margin: 0 0 8px;
+      font-weight: 800;
+      font-size: 22px;
+    }
+    .case-section-desc {
+      text-align: center;
+      color: #4b5563;
+      margin: 0 0 12px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .case-section-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .case-section-btn {
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #fff;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 10px 12px;
+      transition: transform .08s ease, opacity .15s ease;
+    }
+    .case-section-btn:hover {
+      opacity: .95;
+      transform: translateY(-1px);
+    }
+    .case-section-btn:active {
+      transform: translateY(0);
+    }
+    .case-section-btn.view {
+      background: #1f6feb;
+    }
+    .case-section-btn.history {
+      background: #0f766e;
+    }
+    .case-preview-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .case-preview-btn {
+      border: none;
+      border-radius: 9px;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .08s ease, opacity .15s ease;
+    }
+    .case-preview-btn:hover {
+      opacity: .95;
+      transform: translateY(-1px);
+    }
+    .case-preview-btn:active {
+      transform: translateY(0);
+    }
+    .case-preview-btn.cancel {
+      background: #eef2f7;
+      color: #1f2937;
+      border: 1px solid #dbe4ee;
+    }
+    .case-preview-btn.publish {
+      background: linear-gradient(135deg, #0f766e, #0d9488);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(13, 148, 136, 0.24);
+    }
+    @media (max-width: 680px) {
+      .case-section-actions {
+        grid-template-columns: 1fr;
+      }
+      .case-preview-footer {
+        flex-direction: column;
+      }
+      .case-preview-btn {
+        width: 100%;
+      }
+    }
+  </style>
   
 </head>
 <body>
@@ -190,6 +519,173 @@ try {
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
 
+</div>
+
+<div class="hospital-section case-section-card">
+  <h2 class="case-section-title">Investigation Cases</h2>
+  <p class="case-section-desc">Track investigation cases in one place. Open all current cases or view solved case history.</p>
+  <div class="case-section-actions">
+    <button id="openAllCasesBtn" type="button" onclick="document.getElementById('allCasesModal').style.display='flex'" class="case-section-btn view">📂 View All Cases</button>
+    <button id="openSolvedCasesBtn" type="button" class="case-section-btn history">✅ Solved Case History</button>
+  </div>
+</div>
+
+<div id="allCasesModal" onclick="if(event.target===this){this.style.display='none';}" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.52); z-index:4000; align-items:center; justify-content:center; padding:16px;">
+  <div style="width:min(1020px,96vw); max-height:88vh; overflow:auto; background:#fff; border-radius:12px; box-shadow:0 14px 32px rgba(0,0,0,.25); padding:14px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid #e5e7eb; padding-bottom:8px;">
+      <h3 style="margin:0; color:#1f2937;">All Cases</h3>
+      <button type="button" id="closeAllCasesBtn" onclick="document.getElementById('allCasesModal').style.display='none'" style="border:none; background:#f3f4f6; width:32px; height:32px; border-radius:7px; cursor:pointer; font-size:18px;">&times;</button>
+    </div>
+
+    <div style="overflow:auto;">
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin:0 0 10px;">
+        <span style="background:#e0f2fe; color:#075985; border:1px solid #bae6fd; border-radius:999px; padding:6px 10px; font-size:12px; font-weight:700;">Post Cases: <?= (int)$caseCounts['post'] ?></span>
+        <span style="background:#fef3c7; color:#92400e; border:1px solid #fde68a; border-radius:999px; padding:6px 10px; font-size:12px; font-weight:700;">Missing Cases: <?= (int)$caseCounts['missing'] ?></span>
+        <span style="background:#f3f4f6; color:#374151; border:1px solid #e5e7eb; border-radius:999px; padding:6px 10px; font-size:12px; font-weight:700;">Total: <?= count($allCases) ?></span>
+      </div>
+      <div style="display:flex; align-items:center; gap:14px; margin:0 0 10px; padding:8px 10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
+        <label style="display:inline-flex; align-items:center; gap:6px; font-weight:700; color:#075985; font-size:13px;">
+          <input type="checkbox" id="caseFilterPost" checked>
+          Post Cases
+        </label>
+        <label style="display:inline-flex; align-items:center; gap:6px; font-weight:700; color:#92400e; font-size:13px;">
+          <input type="checkbox" id="caseFilterMissing" checked>
+          Missing Cases
+        </label>
+      </div>
+      <div class="all-cases-table-wrap">
+      <table class="all-cases-admin-table">
+        <thead>
+          <tr>
+            <th>Case No</th>
+            <th>Type</th>
+            <th>Details</th>
+            <th>Source</th>
+            <th>Created</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="allCasesTableBody">
+          <?php if (empty($allCases)): ?>
+            <tr><td colspan="6">No cases found right now.</td></tr>
+          <?php else: ?>
+            <?php foreach ($allCases as $caseRow): ?>
+              <?php
+                $sourceKey = (string)($caseRow['source_key'] ?? 'post');
+                $displayType = $sourceKey === 'missing' ? 'Missing Person' : 'Post';
+                $displaySource = $sourceKey === 'missing' ? 'Missing Person' : 'Post';
+              ?>
+              <tr data-case-source-key="<?= e($sourceKey) ?>">
+                <td><span class="all-cases-case-id"><?= e((string)($caseRow['case_no'] ?? '—')) ?></span></td>
+                <td><span class="all-cases-type-chip"><?= e($displayType) ?></span></td>
+                <td class="all-cases-details-cell">
+                  <?php if (!empty($caseRow['image_url'])): ?>
+                    <img src="<?= e((string)$caseRow['image_url']) ?>" alt="Case image" class="all-cases-thumb">
+                  <?php endif; ?>
+                  <?= e((string)($caseRow['details'] ?? '—')) ?>
+                </td>
+                <td>
+                  <span class="all-cases-type-chip">
+                    <?= e($displaySource) ?>
+                  </span>
+                </td>
+                <td class="all-cases-created"><?= e(formatDateTimeDisplay((string)($caseRow['created_at'] ?? ''))) ?></td>
+                <td class="all-cases-actions">
+                  <button type="button" class="all-cases-action-btn preview js-case-preview-btn"
+                          onclick="openCasePreviewFromRow(this)"
+                          data-case-no="<?= e((string)($caseRow['case_no'] ?? '—')) ?>"
+                          data-case-type="<?= e($displayType) ?>"
+                          data-case-details="<?= e((string)($caseRow['details'] ?? '—')) ?>"
+                          data-case-status="<?= e((string)($caseRow['status'] ?? 'open')) ?>"
+                          data-case-source="<?= e($displaySource) ?>"
+                          data-case-created="<?= e((string)($caseRow['created_at'] ?? '')) ?>"
+                          data-case-image="<?= e((string)($caseRow['image_url'] ?? '')) ?>"
+                          data-case-contact="<?= e((string)($caseRow['contact_mobile'] ?? '')) ?>"
+                          data-case-missing-name="<?= e((string)($caseRow['missing_name'] ?? '')) ?>"
+                          data-case-extra="<?= e((string)($caseRow['extra_details'] ?? '')) ?>"
+                    >Preview</button>
+                  <button type="button" class="all-cases-action-btn publish js-case-publish-btn"
+                      onclick="publishCaseFromRow(this)"
+                          data-case-no="<?= e((string)($caseRow['case_no'] ?? '—')) ?>"
+                        data-case-type="<?= e($displayType) ?>"
+                          data-case-details="<?= e((string)($caseRow['details'] ?? '—')) ?>"
+                          data-case-status="<?= e((string)($caseRow['status'] ?? 'open')) ?>"
+                          data-case-source="<?= e($displaySource) ?>"
+                          data-case-created="<?= e((string)($caseRow['created_at'] ?? '')) ?>"
+                          data-case-image="<?= e((string)($caseRow['image_url'] ?? '')) ?>"
+                          data-case-contact="<?= e((string)($caseRow['contact_mobile'] ?? '')) ?>"
+                          data-case-missing-name="<?= e((string)($caseRow['missing_name'] ?? '')) ?>"
+                          data-case-extra="<?= e((string)($caseRow['extra_details'] ?? '')) ?>"
+                  >Publish</button>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          <?php endif; ?>
+        </tbody>
+      </table>
+      </div>
+      <div id="allCasesFilterEmpty" style="display:none; margin-top:10px; padding:10px; border:1px dashed #cbd5e1; border-radius:8px; color:#64748b; font-weight:600;">No cases match selected filters.</div>
+    </div>
+
+    <div style="margin-top:14px; border-top:1px solid #e5e7eb; padding-top:12px;">
+      <h4 style="margin:0 0 8px; color:#1f2937;">Live Published Board</h4>
+      <p style="margin:0 0 10px; color:#4b5563; font-size:13px;">Published case updates appear here and auto-sync when admin closes a case.</p>
+      <div id="livePublishedBoard" style="display:grid; gap:10px;"></div>
+    </div>
+  </div>
+</div>
+
+<div id="solvedCasesModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.52); z-index:4200; align-items:center; justify-content:center; padding:16px;" onclick="if(event.target===this){this.style.display='none';}">
+  <div style="width:min(980px,96vw); max-height:88vh; overflow:auto; background:#fff; border-radius:12px; box-shadow:0 14px 32px rgba(0,0,0,.25); padding:14px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid #e5e7eb; padding-bottom:8px;">
+      <h3 style="margin:0; color:#1f2937;">Solved Case History</h3>
+      <button type="button" id="closeSolvedCasesBtn" style="border:none; background:#f3f4f6; width:32px; height:32px; border-radius:7px; cursor:pointer; font-size:18px;">&times;</button>
+    </div>
+
+    <div class="all-cases-table-wrap">
+      <table class="all-cases-admin-table">
+        <thead>
+          <tr>
+            <th>Case No</th>
+            <th>Type</th>
+            <th>Details</th>
+            <th>Source</th>
+            <th>Published At</th>
+            <th>Solved At</th>
+          </tr>
+        </thead>
+        <tbody id="solvedCasesTableBody">
+          <tr><td colspan="6">No solved cases yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="casePreviewModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:4100; align-items:center; justify-content:center; padding:16px;" onclick="if(event.target===this){this.style.display='none';}">
+  <div style="width:min(650px,95vw); background:#fff; border-radius:12px; box-shadow:0 12px 28px rgba(0,0,0,.24); overflow:hidden;">
+    <div style="background:linear-gradient(90deg,#dc2626,#ef4444); color:#fff; padding:12px 14px; display:flex; justify-content:space-between; align-items:center;">
+      <strong style="font-size:17px;">📢 Case Billboard Preview</strong>
+      <button type="button" id="casePreviewClose" style="border:none; background:rgba(255,255,255,.2); color:#fff; width:32px; height:32px; border-radius:7px; cursor:pointer; font-size:18px;">&times;</button>
+    </div>
+    <div style="padding:14px;">
+      <div style="border:1px solid #fca5a5; border-radius:10px; padding:12px; background:#fff5f5;">
+        <div id="casePreviewAutoThumb" style="display:none; width:100%; height:170px; border-radius:8px; border:1px solid #fecaca; margin-bottom:8px; background:linear-gradient(135deg,#fee2e2,#fecaca); align-items:center; justify-content:center; color:#991b1b; font-weight:800; text-align:center; padding:10px;"></div>
+        <img id="casePreviewImage" src="" alt="Case preview" style="display:none; width:100%; max-height:240px; object-fit:cover; border-radius:8px; border:1px solid #fecaca; margin-bottom:8px;">
+        <h3 id="casePreviewTitle" style="margin:0 0 8px; color:#991b1b;">Case</h3>
+        <p id="casePreviewDetail" style="margin:0 0 8px; color:#1f2937; font-weight:600;"></p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; font-size:12px; color:#374151;">
+          <span id="casePreviewContact"></span>
+          <span id="casePreviewSource"></span>
+        </div>
+        <p id="casePreviewExtra" style="margin:8px 0 0; color:#374151; font-size:12px;"></p>
+      </div>
+      <div class="case-preview-footer">
+        <button type="button" id="casePreviewCancel" class="case-preview-btn cancel">Cancel Preview</button>
+        <button type="button" id="casePreviewPublish" class="case-preview-btn publish">Publish Case</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 
@@ -633,6 +1129,7 @@ try {
     <h2>Police Missing Person Investigation Form</h2>
 
     <form id="missingForm" action="../Php/save_missing_person.php" method="POST" enctype="multipart/form-data">
+      <input type="hidden" name="return_to" value="Policeman_Home.php">
       <h3>Personal Details</h3>
       <label>Full Name</label>
       <input type="text" name="full_name" required>

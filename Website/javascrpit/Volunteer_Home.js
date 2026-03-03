@@ -610,8 +610,9 @@ async function loadVolunteerRankStatus() {
 
     const acceptedXP = Number(json?.rules?.accepted_mission_xp || 10);
     const completedXP = Number(json?.rules?.completed_mission_xp || 20);
+    const autoClosedXP = Number(json?.rules?.auto_closed_by_police_xp || 2);
     if (rankRules) {
-      rankRules.textContent = `+${acceptedXP} XP (Accept) • +${completedXP} XP (Complete)`;
+      rankRules.textContent = `+${acceptedXP} XP (Accept) • +${completedXP} XP (Complete) • +${autoClosedXP} XP (Auto-close by Police)`;
     }
 
     if (certificateBox && certificateMessage) {

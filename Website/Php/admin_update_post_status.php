@@ -50,6 +50,7 @@ $allowedActions = [
     'approve' => 'approved',
     'reject'  => 'rejected',
     'make_report' => 'reported',
+    'close_case' => 'closed',
 ];
 
 try {
@@ -76,6 +77,9 @@ try {
     }
     if (!columnExists($pdo, 'posts', 'reported_at')) {
         $pdo->exec("ALTER TABLE posts ADD COLUMN reported_at DATETIME DEFAULT NULL AFTER report_status");
+    }
+    if (!columnExists($pdo, 'posts', 'report_closed_at')) {
+        $pdo->exec("ALTER TABLE posts ADD COLUMN report_closed_at DATETIME DEFAULT NULL AFTER reported_at");
     }
 
     $postStmt = $pdo->prepare('SELECT id, author_role, author_id, author_name, status, report_status FROM posts WHERE id = :id LIMIT 1');
@@ -117,10 +121,71 @@ try {
             exit;
         }
 
+        $notifyPolice = $pdo->prepare('INSERT INTO user_notifications (recipient_entity, recipient_id, title, message, level, is_read, target_post_id) VALUES (:entity, :rid, :title, :message, :level, 0, :post_id)');
+        $notifyPolice->execute([
+            ':entity' => 'policeman',
+            ':rid' => 0,
+            ':title' => 'Admin Case Alert',
+            ':message' => 'Admin marked a post as reported. Please review it in All Cases.',
+            ':level' => 'warning',
+            ':post_id' => $postId,
+        ]);
+
         echo json_encode([
             'success' => true,
             'status' => (string)($postRow['status'] ?? 'pending'),
             'report_status' => 'reported',
+        ]);
+        exit;
+    }
+
+    if ($action === 'close_case') {
+        $stmt = $pdo->prepare("UPDATE posts SET report_status = 'closed', report_closed_at = NOW() WHERE id = :id AND LOWER(COALESCE(report_status, 'not_reported')) IN ('reported','under_review')");
+        $stmt->execute([':id' => $postId]);
+
+        if ($stmt->rowCount() === 0) {
+            $chk = $pdo->prepare("SELECT report_status FROM posts WHERE id = :id LIMIT 1");
+            $chk->execute([':id' => $postId]);
+            $row = $chk->fetch(PDO::FETCH_ASSOC);
+            if (!$row) {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'error' => 'Post not found']);
+                exit;
+            }
+
+            $currentReportStatus = strtolower((string)($row['report_status'] ?? 'not_reported'));
+            if ($currentReportStatus === 'closed') {
+                echo json_encode([
+                    'success' => true,
+                    'status' => (string)($postRow['status'] ?? 'approved'),
+                    'report_status' => 'closed',
+                    'already_closed' => true,
+                ]);
+                exit;
+            }
+
+            echo json_encode([
+                'success' => false,
+                'error' => 'This post case is not in reported state',
+                'report_status' => $row['report_status'] ?? 'not_reported',
+            ]);
+            exit;
+        }
+
+        $notifyPolice = $pdo->prepare('INSERT INTO user_notifications (recipient_entity, recipient_id, title, message, level, is_read, target_post_id) VALUES (:entity, :rid, :title, :message, :level, 0, :post_id)');
+        $notifyPolice->execute([
+            ':entity' => 'policeman',
+            ':rid' => 0,
+            ':title' => 'Case Closed by Admin',
+            ':message' => 'Admin closed a reported post case. Live board will auto-sync to solved history.',
+            ':level' => 'info',
+            ':post_id' => $postId,
+        ]);
+
+        echo json_encode([
+            'success' => true,
+            'status' => (string)($postRow['status'] ?? 'approved'),
+            'report_status' => 'closed',
         ]);
         exit;
     }

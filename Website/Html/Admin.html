@@ -253,6 +253,9 @@
   <li data-section="crime">
     <span class="icon"><i class="fa-solid fa-video"></i></span> Crime Reporting
   </li>
+  <li data-section="admin-post">
+    <span class="icon"><i class="fa-solid fa-pen-to-square"></i></span> Admin Post
+  </li>
   <li data-section="post-control">
     <span class="icon"><i class="fa-solid fa-clipboard-check"></i></span> Post Control
   </li>
@@ -586,6 +589,7 @@
       <option value="">Status</option>
       <option value="open">Open</option>
       <option value="active">Active</option>
+      <option value="under_review">Under Review</option>
       <option value="found">Found</option>
       <option value="resolved">Resolved</option>
       <option value="closed">Closed</option>
@@ -648,6 +652,26 @@
   </table>
   <div id="ai-graphs" style="height:130px;background:#f6f6f6;margin-top:18px;">
     <span>Detections per day, False positive rate, Match success graph</span>
+  </div>
+</div>
+
+<div id="admin-post" class="main-section">
+  <h2>Admin Post</h2>
+  <div class="filters-bar" id="admin-post-composer" style="align-items:flex-end; margin-bottom:12px;">
+    <div style="flex:1; min-width:280px;">
+      <label for="admin-post-text" style="display:block; margin-bottom:6px; font-weight:700;">Post Message (All Feed)</label>
+      <textarea id="admin-post-text" placeholder="Write admin update..." style="width:100%; min-height:74px; padding:10px; border:1px solid #dbe2ef; border-radius:8px;"></textarea>
+    </div>
+    <select id="admin-post-category" style="min-width:170px;">
+      <option value="general">General</option>
+      <option value="alert">Alert</option>
+      <option value="missing_person">Missing Person</option>
+      <option value="criminal_found">Criminal Found</option>
+    </select>
+    <button type="button" id="admin-post-submit" class="approve-btn">Publish</button>
+  </div>
+  <div class="section-table-block">
+    <p style="margin:0; color:#4b5563; font-weight:600;">Published posts will go to feed instantly with approved status.</p>
   </div>
 </div>
 

@@ -151,8 +151,8 @@ try {
                 LEFT JOIN volunteers v ON v.volunteer_id = vm.volunteer_id
                 WHERE vm.proof_file IS NOT NULL
                   AND vm.proof_file <> ''
-                  AND LOWER(COALESCE(vm.status,'assigned')) NOT IN ('completed','rejected_busy')
-                  AND {$responseExpr} NOT IN ('completed','rejected_busy')
+                                    AND LOWER(COALESCE(vm.status,'assigned')) NOT IN ('completed','rejected_busy','closed_by_police')
+                                    AND {$responseExpr} NOT IN ('completed','rejected_busy','closed_by_police')
                 ORDER BY {$timeExpr} DESC, vm.mission_id DESC
                 LIMIT 80";
 

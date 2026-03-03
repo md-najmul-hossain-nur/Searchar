@@ -42,6 +42,7 @@ try {
     $completed = 0;
     $accepted = 0;
     $busy = 0;
+    $autoClosedByPolice = 0;
 
     if (tableExists($pdo, 'volunteer_missions')) {
         $hasResponse = columnExists($pdo, 'volunteer_missions', 'response_status');
@@ -49,7 +50,8 @@ try {
         $stmt = $pdo->prepare("SELECT
             SUM(CASE WHEN LOWER(status) = 'completed' OR {$responseExpr} = 'completed' THEN 1 ELSE 0 END) AS completed_count,
             SUM(CASE WHEN LOWER(status) = 'accepted' OR {$responseExpr} = 'accepted' THEN 1 ELSE 0 END) AS accepted_count,
-            SUM(CASE WHEN LOWER(status) = 'rejected_busy' OR {$responseExpr} = 'rejected_busy' THEN 1 ELSE 0 END) AS busy_count
+            SUM(CASE WHEN LOWER(status) = 'rejected_busy' OR {$responseExpr} = 'rejected_busy' THEN 1 ELSE 0 END) AS busy_count,
+            SUM(CASE WHEN LOWER(status) = 'closed_by_police' OR {$responseExpr} = 'closed_by_police' THEN 1 ELSE 0 END) AS auto_closed_by_police_count
             FROM volunteer_missions
             WHERE volunteer_id = :vid");
         $stmt->execute([':vid' => $volunteerId]);
@@ -57,9 +59,10 @@ try {
         $completed = (int)($row['completed_count'] ?? 0);
         $accepted = (int)($row['accepted_count'] ?? 0);
         $busy = (int)($row['busy_count'] ?? 0);
+        $autoClosedByPolice = (int)($row['auto_closed_by_police_count'] ?? 0);
     }
 
-    $points = ($completed * 20) + ($accepted * 10);
+    $points = ($completed * 20) + ($accepted * 10) + ($autoClosedByPolice * 2);
     $rankInfo = pointsToRank($points);
 
     $pointsToNext = null;
@@ -74,6 +77,7 @@ try {
         'rules' => [
             'accepted_mission_xp' => 10,
             'completed_mission_xp' => 20,
+            'auto_closed_by_police_xp' => 2,
             'ranks' => [
                 ['name' => 'Bronze Volunteer', 'min_points' => 100],
                 ['name' => 'Silver Responder', 'min_points' => 380],
@@ -85,6 +89,7 @@ try {
             'accepted_missions' => $accepted,
             'completed_missions' => $completed,
             'busy_missions' => $busy,
+            'auto_closed_by_police_missions' => $autoClosedByPolice,
             'points' => $points,
             'rank' => $rankInfo['rank'],
             'next_rank' => $rankInfo['next_rank'],
