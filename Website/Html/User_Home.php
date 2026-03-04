@@ -220,7 +220,7 @@ try {
      <?php $user_id = (int)$user['user_id']; ?>
       <!-- Edit button as image icon -->
         <button class="edit-btn" title="Edit Profile" onclick="location.href='../Html/User_profile.php?user_id=<?= $user_id ?>'">
-  <img src="../Images/pencil.gif" alt="Edit" />
+  <img src="../Images/settings.gif" alt="Edit" />
 </button>
 
 <h3><?= e($user['full_name'] ?? '—') ?></h3>

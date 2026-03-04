@@ -471,7 +471,7 @@ try {
         <img src="<?= isset($user['cover_photo']) ? '../uploads/police/' . e($user['cover_photo']) : '../Images/default-cover.gif' ?>" class="cover">
         <img src="<?= isset($user['profile_photo']) ? '../uploads/police/' . e($user['profile_photo']) : '../Images/default-profile.gif' ?>" class="profile-pic">
         <button class="edit-btn" title="Edit Profile" onclick="location.href='../Html/Policeman_profile.php'">
-          <img src="../Images/pencil.gif" alt="Edit" />
+          <img src="../Images/settings.gif" alt="Edit" />
         </button>
 
         <h3><?= e($user['full_name'] ?? '—') ?></h3>

@@ -124,7 +124,7 @@ try {
         <!-- Edit button as image icon -->
 <button class="edit-btn" title="Edit Profile" 
         onclick="location.href='../Html/Volunteer_Edit_profile.php?user_id=<?php echo $volunteer_id; ?>'">
-    <img src="../Images/pencil.gif" alt="Edit" />
+    <img src="../Images/settings.gif" alt="Edit" />
 </button>
           <h2>
                 <?= e($volunteer['full_name'] ?? 'Volunteer Name') ?>

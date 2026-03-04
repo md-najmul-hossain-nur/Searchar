@@ -107,7 +107,7 @@ try {
    <div class="left-panel">
   <div class="card user-info" style="position: relative;">
         <button class="edit-btn" title="Edit Profile" onclick="location.href='../Html/User_Edit_profile.php?user_id=<?= $user_id ?>'">
-      <img src="../Images/pencil.gif" alt="Edit" />
+      <img src="../Images/settings.gif" alt="Edit" />
     </button>
      <h2><?= e($user['full_name'] ?? 'User Name') ?></h2>
             <div class="divider"></div>
@@ -483,7 +483,7 @@ try {
   <div class="notifications-drawer-footer"></div>
 </aside>
 </body>
-  <script src="../javascrpit/User_profile.js"></script>
+  <script src="../javascrpit/User_profile.js?v=20260305"></script>
   <script src="../javascrpit/post_interactions_shared.js?v=20260301"></script>
        <script src="../javascrpit/notifications_shared.js"></script>
 

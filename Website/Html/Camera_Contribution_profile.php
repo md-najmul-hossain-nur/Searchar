@@ -95,7 +95,7 @@ try {
     <div class="left-panel">
   <div class="card user-info" style="position: relative;">
         <button class="edit-btn" title="Edit Profile" onclick="location.href='../Html/Camera_Contribution_Edit_profile.php?camera_id=<?= $user_id ?>'">
-      <img src="../Images/pencil.gif" alt="Edit" />
+      <img src="../Images/settings.gif" alt="Edit" />
     </button>
      <h2><?= e($user['full_name'] ?? 'User Name') ?></h2>
             <div class="divider"></div>
