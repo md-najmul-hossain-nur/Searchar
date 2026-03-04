@@ -24,11 +24,11 @@ function canonicalRole(string $role): string {
 
 function roleSqlMap(string $canonicalRole): array {
     return match ($canonicalRole) {
-        'user' => ['table' => 'users', 'id_col' => 'user_id'],
-        'police' => ['table' => 'policemen', 'id_col' => 'police_id'],
-        'volunteer' => ['table' => 'volunteers', 'id_col' => 'volunteer_id'],
-        'contributor' => ['table' => 'camera_contributors', 'id_col' => 'camera_id'],
-        default => ['table' => 'users', 'id_col' => 'user_id'],
+        'user' => ['table' => 'users', 'id_col' => 'user_id', 'upload_folder' => 'user'],
+        'police' => ['table' => 'policemen', 'id_col' => 'police_id', 'upload_folder' => 'police'],
+        'volunteer' => ['table' => 'volunteers', 'id_col' => 'volunteer_id', 'upload_folder' => 'volunteer'],
+        'contributor' => ['table' => 'camera_contributors', 'id_col' => 'camera_id', 'upload_folder' => 'camera'],
+        default => ['table' => 'users', 'id_col' => 'user_id', 'upload_folder' => 'user'],
     };
 }
 
@@ -99,6 +99,7 @@ function ensureInteractionTables(PDO $pdo): void {
         parent_comment_id BIGINT UNSIGNED DEFAULT NULL,
         actor_role VARCHAR(50) NOT NULL,
         actor_id INT UNSIGNED NOT NULL,
+        is_anonymous TINYINT(1) NOT NULL DEFAULT 0,
         comment_text TEXT NOT NULL,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (comment_id),
@@ -131,6 +132,11 @@ function ensureInteractionTables(PDO $pdo): void {
     if (!$hasMeta) {
         $pdo->exec("ALTER TABLE user_notifications ADD COLUMN meta_json TEXT NULL AFTER message");
     }
+
+    $hasCommentAnonymous = $pdo->query("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'post_comments' AND COLUMN_NAME = 'is_anonymous' LIMIT 1")->fetchColumn();
+    if (!$hasCommentAnonymous) {
+        $pdo->exec("ALTER TABLE post_comments ADD COLUMN is_anonymous TINYINT(1) NOT NULL DEFAULT 0 AFTER actor_id");
+    }
 }
 
 function actorSnapshot(PDO $pdo, string $canonicalRole, int $actorId): array {
@@ -144,9 +150,10 @@ function actorSnapshot(PDO $pdo, string $canonicalRole, int $actorId): array {
     $row = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
 
     $photoRaw = trim((string)($row['profile_photo'] ?? ''));
+    $uploadFolder = (string)($map['upload_folder'] ?? 'user');
     return [
         'name' => trim((string)($row['full_name'] ?? '')) ?: 'Someone',
-        'photo' => $photoRaw !== '' ? '../uploads/user/' . $photoRaw : '../Images/default_profile.png',
+        'photo' => $photoRaw !== '' ? ('../uploads/' . $uploadFolder . '/' . $photoRaw) : '../Images/default_profile.png',
     ];
 }
 
@@ -196,7 +203,7 @@ function createInteractionNotification(PDO $pdo, int $postId, string $actionType
 }
 
 function fetchComments(PDO $pdo, int $postId): array {
-    $stmt = $pdo->prepare('SELECT comment_id, post_id, parent_comment_id, actor_role, actor_id, comment_text, created_at FROM post_comments WHERE post_id = :post_id ORDER BY created_at ASC, comment_id ASC');
+    $stmt = $pdo->prepare('SELECT comment_id, post_id, parent_comment_id, actor_role, actor_id, is_anonymous, comment_text, created_at FROM post_comments WHERE post_id = :post_id ORDER BY created_at ASC, comment_id ASC');
     $stmt->execute([':post_id' => $postId]);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
@@ -230,14 +237,14 @@ function fetchComments(PDO $pdo, int $postId): array {
             $personId = (int)($p['person_id'] ?? 0);
             if ($personId <= 0) continue;
             $photoRaw = trim((string)($p['profile_photo'] ?? ''));
+            $uploadFolder = (string)($map['upload_folder'] ?? 'user');
             $profiles[$role . ':' . $personId] = [
                 'name' => trim((string)($p['full_name'] ?? '')) ?: 'Someone',
-                'photo' => $photoRaw !== '' ? '../uploads/user/' . $photoRaw : '../Images/default_profile.png',
+                'photo' => $photoRaw !== '' ? ('../uploads/' . $uploadFolder . '/' . $photoRaw) : '../Images/default_profile.png',
             ];
         }
     }
 
-    $postAnonymous = isPostAnonymous($pdo, $postId);
     $anonymousName = 'Anonymous';
     $anonymousPhoto = '../Images/anonymously.gif';
 
@@ -246,9 +253,11 @@ function fetchComments(PDO $pdo, int $postId): array {
         $role = canonicalRole((string)($row['actor_role'] ?? ''));
         $actorId = (int)($row['actor_id'] ?? 0);
         $profile = $profiles[$role . ':' . $actorId] ?? ['name' => 'Someone', 'photo' => '../Images/default_profile.png'];
+        $commentAnonymous = (int)($row['is_anonymous'] ?? 0) === 1;
+        $shouldMask = $commentAnonymous;
 
-        $actorName = $postAnonymous ? $anonymousName : (string)$profile['name'];
-        $actorPhoto = $postAnonymous ? $anonymousPhoto : (string)$profile['photo'];
+        $actorName = $shouldMask ? $anonymousName : (string)$profile['name'];
+        $actorPhoto = $shouldMask ? $anonymousPhoto : (string)$profile['photo'];
 
         $comments[] = [
             'comment_id' => (int)($row['comment_id'] ?? 0),
@@ -258,7 +267,7 @@ function fetchComments(PDO $pdo, int $postId): array {
             'actor_id' => $actorId,
             'actor_name' => $actorName,
             'actor_photo' => $actorPhoto,
-            'actor_is_anonymous' => $postAnonymous,
+            'actor_is_anonymous' => $shouldMask,
             'comment_text' => (string)($row['comment_text'] ?? ''),
             'created_at' => (string)($row['created_at'] ?? ''),
             'time_ago' => timeAgo((string)($row['created_at'] ?? '')),
@@ -388,6 +397,8 @@ try {
     if ($action === 'add_comment') {
         $commentText = trim((string)($payload['comment_text'] ?? ''));
         $parentCommentId = (int)($payload['parent_comment_id'] ?? 0);
+        $commentVisibility = strtolower(trim((string)($payload['comment_visibility'] ?? 'normal')));
+        $commentAnonymous = $commentVisibility === 'anonymous';
 
         if ($commentText === '') {
             http_response_code(400);
@@ -417,7 +428,7 @@ try {
             $parentNullable = $validParent;
         }
 
-        $ins = $pdo->prepare('INSERT INTO post_comments (post_id, parent_comment_id, actor_role, actor_id, comment_text) VALUES (:post_id, :parent_comment_id, :actor_role, :actor_id, :comment_text)');
+        $ins = $pdo->prepare('INSERT INTO post_comments (post_id, parent_comment_id, actor_role, actor_id, is_anonymous, comment_text) VALUES (:post_id, :parent_comment_id, :actor_role, :actor_id, :is_anonymous, :comment_text)');
         $ins->bindValue(':post_id', $postId, PDO::PARAM_INT);
         if ($parentNullable === null) {
             $ins->bindValue(':parent_comment_id', null, PDO::PARAM_NULL);
@@ -426,14 +437,15 @@ try {
         }
         $ins->bindValue(':actor_role', $actorRole, PDO::PARAM_STR);
         $ins->bindValue(':actor_id', $actorId, PDO::PARAM_INT);
+        $ins->bindValue(':is_anonymous', $commentAnonymous ? 1 : 0, PDO::PARAM_INT);
         $ins->bindValue(':comment_text', $commentText, PDO::PARAM_STR);
         $ins->execute();
 
         $commentId = (int)$pdo->lastInsertId();
 
-        $postAnonymous = isPostAnonymous($pdo, $postId);
-        $actorPublicName = $postAnonymous ? 'Anonymous' : (string)$actor['name'];
-        $actorPublicPhoto = $postAnonymous ? '../Images/anonymously.gif' : (string)$actor['photo'];
+        $effectiveAnonymous = $commentAnonymous;
+        $actorPublicName = $effectiveAnonymous ? 'Anonymous' : (string)$actor['name'];
+        $actorPublicPhoto = $effectiveAnonymous ? '../Images/anonymously.gif' : (string)$actor['photo'];
 
         createInteractionNotification($pdo, $postId, 'comment', $actorRole, $actorId, $actorPublicName, $commentText, $commentId);
 
@@ -452,7 +464,7 @@ try {
                     'actor_id' => $actorId,
                     'actor_name' => $actorPublicName,
                     'actor_photo' => $actorPublicPhoto,
-                    'actor_is_anonymous' => $postAnonymous,
+                    'actor_is_anonymous' => $effectiveAnonymous,
                     'comment_text' => $commentText,
                     'created_at' => date('Y-m-d H:i:s'),
                     'time_ago' => 'Just now',

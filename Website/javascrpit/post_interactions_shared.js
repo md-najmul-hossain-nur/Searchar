@@ -23,6 +23,55 @@
         0% { background: rgba(255, 210, 105, .65); }
         100% { background: transparent; }
       }
+      .comment-input-area,
+      .reply-input-area {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 10px 0;
+      }
+      .comment-editor {
+        flex: 1;
+        min-height: 40px;
+        max-height: 140px;
+        overflow-y: auto;
+        border: 1px solid #d1d5db;
+        border-radius: 12px;
+        padding: 9px 12px;
+        font-size: 14px;
+        line-height: 1.35;
+        color: #0f172a;
+        background: #fff;
+      }
+      .comment-editor:focus {
+        outline: none;
+        border-color: #93c5fd;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, .16);
+      }
+      .comment-editor:empty:before {
+        content: attr(data-placeholder);
+        color: #94a3b8;
+        pointer-events: none;
+      }
+      .comment-visibility-select {
+        border: 1px solid #d1d5db;
+        border-radius: 12px;
+        padding: 8px 10px;
+        font-size: 13px;
+        color: #0f172a;
+        background: #fff;
+        min-width: 108px;
+        align-self: center;
+        height: 40px;
+      }
+      .comment-visibility-select:focus {
+        outline: none;
+        border-color: #93c5fd;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, .16);
+      }
+      .reply-input-area .comment-visibility-select {
+        margin-right: 4px;
+      }
     `;
     document.head.appendChild(style);
   }
@@ -208,6 +257,45 @@
   function getTopEditor(postElement) {
     const module = getCommentModule(postElement);
     return module ? module.querySelector('.comment-input-area .comment-editor') : null;
+  }
+
+  function getTopVisibilitySelect(postElement) {
+    const module = getCommentModule(postElement);
+    return module ? module.querySelector('.comment-input-area .comment-visibility-select') : null;
+  }
+
+  function getDefaultCommentVisibility(postElement) {
+    return 'normal';
+  }
+
+  function createCommentVisibilitySelect(defaultValue, normalLabel, anonymousLabel) {
+    const select = document.createElement('select');
+    select.className = 'comment-visibility-select';
+    select.innerHTML = `
+      <option value="normal">${escapeHtml(normalLabel || 'Normal')}</option>
+      <option value="anonymous">${escapeHtml(anonymousLabel || 'Anonymous')}</option>
+    `;
+    select.value = defaultValue === 'anonymous' ? 'anonymous' : 'normal';
+    return select;
+  }
+
+  function ensureCommentVisibilityControls() {
+    document.querySelectorAll('.post[data-post-id]').forEach(postElement => {
+      const module = getCommentModule(postElement);
+      if (!module) return;
+
+      const topInputArea = module.querySelector('.comment-input-area');
+      if (!topInputArea || topInputArea.classList.contains('reply-input-area')) return;
+      if (topInputArea.querySelector('.comment-visibility-select')) return;
+
+      const sendBtn = topInputArea.querySelector('.comment-send-btn');
+      const select = createCommentVisibilitySelect(getDefaultCommentVisibility(postElement), 'Normal', 'Anonymous');
+      if (sendBtn) {
+        topInputArea.insertBefore(select, sendBtn);
+      } else {
+        topInputArea.appendChild(select);
+      }
+    });
   }
 
   function updateLikeUi(postElement, likesCount, likedByMe) {
@@ -424,6 +512,7 @@
     const createdAt = String(row?.created_at || '');
     const timeAgoLabel = escapeHtml(String(row?.time_ago || formatRelativeTime(createdAt, 'Just now')));
     const isAnonymous = Number(row?.share_anonymous || 0) === 1;
+    const defaultCommentMode = 'normal';
 
     const imageUrls = extractImageUrls(row);
     const mediaType = String(row?.media_type || '').toLowerCase();
@@ -466,6 +555,10 @@
         <section class="comment-module" style="display:none;">
           <div class="comment-input-area">
             <div class="comment-editor" contenteditable="true" data-placeholder="Write a comment..."></div>
+            <select class="comment-visibility-select">
+              <option value="normal" ${defaultCommentMode === 'normal' ? 'selected' : ''}>Normal</option>
+              <option value="anonymous" ${defaultCommentMode === 'anonymous' ? 'selected' : ''}>Anonymous</option>
+            </select>
             <button class="comment-send-btn">
               <img src="../Images/send.png" alt="Send">
             </button>
@@ -864,7 +957,7 @@
     updateLikeUi(postElement, merged.likes_count, merged.liked_by_me);
   }
 
-  async function addComment(postElement, text, parentCommentId) {
+  async function addComment(postElement, text, parentCommentId, commentVisibility) {
     const postId = getPostId(postElement);
     if (!postId) return;
 
@@ -876,7 +969,8 @@
         action: 'add_comment',
         post_id: postId,
         comment_text: text,
-        parent_comment_id: parentCommentId || null
+        parent_comment_id: parentCommentId || null,
+        comment_visibility: commentVisibility === 'anonymous' ? 'anonymous' : 'normal'
       })
     });
 
@@ -896,10 +990,19 @@
     box.setAttribute('data-parent-comment-id', String(parentCommentId));
     box.innerHTML = `
       <div class="comment-editor" contenteditable="true" data-placeholder="Write a reply..."></div>
+      <select class="comment-visibility-select">
+        <option value="normal">Normal</option>
+        <option value="anonymous">Anonymous</option>
+      </select>
       <button class="comment-send-btn reply-send-btn" type="button">
         <img src="../Images/send.png" alt="Send">
       </button>
     `;
+
+    const visibilitySelect = box.querySelector('.comment-visibility-select');
+    if (visibilitySelect) {
+      visibilitySelect.value = getDefaultCommentVisibility(commentLi.closest('.post'));
+    }
 
     commentLi.appendChild(box);
     const editor = box.querySelector('.comment-editor');
@@ -1012,13 +1115,19 @@
         const editor = replyBox
           ? replyBox.querySelector('.comment-editor')
           : getTopEditor(post);
+        const visibilitySelect = replyBox
+          ? replyBox.querySelector('.comment-visibility-select')
+          : getTopVisibilitySelect(post);
+        const visibility = String(visibilitySelect?.value || getDefaultCommentVisibility(post)).toLowerCase() === 'anonymous'
+          ? 'anonymous'
+          : 'normal';
 
         const text = (editor && editor.innerText ? editor.innerText.trim() : '');
         if (!text) return;
 
         sendBtn.setAttribute('disabled', 'disabled');
         try {
-          await addComment(post, text, parentCommentId || null);
+          await addComment(post, text, parentCommentId || null, visibility);
           if (editor) editor.innerText = '';
           if (replyBox) replyBox.remove();
         } catch (error) {
@@ -1051,6 +1160,7 @@
     ensurePostReportModal();
     removeLegacyDemoPosts();
     ensureReportButtons();
+    ensureCommentVisibilityControls();
     setupApprovedPostAutoSync();
     wireEvents();
 

@@ -678,7 +678,7 @@ try {
 
     </body>
        <script src="../javascrpit/Camera_Contribution_Home.js"></script>
-       <script src="../javascrpit/post_interactions_shared.js"></script>
+      <script src="../javascrpit/post_interactions_shared.js?v=20260307"></script>
        <script src="../javascrpit/notifications_shared.js"></script>
 
 </html>
