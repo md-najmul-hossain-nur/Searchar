@@ -1,5 +1,135 @@
 let container = document.getElementById('container');
 
+const SIGNUP_DRAFT_KEY = 'searcharSignupDraft';
+
+function shouldOpenSignupInitially() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('openSignup') === '1') return true;
+
+  try {
+    const raw = sessionStorage.getItem(SIGNUP_DRAFT_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw);
+    return !!(parsed && parsed.role);
+  } catch (error) {
+    return false;
+  }
+}
+
+function openSignupPanel() {
+  if (!container) {
+    container = document.getElementById('container');
+  }
+  if (!container) return;
+  container.classList.add('sign-up');
+  container.classList.remove('sign-in');
+}
+
+function buildLoginReturnUrl(role) {
+  const returnUrl = new URL('login.html', window.location.href);
+  returnUrl.searchParams.set('openSignup', '1');
+  if (role) {
+    returnUrl.searchParams.set('role', role);
+  }
+  return returnUrl.toString();
+}
+
+function saveSignupDraft() {
+  const roleSelect = document.getElementById('role');
+  const dynamicForm = document.getElementById('dynamicForm');
+  if (!roleSelect || !dynamicForm || !roleSelect.value) return;
+
+  const values = {};
+  const fields = dynamicForm.querySelectorAll('input, select, textarea');
+
+  fields.forEach((field) => {
+    const key = field.name || field.id;
+    if (!key) return;
+    if (field.type === 'file' || field.type === 'password') return;
+
+    if (field.type === 'checkbox' || field.type === 'radio') {
+      values[key] = !!field.checked;
+      return;
+    }
+
+    values[key] = field.value;
+  });
+
+  const payload = {
+    role: roleSelect.value,
+    values,
+    timestamp: Date.now()
+  };
+
+  try {
+    sessionStorage.setItem(SIGNUP_DRAFT_KEY, JSON.stringify(payload));
+  } catch (error) {
+    console.warn('Failed to save signup draft', error);
+  }
+}
+
+function applySignupDraftValues(values) {
+  const dynamicForm = document.getElementById('dynamicForm');
+  if (!dynamicForm || !values) return;
+
+  const fields = dynamicForm.querySelectorAll('input, select, textarea');
+  fields.forEach((field) => {
+    const key = field.name || field.id;
+    if (!key || !(key in values)) return;
+    if (field.type === 'file' || field.type === 'password') return;
+
+    if (field.type === 'checkbox' || field.type === 'radio') {
+      field.checked = !!values[key];
+      return;
+    }
+
+    field.value = values[key];
+  });
+}
+
+function updateTermsLinksForCurrentRole() {
+  const roleSelect = document.getElementById('role');
+  const dynamicForm = document.getElementById('dynamicForm');
+  if (!roleSelect || !dynamicForm || !roleSelect.value) return;
+
+  const termsLinks = dynamicForm.querySelectorAll('a[href*="Terms_&_Privacy.html"]');
+  termsLinks.forEach((link) => {
+    const targetUrl = new URL(link.getAttribute('href'), window.location.href);
+    targetUrl.searchParams.set('role', roleSelect.value);
+    targetUrl.searchParams.set('returnTo', buildLoginReturnUrl(roleSelect.value));
+    link.setAttribute('href', targetUrl.toString());
+  });
+}
+
+function restoreSignupStateIfAvailable() {
+  const roleSelect = document.getElementById('role');
+  if (!roleSelect) return;
+
+  const params = new URLSearchParams(window.location.search);
+  const roleFromUrl = params.get('role') || '';
+
+  let storedDraft = null;
+  try {
+    const raw = sessionStorage.getItem(SIGNUP_DRAFT_KEY);
+    storedDraft = raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    storedDraft = null;
+  }
+
+  const roleToUse = roleFromUrl || (storedDraft && storedDraft.role) || '';
+  if (!roleToUse) return;
+
+  openSignupPanel();
+  roleSelect.value = roleToUse;
+  showForm();
+
+  if (storedDraft && storedDraft.role === roleToUse) {
+    applySignupDraftValues(storedDraft.values || {});
+  }
+
+  updateTermsLinksForCurrentRole();
+}
+
 // Expose toggle for inline onclick and guard if the container is missing
 window.toggle = function toggle() {
   if (!container) {
@@ -12,7 +142,11 @@ window.toggle = function toggle() {
 };
 
 setTimeout(() => {
-  container.classList.add('sign-in');
+  if (shouldOpenSignupInitially()) {
+    openSignupPanel();
+  } else if (container) {
+    container.classList.add('sign-in');
+  }
 }, 200);
 
 // Logo click redirects to home page
@@ -553,6 +687,9 @@ function showForm() {
     formContainer.innerHTML = '';
     formContainer.classList.remove('show-role-form');
   }
+
+  updateTermsLinksForCurrentRole();
+  saveSignupDraft();
 }
 
 // Bubble animation script (larger bubbles)
@@ -570,6 +707,23 @@ document.addEventListener('DOMContentLoaded', () => {
     bubble.style.animationDelay = `-${Math.random() * 19}s`;
     bubbleContainer.appendChild(bubble);
   }
+
+  const roleSelect = document.getElementById('role');
+  const dynamicForm = document.getElementById('dynamicForm');
+
+  if (roleSelect) {
+    roleSelect.addEventListener('change', () => {
+      saveSignupDraft();
+      updateTermsLinksForCurrentRole();
+    });
+  }
+
+  if (dynamicForm) {
+    dynamicForm.addEventListener('input', saveSignupDraft);
+    dynamicForm.addEventListener('change', saveSignupDraft);
+  }
+
+  restoreSignupStateIfAvailable();
 }); 
 let map, marker;
 

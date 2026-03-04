@@ -1,51 +1,44 @@
-  document.getElementById('logo').onclick = function() {
-    window.location.href = '../Html/Index.html';
-  };
-  document.addEventListener("DOMContentLoaded", () => {
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("visible");
-        }
-      });
-    },
-    {
-      threshold: 0.3,
-    }
-  );
-
-  document.querySelectorAll(".donation-hero, .donation-title, .donation-desc, .donation-form-container").forEach((el) => {
-    observer.observe(el);
-  });
-
-  // Optional ripple effect for Donate button
-  document.querySelectorAll(".donate-btn").forEach((btn) => {
-    btn.addEventListener("click", function (e) {
-      const ripple = document.createElement("span");
-      ripple.classList.add("ripple");
-      this.appendChild(ripple);
-
-      const size = Math.max(this.offsetWidth, this.offsetHeight);
-      ripple.style.width = ripple.style.height = `${size}px`;
-      ripple.style.left = `${e.offsetX - size / 2}px`;
-      ripple.style.top = `${e.offsetY - size / 2}px`;
-
-      setTimeout(() => {
-        ripple.remove();
-      }, 600);
+document.addEventListener('DOMContentLoaded', () => {
+  const logo = document.getElementById('logo');
+  if (logo) {
+    logo.addEventListener('click', () => {
+      window.location.href = '../Html/Index.html';
     });
+  }
+
+  const donationForm = document.getElementById('donationForm');
+
+  const animatedNodes = document.querySelectorAll('.animate-text');
+  if (animatedNodes.length) {
+    const revealObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        const delay = String(el.getAttribute('data-delay') || '0').trim();
+        el.style.setProperty('--delay', `${delay}s`);
+        el.classList.add('in-view');
+        observer.unobserve(el);
+      });
+    }, { threshold: 0.18 });
+
+    animatedNodes.forEach((el) => revealObserver.observe(el));
+  }
+
+  if (!donationForm) return;
+
+  donationForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    const txidInput = document.getElementById('txid');
+    const txid = String(txidInput?.value || '').trim();
+
+    if (txid.length < 6) {
+      alert('Please enter a valid TXID.');
+      txidInput?.focus();
+      return;
+    }
+
+    alert('Thank you! Your donation request has been received for verification.');
+    donationForm.reset();
   });
 });
-// Animate form fields on scroll
-  const formCard = document.querySelector('.donation-form-card');
-
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        formCard.style.animation = 'popUp 0.9s ease-out forwards';
-      }
-    });
-  });
-
-  observer.observe(formCard);

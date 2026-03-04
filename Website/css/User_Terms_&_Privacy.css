@@ -206,6 +206,17 @@ body {
 
 
 /* Unified Navbar Logo */
+.navbar {
+  width: 100% !important;
+  height: 104px !important;
+  min-height: 104px !important;
+  padding: 10px 32px !important;
+  box-sizing: border-box;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
 .navbar-logo {
   display: flex;
   align-items: center;
@@ -219,4 +230,136 @@ body {
   height: auto !important;
   display: block;
   object-fit: contain;
+}
+
+.navbar > div:last-child {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin-right: 40px !important;
+}
+
+.navbar .navbar-donate {
+  height: 44px !important;
+  padding: 0 18px !important;
+  border-radius: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  font-size: 14px !important;
+  line-height: 1 !important;
+}
+
+.navbar .navbar-donate img {
+  height: 1.5em !important;
+  width: auto !important;
+  border-radius: 6px !important;
+}
+
+/* Terms page redesign (content area only, navbar untouched) */
+.terms-main {
+  padding: 126px 0 40px;
+  background: linear-gradient(180deg, #f6f9ff 0%, #f9fbff 100%);
+  min-height: 100vh;
+}
+
+.terms-main .terms-container {
+  width: min(1080px, 94%);
+  margin: 0 auto;
+  background: #ffffff;
+  border: 1px solid #e5edf7;
+  border-radius: 20px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+  padding: 26px;
+}
+
+.policy-hero {
+  background: linear-gradient(135deg, #0b3d91 0%, #2563eb 52%, #0ea5e9 100%);
+  color: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 18px;
+}
+
+.policy-tag {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  padding: 6px 11px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.policy-hero h1 {
+  font-size: clamp(24px, 3.4vw, 34px);
+  margin-bottom: 8px;
+}
+
+.policy-hero p {
+  color: rgba(255, 255, 255, 0.92);
+  margin: 0;
+}
+
+.policy-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.policy-card,
+.policy-section,
+.policy-note {
+  background: #f8fbff;
+  border: 1px solid #e3ebf7;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.policy-card h2,
+.policy-section h2,
+.policy-note h2 {
+  font-size: 19px;
+  color: #173b73;
+  margin-bottom: 10px;
+}
+
+.policy-card ul,
+.policy-section ul {
+  margin: 0;
+  padding-left: 18px;
+  color: #324c6b;
+}
+
+.policy-card li,
+.policy-section li {
+  margin-bottom: 8px;
+}
+
+.policy-note {
+  background: #fff8e7;
+  border-color: #ffe0a8;
+}
+
+.policy-note p {
+  margin: 0;
+  color: #6a4a12;
+}
+
+.back-btn {
+  border-radius: 10px;
+  margin-bottom: 14px;
+}
+
+@media (max-width: 900px) {
+  .policy-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .terms-main .terms-container {
+    padding: 18px;
+  }
 }

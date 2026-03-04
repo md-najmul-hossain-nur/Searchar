@@ -1,52 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Searchar</title>
-  <meta name="viewport" content="width=1644, initial-scale=1">
-
-  <link rel="stylesheet" href="../css/User_Terms_&_Privacy.css">
+  <meta charset="UTF-8" />
+  <title>Searchar - User Signup Terms & Conditions</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="../css/User_Terms_&_Privacy.css?v=0.1" />
 </head>
 <body>
   <header class="navbar">
-  <div class="navbar-logo">
-  <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
-</div>
+    <div class="navbar-logo">
+      <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
+    </div>
     <nav class="navbar-menu">
-     
-        
     </nav>
     <div class="navbar-actions">
-    
     </div>
   </header>
-  <main class="terms-container">
-             <button class="back-btn" onclick="window.history.back()">← Back</button>
+  <main class="terms-main user-page">
+    <div class="terms-container">
+      <button type="button" class="back-btn terms-back-btn">← Back</button>
 
-    <h1>User Signup Terms & Conditions</h1>
+      <section class="policy-hero">
+        <span class="policy-tag">User Policy</span>
+        <h1>User Terms & Privacy Policy</h1>
+        <p>These terms explain how your account works, how we protect your data, and what responsibilities you must follow while using SEARCHAR.</p>
+      </section>
 
-    <p>Our site’s user signup requirements are as follows:</p>
+      <section class="policy-grid">
+        <article class="policy-card">
+          <h2>Account Requirements</h2>
+          <ul>
+            <li>Valid full name, mobile number, and email are required.</li>
+            <li>A valid NID/Birth certificate copy and profile photo must be submitted.</li>
+            <li>Your address and date of birth must be accurate and up to date.</li>
+            <li>You must accept all terms before account activation.</li>
+          </ul>
+        </article>
 
-    <ul class="requirements">
-      <li>🆔 <strong>National ID (NID/Birth Certificate):</strong> A valid copy must be uploaded.</li>
-      <li>📸 <strong>Photos:</strong> A passport-size profile photo and NID photo must be provided.</li>
-      <li>📱 <strong>Mobile Number:</strong> A valid, verified, and updated number is required.</li>
-      <li>📧 <strong>Email Address:</strong> A valid email must be provided for verification and communication.</li>
-      <li>🎂 <strong>Date of Birth:</strong> Required to verify age eligibility.</li>
-      <li>📍 <strong>Address:</strong> Your correct and updated residential address is needed.</li>
-      <li>✅ <strong>Terms Agreement:</strong> You must agree to our Terms & Privacy Policy to register.</li>
-    </ul>
+        <article class="policy-card">
+          <h2>Privacy & Data Use</h2>
+          <ul>
+            <li>We collect identity and contact data only for verification, safety, and communication.</li>
+            <li>Your personal documents are stored with restricted access controls.</li>
+            <li>Public posts can be visible to others based on your post visibility settings.</li>
+            <li>Security logs may be retained to prevent abuse and fraud.</li>
+          </ul>
+        </article>
+      </section>
 
-    <section class="important">
-      <h2>Important Instructions</h2>
-      <ul>
-        <li>❌ Any false information or forged documents will cancel your registration.</li>
-        <li>⏳ Verification may take some time to ensure accuracy.</li>
-        <li>🔒 Your account credentials must remain secure and confidential.</li>
-        <li>🔞 You must be at least 18 years old or meet your country’s legal age requirement.</li>
-      </ul>
-      <p>Please follow these terms for a secure and valid registration process.</p>
-    </section>
+      <section class="policy-section">
+        <h2>User Responsibilities</h2>
+        <ul>
+          <li>Do not submit fake reports, false claims, or manipulated media.</li>
+          <li>Do not impersonate another person or authority.</li>
+          <li>Protect your password and account credentials.</li>
+          <li>Respect community standards and avoid harassment/hate content.</li>
+        </ul>
+      </section>
+
+      <section class="policy-section">
+        <h2>Your Rights</h2>
+        <ul>
+          <li>You may request profile correction for wrong personal information.</li>
+          <li>You may request account deactivation according to platform policy.</li>
+          <li>You may contact support for data-related questions or complaints.</li>
+        </ul>
+      </section>
+
+      <section class="policy-note">
+        <h2>Important Notice</h2>
+        <p>Any fake document, repeated abuse, or harmful behavior can lead to suspension or permanent account removal.</p>
+      </section>
+    </div>
   </main>
+  <script src="../javascrpit/terms_back.js"></script>
 </body>
 </html>
