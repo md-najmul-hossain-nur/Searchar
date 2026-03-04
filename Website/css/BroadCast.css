@@ -395,3 +395,18 @@ main {
 
 /* --- ICON FONT SUPPORT (Font Awesome/Remixicon etc.) --- */
 /* Use: <i class="ri-camera-lens-line"></i> or <i class="fa fa-home"></i> etc. */
+/* Unified Navbar Logo */
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  min-width: 180px;
+}
+
+.navbar-logo-img,
+#logo {
+  width: 250px !important;
+  max-width: 250px !important;
+  height: auto !important;
+  display: block;
+  object-fit: contain;
+}

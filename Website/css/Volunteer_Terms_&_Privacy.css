@@ -203,3 +203,19 @@ body {
 .back-btn:hover {
   background-color: #f75c3c; /* Hover color from navbar hover theme */
 }
+
+/* Unified Navbar Logo */
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  min-width: 180px;
+}
+
+.navbar-logo-img,
+#logo {
+  width: 250px !important;
+  max-width: 250px !important;
+  height: auto !important;
+  display: block;
+  object-fit: contain;
+}
