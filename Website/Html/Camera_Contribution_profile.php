@@ -41,6 +41,7 @@ $profilePosts = [];
 try {
   $hasStatus = false;
   $hasMediaJson = false;
+  $hasShareAnonymous = false;
 
   $statusCol = $pdo->query("SHOW COLUMNS FROM posts LIKE 'status'");
   if ($statusCol && $statusCol->fetch(PDO::FETCH_ASSOC)) {
@@ -52,9 +53,17 @@ try {
     $hasMediaJson = true;
   }
 
+  $shareAnonCol = $pdo->query("SHOW COLUMNS FROM posts LIKE 'share_anonymous'");
+  if ($shareAnonCol && $shareAnonCol->fetch(PDO::FETCH_ASSOC)) {
+    $hasShareAnonymous = true;
+  }
+
   $selectCols = "id, author_name, text, media_path, media_type, category, created_at";
   if ($hasMediaJson) {
     $selectCols .= ", media_json";
+  }
+  if ($hasShareAnonymous) {
+    $selectCols .= ", share_anonymous";
   }
   if ($hasStatus) {
     $selectCols .= ", status";
@@ -180,12 +189,17 @@ try {
                   $postImageUrls[] = $postMediaUrl;
               }
               $postStatus = isset($post['status']) ? (string)$post['status'] : '';
+              $isAnonymous = (int)($post['share_anonymous'] ?? 0) === 1;
+              $displayAuthorName = $isAnonymous ? 'Anonymous' : $postAuthorName;
+              $displayAuthorPhoto = $isAnonymous
+                ? '../Images/anonymously.gif'
+                : (!empty($user['profile_photo']) ? '../uploads/camera/' . e($user['profile_photo']) : '../Images/default_profile.png');
             ?>
-            <div class="card post">
+            <div class="card post" data-share-anonymous="<?= $isAnonymous ? '1' : '0' ?>">
               <div class="post-header">
-                <img class="mini-profile" src="<?= !empty($user['profile_photo']) ? '../uploads/camera/' . e($user['profile_photo']) : '../Images/default_profile.png' ?>" alt="Profile">
+                <img class="mini-profile" src="<?= e($displayAuthorPhoto) ?>" alt="Profile">
                 <div>
-                  <div class="username"><?= e($postAuthorName) ?></div>
+                  <div class="username"><?= e($displayAuthorName) ?></div>
                   <div class="post-time"><?= e(profileTimeAgo((string)($post['created_at'] ?? ''))) ?></div>
                   <?php if ($postStatus !== ''): ?>
                     <div class="post-time">Status: <?= e(ucfirst($postStatus)) ?></div>

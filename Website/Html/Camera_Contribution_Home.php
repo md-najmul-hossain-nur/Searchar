@@ -85,6 +85,7 @@ $posts = [];
 try {
   $hasMediaJson = false;
   $hasStatus = false;
+  $hasShareAnonymous = false;
 
   $mediaJsonCol = $pdo->query("SHOW COLUMNS FROM posts LIKE 'media_json'");
   if ($mediaJsonCol && $mediaJsonCol->fetch(PDO::FETCH_ASSOC)) {
@@ -96,9 +97,17 @@ try {
     $hasStatus = true;
   }
 
+  $shareAnonCol = $pdo->query("SHOW COLUMNS FROM posts LIKE 'share_anonymous'");
+  if ($shareAnonCol && $shareAnonCol->fetch(PDO::FETCH_ASSOC)) {
+    $hasShareAnonymous = true;
+  }
+
   $selectCols = "id, author_role, author_id, author_name, category, text, media_path, media_type, created_at";
   if ($hasMediaJson) {
     $selectCols .= ", media_json";
+  }
+  if ($hasShareAnonymous) {
+    $selectCols .= ", share_anonymous";
   }
   if ($hasStatus) {
     $selectCols .= ", status";
@@ -400,12 +409,15 @@ try {
       $authorRole = (string)($post['author_role'] ?? '');
       $authorId = (int)($post['author_id'] ?? 0);
       $authorPhoto = getAuthorPhoto($pdo, $authorRole, $authorId);
+      $isAnonymous = (int)($post['share_anonymous'] ?? 0) === 1;
+      $displayAuthorName = $isAnonymous ? 'Anonymous' : $postAuthorName;
+      $displayAuthorPhoto = $isAnonymous ? '../Images/anonymously.gif' : $authorPhoto;
     ?>
-    <div class="post" id="post-<?= $postId ?>" data-post-id="<?= $postId ?>" data-category="<?= e($postCategory) ?>" data-status="<?= e((string)($post['status'] ?? 'approved')) ?>">
+    <div class="post" id="post-<?= $postId ?>" data-post-id="<?= $postId ?>" data-category="<?= e($postCategory) ?>" data-status="<?= e((string)($post['status'] ?? 'approved')) ?>" data-share-anonymous="<?= $isAnonymous ? '1' : '0' ?>">
       <div class="post-header">
-        <img src="<?= $authorPhoto ?>" alt="Author Photo">
+        <img src="<?= e($displayAuthorPhoto) ?>" alt="Author Photo">
         <div>
-          <h5><?= e($postAuthorName) ?></h5>
+          <h5><?= e($displayAuthorName) ?></h5>
           <small class="post-time" data-created-at="<?= e((string)($post['created_at'] ?? '')) ?>"><?= e(timeAgo((string)($post['created_at'] ?? ''))) ?></small>
         </div>
       </div>

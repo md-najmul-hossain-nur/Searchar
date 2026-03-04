@@ -75,6 +75,14 @@ function getAuthorPhoto(PDO $pdo, string $authorRole, int $authorId): string {
     return '../Images/default_profile.png';
 }
 
+function anonymousDisplayName(): string {
+    return 'Anonymous';
+}
+
+function anonymousDisplayPhoto(): string {
+    return '../Images/anonymously.gif';
+}
+
 try {
     if (!tableExists($pdo, 'posts')) {
         echo json_encode(['success' => true, 'rows' => []]);
@@ -86,10 +94,14 @@ try {
 
     $hasMediaJson = columnExists($pdo, 'posts', 'media_json');
     $hasStatus = columnExists($pdo, 'posts', 'status');
+    $hasShareAnonymous = columnExists($pdo, 'posts', 'share_anonymous');
 
     $selectCols = "id, author_role, author_id, author_name, category, text, media_path, media_type, created_at";
     if ($hasMediaJson) {
         $selectCols .= ", media_json";
+    }
+    if ($hasShareAnonymous) {
+        $selectCols .= ", share_anonymous";
     }
 
     $whereParts = ["id > :since_id"];
@@ -106,12 +118,22 @@ try {
     foreach ($rows as $row) {
         $authorRole = (string)($row['author_role'] ?? 'user');
         $authorId = (int)($row['author_id'] ?? 0);
+        $isAnonymous = (int)($row['share_anonymous'] ?? 0) === 1;
+
+        $authorName = $isAnonymous
+            ? anonymousDisplayName()
+            : (string)($row['author_name'] ?? 'Unknown User');
+        $authorPhoto = $isAnonymous
+            ? anonymousDisplayPhoto()
+            : getAuthorPhoto($pdo, $authorRole, $authorId);
+
         $payload[] = [
             'id' => (int)($row['id'] ?? 0),
-            'author_name' => (string)($row['author_name'] ?? 'Unknown User'),
+            'author_name' => $authorName,
             'author_role' => $authorRole,
             'author_id' => $authorId,
-            'author_photo' => getAuthorPhoto($pdo, $authorRole, $authorId),
+            'author_photo' => $authorPhoto,
+            'share_anonymous' => $isAnonymous ? 1 : 0,
             'category' => (string)($row['category'] ?? 'general'),
             'text' => (string)($row['text'] ?? ''),
             'media_path' => (string)($row['media_path'] ?? ''),

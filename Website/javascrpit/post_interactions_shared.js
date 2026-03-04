@@ -423,6 +423,7 @@
     const textHtml = text.trim() ? `<p>${escapeHtml(text).replace(/\n/g, '<br>')}</p>` : '';
     const createdAt = String(row?.created_at || '');
     const timeAgoLabel = escapeHtml(String(row?.time_ago || formatRelativeTime(createdAt, 'Just now')));
+    const isAnonymous = Number(row?.share_anonymous || 0) === 1;
 
     const imageUrls = extractImageUrls(row);
     const mediaType = String(row?.media_type || '').toLowerCase();
@@ -447,7 +448,7 @@
     }
 
     return `
-      <div class="post" id="post-${postId}" data-post-id="${postId}" data-category="${category}" data-status="approved">
+      <div class="post" id="post-${postId}" data-post-id="${postId}" data-category="${category}" data-status="approved" data-share-anonymous="${isAnonymous ? '1' : '0'}">
         <div class="post-header">
           <img src="${authorPhoto}" alt="Author Photo">
           <div>

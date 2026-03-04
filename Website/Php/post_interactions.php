@@ -32,6 +32,25 @@ function roleSqlMap(string $canonicalRole): array {
     };
 }
 
+function isPostAnonymous(PDO $pdo, int $postId): bool {
+    if ($postId <= 0) {
+        return false;
+    }
+
+    static $hasShareAnonymous = null;
+    if ($hasShareAnonymous === null) {
+        $hasShareAnonymous = (bool)$pdo->query("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'posts' AND COLUMN_NAME = 'share_anonymous' LIMIT 1")->fetchColumn();
+    }
+
+    if (!$hasShareAnonymous) {
+        return false;
+    }
+
+    $stmt = $pdo->prepare('SELECT share_anonymous FROM posts WHERE id = :id LIMIT 1');
+    $stmt->execute([':id' => $postId]);
+    return (int)($stmt->fetchColumn() ?: 0) === 1;
+}
+
 function recipientEntityForRole(string $canonicalRole): string {
     return match ($canonicalRole) {
         'user' => 'user',
@@ -218,11 +237,18 @@ function fetchComments(PDO $pdo, int $postId): array {
         }
     }
 
+    $postAnonymous = isPostAnonymous($pdo, $postId);
+    $anonymousName = 'Anonymous';
+    $anonymousPhoto = '../Images/anonymously.gif';
+
     $comments = [];
     foreach ($rows as $row) {
         $role = canonicalRole((string)($row['actor_role'] ?? ''));
         $actorId = (int)($row['actor_id'] ?? 0);
         $profile = $profiles[$role . ':' . $actorId] ?? ['name' => 'Someone', 'photo' => '../Images/default_profile.png'];
+
+        $actorName = $postAnonymous ? $anonymousName : (string)$profile['name'];
+        $actorPhoto = $postAnonymous ? $anonymousPhoto : (string)$profile['photo'];
 
         $comments[] = [
             'comment_id' => (int)($row['comment_id'] ?? 0),
@@ -230,8 +256,9 @@ function fetchComments(PDO $pdo, int $postId): array {
             'parent_comment_id' => isset($row['parent_comment_id']) && is_numeric($row['parent_comment_id']) ? (int)$row['parent_comment_id'] : null,
             'actor_role' => $role,
             'actor_id' => $actorId,
-            'actor_name' => $profile['name'],
-            'actor_photo' => $profile['photo'],
+            'actor_name' => $actorName,
+            'actor_photo' => $actorPhoto,
+            'actor_is_anonymous' => $postAnonymous,
             'comment_text' => (string)($row['comment_text'] ?? ''),
             'created_at' => (string)($row['created_at'] ?? ''),
             'time_ago' => timeAgo((string)($row['created_at'] ?? '')),
@@ -404,7 +431,11 @@ try {
 
         $commentId = (int)$pdo->lastInsertId();
 
-        createInteractionNotification($pdo, $postId, 'comment', $actorRole, $actorId, (string)$actor['name'], $commentText, $commentId);
+        $postAnonymous = isPostAnonymous($pdo, $postId);
+        $actorPublicName = $postAnonymous ? 'Anonymous' : (string)$actor['name'];
+        $actorPublicPhoto = $postAnonymous ? '../Images/anonymously.gif' : (string)$actor['photo'];
+
+        createInteractionNotification($pdo, $postId, 'comment', $actorRole, $actorId, $actorPublicName, $commentText, $commentId);
 
         $countStmt = $pdo->prepare('SELECT COUNT(*) FROM post_comments WHERE post_id = :post_id');
         $countStmt->execute([':post_id' => $postId]);
@@ -419,8 +450,9 @@ try {
                     'parent_comment_id' => $parentNullable,
                     'actor_role' => $actorRole,
                     'actor_id' => $actorId,
-                    'actor_name' => (string)$actor['name'],
-                    'actor_photo' => (string)$actor['photo'],
+                    'actor_name' => $actorPublicName,
+                    'actor_photo' => $actorPublicPhoto,
+                    'actor_is_anonymous' => $postAnonymous,
                     'comment_text' => $commentText,
                     'created_at' => date('Y-m-d H:i:s'),
                     'time_ago' => 'Just now',
