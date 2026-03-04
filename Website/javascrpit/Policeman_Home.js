@@ -34,6 +34,8 @@ function closeModal() {
   document.getElementById("postText").value = "";
   document.getElementById("imageUpload").value = "";
   document.getElementById("videoUpload").value = "";
+  const anonymousToggle = document.getElementById('anonymousShareToggle');
+  if (anonymousToggle) anonymousToggle.checked = false;
   mediaPreview.innerHTML = "";
   selectedImage = null;
   selectedVideo = null;
@@ -74,7 +76,7 @@ function createPost() {
   fd.append('category', category);
   fd.append('case_id', '1');
   fd.append('share_facebook', document.getElementById('facebookShareToggle')?.checked ? '1' : '0');
-  fd.append('share_anonymous', '0');
+  fd.append('share_anonymous', document.getElementById('anonymousShareToggle')?.checked ? '1' : '0');
 
   if (selectedImage) {
     fd.append('media_images[]', selectedImage, selectedImage.name);

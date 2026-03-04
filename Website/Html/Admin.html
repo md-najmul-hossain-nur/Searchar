@@ -1041,7 +1041,7 @@
 <div id="reports" class="main-section">
   <h2>Reports</h2>
   <div class="filters-bar" id="reports-filters">
-    <input id="reports-filter-text" type="text" placeholder="Search report title, type, date">
+    <input id="reports-filter-text" type="text" placeholder="Search report ID, user, category, status">
     <button type="button" id="reports-filter-reset" class="ghost">Reset</button>
   </div>
   <div class="section-table-block">
@@ -1049,21 +1049,18 @@
       <thead>
         <tr>
           <th>Report ID</th>
-          <th>Title</th>
-          <th>Type</th>
-          <th>Generated On</th>
-          <th>Prepared By</th>
+          <th>Post</th>
+          <th>Reporter</th>
+          <th>Reported User</th>
+          <th>Category</th>
+          <th>Status</th>
+          <th>Submitted</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody id="reports-table-body">
         <tr>
-          <td>RP-001</td>
-          <td>Monthly Activity Summary</td>
-          <td>Operations</td>
-          <td>2026-02-28</td>
-          <td>Admin</td>
-          <td><button type="button">Download</button></td>
+          <td colspan="7">Loading post reports...</td>
         </tr>
       </tbody>
     </table>

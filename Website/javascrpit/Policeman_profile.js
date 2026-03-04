@@ -60,7 +60,7 @@ function createPost() {
   fd.append("category", category);
   fd.append("case_id", "1");
   fd.append("share_facebook", document.getElementById("facebookShareToggle")?.checked ? "1" : "0");
-  fd.append("share_anonymous", document.getElementById("anonToggle")?.checked ? "1" : "0");
+  fd.append("share_anonymous", document.getElementById("anonymousShareToggle")?.checked ? "1" : "0");
 
   if (selectedImage) {
     fd.append("media_images[]", selectedImage, selectedImage.name);

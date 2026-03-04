@@ -64,6 +64,67 @@ try {
         }
     }
 
+    if (tableExists($pdo, 'post_reports')) {
+        $sql = "SELECT report_id, report_category, reporter_name, reported_name, status, created_at
+                FROM (
+                    SELECT
+                        report_id,
+                        report_category,
+                        reporter_name,
+                        COALESCE(post_author_name, '') AS reported_name,
+                        status,
+                        created_at
+                    FROM post_reports
+                ) p
+                WHERE LOWER(COALESCE(status,'pending')) IN ('pending','under_review')
+                ORDER BY created_at DESC, report_id DESC
+                LIMIT 80";
+
+        $rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        foreach ($rows as $row) {
+            $reportId = (int)($row['report_id'] ?? 0);
+            $status = trim((string)($row['status'] ?? 'pending'));
+            $reportedName = trim((string)($row['reported_name'] ?? '')) ?: 'Unknown user';
+            $queue[] = [
+                'type' => 'Post Report',
+                'submitted_by' => trim((string)($row['reporter_name'] ?? '')) ?: 'Unknown',
+                'actor_role' => 'Reporter',
+                'item_ref' => $reportId > 0 ? ('PR-' . str_pad((string)$reportId, 4, '0', STR_PAD_LEFT)) : '—',
+                'item_label' => $reportedName . ' • ' . (trim((string)($row['report_category'] ?? 'Other')) ?: 'Other'),
+                'status' => ucfirst(strtolower($status)),
+                'submitted_at' => normalizeDate((string)($row['created_at'] ?? '')),
+                'section' => 'reports',
+                'search_key' => $reportId > 0 ? ('PR-' . str_pad((string)$reportId, 4, '0', STR_PAD_LEFT)) : $reportedName
+            ];
+        }
+    }
+
+    if (tableExists($pdo, 'comment_reports')) {
+        $sql = "SELECT report_id, report_category, reporter_name, comment_author_name, status, created_at
+                FROM comment_reports
+                WHERE LOWER(COALESCE(status,'pending')) IN ('pending','under_review')
+                ORDER BY created_at DESC, report_id DESC
+                LIMIT 80";
+
+        $rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        foreach ($rows as $row) {
+            $reportId = (int)($row['report_id'] ?? 0);
+            $status = trim((string)($row['status'] ?? 'pending'));
+            $reportedName = trim((string)($row['comment_author_name'] ?? '')) ?: 'Unknown user';
+            $queue[] = [
+                'type' => 'Comment Report',
+                'submitted_by' => trim((string)($row['reporter_name'] ?? '')) ?: 'Unknown',
+                'actor_role' => 'Reporter',
+                'item_ref' => $reportId > 0 ? ('PR-' . str_pad((string)$reportId, 4, '0', STR_PAD_LEFT)) : '—',
+                'item_label' => $reportedName . ' • ' . (trim((string)($row['report_category'] ?? 'Other')) ?: 'Other'),
+                'status' => ucfirst(strtolower($status)),
+                'submitted_at' => normalizeDate((string)($row['created_at'] ?? '')),
+                'section' => 'reports',
+                'search_key' => $reportId > 0 ? ('PR-' . str_pad((string)$reportId, 4, '0', STR_PAD_LEFT)) : $reportedName
+            ];
+        }
+    }
+
     if (tableExists($pdo, 'missing_person_reports')) {
         $statusExpr = "LOWER(COALESCE(status,'open')) IN ('open','active','pending','searching')";
         $sql = "SELECT report_id, full_name, reporter_name, status, created_at
@@ -188,6 +249,7 @@ try {
         'missing_pending' => 0,
         'withdraw_pending' => 0,
         'mission_proof_pending' => 0,
+        'report_pending' => 0,
         'total' => count($queue),
     ];
 
@@ -197,6 +259,7 @@ try {
         elseif ($type === 'missing report') $summary['missing_pending']++;
         elseif ($type === 'withdraw request') $summary['withdraw_pending']++;
         elseif ($type === 'mission proof') $summary['mission_proof_pending']++;
+        elseif ($type === 'post report' || $type === 'comment report') $summary['report_pending']++;
     }
 
     echo json_encode([

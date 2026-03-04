@@ -449,7 +449,7 @@ try {
   </style>
   
 </head>
-<body>
+<body data-current-user-name="<?= e($user['full_name'] ?? 'Policeman') ?>">
  <header class="navbar" style="display:flex; align-items:center; justify-content:space-between; padding:10px; position:fixed; top:0; left:0; right:0; z-index:2000; background:#fff;">
   <!-- Left: Logo -->
   <div class="navbar-logo">
@@ -711,7 +711,10 @@ try {
     <span class="post-modal-close" onclick="closeModal()">&times;</span>
 
     <!-- Title -->
-    <h2 class="post-modal-title">Share Your Mood</h2>
+    <div class="post-modal-head">
+      <h2 class="post-modal-title">Share Your Mood</h2>
+      <p class="post-modal-subtitle">Upload photos or a video and post instantly</p>
+    </div>
 
     <!-- ✅ Facebook Toggle -->
     <div class="facebook-toggle">
@@ -722,6 +725,16 @@ try {
         </span>
       </label>
       <span class="facebook-toggle-label">Share to Facebook</span>
+    </div>
+
+    <div class="facebook-toggle">
+      <label class="facebook-toggle-switch">
+        <input type="checkbox" id="anonymousShareToggle">
+        <span class="facebook-toggle-slider">
+          <i class="fa-solid fa-user-secret"></i>
+        </span>
+      </label>
+      <span class="facebook-toggle-label">Share Anonymously</span>
     </div>
 
     <!-- Category Label -->
@@ -745,14 +758,22 @@ try {
 
     <!-- ✅ Post Preview (Auto-filled from clicked post) -->
     <div class="post-modal-preview">
+      <div id="sharedPostMeta" class="preview-meta">
+        <img id="sharedPostAuthorImage" class="preview-meta-avatar" src="" alt="Author" />
+        <div class="preview-meta-text">
+          <h5 id="sharedPostAuthorName"></h5>
+          <small id="sharedPostTime"></small>
+        </div>
+      </div>
       <p id="sharedPostText" class="preview-text"></p>
       <img id="sharedPostImage" class="preview-img" src="" alt="" />
+      <video id="sharedPostVideo" class="preview-video" src="" controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture oncontextmenu="return false;"></video>
     </div>
 
     <!-- ✅ Media Upload Buttons -->
     <div class="post-media-options">
       <label>
-        <input type="file" id="imageUpload" accept="image/*" hidden>
+        <input type="file" id="imageUpload" accept="image/*" multiple hidden>
         <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
       </label>
       <label>
@@ -760,6 +781,8 @@ try {
         <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
       </label>
     </div>
+
+    <p class="post-media-hint">You can select up to 5 photos in one post.</p>
 
 
     <!-- ✅ Media Preview (optional preview for uploaded file) -->

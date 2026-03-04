@@ -3021,7 +3021,8 @@ function openAddVolunteerModal() {
     const missingPending = Number(summary?.missing_pending || 0);
     const withdrawPending = Number(summary?.withdraw_pending || 0);
     const missionPending = Number(summary?.mission_proof_pending || 0);
-    summaryEl.textContent = `Post ${postPending} • Missing ${missingPending} • Withdraw ${withdrawPending} • Proof ${missionPending}`;
+    const reportPending = Number(summary?.report_pending || 0);
+    summaryEl.textContent = `Post ${postPending} • Report ${reportPending} • Missing ${missingPending} • Withdraw ${withdrawPending} • Proof ${missionPending}`;
   }
 
   function statusChip(statusText) {
@@ -3138,6 +3139,22 @@ function openAddVolunteerModal() {
         const row = Array.from(document.querySelectorAll('#volunteer-mission-body tr'))
           .find(tr => (tr.textContent || '').toLowerCase().includes(String(searchKey || '').toLowerCase()));
         if (row) jumpHighlight(row);
+        return;
+      }
+
+      if (targetSection === 'reports') {
+        const input = document.getElementById('reports-filter-text');
+        if (input && searchKey) {
+          input.value = searchKey;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        const row = Array.from(document.querySelectorAll('#reports-table-body tr'))
+          .find(tr => {
+            const first = tr.querySelector('td:first-child');
+            if (first && (first.textContent || '').trim() === String(itemRef || '').trim()) return true;
+            return (tr.textContent || '').toLowerCase().includes(String(searchKey || '').toLowerCase());
+          });
+        if (row) jumpHighlight(row);
       }
     }, 350);
   }
@@ -3178,7 +3195,7 @@ function openAddVolunteerModal() {
 
   document.addEventListener('admin:refresh-section', (event) => {
     const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
-    if (['post-control', 'missing', 'volunteer', 'withdraw', 'dashboard'].includes(sectionId)) {
+    if (['post-control', 'missing', 'volunteer', 'withdraw', 'reports', 'dashboard'].includes(sectionId)) {
       loadActionQueue();
     }
   });
@@ -3281,6 +3298,236 @@ function openAddVolunteerModal() {
 })();
 
 // Remove redundant crime assign modal block (logic moved inside crime module)
+
+(function () {
+  const section = document.getElementById('reports');
+  if (!section) return;
+
+  const tableBody = document.getElementById('reports-table-body');
+  if (!tableBody) return;
+  let reportsLoadInFlight = false;
+
+  function esc(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function titleCase(value) {
+    const txt = String(value || '').trim();
+    if (!txt) return '—';
+    return txt.charAt(0).toUpperCase() + txt.slice(1);
+  }
+
+  function formatDate(value) {
+    if (!value) return '—';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return esc(String(value));
+    return date.toISOString().slice(0, 10);
+  }
+
+  function mediaBadge(row) {
+    const source = String(row?.report_source || 'post').toLowerCase();
+    if (source === 'comment') return 'Comment/Reply';
+
+    const type = String(row?.media_type || row?.post_media_type || '').toLowerCase();
+    const mediaJson = String(row?.media_json || '').trim();
+    const mediaPath = String(row?.media_path || '').trim();
+
+    if (mediaJson) {
+      try {
+        const arr = JSON.parse(mediaJson);
+        if (Array.isArray(arr) && arr.length > 0) {
+          return `${arr.length} image${arr.length > 1 ? 's' : ''}`;
+        }
+      } catch (_e) {}
+    }
+
+    if (type === 'video' && mediaPath) return 'Video';
+    if (type === 'image' && mediaPath) return 'Image';
+    if (mediaPath) return 'Media';
+    return 'No media';
+  }
+
+  function statusBadge(statusRaw) {
+    const status = String(statusRaw || 'pending').toLowerCase();
+    if (status === 'resolved') return '<span class="status-approved">Resolved</span>';
+    if (status === 'under_review') return '<span class="status-pending">Under Review</span>';
+    if (status === 'dismissed') return '<span class="status-rejected">Dismissed</span>';
+    return '<span class="status-pending">Pending</span>';
+  }
+
+  function toProfilePayload(row) {
+    const mediaPathRaw = String(row?.media_path || '').trim();
+    const mediaPath = mediaPathRaw && !/^https?:\/\//i.test(mediaPathRaw) && !mediaPathRaw.startsWith('../')
+      ? `../${mediaPathRaw.replace(/^\/+/, '')}`
+      : mediaPathRaw;
+
+    return {
+      __title: 'Post Report Details',
+      report_source: row?.report_source || 'post',
+      report_category: row?.report_category || '',
+      report_details: row?.report_details || '',
+      report_submitted_at: row?.report_created_at || '',
+      reporter_name: row?.reporter_name || '',
+      reporter_role: row?.reporter_role || '',
+      reported_user_name: row?.reported_name || row?.post_author_name || '',
+      reported_user_role: row?.reported_role || row?.post_author_role || '',
+      target_preview_text: row?.target_preview_text || '',
+      post_category: row?.post_category || '',
+      post_text: row?.post_text || '',
+      media_path: mediaPath,
+      media_json: row?.media_json || '',
+      media_type: row?.media_type || '',
+      admin_action_note: row?.admin_action_note || ''
+    };
+  }
+
+  function renderRows(rows) {
+    if (!Array.isArray(rows) || rows.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="7">No post reports found.</td></tr>';
+      return;
+    }
+
+    tableBody.innerHTML = rows.map(row => {
+      const status = String(row?.status || 'pending').toLowerCase();
+      const source = String(row?.report_source || 'post').toLowerCase();
+      const reportId = Number(row?.report_id || 0);
+      const postId = Number(row?.post_id || 0);
+      const reportCode = reportId > 0 ? `PR-${String(reportId).padStart(4, '0')}` : '—';
+      const postCode = postId > 0 ? `PT-${String(postId).padStart(4, '0')}` : '—';
+      const profilePayload = encodeURIComponent(JSON.stringify(toProfilePayload(row)));
+      const canReview = status === 'pending';
+      const canResolve = status === 'pending' || status === 'under_review';
+
+      return `
+        <tr data-report-id="${esc(reportId)}" data-report-source="${esc(source)}" data-report-status="${esc(status)}" data-report-payload="${profilePayload}">
+          <td>${esc(reportCode)}</td>
+          <td>${esc(source === 'comment' ? (postCode + ' • Comment') : (postCode + ' • ' + mediaBadge(row)))}</td>
+          <td>${esc(row?.reporter_name || 'Unknown')}</td>
+          <td>${esc(row?.reported_name || row?.post_author_name || 'Unknown')}</td>
+          <td>${esc(row?.report_category || 'Other')}</td>
+          <td>${statusBadge(status)}</td>
+          <td>${esc(formatDate(row?.report_created_at || ''))}</td>
+          <td>
+            <button type="button" class="view-profile-btn" data-report-view="1">View Details</button>
+            <button type="button" class="ghost" data-report-action="mark_reviewed" ${canReview ? '' : 'disabled'}>Review</button>
+            <button type="button" data-report-action="resolve" ${canResolve ? '' : 'disabled'}>Resolve</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function applyReportsFilterIfNeeded() {
+    const input = document.getElementById('reports-filter-text');
+    if (!input) return;
+    const activeQuery = String(input.value || '').trim();
+    if (!activeQuery) return;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  async function loadReports(options = {}) {
+    const silent = Boolean(options?.silent);
+    if (reportsLoadInFlight) return;
+    reportsLoadInFlight = true;
+
+    if (!silent) {
+      tableBody.innerHTML = '<tr><td colspan="7">Loading post reports...</td></tr>';
+    }
+
+    try {
+      const res = await fetch('../Php/admin_fetch_post_reports.php', {
+        credentials: 'same-origin',
+        cache: 'no-store'
+      });
+      const json = await res.json();
+      if (!json?.success) throw new Error(json?.error || 'Failed to load reports');
+      renderRows(Array.isArray(json.rows) ? json.rows : []);
+      applyReportsFilterIfNeeded();
+    } catch (error) {
+      console.error('admin post reports load failed', error);
+      if (!silent) {
+        tableBody.innerHTML = '<tr><td colspan="7">Failed to load post reports.</td></tr>';
+      }
+    } finally {
+      reportsLoadInFlight = false;
+    }
+  }
+
+  async function updateReportStatus(reportId, reportSource, action, button) {
+    const prevText = button?.textContent || '';
+    if (button) {
+      button.disabled = true;
+      button.textContent = action === 'resolve' ? 'Resolving…' : 'Updating…';
+    }
+
+    try {
+      const res = await fetch('../Php/admin_update_post_report_status.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ report_id: reportId, report_source: reportSource, action })
+      });
+      const json = await res.json();
+      if (!res.ok || !json?.success) throw new Error(json?.error || 'Update failed');
+      await loadReports();
+    } catch (error) {
+      console.error('update post report status failed', error);
+      alert(error?.message || 'Could not update report status.');
+      if (button) {
+        button.disabled = false;
+        button.textContent = prevText;
+      }
+    }
+  }
+
+  section.addEventListener('click', function (event) {
+    const viewBtn = event.target.closest('[data-report-view]');
+    if (viewBtn) {
+      const row = viewBtn.closest('tr[data-report-payload]');
+      if (!row) return;
+
+      try {
+        const payload = JSON.parse(decodeURIComponent(String(row.dataset.reportPayload || '')));
+        if (typeof window.openProfileModal === 'function') {
+          window.openProfileModal(payload, false);
+        }
+      } catch (error) {
+        console.error('invalid report payload', error);
+      }
+      return;
+    }
+
+    const actionBtn = event.target.closest('[data-report-action]');
+    if (!actionBtn) return;
+
+    const row = actionBtn.closest('tr[data-report-id]');
+    if (!row) return;
+
+    const reportId = Number(row.dataset.reportId || 0);
+    const reportSource = String(row.dataset.reportSource || 'post').toLowerCase();
+    const action = String(actionBtn.getAttribute('data-report-action') || '');
+    if (!reportId || !action) return;
+
+    updateReportStatus(reportId, reportSource, action, actionBtn);
+  });
+
+  document.addEventListener('admin:refresh-section', function (event) {
+    const sectionId = String(event?.detail?.sectionId || '');
+    if (sectionId === 'reports') {
+      loadReports();
+    }
+  });
+
+  loadReports();
+  setInterval(() => {
+    loadReports({ silent: true });
+  }, 12000);
+})();
 
 // Donations export: download current table as CSV
 (function () {

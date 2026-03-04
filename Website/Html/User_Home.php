@@ -183,7 +183,7 @@ try {
   <link rel="stylesheet" href="../css/User_Home.css">
 
 </head>
-<body>
+<body data-current-user-name="<?= e($user['full_name'] ?? 'User') ?>">
 <header class="navbar" style="display:flex; align-items:center; justify-content:space-between; padding:10px; position:sticky; top:0; z-index:2000; background:#fff;">
   <!-- Left: Logo -->
   <div class="navbar-logo">

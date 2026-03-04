@@ -19,6 +19,8 @@ DROP TABLE IF EXISTS `signup_blacklist`;
 DROP TABLE IF EXISTS `volunteer_missions`;
 DROP TABLE IF EXISTS `user_notifications`;
 DROP TABLE IF EXISTS `missing_person_reports`;
+DROP TABLE IF EXISTS `comment_reports`;
+DROP TABLE IF EXISTS `post_reports`;
 DROP TABLE IF EXISTS `post_comments`;
 DROP TABLE IF EXISTS `post_likes`;
 DROP TABLE IF EXISTS `posts`;
@@ -205,6 +207,52 @@ CREATE TABLE `post_comments` (
 	KEY `idx_post_comments_post` (`post_id`),
 	KEY `idx_post_comments_parent` (`parent_comment_id`),
 	KEY `idx_post_comments_actor` (`actor_role`, `actor_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `post_reports` (
+	`report_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+	`post_id` INT UNSIGNED NOT NULL,
+	`post_author_role` VARCHAR(50) DEFAULT NULL,
+	`post_author_id` INT UNSIGNED DEFAULT NULL,
+	`post_author_name` VARCHAR(255) DEFAULT NULL,
+	`reporter_role` VARCHAR(50) NOT NULL,
+	`reporter_id` INT UNSIGNED NOT NULL,
+	`reporter_name` VARCHAR(255) NOT NULL,
+	`report_category` VARCHAR(80) NOT NULL,
+	`report_details` TEXT DEFAULT NULL,
+	`status` VARCHAR(30) NOT NULL DEFAULT 'pending',
+	`admin_action_note` VARCHAR(255) DEFAULT NULL,
+	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`actioned_at` DATETIME DEFAULT NULL,
+	PRIMARY KEY (`report_id`),
+	KEY `idx_post_reports_post` (`post_id`),
+	KEY `idx_post_reports_reporter` (`reporter_role`, `reporter_id`),
+	KEY `idx_post_reports_status` (`status`),
+	KEY `idx_post_reports_created` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `comment_reports` (
+	`report_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+	`comment_id` BIGINT UNSIGNED NOT NULL,
+	`post_id` INT UNSIGNED NOT NULL,
+	`comment_author_role` VARCHAR(50) DEFAULT NULL,
+	`comment_author_id` INT UNSIGNED DEFAULT NULL,
+	`comment_author_name` VARCHAR(255) DEFAULT NULL,
+	`comment_text` TEXT DEFAULT NULL,
+	`reporter_role` VARCHAR(50) NOT NULL,
+	`reporter_id` INT UNSIGNED NOT NULL,
+	`reporter_name` VARCHAR(255) NOT NULL,
+	`report_category` VARCHAR(80) NOT NULL,
+	`report_details` TEXT DEFAULT NULL,
+	`status` VARCHAR(30) NOT NULL DEFAULT 'pending',
+	`admin_action_note` VARCHAR(255) DEFAULT NULL,
+	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`actioned_at` DATETIME DEFAULT NULL,
+	PRIMARY KEY (`report_id`),
+	KEY `idx_comment_reports_comment` (`comment_id`),
+	KEY `idx_comment_reports_post` (`post_id`),
+	KEY `idx_comment_reports_status` (`status`),
+	KEY `idx_comment_reports_created` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `camera_cctv_feeds` (
