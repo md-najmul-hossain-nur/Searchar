@@ -1,12 +1,16 @@
-﻿<?php
+<?php
 declare(strict_types=1);
 session_start();
 require_once __DIR__ . '/../Php/db.php';
 
 // Require a logged-in user id. This page specifically displays camera contributor data,
 // so always fetch from `camera_contributors` using the session `user_id`.
-if (empty($_SESSION['user_id'])) {
-  header('Location: ../Html/login.html');
+if (
+  empty($_SESSION['role']) ||
+  $_SESSION['role'] !== 'contributor' ||
+  empty($_SESSION['user_id'])
+) {
+  header('Location: ../Html/login.html?error=session');
   exit();
 }
 
@@ -17,10 +21,17 @@ try {
       FROM camera_contributors WHERE camera_id = :id LIMIT 1";
   $stmt = $pdo->prepare($sql);
   $stmt->execute(['id' => $user_id]);
-  $user = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+  $user = $stmt->fetch(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
   // If DB fails, redirect to login to avoid showing sensitive errors.
   header('Location: ../Html/login.html?error=db');
+  exit();
+}
+
+if (!$user) {
+  session_unset();
+  session_destroy();
+  header('Location: ../Html/login.html?error=no_user');
   exit();
 }
 
@@ -162,7 +173,7 @@ try {
   <img src="../Images/profile.gif" alt="Edit" />
 </button>
 
-        <h3><?= e($user['full_name'] ?? 'â€”') ?></h3>
+        <h3><?= e($user['full_name'] ?? '—') ?></h3>
         <p class="user-bio">
           <?= !empty($user['bio']) ? e($user['bio']) : 'Any one can join with us.' ?></p>
       </div>
@@ -171,7 +182,7 @@ try {
      <!-- Streamer Info Section -->
 <div class="money-withdrawal">
   <h2>Withdraw Your Stream Earnings</h2>
-  <p>Youâ€™ve earned money by helping the community through live CCTV streaming. You can withdraw your balance anytime using your preferred method.</p>
+  <p>You’ve earned money by helping the community through live CCTV streaming. You can withdraw your balance anytime using your preferred method.</p>
 
   <ul class="streamer-info">
     <li><strong>Name:</strong> Erik Jhonson</li>
@@ -254,9 +265,9 @@ try {
 <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
 
 <!-- Buttons -->
-<button id="find-hospitals" class="emergency-btn hospital">ðŸ¥ Show Nearby Hospitals</button>
-<button id="find-fire" class="emergency-btn fire">ðŸš’ Show Fire Stations</button>
-<button id="find-police" class="emergency-btn police">ðŸ‘® Show Police Stations</button>
+<button id="find-hospitals" class="emergency-btn hospital">🏥 Show Nearby Hospitals</button>
+<button id="find-fire" class="emergency-btn fire">🚒 Show Fire Stations</button>
+<button id="find-police" class="emergency-btn police">👮 Show Police Stations</button>
 
 <!-- Map Container -->
 <div id="emergency-map" style="height: 400px; border-radius: 8px; border: 2px solid #000; width: 100%; max-width: 100%; overflow: hidden; box-sizing: border-box; position: relative; z-index: 0;"></div>
@@ -276,7 +287,7 @@ try {
         <input type="text" placeholder="What's on your mind?" readonly>
       </div>
 
-<!-- âœ… Popup Modal -->
+<!-- ✅ Popup Modal -->
 <div id="postModal" class="post-modal">
   <div class="post-modal-content">
     
@@ -289,7 +300,7 @@ try {
       <p class="post-modal-subtitle">Upload photos or a video and post instantly</p>
     </div>
 
-    <!-- âœ… Facebook Toggle -->
+    <!-- ✅ Facebook Toggle -->
     <div class="facebook-toggle">
       <label class="facebook-toggle-switch">
         <input type="checkbox" id="facebookShareToggle">
@@ -324,10 +335,10 @@ try {
   </label>
 </div>
 
-    <!-- âœ… Textarea -->
+    <!-- ✅ Textarea -->
     <textarea id="postText" class="post-modal-textarea" placeholder="Say Something..."></textarea>
 
-    <!-- âœ… Post Preview (Auto-filled from clicked post) -->
+    <!-- ✅ Post Preview (Auto-filled from clicked post) -->
     <div class="post-modal-preview">
       <div id="sharedPostMeta" class="preview-meta">
         <img id="sharedPostAuthorImage" class="preview-meta-avatar" src="" alt="Author" />
@@ -341,25 +352,25 @@ try {
       <video id="sharedPostVideo" class="preview-video" src="" controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture oncontextmenu="return false;"></video>
     </div>
 
-    <!-- âœ… Media Upload Buttons -->
+    <!-- ✅ Media Upload Buttons -->
     <div class="post-media-options">
       <label>
         <input type="file" id="imageUpload" accept="image/*" multiple hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">ðŸ“· Photo</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
       </label>
       <label>
         <input type="file" id="videoUpload" accept="video/*" hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">ðŸŽ¥ Video</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
       </label>
     </div>
 
     <p class="post-media-hint">You can select up to 5 photos in one post.</p>
 
 
-    <!-- âœ… Media Preview (optional preview for uploaded file) -->
+    <!-- ✅ Media Preview (optional preview for uploaded file) -->
     <div id="mediaPreview" class="post-media-preview"></div>
 
-    <!-- âœ… Action Buttons -->
+    <!-- ✅ Action Buttons -->
     <div class="post-modal-actions">
       <button class="post-cancel-btn" onclick="closeModal()">Cancel</button>
       <button class="post-submit-btn" onclick="createPost()">Post</button>
@@ -478,13 +489,13 @@ try {
       </div>
 
      <div class="advert">
-                <h4>Sponsored</h4>
+  <h4>Advertisement</h4>
   <div class="advert-slider">
     <div class="advert-track">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg" alt="SafeRide Helmet" data-ad-title="SafeRide Helmet" data-ad-text="Certified safety helmet with citywide delivery.">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg" alt="Health Plus Clinic" data-ad-title="Health Plus Clinic" data-ad-text="24/7 emergency support and trusted specialist care.">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg" alt="QuickFix Services" data-ad-title="QuickFix Services" data-ad-text="On-demand repair experts for home and office issues.">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg" alt="CitySecure App" data-ad-title="CitySecure App" data-ad-text="Real-time alerts and safety updates in your area.">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg">
     </div>
   </div>
 </div>
@@ -564,10 +575,10 @@ try {
   <h4>Camera Contributor Panel</h4>
   
   <button id="startFeedBtn" class="camera-btn">
-    ðŸ“· Start Live / Upload Recorded Feed
+    📷 Start Live / Upload Recorded Feed
   </button>
   <button class="camera-btn" onclick="window.location.href='../Html/Camera_Contribution_Feed.php';">
-  ðŸ‘€ View Feed
+  👀 View Feed
 </button>
 
 </div>
@@ -653,8 +664,8 @@ try {
 
     <div class="cam-pricing-rules">
       <h4>Feed Payment Rule</h4>
-      <p><strong>Recorded Feed:</strong> à§³60 per hour</p>
-      <p><strong>Live Feed:</strong> à§³100 per hour</p>
+      <p><strong>Recorded Feed:</strong> ৳60 per hour</p>
+      <p><strong>Live Feed:</strong> ৳100 per hour</p>
       <small>Live feed pays more because real-time monitoring demand is higher.</small>
     </div>
   </div>

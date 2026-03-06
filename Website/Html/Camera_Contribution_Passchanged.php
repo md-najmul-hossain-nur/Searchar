@@ -3,7 +3,7 @@ session_start();
 require_once __DIR__ . '/../Php/db.php'; // sets $pdo
 
 // Ensure user is logged in
-if (!isset($_SESSION['user_id'])) {
+if (empty($_SESSION['role']) || $_SESSION['role'] !== 'contributor' || empty($_SESSION['user_id'])) {
     header('Location: ../Html/login.html');
     exit;
 }

@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../Php/db.php';
 session_start();
 
-if (empty($_SESSION['user_id'])) {
+if (empty($_SESSION['role']) || $_SESSION['role'] !== 'contributor' || empty($_SESSION['user_id'])) {
     header('Location: ../Html/login.html');
     exit;
 }
@@ -71,7 +71,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Fetch existing data
 $stmt = $pdo->prepare('SELECT * FROM camera_contributors WHERE camera_id = ?');
 $stmt->execute([$user_id]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$user) {
+  session_unset();
+  session_destroy();
+  header('Location: ../Html/login.html?error=no_user');
+  exit;
+}
 ?>
 
 <!DOCTYPE html>

@@ -3,7 +3,7 @@ session_start();
 require_once __DIR__ . '/../Php/db.php'; // sets $pdo
 
 // Ensure user is logged in
-if (!isset($_SESSION['user_id'])) {
+if (empty($_SESSION['role']) || $_SESSION['role'] !== 'police' || empty($_SESSION['user_id'])) {
     header('Location: ../Html/login.html');
     exit;
 }
@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $update = $pdo->prepare("UPDATE policemen SET password_hash = ? WHERE police_id = ?");
         $update->execute([$hashed_password, $user_id]);
 
-        $js_alert = "alert('Password updated successfully!'); window.location.href = '../Html/Policeman_profile.html';";
+        $js_alert = "alert('Password updated successfully!'); window.location.href = '../Html/Policeman_profile.php';";
     }
 }
 ?>
