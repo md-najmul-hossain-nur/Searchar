@@ -1,4 +1,4 @@
-
+﻿
 const modal = document.getElementById("postModal");
 const feed = document.getElementById("post-feed");
 const mediaPreview = document.getElementById("mediaPreview");

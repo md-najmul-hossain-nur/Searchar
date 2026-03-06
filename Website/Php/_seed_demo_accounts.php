@@ -52,12 +52,12 @@ $insertUser = $pdo->prepare("INSERT INTO users
 VALUES (:full_name,:email,:mobile,:nid_number,:nid_photo,:profile_photo,:cover_photo,:dob,:gender,:street,:city,:postal_code,:country,:latitude,:longitude,:password_hash)");
 
 $insertVolunteer = $pdo->prepare("INSERT INTO volunteers
-(full_name,email,mobile,nid_number,nid_photo,profile_photo,date_of_birth,gender,street,city,postal_code,country,latitude,longitude,password_hash,cover_photo,occupation,availability,police_clearance,geo_permission)
-VALUES (:full_name,:email,:mobile,:nid_number,:nid_photo,:profile_photo,:dob,:gender,:street,:city,:postal_code,:country,:latitude,:longitude,:password_hash,:cover_photo,:occupation,:availability,:police_clearance,:geo_permission)");
+(full_name,email,mobile,nid_number,nid_photo,profile_photo,date_of_birth,gender,street,city,postal_code,country,latitude,longitude,password_hash,cover_photo,occupation,availability)
+VALUES (:full_name,:email,:mobile,:nid_number,:nid_photo,:profile_photo,:dob,:gender,:street,:city,:postal_code,:country,:latitude,:longitude,:password_hash,:cover_photo,:occupation,:availability)");
 
 $insertCamera = $pdo->prepare("INSERT INTO camera_contributors
-(full_name,email,mobile,nid_number,nid_photo,profile_photo,cover_photo,date_of_birth,gender,street,city,postal_code,country,latitude,longitude,password_hash,camera_location,camera_type,stream_type,bandwidth,payment_number,agreement)
-VALUES (:full_name,:email,:mobile,:nid_number,:nid_photo,:profile_photo,:cover_photo,:dob,:gender,:street,:city,:postal_code,:country,:latitude,:longitude,:password_hash,:camera_location,:camera_type,:stream_type,:bandwidth,:payment_number,:agreement)");
+(full_name,email,mobile,nid_number,nid_photo,profile_photo,cover_photo,date_of_birth,gender,street,city,postal_code,country,latitude,longitude,password_hash,camera_type,payment_number)
+VALUES (:full_name,:email,:mobile,:nid_number,:nid_photo,:profile_photo,:cover_photo,:dob,:gender,:street,:city,:postal_code,:country,:latitude,:longitude,:password_hash,:camera_type,:payment_number)");
 
 $checkUser = $pdo->prepare("SELECT 1 FROM users WHERE email = :email OR mobile = :mobile OR nid_number = :nid LIMIT 1");
 $checkVolunteer = $pdo->prepare("SELECT 1 FROM volunteers WHERE email = :email OR mobile = :mobile OR nid_number = :nid LIMIT 1");
@@ -134,8 +134,6 @@ foreach ($volunteers as $i => [$name, $zone]) {
         ':cover_photo' => '',
         ':occupation' => 'Volunteer',
         ':availability' => 'Weekdays',
-        ':police_clearance' => '',
-        ':geo_permission' => 1,
     ]);
     $volInserted++;
 }
@@ -169,12 +167,8 @@ foreach ($cameramen as $i => [$name, $zone]) {
         ':latitude' => null,
         ':longitude' => null,
         ':password_hash' => $passwordHash,
-        ':camera_location' => ucfirst($zone),
         ':camera_type' => 'IP Camera',
-        ':stream_type' => 'Live',
-        ':bandwidth' => '10 Mbps',
         ':payment_number' => '01700000000',
-        ':agreement' => 1,
     ]);
     $camInserted++;
 }

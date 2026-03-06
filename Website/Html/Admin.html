@@ -16,215 +16,7 @@
   <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
   <!-- Main CSS -->
   <link rel="stylesheet" href="../css/Admin.css">
-  <style>
-    .navbar-search { position: relative; }
-    .navbar-avatar { cursor: pointer; }
-    .avatar-panel {
-      position: absolute;
-      top: calc(100% + 8px);
-      right: 0;
-      width: 240px;
-      display: none;
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
-      border-radius: 10px;
-      padding: 14px;
-      transform: translateY(-10px);
-      opacity: 0;
-      transition: transform 0.2s ease, opacity 0.2s ease;
-      z-index: 1500;
-      pointer-events: none;
-    }
-    .avatar-panel.open {
-      display: block;
-      transform: translateY(0);
-      opacity: 1;
-      pointer-events: auto;
-    }
-    .avatar-panel__user { font-weight: 600; margin-bottom: 10px; color: #222a42; }
-    .avatar-panel__logout {
-      width: 100%;
-      background: #e04a4f;
-      color: #fff;
-      border: none;
-      padding: 10px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 600;
-      box-shadow: 0 8px 18px rgba(224, 74, 79, 0.25);
-    }
-    .avatar-panel__logout:hover { background: #c83f44; }
-    .chart-legend { display: flex; gap: 10px; align-items: center; margin-top: 12px; }
-    .legend-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 10px;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      background: #fff;
-      cursor: pointer;
-      font-weight: 600;
-      color: #222a42;
-      transition: all 0.15s ease;
-    }
-    .legend-chip:hover { background: #f4f5f7; }
-    .legend-active { border-color: #4339f2; box-shadow: 0 4px 10px rgba(67, 57, 242, 0.12); }
-    .chart-meta { margin-top: 8px; font-size: 13px; color: #4b5563; }
-    .profile-modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.52);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 3000;
-      padding: 18px;
-    }
-    .profile-modal.open { display: flex; }
-    .profile-modal__card {
-      width: min(680px, 96vw);
-      max-height: 88vh;
-      overflow: auto;
-      background: #fff;
-      border-radius: 14px;
-      box-shadow: 0 18px 42px rgba(0,0,0,.2);
-      border: 1px solid #e6ebf5;
-      padding: 16px;
-    }
-    .profile-modal__header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #e9eef7;
-    }
-    .profile-modal__title { font-size: 19px; font-weight: 800; color: #1f2f46; letter-spacing: .2px; }
-    .profile-modal__close {
-      border: none;
-      background: #f4f6fb;
-      width: 34px;
-      height: 34px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 18px;
-      line-height: 1;
-      color: #2f3a53;
-      transition: background .15s ease;
-    }
-    .profile-modal__close:hover { background: #e8edf7; }
-    .profile-modal__grid {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .profile-modal__row {
-      display: grid;
-      grid-template-columns: 180px 1fr;
-      align-items: start;
-      gap: 10px;
-      background: #f8faff;
-      border: 1px solid #e7edf8;
-      border-radius: 10px;
-      padding: 10px 12px;
-    }
-    .profile-modal__label {
-      color: #51607a;
-      font-weight: 700;
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: .35px;
-    }
-    .profile-modal__value {
-      color: #111827;
-      word-break: break-word;
-      font-size: 14px;
-      line-height: 1.45;
-      font-weight: 600;
-    }
-    .profile-modal__img {
-      width: 100%;
-      max-width: 240px;
-      height: 140px;
-      object-fit: cover;
-      border-radius: 8px;
-      border: 1px solid #dbe2ef;
-      background: #f8fafc;
-      display: block;
-    }
-    .profile-modal__img-link {
-      display: inline-flex;
-      margin-top: 6px;
-      font-size: 12px;
-      color: #2244aa;
-      text-decoration: none;
-    }
-    .profile-modal__img-link:hover { text-decoration: underline; }
-    .profile-modal__media-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .profile-modal__media-item {
-      width: min(240px, 100%);
-    }
-    .profile-modal__video {
-      width: 100%;
-      max-width: 240px;
-      height: 140px;
-      border-radius: 8px;
-      border: 1px solid #dbe2ef;
-      background: #f8fafc;
-      display: block;
-    }
-    .profile-modal__footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 14px;
-      padding-top: 12px;
-      border-top: 1px solid #e9eef7;
-    }
-    .profile-modal__btn {
-      border: none;
-      border-radius: 8px;
-      padding: 9px 14px;
-      cursor: pointer;
-      font-weight: 700;
-    }
-    .profile-modal__btn.secondary { background: #eef2fb; color: #23324f; }
-    .profile-modal__btn.primary { background: #2a4c85; color: #fff; }
-    .profile-modal__btn.success { background: #0f8b6c; color: #fff; }
-    .profile-modal__input {
-      width: 100%;
-      border: 1px solid #d3dced;
-      border-radius: 8px;
-      padding: 8px 10px;
-      font-size: 14px;
-      font-weight: 600;
-      color: #111827;
-      background: #fff;
-    }
-    .hidden { display: none !important; }
-    @media (max-width: 640px) {
-      .profile-modal__row { grid-template-columns: 1fr; }
-      .profile-modal__label { margin-bottom: 2px; }
-    }
-    .view-profile-btn {
-      border: none;
-      background: #eaf0ff;
-      color: #2244aa;
-      border-radius: 6px;
-      padding: 6px 10px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-  </style>
+  
   
 </head>
 <body>
@@ -287,12 +79,12 @@
       <div class="navbar-search">
         <div class="global-smart-search">
           <div class="global-smart-search-field">
-            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <i class="fa-solid fa-magnifying-glass" ></i>
             <input id="global-smart-search" type="text" placeholder="Quick search: section/name/phone" aria-label="Quick smart search" title="Type section, person name, phone, or case ID to jump to the matching section. Example: crime, volunteer, 017..., CR-2026-001">
           </div>
           <div class="global-smart-search-hint">Search by section, name, phone, or case ID (e.g., crime, volunteer, 017..., CR-2026-001)</div>
         </div>
-        <img class="navbar-avatar" id="admin-avatar" src="../Images/businessman.gif" alt="User Avatar">
+        <img class="" id="admin-avatar" src="../Images/businessman.gif" alt="User Avatar">
         <div id="avatar-panel" class="avatar-panel">
           <div class="avatar-panel__user">Signed in as Admin</div>
           <button class="avatar-panel__logout" onclick="window.location.href='../Php/logout.php';">
@@ -1461,7 +1253,7 @@
     const editableFieldsByEntity = {
       users: ['full_name', 'email', 'mobile', 'date_of_birth', 'gender', 'street', 'city', 'postal_code', 'country'],
       volunteers: ['full_name', 'email', 'mobile', 'date_of_birth', 'gender', 'street', 'city', 'postal_code', 'country', 'occupation', 'availability'],
-      camera_contributors: ['full_name', 'email', 'mobile', 'date_of_birth', 'gender', 'street', 'city', 'postal_code', 'country', 'camera_location', 'camera_type', 'stream_type', 'bandwidth', 'payment_number'],
+      camera_contributors: ['full_name', 'email', 'mobile', 'date_of_birth', 'gender', 'street', 'city', 'postal_code', 'country', 'camera_type', 'payment_number'],
       policemen: ['full_name', 'email', 'mobile', 'date_of_birth', 'gender', 'street', 'city', 'postal_code', 'country', 'badge_id', 'designation', 'station']
     };
 
@@ -1499,7 +1291,6 @@
         total_missions: 'Total Missions',
         rank: 'Rank',
         camera_id: 'Camera ID',
-        camera_location: 'Camera Location',
         badge_id: 'Badge ID',
         designation: 'Designation',
         station: 'Station',
@@ -2038,7 +1829,6 @@
               <div class="actions-wrap">
                 <button class="view-profile-btn" data-profile="${profileData}">View Profile</button>
                 <button class="edit-profile-btn" data-profile="${profileData}">Edit</button>
-                <button class="assign-btn assign-mission-btn" data-id="${recordId}" data-name="${name}"><i class="fa-solid fa-bullseye"></i> Assign</button>
                 <button class="delete-btn delete-action-btn" data-entity="${entity}" data-id="${recordId}" data-name="${name}"><i class="fa-solid fa-trash"></i></button>
                 ${warnButtonMarkup(entity, recordId, name, warnedByAdmin)}
                 ${smsActionMarkup(entity, recordId, name)}
@@ -2083,7 +1873,6 @@
           camera_id: cameraId,
           full_name: ownerName,
           location,
-          camera_location: r.camera_location || location,
           status: statusText,
           fps,
           last_checked: lastChecked
@@ -2122,7 +1911,7 @@
 
       return camerasData.filter(c => {
         const statusVal = (c.status || 'online').toLowerCase();
-        const haystack = `${c.camera_id || ''} ${c.location || ''} ${c.camera_location || ''} ${c.name || ''} ${c.full_name || ''}`.toLowerCase();
+        const haystack = `${c.camera_id || ''} ${c.location || ''} ${c.name || ''} ${c.full_name || ''}`.toLowerCase();
         const matchesText = !textTokens.length || textTokens.every(token => haystack.includes(token));
         const matchesStatus = !status || statusVal === status;
         return matchesText && matchesStatus;
@@ -2134,7 +1923,7 @@
       renderCameraTable(filtered);
       const points = filtered.map(r => ({
         name: r.name || r.full_name || r.camera_id || 'Camera',
-        location: r.location || r.camera_location || r.city || '',
+        location: r.location || r.city || '',
         lat: r.lat ?? r.latitude,
         lon: r.lon ?? r.lng ?? r.longitude
       }));

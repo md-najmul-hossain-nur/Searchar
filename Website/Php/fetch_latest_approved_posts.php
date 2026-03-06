@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 declare(strict_types=1);
 
 header('Content-Type: application/json; charset=utf-8');
@@ -55,7 +55,7 @@ function getAuthorPhoto(PDO $pdo, string $authorRole, int $authorId): string {
     ];
 
     if (!isset($roleMap[$authorRole]) || $authorId <= 0) {
-        return '../Images/default_profile.png';
+        return '../Images/default-profile.gif';
     }
 
     $table = $roleMap[$authorRole]['table'];
@@ -72,7 +72,7 @@ function getAuthorPhoto(PDO $pdo, string $authorRole, int $authorId): string {
     } catch (Throwable $e) {
     }
 
-    return '../Images/default_profile.png';
+    return '../Images/default-profile.gif';
 }
 
 function anonymousDisplayName(): string {

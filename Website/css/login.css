@@ -744,45 +744,6 @@ body {
 }
 
 
-/* Facebook Button Style */
-#dynamicForm .social-btn.fb-btn {
-  background-color: #3b5998;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 10px 15px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-#dynamicForm .social-btn.fb-btn:hover {
-  background-color: #2d4373;
-}
-
-/* Google Button Style */
-#dynamicForm .social-btn.google-btn {
-  background-color: #ffffff;
-  color: #444;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 10px 15px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-#dynamicForm .social-btn.google-btn:hover {
-  background-color: #f7f7f7;
-}
-
 /* Icon Style */
 #dynamicForm .social-icon {
   width: 20px;
@@ -838,67 +799,10 @@ body {
   from {opacity: 0; transform: scale(0.9);}
   to {opacity: 1; transform: scale(1);}
 }
-/* Facebook Button Style */
-.form.sign-in .social-btn.fb-btn {
-  background-color: #3b5998;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 10px 15px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.form.sign-in .social-btn.fb-btn:hover {
-  background-color: #2d4373;
-}
-
-/* Google Button Style */
-.form.sign-in .social-btn.google-btn {
-  background-color: #ffffff;
-  color: #444;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 10px 15px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.form.sign-in .social-btn.google-btn:hover {
-  background-color: #f7f7f7;
-}
-
 /* Icon Style */
 .form.sign-in .social-icon {
   width: 20px;
   height: 20px;
-}
-/* Google Button Style */
-.form.sign-in .google {
-  background-color: #ffffff;
-  color: #444;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 10px 15px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.form.sign-in .google:hover {
-  background-color: #f7f7f7;
 }
 /* Unified Navbar Logo */
 .navbar {
@@ -1058,6 +962,45 @@ body {
   border-top: 1px solid #eef1f5;
 }
 
+.back-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #d8e2ef;
+  background: #f8fbff;
+  color: #1d4f91;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+
+.back-toggle-btn .back-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #e9f2ff;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.back-toggle-btn:hover {
+  background: #eef5ff;
+  border-color: #bfd6f3;
+  color: #0f3e78;
+  transform: translateY(-1px);
+}
+
+.back-toggle-btn:focus-visible {
+  outline: 2px solid #f75c3c;
+  outline-offset: 2px;
+}
+
 @media (max-width: 700px) {
   .col.sign-up .form.sign-up,
   .col.sign-in .form.sign-in {
@@ -1065,5 +1008,46 @@ body {
     max-height: calc(100vh - 145px) !important;
     margin-top: 10px !important;
     padding: 1rem 0.8rem 0.95rem !important;
+  }
+}
+
+.terms-modal-content {
+  width: min(960px, 94vw);
+  height: min(82vh, 760px);
+  max-width: 960px;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 14px 12px;
+}
+
+.terms-modal-title {
+  margin: 0 32px 10px 2px;
+  color: #1d3658;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.terms-policy-frame {
+  width: 100%;
+  height: 100%;
+  border: 1px solid #d9e3ef;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.terms-close {
+  z-index: 2;
+}
+
+@media (max-width: 700px) {
+  .terms-modal-content {
+    width: 96vw;
+    height: 86vh;
+    padding: 12px 10px 10px;
+  }
+
+  .terms-modal-title {
+    font-size: 0.98rem;
+    margin-bottom: 8px;
   }
 }

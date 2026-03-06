@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 require_once __DIR__ . '/../Php/db.php';
 
@@ -35,9 +35,9 @@ function profileTimeAgo(?string $dateTime): string {
 }
 
 // Fallback images
-$profile_pic = !empty($user['profile_photo']) ? '../uploads/user/' . $user['profile_photo'] : '../Images/default_profile.png';
+$profile_pic = !empty($user['profile_photo']) ? '../uploads/user/' . $user['profile_photo'] : '../Images/default-profile.gif';
 $cover_pic = !empty($user['cover_photo']) ? '../uploads/user/' . $user['cover_photo'] : '../Images/default_cover.jpg';
-$bio_text = !empty($user['bio']) ? e($user['bio']) : "💬 Bio not added yet. Go to <a href='../Html/User_Edit_profile.html'>edit profile</a> to add your bio!";
+$bio_text = !empty($user['bio']) ? e($user['bio']) : "ðŸ’¬ Bio not added yet. Go to <a href='../Html/User_Edit_profile.html'>edit profile</a> to add your bio!";
 
 $profilePosts = [];
 try {
@@ -106,7 +106,7 @@ try {
     <img src="<?= !empty($user['cover_photo']) ? '../uploads/user/' . e($user['cover_photo']) : '../Images/cover_default.jpg' ?>" 
          alt="Cover" class="cover-img">
     <div class="profile-pic-container">
-        <img src="<?= !empty($user['profile_photo']) ? '../uploads/user/' . e($user['profile_photo']) : '../Images/default_profile.png' ?>" 
+        <img src="<?= !empty($user['profile_photo']) ? '../uploads/user/' . e($user['profile_photo']) : '../Images/default-profile.gif' ?>" 
              class="profile-pic" 
              alt="Profile">
     </div>
@@ -122,37 +122,37 @@ try {
             <div class="divider"></div>
             
             <p class="user-bio">
-                <?= !empty($user['bio']) ? e($user['bio']) : ' 💬 Add your bio in your profile so everyone knows a little about you' ?>
+                <?= !empty($user['bio']) ? e($user['bio']) : ' ðŸ’¬ Add your bio in your profile so everyone knows a little about you' ?>
             </p>
 
         <ul class="info-list">
     <!-- Birthday -->
     <li>
-        <span class="icon">&#127874;</span> <!-- 🎂 cake icon -->
+        <span class="icon">&#127874;</span> <!-- ðŸŽ‚ cake icon -->
         <?= !empty($user['date_of_birth']) ? e($user['date_of_birth']) : 'No birthday provided' ?>
     </li>
 
     <!-- Gender -->
     <li>
-        <span class="icon">&#9794;&#9792;</span> <!-- ⚥ gender icon -->
+        <span class="icon">&#9794;&#9792;</span> <!-- âš¥ gender icon -->
         <?= !empty($user['gender']) ? ucfirst(e($user['gender'])) : 'Gender not specified' ?>
     </li>
 
     <!-- Email -->
     <li>
-        <span class="icon">&#9993;</span> <!-- ✉️ envelope icon -->
+        <span class="icon">&#9993;</span> <!-- âœ‰ï¸ envelope icon -->
         <?= !empty($user['email']) ? e($user['email']) : 'No email provided' ?>
     </li>
 
     <!-- Street / Address -->
     <li>
-        <span class="icon">&#127968;</span> <!-- 🏠 house icon -->
+        <span class="icon">&#127968;</span> <!-- ðŸ  house icon -->
         <?= !empty($user['street']) ? e($user['street']) : 'No street provided' ?>
     </li>
 
     <!-- City / Country -->
     <li>
-        <span class="icon">&#127758;</span> <!-- 🌎 globe icon -->
+        <span class="icon">&#127758;</span> <!-- ðŸŒŽ globe icon -->
         <?= !empty($user['city']) ? e($user['city']) : 'No city provided' ?>, 
         <?= !empty($user['country']) ? e($user['country']) : 'No country provided' ?>
     </li>
@@ -208,7 +208,7 @@ try {
           $displayAuthorName = $isAnonymous ? 'Anonymous' : $postAuthorName;
           $displayAuthorPhoto = $isAnonymous
             ? '../Images/anonymously.gif'
-            : (!empty($user['profile_photo']) ? '../uploads/user/' . e($user['profile_photo']) : '../Images/default_profile.png');
+            : (!empty($user['profile_photo']) ? '../uploads/user/' . e($user['profile_photo']) : '../Images/default-profile.gif');
         ?>
         <div class="card post" data-post-id="<?= (int)($post['id'] ?? 0) ?>" data-share-anonymous="<?= $isAnonymous ? '1' : '0' ?>">
           <div class="post-header">
@@ -325,11 +325,11 @@ try {
     <div class="post-media-options">
       <label>
         <input type="file" id="imageUpload" accept="image/*" multiple hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">ðŸ“· Photo</button>
       </label>
       <label>
         <input type="file" id="videoUpload" accept="video/*" hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">ðŸŽ¥ Video</button>
       </label>
     </div>
 
@@ -368,7 +368,7 @@ try {
   cursor: pointer;
   display: flex;
   align-items: center;
-  padding: 6px 18px; /* ↓ reduced height */
+  padding: 6px 18px; /* â†“ reduced height */
   border: 2px solid #1a73e8;
   border-radius: 16px; /* slightly smaller for balance */
   font-weight: 450;
@@ -382,7 +382,7 @@ try {
 }
 
 .category-icon {
-  width: 24px; /* ↓ smaller icons */
+  width: 24px; /* â†“ smaller icons */
   height: 24px;
   object-fit: contain;
 }

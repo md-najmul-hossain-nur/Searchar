@@ -78,8 +78,6 @@ try {
             'occupation'      => pickField($row, ['occupation'], ''),
             'availability'    => pickField($row, ['availability'], ''),
             'status'          => pickField($row, ['status', 'account_status'], ''),
-            'police_clearance'=> pickField($row, ['police_clearance'], ''),
-            'geo_permission'  => pickField($row, ['geo_permission'], '0'),
             'location'        => pickField($row, ['city', 'station', 'address', 'street', 'location'], ''),
             'join_date'       => pickField($row, ['join_date', 'joined_at', 'created_at'], ''),
             'last_active'     => pickField($row, ['last_active', 'last_active_at', 'updated_at'], ''),

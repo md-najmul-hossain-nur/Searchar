@@ -1,10 +1,9 @@
-Social sign-in (Google / Facebook)
+Social sign-in (Facebook)
 
-This project now uses direct Google and Facebook sign-in flows that POST provider tokens to server endpoints which verify and upsert users into your local `auth_users` table.
+This project now uses a direct Facebook sign-in flow that POSTs provider tokens to a server endpoint which verifies and upserts users into your local `auth_users` table.
 
 Files of interest:
 - `db.php` - PDO connection to the `searchar` DB.
-- `google-signin.php` - accepts POST { credential: ID_TOKEN, role } and verifies Google ID token, upserts user.
 - `facebook-signin.php` - accepts POST { access_token, role } and verifies FB token via Graph API, upserts user.
 
 Database schema (create `auth_users` table):
@@ -29,31 +28,25 @@ CREATE TABLE `auth_users` (
 -- If you already have `auth_users` table, run this migration to add refresh token columns:
 -- ALTER TABLE auth_users ADD COLUMN refresh_token TEXT DEFAULT NULL, ADD COLUMN token_expires_at DATETIME DEFAULT NULL;
 
--- Add provider ID columns (google/facebook) and unique email if you plan to accept social sign-ins directly
+-- Add provider ID column (facebook) and unique email if you plan to accept social sign-ins directly
 -- ALTER TABLE auth_users
---   ADD COLUMN google_id VARCHAR(255) DEFAULT NULL,
 --   ADD COLUMN facebook_id VARCHAR(255) DEFAULT NULL,
 --   ADD UNIQUE KEY uq_email (email),
---   ADD UNIQUE KEY uq_google_id (google_id),
 --   ADD UNIQUE KEY uq_facebook_id (facebook_id);
 
--- Note: If you use Auth0 as primary identity provider, you may not need google_id/facebook_id columns.
+-- Note: If you use Auth0 as primary identity provider, you may not need facebook_id columns.
 
 Configuration & testing:
 - Ensure `db.php` is configured and the `auth_users` table exists (see above SQL).
-- Add provider ID columns if you accept social sign-ins directly:
+- Add provider ID column if you accept social sign-ins directly:
   ALTER TABLE auth_users
-    ADD COLUMN google_id VARCHAR(255) DEFAULT NULL,
     ADD COLUMN facebook_id VARCHAR(255) DEFAULT NULL,
     ADD UNIQUE KEY uq_email (email);
 
 Testing locally:
-1. Include Google Identity Services script and set your Google client id in the page (or render it server-side):
-   <script src="https://accounts.google.com/gsi/client" async defer></script>
-   <script>window.GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID';</script>
-2. Include Facebook SDK and initialize with your App ID.
-3. Open the signup page, select a role, click Google or Facebook.
-4. The page should POST to `Php/google-signin.php` or `Php/facebook-signin.php` and return a JSON response. Verify DB changes.
+1. Include Facebook SDK and initialize with your App ID.
+2. Open the signup page, select a role, click Facebook.
+3. The page should POST to `Php/facebook-signin.php` and return a JSON response. Verify DB changes.
 
 Security notes:
 - Verify provider tokens on the server before creating/updating users. Do not trust client-side role values without server-side validation.

@@ -1,4 +1,4 @@
-const chatWindow = document.getElementById('chatWindow');
+﻿const chatWindow = document.getElementById('chatWindow');
 const chatInput = document.getElementById('chatInput');
 const sendBtn = document.getElementById('sendBtn');
 
@@ -148,7 +148,7 @@ function openModal(isShareMode = false) {
   if (isSharing) {
     if (sharedPostMeta && sharedPostAuthorImage && sharedPostAuthorName && sharedPostTime) {
       sharedPostMeta.style.display = 'flex';
-      sharedPostAuthorImage.src = shareContext?.authorImage || '../Images/default_profile.png';
+      sharedPostAuthorImage.src = shareContext?.authorImage || '../Images/default-profile.gif';
       sharedPostAuthorName.innerText = shareContext?.authorName || 'Unknown User';
       sharedPostTime.innerText = shareContext?.timeAgo || '';
     }
@@ -435,6 +435,24 @@ function notificationIconBySource(source) {
   return '🔔';
 }
 
+function normalizeNotificationText(value) {
+  const text = String(value || '');
+  if (!text) return '';
+
+  const looksBroken = /ðŸ|Ã.|â.|ï¸|Â./.test(text);
+  if (!looksBroken || typeof TextDecoder === 'undefined') {
+    return text;
+  }
+
+  try {
+    const bytes = new Uint8Array(Array.from(text, ch => ch.charCodeAt(0) & 0xff));
+    const decoded = new TextDecoder('utf-8', { fatal: false }).decode(bytes);
+    return decoded || text;
+  } catch (_) {
+    return text;
+  }
+}
+
 function renderNotificationItems(items, { compact = false } = {}) {
   if (!Array.isArray(items) || items.length === 0) {
     return compact
@@ -461,8 +479,8 @@ function renderNotificationItems(items, { compact = false } = {}) {
         <li class="${levelClass} ${readClass}" data-notification-id="${item.id || 0}" data-target-post-id="${item.target_post_id || ''}" data-target-comment-id="${targetCommentId}">
           <div class="notification-icon">${notificationIconBySource(item.source)}</div>
           <div class="notification-body">
-            <div class="notification-title">${item.title || 'Notification'}</div>
-            <div class="notification-message">${item.message || ''}</div>
+            <div class="notification-title">${normalizeNotificationText(item.title || 'Notification')}</div>
+            <div class="notification-message">${normalizeNotificationText(item.message || '')}</div>
           </div>
           <span class="notification-time">${formatRelativeTime(item.created_at, item.time_ago)}</span>
         </li>
@@ -486,8 +504,8 @@ function renderNotificationItems(items, { compact = false } = {}) {
       <article class="${levelClass} ${readClass}" data-notification-id="${item.id || 0}" data-target-post-id="${item.target_post_id || ''}" data-target-comment-id="${targetCommentId}">
         <div class="drawer-notification-icon">${notificationIconBySource(item.source)}</div>
         <div class="drawer-notification-content">
-          <h4>${item.title || 'Notification'}</h4>
-          <p>${item.message || ''}</p>
+          <h4>${normalizeNotificationText(item.title || 'Notification')}</h4>
+          <p>${normalizeNotificationText(item.message || '')}</p>
           <small>${formatRelativeTime(item.created_at, item.time_ago)}</small>
         </div>
       </article>
@@ -872,7 +890,7 @@ document.querySelectorAll('.share-btn').forEach(btn => {
     const imageSrc = post.querySelector('.post-img')?.getAttribute('src') || '';
     const videoSrc = getPostVideoSource(post);
     const category = post?.dataset?.category || 'general';
-    const authorImage = postHeader?.querySelector('img')?.getAttribute('src') || '../Images/default_profile.png';
+    const authorImage = postHeader?.querySelector('img')?.getAttribute('src') || '../Images/default-profile.gif';
     const authorName = postHeader?.querySelector('h5')?.innerText || 'Unknown User';
     const timeAgo = postHeader?.querySelector('small')?.innerText || '';
 

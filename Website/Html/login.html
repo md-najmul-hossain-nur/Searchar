@@ -6,29 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
- <!-- Google / Facebook SDK configuration -->
- <script>
-   // Provide your Google client id (safe to expose) so the Google IDS init in login.js can use it
-   window.GOOGLE_CLIENT_ID = '368248658746-72i73ro0ec1jqcso9kaeo4653tdr6jop.apps.googleusercontent.com';
-   // Provide your Facebook App ID and initialize FB when the SDK loads
-   window.FB_APP_ID = '694071223391461';
-   window.fbAsyncInit = function() {
-     try {
-       FB.init({
-         appId: window.FB_APP_ID,
-         cookie: true,
-         xfbml: true,
-         version: 'v16.0'
-       });
-       console.debug('FB SDK initialized');
-     } catch (e) {
-       console.warn('FB init error', e);
-     }
-   };
- </script>
- <!-- Facebook SDK -->
- <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
     <link rel="stylesheet" href="../css/login.css">
 </head>
 <body>
@@ -75,9 +52,9 @@
             <div id="dynamicForm"></div>
 
             <p>
-              <b onclick="toggle()" class="pointer">
-                <span style="display:inline-block;vertical-align:middle;">&#8592;</span>
-                Back
+              <b onclick="toggle()" class="pointer back-toggle-btn" role="button" tabindex="0">
+                <span class="back-arrow">&#8592;</span>
+                <span>Back</span>
               </b>
             </p>
           </div>
@@ -93,18 +70,6 @@
     <form class="form sign-in" action="../Php/login.php" method="POST">
   <h3 class="auth-panel-title">Sign In Securely</h3>
   <p class="auth-helper">Welcome back. Sign in with your role to access your dashboard, notifications, and safety tools.</p>
-
-      <!-- Social Login Buttons -->
-      <div class="social-login-buttons">
-        <button type="button" class="social-btn fb-btn">
-          <img src="../Images/facebook.png" alt="Facebook" class="social-icon" />
-          Sign in with Facebook
-        </button>
-        <button type="button" class="social-btn google-btn">
-          <img src="../Images/google.png" alt="Google" class="social-icon" />
-          Sign in with Google
-        </button>
-      </div>
 
       <!-- Role Selection -->
       <div class="input-group">
@@ -144,7 +109,6 @@
   </div>
 </div>
 
-      <p class="auth-note">Need help? Contact support through the main website help center.</p>
 
   <div class="form-wrapper">
     <!-- Additional content (if needed) -->
@@ -204,6 +168,14 @@ if(urlParams.get('error') === 'empty') {
     alert("Password is incorrect!");
 } else if(urlParams.get('error') === 'db') {
     alert("Database error! Please try again later.");
+} else if(urlParams.get('error') === 'session') {
+  alert("Session expired or invalid. Please sign in again.");
+} else if(urlParams.get('error') === 'no_user') {
+  alert("Account record not found for this session. Please sign in again.");
+} else if(urlParams.get('error') === 'invalid_role') {
+  alert("Invalid role session detected. Please sign in again.");
+} else if(urlParams.get('error') === 'email_mismatch') {
+  alert("Session mismatch detected. Please sign in again.");
 }
 
 // Success message (for redirect after login)

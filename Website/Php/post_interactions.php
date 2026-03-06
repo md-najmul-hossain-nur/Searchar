@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 declare(strict_types=1);
 
 header('Content-Type: application/json; charset=utf-8');
@@ -141,7 +141,7 @@ function ensureInteractionTables(PDO $pdo): void {
 
 function actorSnapshot(PDO $pdo, string $canonicalRole, int $actorId): array {
     if ($actorId <= 0) {
-        return ['name' => 'Someone', 'photo' => '../Images/default_profile.png'];
+        return ['name' => 'Someone', 'photo' => '../Images/default-profile.gif'];
     }
 
     $map = roleSqlMap($canonicalRole);
@@ -153,7 +153,7 @@ function actorSnapshot(PDO $pdo, string $canonicalRole, int $actorId): array {
     $uploadFolder = (string)($map['upload_folder'] ?? 'user');
     return [
         'name' => trim((string)($row['full_name'] ?? '')) ?: 'Someone',
-        'photo' => $photoRaw !== '' ? ('../uploads/' . $uploadFolder . '/' . $photoRaw) : '../Images/default_profile.png',
+        'photo' => $photoRaw !== '' ? ('../uploads/' . $uploadFolder . '/' . $photoRaw) : '../Images/default-profile.gif',
     ];
 }
 
@@ -240,7 +240,7 @@ function fetchComments(PDO $pdo, int $postId): array {
             $uploadFolder = (string)($map['upload_folder'] ?? 'user');
             $profiles[$role . ':' . $personId] = [
                 'name' => trim((string)($p['full_name'] ?? '')) ?: 'Someone',
-                'photo' => $photoRaw !== '' ? ('../uploads/' . $uploadFolder . '/' . $photoRaw) : '../Images/default_profile.png',
+                'photo' => $photoRaw !== '' ? ('../uploads/' . $uploadFolder . '/' . $photoRaw) : '../Images/default-profile.gif',
             ];
         }
     }
@@ -252,7 +252,7 @@ function fetchComments(PDO $pdo, int $postId): array {
     foreach ($rows as $row) {
         $role = canonicalRole((string)($row['actor_role'] ?? ''));
         $actorId = (int)($row['actor_id'] ?? 0);
-        $profile = $profiles[$role . ':' . $actorId] ?? ['name' => 'Someone', 'photo' => '../Images/default_profile.png'];
+        $profile = $profiles[$role . ':' . $actorId] ?? ['name' => 'Someone', 'photo' => '../Images/default-profile.gif'];
         $commentAnonymous = (int)($row['is_anonymous'] ?? 0) === 1;
         $shouldMask = $commentAnonymous;
 

@@ -95,7 +95,6 @@ try {
 
     $profile_photo    = save_upload($_FILES['profile_photo'] ?? null, 'profile_');
     $cover_photo      = save_upload($_FILES['cover_photo'] ?? null, 'cover_');
-    $police_clearance = save_upload($_FILES['police_clearance'] ?? null, 'clearance_');
 
     // -----------------------------
     // Address fields
@@ -109,16 +108,14 @@ try {
         'longitude'   => $_POST['longitude'] ?? null
     ];
 
-    $geo_permission = isset($_POST['geo_permission']) && $_POST['geo_permission'] === 'yes' ? 1 : 0;
-
     // -----------------------------
     // Insert into DB
     // -----------------------------
     $stmt = $pdo->prepare("INSERT INTO volunteers
         (full_name,email,mobile,nid_number,nid_photo,profile_photo,date_of_birth,gender,
         street,city,postal_code,country,latitude,longitude,password_hash,cover_photo,
-        occupation,availability,police_clearance,geo_permission)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+        occupation,availability)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
     $stmt->execute([
         $_POST['fullname'],       // full_name
@@ -138,9 +135,7 @@ try {
         $password_hash,           // password_hash
         $cover_photo,             // cover_photo 
         $_POST['occupation'],     // occupation
-        $_POST['availability'],   // availability
-        $police_clearance,        // police_clearance
-        $geo_permission           // geo_permission
+        $_POST['availability']    // availability
     ]);
 
     // -----------------------------

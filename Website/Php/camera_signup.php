@@ -43,8 +43,7 @@ function save_upload($file, $prefix = '', $allowed = ['jpg','jpeg','png','pdf'])
 try {
     $required = [
         'fullname', 'email', 'mobile', 'nid', 'dob', 'gender',
-        'password', 'confirm_password', 'camera_location',
-        'camera_type', 'stream_type', 'bandwidth', 'payment_number'
+        'password', 'confirm_password', 'camera_type', 'payment_number'
     ];
     foreach ($required as $k) {
         if (empty($_POST[$k])) throw new Exception("Missing field: $k");
@@ -84,8 +83,6 @@ try {
 
     $cover_photo = save_upload($_FILES['cover_photo'], 'cover_', ['jpg','jpeg','png']);
 
-    $agreement = save_upload($_FILES['agreement'], 'agreement_', ['pdf']);
-
     // Address fields
     $fields = ['street', 'city', 'postal', 'country', 'latitude', 'longitude'];
     $addr = [];
@@ -95,8 +92,8 @@ try {
     $stmt = $pdo->prepare("INSERT INTO camera_contributors
         (full_name,email,mobile,nid_number,nid_photo,profile_photo,cover_photo,
         date_of_birth,gender,street,city,postal_code,country,latitude,longitude,
-        password_hash,camera_location,camera_type,stream_type,bandwidth,payment_number,agreement)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+        password_hash,camera_type,payment_number)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
     $stmt->execute([
         $_POST['fullname'],
@@ -115,12 +112,8 @@ try {
         $addr['latitude'],
         $addr['longitude'],
         $password_hash,
-        $_POST['camera_location'],
         $_POST['camera_type'],
-        $_POST['stream_type'],
-        $_POST['bandwidth'],
-        $_POST['payment_number'],
-        $agreement
+        $_POST['payment_number']
     ]);
 
     echo "<script>

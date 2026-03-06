@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 declare(strict_types=1);
 session_start();
 require_once __DIR__ . '/../Php/db.php';
@@ -53,7 +53,7 @@ $feedPosts = [];
 $cctvFeeds = [];
 
 try {
-    $stmt = $pdo->prepare("SELECT camera_id, full_name, email, profile_photo, cover_photo, camera_location, camera_type, stream_type, created_at FROM camera_contributors WHERE camera_id = :id LIMIT 1");
+    $stmt = $pdo->prepare("SELECT camera_id, full_name, email, profile_photo, cover_photo, city, street, country, camera_type, created_at FROM camera_contributors WHERE camera_id = :id LIMIT 1");
     $stmt->execute(['id' => $userId]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
 
@@ -116,12 +116,17 @@ try {
     $feedPosts = [];
 }
 
-$profilePhoto = !empty($user['profile_photo']) ? '../uploads/camera/' . e($user['profile_photo']) : '../Images/default_profile.png';
+$profilePhoto = !empty($user['profile_photo']) ? '../uploads/camera/' . e($user['profile_photo']) : '../Images/default-profile.gif';
 $coverPhoto = !empty($user['cover_photo']) ? '../uploads/camera/' . e($user['cover_photo']) : '../Images/cover_default.jpg';
 $displayName = !empty($user['full_name']) ? (string)$user['full_name'] : 'Camera Contributor';
 $emailText = !empty($user['email']) ? (string)$user['email'] : 'Guest';
-$cameraLocation = !empty($user['camera_location']) ? (string)$user['camera_location'] : 'Unknown Location';
-$streamType = !empty($user['stream_type']) ? (string)$user['stream_type'] : 'Live Stream';
+$profileLocationParts = array_filter([
+  (string)($user['city'] ?? ''),
+  (string)($user['street'] ?? ''),
+  (string)($user['country'] ?? ''),
+]);
+$cameraLocation = !empty($profileLocationParts) ? implode(', ', $profileLocationParts) : 'Unknown Location';
+$streamType = 'Live Stream';
 
 $totalFeeds = count($cctvFeeds);
 $liveReadyCount = 0;
@@ -189,7 +194,7 @@ if ($latestFeed) {
           <p class="subtitle">Only you can see this page and your own camera feed data.</p>
         </div>
         <button class="back-btn" aria-label="Go back" onclick="window.location.href='../Html/Camera_Contribution_Home.php'">
-          <span aria-hidden="true">←</span> Back
+          <span aria-hidden="true">â†</span> Back
         </button>
       </div>
     </header>
@@ -203,8 +208,8 @@ if ($latestFeed) {
           <div class="user-stats">
             <span><?= (int)$totalFeeds ?> <small>Total Feeds</small></span>
             <span><?= (int)$liveReadyCount ?> <small>Live Ready</small></span>
-            <span>৳<?= e(number_format($totalEarnings, 2)) ?> <small>Total Earnings</small></span>
-            <span>৳<?= (int)$runningHourlyRate ?>/hr <small>Running Rate</small></span>
+            <span>à§³<?= e(number_format($totalEarnings, 2)) ?> <small>Total Earnings</small></span>
+            <span>à§³<?= (int)$runningHourlyRate ?>/hr <small>Running Rate</small></span>
           </div>
         </div>
       </div>
@@ -256,7 +261,7 @@ if ($latestFeed) {
               <span class="camera-title"><?= e((string)($feed['feed_label'] ?? 'CCTV Feed')) ?></span>
               <span class="camera-time"><i class="fa-regular fa-clock"></i> <?= e(timeAgo((string)($feed['created_at'] ?? ''))) ?></span>
               <p class="camera-caption"><?= e((string)($feed['camera_location'] ?? 'Location not set')) ?></p>
-              <p class="camera-earning">Earned: ৳<?= e(number_format($earned, 2)) ?> · Rate: ৳<?= (int)$rate ?>/hr · <?= e(ucfirst($scope)) ?></p>
+              <p class="camera-earning">Earned: à§³<?= e(number_format($earned, 2)) ?> Â· Rate: à§³<?= (int)$rate ?>/hr Â· <?= e(ucfirst($scope)) ?></p>
               <div class="feed-controls">
                 <form method="post" action="../Php/camera_cctv_feeds.php">
                   <input type="hidden" name="action" value="toggle">

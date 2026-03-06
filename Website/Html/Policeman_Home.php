@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 declare(strict_types=1);
 session_start();
 require_once __DIR__ . '/../Php/db.php';
@@ -39,7 +39,7 @@ function timeAgo(?string $datetime): string {
 }
 
 function formatDateTimeDisplay(?string $datetime): string {
-  if (!$datetime) return '—';
+  if (!$datetime) return 'â€”';
   try {
     $dt = new DateTime($datetime);
     return $dt->format('Y-m-d H:i');
@@ -67,7 +67,7 @@ function getAuthorPhoto(PDO $pdo, string $authorRole, int $authorId): string {
   }
 
   if (!isset($roleMap[$authorRole]) || $authorId <= 0) {
-    return $cache[$cacheKey] = '../Images/default_profile.png';
+    return $cache[$cacheKey] = '../Images/default-profile.gif';
   }
 
   $table = $roleMap[$authorRole]['table'];
@@ -84,7 +84,7 @@ function getAuthorPhoto(PDO $pdo, string $authorRole, int $authorId): string {
   } catch (Exception $e) {
   }
 
-  return $cache[$cacheKey] = '../Images/default_profile.png';
+  return $cache[$cacheKey] = '../Images/default-profile.gif';
 }
 
 function tableExists(PDO $pdo, string $table): bool {
@@ -150,14 +150,14 @@ try {
       $allCases[] = [
         'case_no' => 'MP-' . str_pad((string)((int)($row['report_id'] ?? 0)), 4, '0', STR_PAD_LEFT),
         'type' => 'Missing Person',
-        'details' => (string)($row['full_name'] ?? 'Unknown') . ' • Last seen: ' . (string)($row['last_seen_location'] ?? 'Unknown'),
+        'details' => (string)($row['full_name'] ?? 'Unknown') . ' â€¢ Last seen: ' . (string)($row['last_seen_location'] ?? 'Unknown'),
         'status' => (string)($row['status'] ?? 'open'),
         'source' => 'Missing Desk',
         'source_key' => 'missing',
         'image_url' => $imageUrl,
         'contact_mobile' => (string)($row['reporter_mobile'] ?? ''),
         'missing_name' => (string)($row['full_name'] ?? ''),
-        'extra_details' => trim((string)($row['gender'] ?? '') . ' • Age: ' . (string)($row['age'] ?? '') . ' • Mental: ' . (string)($row['mental_condition'] ?? '') . ' • Medical: ' . (string)($row['medical_notes'] ?? '')),
+        'extra_details' => trim((string)($row['gender'] ?? '') . ' â€¢ Age: ' . (string)($row['age'] ?? '') . ' â€¢ Mental: ' . (string)($row['mental_condition'] ?? '') . ' â€¢ Medical: ' . (string)($row['medical_notes'] ?? '')),
         'created_at' => (string)($row['created_at'] ?? ''),
       ];
       $caseCounts['missing'] += 1;
@@ -480,10 +480,10 @@ try {
         <img src="<?= isset($user['cover_photo']) ? '../uploads/police/' . e($user['cover_photo']) : '../Images/default-cover.gif' ?>" class="cover">
         <img src="<?= isset($user['profile_photo']) ? '../uploads/police/' . e($user['profile_photo']) : '../Images/default-profile.gif' ?>" class="profile-pic">
         <button class="edit-btn" title="Edit Profile" onclick="location.href='../Html/Policeman_profile.php'">
-          <img src="../Images/settings.gif" alt="Edit" />
+          <img src="../Images/profile.gif" alt="Edit" />
         </button>
 
-        <h3><?= e($user['full_name'] ?? '—') ?></h3>
+        <h3><?= e($user['full_name'] ?? 'â€”') ?></h3>
         <p class="user-bio"><?= !empty($user['bio']) ? e($user['bio']) : 'Any one can join with us.' ?></p>
       </div>
 
@@ -521,9 +521,9 @@ try {
 <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
 
 <!-- Buttons -->
-<button id="find-hospitals" style="padding:8px 15px;background:#f05454;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">🏥 Show Nearby Hospitals</button>
-<button id="find-fire" style="padding:8px 15px;background:#ff7f11;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">🚒 Show Fire Stations</button>
-<button id="find-police" style="padding:8px 15px;background:#0077b6;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:10px;">👮 Show Police Stations</button>
+<button id="find-hospitals" style="padding:8px 15px;background:#f05454;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">ðŸ¥ Show Nearby Hospitals</button>
+<button id="find-fire" style="padding:8px 15px;background:#ff7f11;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">ðŸš’ Show Fire Stations</button>
+<button id="find-police" style="padding:8px 15px;background:#0077b6;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:10px;">ðŸ‘® Show Police Stations</button>
 
 <!-- Map Container -->
 <div id="emergency-map" style="height: 400px; border-radius: 8px; border: 2px solid #000; width: 100%; max-width: 100%; overflow: hidden; box-sizing: border-box; position: relative; z-index: 0;"></div>
@@ -538,8 +538,8 @@ try {
   <h2 class="case-section-title">Investigation Cases</h2>
   <p class="case-section-desc">Track investigation cases in one place. Open all current cases or view solved case history.</p>
   <div class="case-section-actions">
-    <button id="openAllCasesBtn" type="button" onclick="document.getElementById('allCasesModal').style.display='flex'" class="case-section-btn view">📂 View All Cases</button>
-    <button id="openSolvedCasesBtn" type="button" class="case-section-btn history">✅ Solved Case History</button>
+    <button id="openAllCasesBtn" type="button" onclick="document.getElementById('allCasesModal').style.display='flex'" class="case-section-btn view">ðŸ“‚ View All Cases</button>
+    <button id="openSolvedCasesBtn" type="button" class="case-section-btn history">âœ… Solved Case History</button>
   </div>
 </div>
 
@@ -589,13 +589,13 @@ try {
                 $displaySource = $sourceKey === 'missing' ? 'Missing Person' : 'Post';
               ?>
               <tr data-case-source-key="<?= e($sourceKey) ?>">
-                <td><span class="all-cases-case-id"><?= e((string)($caseRow['case_no'] ?? '—')) ?></span></td>
+                <td><span class="all-cases-case-id"><?= e((string)($caseRow['case_no'] ?? 'â€”')) ?></span></td>
                 <td><span class="all-cases-type-chip"><?= e($displayType) ?></span></td>
                 <td class="all-cases-details-cell">
                   <?php if (!empty($caseRow['image_url'])): ?>
                     <img src="<?= e((string)$caseRow['image_url']) ?>" alt="Case image" class="all-cases-thumb">
                   <?php endif; ?>
-                  <?= e((string)($caseRow['details'] ?? '—')) ?>
+                  <?= e((string)($caseRow['details'] ?? 'â€”')) ?>
                 </td>
                 <td>
                   <span class="all-cases-type-chip">
@@ -606,9 +606,9 @@ try {
                 <td class="all-cases-actions">
                   <button type="button" class="all-cases-action-btn preview js-case-preview-btn"
                           onclick="openCasePreviewFromRow(this)"
-                          data-case-no="<?= e((string)($caseRow['case_no'] ?? '—')) ?>"
+                          data-case-no="<?= e((string)($caseRow['case_no'] ?? 'â€”')) ?>"
                           data-case-type="<?= e($displayType) ?>"
-                          data-case-details="<?= e((string)($caseRow['details'] ?? '—')) ?>"
+                          data-case-details="<?= e((string)($caseRow['details'] ?? 'â€”')) ?>"
                           data-case-status="<?= e((string)($caseRow['status'] ?? 'open')) ?>"
                           data-case-source="<?= e($displaySource) ?>"
                           data-case-created="<?= e((string)($caseRow['created_at'] ?? '')) ?>"
@@ -619,9 +619,9 @@ try {
                     >Preview</button>
                   <button type="button" class="all-cases-action-btn publish js-case-publish-btn"
                       onclick="publishCaseFromRow(this)"
-                          data-case-no="<?= e((string)($caseRow['case_no'] ?? '—')) ?>"
+                          data-case-no="<?= e((string)($caseRow['case_no'] ?? 'â€”')) ?>"
                         data-case-type="<?= e($displayType) ?>"
-                          data-case-details="<?= e((string)($caseRow['details'] ?? '—')) ?>"
+                          data-case-details="<?= e((string)($caseRow['details'] ?? 'â€”')) ?>"
                           data-case-status="<?= e((string)($caseRow['status'] ?? 'open')) ?>"
                           data-case-source="<?= e($displaySource) ?>"
                           data-case-created="<?= e((string)($caseRow['created_at'] ?? '')) ?>"
@@ -678,7 +678,7 @@ try {
 <div id="casePreviewModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:4100; align-items:center; justify-content:center; padding:16px;" onclick="if(event.target===this){this.style.display='none';}">
   <div style="width:min(650px,95vw); background:#fff; border-radius:12px; box-shadow:0 12px 28px rgba(0,0,0,.24); overflow:hidden;">
     <div style="background:linear-gradient(90deg,#dc2626,#ef4444); color:#fff; padding:12px 14px; display:flex; justify-content:space-between; align-items:center;">
-      <strong style="font-size:17px;">📢 Case Billboard Preview</strong>
+      <strong style="font-size:17px;">ðŸ“¢ Case Billboard Preview</strong>
       <button type="button" id="casePreviewClose" style="border:none; background:rgba(255,255,255,.2); color:#fff; width:32px; height:32px; border-radius:7px; cursor:pointer; font-size:18px;">&times;</button>
     </div>
     <div style="padding:14px;">
@@ -712,7 +712,7 @@ try {
         <input type="text" placeholder="What's on your mind?" readonly>
       </div>
 
-<!-- ✅ Popup Modal -->
+<!-- âœ… Popup Modal -->
 <div id="postModal" class="post-modal">
   <div class="post-modal-content">
     
@@ -725,7 +725,7 @@ try {
       <p class="post-modal-subtitle">Upload photos or a video and post instantly</p>
     </div>
 
-    <!-- ✅ Facebook Toggle -->
+    <!-- âœ… Facebook Toggle -->
     <div class="facebook-toggle">
       <label class="facebook-toggle-switch">
         <input type="checkbox" id="facebookShareToggle">
@@ -762,10 +762,10 @@ try {
   </label>
 </div>
 
-    <!-- ✅ Textarea -->
+    <!-- âœ… Textarea -->
     <textarea id="postText" class="post-modal-textarea" placeholder="Say Something..."></textarea>
 
-    <!-- ✅ Post Preview (Auto-filled from clicked post) -->
+    <!-- âœ… Post Preview (Auto-filled from clicked post) -->
     <div class="post-modal-preview">
       <div id="sharedPostMeta" class="preview-meta">
         <img id="sharedPostAuthorImage" class="preview-meta-avatar" src="" alt="Author" />
@@ -779,25 +779,25 @@ try {
       <video id="sharedPostVideo" class="preview-video" src="" controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture oncontextmenu="return false;"></video>
     </div>
 
-    <!-- ✅ Media Upload Buttons -->
+    <!-- âœ… Media Upload Buttons -->
     <div class="post-media-options">
       <label>
         <input type="file" id="imageUpload" accept="image/*" multiple hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">ðŸ“· Photo</button>
       </label>
       <label>
         <input type="file" id="videoUpload" accept="video/*" hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">ðŸŽ¥ Video</button>
       </label>
     </div>
 
     <p class="post-media-hint">You can select up to 5 photos in one post.</p>
 
 
-    <!-- ✅ Media Preview (optional preview for uploaded file) -->
+    <!-- âœ… Media Preview (optional preview for uploaded file) -->
     <div id="mediaPreview" class="post-media-preview"></div>
 
-    <!-- ✅ Action Buttons -->
+    <!-- âœ… Action Buttons -->
     <div class="post-modal-actions">
       <button class="post-cancel-btn" onclick="closeModal()">Cancel</button>
       <button class="post-submit-btn" onclick="createPost()">Post</button>
@@ -1143,20 +1143,20 @@ try {
       </div>
 
     <div class="advert">
-  <h4>Advertisement</h4>
+                        <h4>Sponsored</h4>
 
   <div class="advert-slider">
     <div class="advert-track">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg" alt="SafeRide Helmet" data-ad-title="SafeRide Helmet" data-ad-text="Certified safety helmet with citywide delivery.">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg" alt="Health Plus Clinic" data-ad-title="Health Plus Clinic" data-ad-text="24/7 emergency support and trusted specialist care.">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg" alt="QuickFix Services" data-ad-title="QuickFix Services" data-ad-text="On-demand repair experts for home and office issues.">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg" alt="CitySecure App" data-ad-title="CitySecure App" data-ad-text="Real-time alerts and safety updates in your area.">
 
       <!-- Repeat same images -->
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg" alt="SafeRide Helmet" data-ad-title="SafeRide Helmet" data-ad-text="Certified safety helmet with citywide delivery.">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg" alt="Health Plus Clinic" data-ad-title="Health Plus Clinic" data-ad-text="24/7 emergency support and trusted specialist care.">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg" alt="QuickFix Services" data-ad-title="QuickFix Services" data-ad-text="On-demand repair experts for home and office issues.">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg" alt="CitySecure App" data-ad-title="CitySecure App" data-ad-text="Real-time alerts and safety updates in your area.">
     </div>
   </div>
 </div>

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 declare(strict_types=1);
 session_start();
 require_once __DIR__ . '/../Php/db.php';
@@ -110,7 +110,7 @@ try {
             <div class="divider"></div>
             
             <p class="user-bio">
-                <?= !empty($user['bio']) ? e($user['bio']) : ' 💬 Add your bio in your profile so everyone knows a little about you' ?>
+                <?= !empty($user['bio']) ? e($user['bio']) : ' ðŸ’¬ Add your bio in your profile so everyone knows a little about you' ?>
             </p>
 
         <ul class="info-list">
@@ -193,7 +193,7 @@ try {
               $displayAuthorName = $isAnonymous ? 'Anonymous' : $postAuthorName;
               $displayAuthorPhoto = $isAnonymous
                 ? '../Images/anonymously.gif'
-                : (!empty($user['profile_photo']) ? '../uploads/camera/' . e($user['profile_photo']) : '../Images/default_profile.png');
+                : (!empty($user['profile_photo']) ? '../uploads/camera/' . e($user['profile_photo']) : '../Images/default-profile.gif');
             ?>
             <div class="card post" data-share-anonymous="<?= $isAnonymous ? '1' : '0' ?>">
               <div class="post-header">
@@ -297,21 +297,21 @@ try {
       <img id="sharedPostImage" class="preview-img" src="" alt="" />
       <video id="sharedPostVideo" class="preview-video" src="" controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture oncontextmenu="return false;"></video>
     </div>
-    <!-- ✅ Media Upload Buttons -->
+    <!-- âœ… Media Upload Buttons -->
     <div class="post-media-options">
       <label>
         <input type="file" id="imageUpload" accept="image/*" multiple hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">ðŸ“· Photo</button>
       </label>
       <label>
         <input type="file" id="videoUpload" accept="video/*" hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">ðŸŽ¥ Video</button>
       </label>
     </div>
 
     <p class="post-media-hint">You can select up to 5 photos in one post.</p>
 
-    <!-- ✅ Media Preview -->
+    <!-- âœ… Media Preview -->
     <div id="mediaPreview" class="post-media-preview"></div>
     <div class="post-modal-actions">
       <button class="post-cancel-btn" onclick="closeModal()">Cancel</button>
@@ -341,7 +341,7 @@ try {
   cursor: pointer;
   display: flex;
   align-items: center;
-  padding: 6px 18px; /* ↓ reduced height */
+  padding: 6px 18px; /* â†“ reduced height */
   border: 2px solid #1a73e8;
   border-radius: 16px; /* slightly smaller for balance */
   font-weight: 450;
@@ -355,7 +355,7 @@ try {
 }
 
 .category-icon {
-  width: 24px; /* ↓ smaller icons */
+  width: 24px; /* â†“ smaller icons */
   height: 24px;
   object-fit: contain;
 }

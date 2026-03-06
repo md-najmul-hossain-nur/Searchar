@@ -47,12 +47,12 @@ try {
         $volUpdated += $updVol->rowCount();
     }
 
-    $camRows = $pdo->query("SELECT camera_id, camera_location, city, street, country FROM camera_contributors")->fetchAll(PDO::FETCH_ASSOC);
+    $camRows = $pdo->query("SELECT camera_id, city, street, country FROM camera_contributors")->fetchAll(PDO::FETCH_ASSOC);
     $updCam = $pdo->prepare("UPDATE camera_contributors SET latitude = :lat, longitude = :lng WHERE camera_id = :id");
 
     $camUpdated = 0;
     foreach ($camRows as $row) {
-        $source = trim(($row['camera_location'] ?? '') . ' ' . ($row['city'] ?? '') . ' ' . ($row['street'] ?? '') . ' ' . ($row['country'] ?? ''));
+        $source = trim(($row['city'] ?? '') . ' ' . ($row['street'] ?? '') . ' ' . ($row['country'] ?? ''));
         $coord = pickZone($source, $zones);
         $updCam->execute([
             ':lat' => $coord['lat'],

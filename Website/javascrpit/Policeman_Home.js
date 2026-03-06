@@ -1,4 +1,4 @@
-document.getElementById('requestBroadcastBtn').addEventListener('click', function() {
+﻿document.getElementById('requestBroadcastBtn').addEventListener('click', function() {
   const status = document.getElementById('broadcastStatus');
   status.innerText = "Request sent to admin. Please wait for approval...";
   status.style.color = "orange";

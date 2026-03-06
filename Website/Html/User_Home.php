@@ -119,7 +119,7 @@ function getAuthorPhoto(PDO $pdo, string $authorRole, int $authorId): string {
   }
 
   if (!isset($roleMap[$authorRole]) || $authorId <= 0) {
-    return $cache[$cacheKey] = '../Images/default_profile.png';
+    return $cache[$cacheKey] = '../Images/default-profile.gif';
   }
 
   $table = $roleMap[$authorRole]['table'];
@@ -136,7 +136,7 @@ function getAuthorPhoto(PDO $pdo, string $authorRole, int $authorId): string {
     // fall through to default image
   }
 
-  return $cache[$cacheKey] = '../Images/default_profile.png';
+  return $cache[$cacheKey] = '../Images/default-profile.gif';
 }
 
 $posts = [];
@@ -178,7 +178,7 @@ try {
   $posts = [];
 }
 
-// Now render a minimal HTML page — integrate this into your full template as needed.
+// Now render a minimal HTML page â€” integrate this into your full template as needed.
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -223,20 +223,20 @@ try {
          <!-- Profile image dynamic from DB -->
  <img src="<?= isset($user['profile_photo']) 
             ? '../uploads/user/' . e($user['profile_photo']) 
-            : '../Images/default_profile.png' ?>" 
+            : '../Images/default-profile.gif' ?>" 
      class="profile-pic" 
      alt="Profile Photo">
      <?php $user_id = (int)$user['user_id']; ?>
       <!-- Edit button as image icon -->
         <button class="edit-btn" title="Edit Profile" onclick="location.href='../Html/User_profile.php?user_id=<?= $user_id ?>'">
-  <img src="../Images/settings.gif" alt="Edit" />
+  <img src="../Images/profile.gif" alt="Edit" />
 </button>
 
-<h3><?= e($user['full_name'] ?? '—') ?></h3>
+<h3><?= e($user['full_name'] ?? 'â€”') ?></h3>
 <p class="user-bio">
     <?= !empty($user['bio']) 
         ? e($user['bio']) 
-        : "💬 Add your bio in your profile so everyone knows a little about you!" ?>
+        : "ðŸ’¬ Add your bio in your profile so everyone knows a little about you!" ?>
 </p>
 
 
@@ -274,9 +274,9 @@ try {
 <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
 
 <!-- Buttons -->
-<button id="find-hospitals" style="padding:8px 15px;background:#f05454;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">🏥 Show Nearby Hospitals</button>
-<button id="find-fire" style="padding:8px 15px;background:#ff7f11;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">🚒 Show Fire Stations</button>
-<button id="find-police" style="padding:8px 15px;background:#0077b6;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:10px;">👮 Show Police Stations</button>
+<button id="find-hospitals" style="padding:8px 15px;background:#f05454;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">ðŸ¥ Show Nearby Hospitals</button>
+<button id="find-fire" style="padding:8px 15px;background:#ff7f11;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">ðŸš’ Show Fire Stations</button>
+<button id="find-police" style="padding:8px 15px;background:#0077b6;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:10px;">ðŸ‘® Show Police Stations</button>
 
 <!-- Map Container -->
 <div id="emergency-map" style="height: 400px; border-radius: 8px; border: 2px solid #000; width: 100%; max-width: 100%; overflow: hidden; box-sizing: border-box; position: relative; z-index: 0;"></div>
@@ -298,7 +298,7 @@ try {
         <input type="text" placeholder="What's on your mind?" readonly>
       </div>
 
-<!-- ✅ Popup Modal -->
+<!-- âœ… Popup Modal -->
 <div id="postModal" class="post-modal">
   <div class="post-modal-content">
     
@@ -311,7 +311,7 @@ try {
       <p class="post-modal-subtitle">Upload photos or a video and post instantly</p>
     </div>
 
-    <!-- ✅ Facebook Toggle -->
+    <!-- âœ… Facebook Toggle -->
     <div class="facebook-toggle">
       <label class="facebook-toggle-switch">
         <input type="checkbox" id="facebookShareToggle">
@@ -348,10 +348,10 @@ try {
   </label>
 </div>
 
-    <!-- ✅ Textarea -->
+    <!-- âœ… Textarea -->
     <textarea id="postText" class="post-modal-textarea" placeholder="Say Something..."></textarea>
 
-    <!-- ✅ Post Preview (Auto-filled from clicked post) -->
+    <!-- âœ… Post Preview (Auto-filled from clicked post) -->
     <div class="post-modal-preview">
       <div id="sharedPostMeta" class="preview-meta">
         <img id="sharedPostAuthorImage" class="preview-meta-avatar" src="" alt="Author" />
@@ -365,24 +365,24 @@ try {
       <video id="sharedPostVideo" class="preview-video" src="" controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture oncontextmenu="return false;"></video>
     </div>
 
-    <!-- ✅ Media Upload Buttons -->
+    <!-- âœ… Media Upload Buttons -->
     <div class="post-media-options">
       <label>
         <input type="file" id="imageUpload" accept="image/*" multiple hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">ðŸ“· Photo</button>
       </label>
       <label>
         <input type="file" id="videoUpload" accept="video/*" hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">ðŸŽ¥ Video</button>
       </label>
     </div>
     <p class="post-media-hint">You can select up to 5 photos in one post.</p>
 
 
-    <!-- ✅ Media Preview (optional preview for uploaded file) -->
+    <!-- âœ… Media Preview (optional preview for uploaded file) -->
     <div id="mediaPreview" class="post-media-preview"></div>
 
-    <!-- ✅ Action Buttons -->
+    <!-- âœ… Action Buttons -->
     <div class="post-modal-actions">
       <button class="post-cancel-btn" onclick="closeModal()">Cancel</button>
       <button class="post-submit-btn" onclick="createPost()">Post</button>
@@ -725,13 +725,13 @@ try {
   <p class="helpdesk-cta">Tap the icon to open the form</p>
 </div>
      <div class="advert">
-  <h4>Advertisement</h4>
+                    <h4>Sponsored</h4>
   <div class="advert-slider">
     <div class="advert-track">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg" alt="SafeRide Helmet" data-ad-title="SafeRide Helmet" data-ad-text="Certified safety helmet with citywide delivery.">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg" alt="Health Plus Clinic" data-ad-title="Health Plus Clinic" data-ad-text="24/7 emergency support and trusted specialist care.">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg" alt="QuickFix Services" data-ad-title="QuickFix Services" data-ad-text="On-demand repair experts for home and office issues.">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg" alt="CitySecure App" data-ad-title="CitySecure App" data-ad-text="Real-time alerts and safety updates in your area.">
     </div>
   </div>
 </div>

@@ -36,7 +36,7 @@ try {
         'camera_contributors' => [
             'table' => 'camera_contributors',
             'id_col' => 'camera_id',
-            'allowed' => ['full_name', 'email', 'mobile', 'gender', 'street', 'city', 'postal_code', 'country', 'camera_location', 'camera_type', 'stream_type', 'bandwidth', 'payment_number']
+            'allowed' => ['full_name', 'email', 'mobile', 'gender', 'street', 'city', 'postal_code', 'country', 'camera_type', 'payment_number']
         ],
         'policemen' => [
             'table' => 'policemen',

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 require_once __DIR__ . '/../Php/db.php';
 
@@ -52,9 +52,9 @@ function profileTimeAgo(?string $dateTime): string {
 }
 
 // 6. Fallback images and bio
-$profile_pic = !empty($volunteer['profile_photo']) ? '../uploads/volunteer/' . e($volunteer['profile_photo']) : '../Images/default_profile.png';
+$profile_pic = !empty($volunteer['profile_photo']) ? '../uploads/volunteer/' . e($volunteer['profile_photo']) : '../Images/default-profile.gif';
 $cover_pic   = !empty($volunteer['cover_photo'])   ? '../uploads/volunteer/' . e($volunteer['cover_photo'])   : '../Images/cover_default.jpg';
-$bio_text    = !empty($volunteer['bio']) ? e($volunteer['bio']) : "💬 Bio not added yet. Go to <a href='../Html/Volunteer_Edit_profile.html'>edit profile</a> to add your bio!";
+$bio_text    = !empty($volunteer['bio']) ? e($volunteer['bio']) : "ðŸ’¬ Bio not added yet. Go to <a href='../Html/Volunteer_Edit_profile.html'>edit profile</a> to add your bio!";
 
 $profilePosts = [];
 try {
@@ -124,7 +124,7 @@ try {
          alt="Cover" class="cover-img">
     <div class="profile-pic-container">
  <!-- Profile Photo -->
-    <img src="<?= !empty($volunteer['profile_photo']) ? '../uploads/volunteer/' . e($volunteer['profile_photo']) : '../Images/default_profile.png' ?>" 
+    <img src="<?= !empty($volunteer['profile_photo']) ? '../uploads/volunteer/' . e($volunteer['profile_photo']) : '../Images/default-profile.gif' ?>" 
          class="profile-pic" 
          alt="Profile">    </div>
   <div class="main-content">
@@ -141,18 +141,18 @@ try {
     <div class="divider"></div>
      <!-- Bio -->
     <p class="user-bio">
-        <?= !empty($volunteer['bio']) ? e($volunteer['bio']) : '💬 Add your bio in your profile so everyone knows a little about you' ?>
+        <?= !empty($volunteer['bio']) ? e($volunteer['bio']) : 'ðŸ’¬ Add your bio in your profile so everyone knows a little about you' ?>
     </p>
   <ul class="info-list">
     <!-- Birthday -->
     <li>
-        <span class="icon">&#127874;</span> <!-- 🎂 cake icon -->
+        <span class="icon">&#127874;</span> <!-- ðŸŽ‚ cake icon -->
         <?= !empty($volunteer['date_of_birth']) ? e($volunteer['date_of_birth']) : 'No birthday provided' ?>
     </li>
 
     <!-- Gender -->
     <li>
-        <span class="icon">&#9794;&#9792;</span> <!-- ⚥ gender icon -->
+        <span class="icon">&#9794;&#9792;</span> <!-- âš¥ gender icon -->
         <?= !empty($volunteer['gender']) ? ucfirst(e($volunteer['gender'])) : 'Gender not specified' ?>
     </li>
     <li><span class="icon">&#128231;</span> <?= e($volunteer['email']) ?></li>
@@ -209,7 +209,7 @@ try {
           $displayAuthorName = $isAnonymous ? 'Anonymous' : $postAuthorName;
           $displayAuthorPhoto = $isAnonymous
             ? '../Images/anonymously.gif'
-            : (!empty($volunteer['profile_photo']) ? '../uploads/volunteer/' . e($volunteer['profile_photo']) : '../Images/default_profile.png');
+            : (!empty($volunteer['profile_photo']) ? '../uploads/volunteer/' . e($volunteer['profile_photo']) : '../Images/default-profile.gif');
         ?>
         <div class="card post" data-post-id="<?= (int)($post['id'] ?? 0) ?>" data-share-anonymous="<?= $isAnonymous ? '1' : '0' ?>">
           <div class="post-header">
@@ -313,21 +313,21 @@ try {
       <img id="sharedPostImage" class="preview-img" src="" alt="" />
       <video id="sharedPostVideo" class="preview-video" src="" controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture oncontextmenu="return false;"></video>
     </div>
-    <!-- ✅ Media Upload Buttons -->
+    <!-- âœ… Media Upload Buttons -->
     <div class="post-media-options">
       <label>
         <input type="file" id="imageUpload" accept="image/*" multiple hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">ðŸ“· Photo</button>
       </label>
       <label>
         <input type="file" id="videoUpload" accept="video/*" hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">ðŸŽ¥ Video</button>
       </label>
     </div>
 
     <p class="post-media-hint">You can select up to 5 photos in one post.</p>
 
-    <!-- ✅ Media Preview -->
+    <!-- âœ… Media Preview -->
     <div id="mediaPreview" class="post-media-preview"></div>
     <div class="post-modal-actions">
       <button class="post-cancel-btn" onclick="closeModal()">Cancel</button>
@@ -357,7 +357,7 @@ try {
   cursor: pointer;
   display: flex;
   align-items: center;
-  padding: 6px 18px; /* ↓ reduced height */
+  padding: 6px 18px; /* â†“ reduced height */
   border: 2px solid #1a73e8;
   border-radius: 16px; /* slightly smaller for balance */
   font-weight: 450;
@@ -371,7 +371,7 @@ try {
 }
 
 .category-icon {
-  width: 24px; /* ↓ smaller icons */
+  width: 24px; /* â†“ smaller icons */
   height: 24px;
   object-fit: contain;
 }

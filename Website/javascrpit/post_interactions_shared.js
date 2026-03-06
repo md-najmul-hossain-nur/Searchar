@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   const apiUrl = '../Php/post_interactions.php';
   const postStateCache = new Map();
   const reportCategories = [
@@ -356,12 +356,12 @@
     const cleanedNavbarAvatar = String(navbarAvatar || '').trim();
     if (cleanedNavbarAvatar) return cleanedNavbarAvatar;
 
-    return '../Images/default_profile.png';
+    return '../Images/default-profile.gif';
   }
 
   function normalizePhoto(value) {
     const src = String(value || '').trim();
-    return src || '../Images/default_profile.png';
+    return src || '../Images/default-profile.gif';
   }
 
   function ensurePostReportModal() {
@@ -375,23 +375,23 @@
       <div class="post-report-card" role="dialog" aria-modal="true" aria-labelledby="postReportTitle">
         <div class="post-report-head">
           <h3 id="postReportTitle">Report Post</h3>
-          <button type="button" class="post-report-close" data-post-report-close="1">×</button>
+          <button type="button" class="post-report-close" data-post-report-close="1">Ã—</button>
         </div>
         <p class="post-report-subtitle">Help keep the community safe by reporting harmful content.</p>
         <form id="postReportForm">
           <div class="post-report-users">
             <div class="post-report-user">
-              <img id="postReportReporterPhoto" class="post-report-avatar" src="../Images/default_profile.png" alt="Reporter Photo">
+              <img id="postReportReporterPhoto" class="post-report-avatar" src="../Images/default-profile.gif" alt="Reporter Photo">
               <div class="post-report-user-meta">
                 <div class="post-report-user-label">Reporter</div>
-                <div class="post-report-user-name" id="postReportReporterName">—</div>
+                <div class="post-report-user-name" id="postReportReporterName">â€”</div>
               </div>
             </div>
             <div class="post-report-user">
-              <img id="postReportReportedPhoto" class="post-report-avatar" src="../Images/default_profile.png" alt="Reported User Photo">
+              <img id="postReportReportedPhoto" class="post-report-avatar" src="../Images/default-profile.gif" alt="Reported User Photo">
               <div class="post-report-user-meta">
                 <div class="post-report-user-label">Reported User</div>
-                <div class="post-report-user-name" id="postReportReportedName">—</div>
+                <div class="post-report-user-name" id="postReportReportedName">â€”</div>
               </div>
             </div>
           </div>
@@ -505,7 +505,7 @@
     if (!postId) return '';
 
     const authorName = escapeHtml(String(row?.author_name || 'Unknown User'));
-    const authorPhoto = escapeHtml(normalizeAssetPath(row?.author_photo || '../Images/default_profile.png'));
+    const authorPhoto = escapeHtml(normalizeAssetPath(row?.author_photo || '../Images/default-profile.gif'));
     const category = escapeHtml(String(row?.category || 'general'));
     const text = String(row?.text || '');
     const textHtml = text.trim() ? `<p>${escapeHtml(text).replace(/\n/g, '<br>')}</p>` : '';
@@ -847,7 +847,7 @@
       <li data-comment-id="${commentId}">
         <div class="comment" data-comment-id="${commentId}">
           <div class="comment-img">
-            <img src="${escapeHtml(comment.actor_photo || '../Images/default_profile.png')}" alt="">
+            <img src="${escapeHtml(comment.actor_photo || '../Images/default-profile.gif')}" alt="">
           </div>
           <div class="comment-content">
             <div class="comment-details">

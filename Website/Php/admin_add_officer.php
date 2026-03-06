@@ -64,12 +64,11 @@ try {
 
     // Required by schema; admin quick-add uses placeholders when files are not uploaded
     $nidPhoto = 'admin_manual_nid_placeholder.png';
-    $officialId = 'admin_manual_official_placeholder.pdf';
 
     $stmt = $pdo->prepare('INSERT INTO policemen
-        (full_name, email, mobile, nid_number, nid_photo, profile_photo, cover_photo, date_of_birth, gender, street, city, postal_code, country, latitude, longitude, password_hash, badge_id, designation, station, official_id)
+        (full_name, email, mobile, nid_number, nid_photo, profile_photo, cover_photo, date_of_birth, gender, street, city, postal_code, country, latitude, longitude, password_hash, badge_id, designation, station)
         VALUES
-        (:full_name, :email, :mobile, :nid_number, :nid_photo, NULL, NULL, :dob, :gender, NULL, :city, NULL, :country, NULL, NULL, :password_hash, :badge_id, :designation, :station, :official_id)');
+        (:full_name, :email, :mobile, :nid_number, :nid_photo, NULL, NULL, :dob, :gender, NULL, :city, NULL, :country, NULL, NULL, :password_hash, :badge_id, :designation, :station)');
 
     $stmt->execute([
         ':full_name' => $fullName,
@@ -85,7 +84,6 @@ try {
         ':badge_id' => $badgeId,
         ':designation' => $designation,
         ':station' => $station,
-        ':official_id' => $officialId,
     ]);
 
     echo json_encode(['success' => true, 'police_id' => (int)$pdo->lastInsertId()]);
