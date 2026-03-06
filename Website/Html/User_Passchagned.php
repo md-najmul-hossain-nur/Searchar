@@ -3,13 +3,15 @@ session_start();
 require_once __DIR__ . '/../Php/db.php'; // Make sure this sets $pdo
 
 // Ensure user is logged in
-if (!isset($_SESSION['user_id'])) {
+if (empty($_SESSION['role']) || $_SESSION['role'] !== 'user' || empty($_SESSION['user_id'])) {
     header('Location: ../Html/login.html');
     exit;
 }
 
 $user_id = $_SESSION['user_id'];
 $js_alert = ''; // Will hold JS code for alert + redirect
+$error = '';
+$success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $current_password = $_POST['current_password'] ?? '';
@@ -113,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
   </main>
 
-  <script src="../javascript/User_Passchagned.js"></script>
+  <script src="../javascrpit/User_Passchagned.js"></script>
   <?php if (!empty($js_alert)): ?>
 <script>
     <?= $js_alert ?>

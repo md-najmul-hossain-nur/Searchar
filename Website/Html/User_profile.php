@@ -10,9 +10,16 @@ if (empty($_SESSION['role']) || $_SESSION['role'] !== 'user' || empty($_SESSION[
 $user_id = (int) $_SESSION['user_id'];
 
 // Fetch user data
-$stmt = $pdo->prepare("SELECT full_name, email, profile_photo, cover_photo,date_of_birth, gender,street,email, city, country, bio FROM users WHERE user_id=:id LIMIT 1");
+$stmt = $pdo->prepare("SELECT full_name, email, profile_photo, cover_photo, date_of_birth, gender, street, city, country, bio FROM users WHERE user_id = :id LIMIT 1");
 $stmt->execute(['id' => $user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$user) {
+  session_unset();
+  session_destroy();
+  header('Location: ../Html/login.html?error=no_user');
+  exit();
+}
 
 function e($v) {
     return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
@@ -37,7 +44,7 @@ function profileTimeAgo(?string $dateTime): string {
 // Fallback images
 $profile_pic = !empty($user['profile_photo']) ? '../uploads/user/' . $user['profile_photo'] : '../Images/default-profile.gif';
 $cover_pic = !empty($user['cover_photo']) ? '../uploads/user/' . $user['cover_photo'] : '../Images/default_cover.jpg';
-$bio_text = !empty($user['bio']) ? e($user['bio']) : "ðŸ’¬ Bio not added yet. Go to <a href='../Html/User_Edit_profile.html'>edit profile</a> to add your bio!";
+$bio_text = !empty($user['bio']) ? e($user['bio']) : "Add your bio in your profile so everyone knows a little about you.";
 
 $profilePosts = [];
 try {
@@ -122,7 +129,7 @@ try {
             <div class="divider"></div>
             
             <p class="user-bio">
-                <?= !empty($user['bio']) ? e($user['bio']) : ' ðŸ’¬ Add your bio in your profile so everyone knows a little about you' ?>
+              <?= !empty($user['bio']) ? e($user['bio']) : 'Add your bio in your profile so everyone knows a little about you.' ?>
             </p>
 
         <ul class="info-list">

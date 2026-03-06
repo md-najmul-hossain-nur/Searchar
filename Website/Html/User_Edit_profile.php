@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../Php/db.php'; // Make sure $pdo is set
 session_start();
 
-if (!isset($_SESSION['user_id'])) {
+if (empty($_SESSION['role']) || $_SESSION['role'] !== 'user' || empty($_SESSION['user_id'])) {
     header('Location: ../Html/login.html');
     exit;
 }
@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $longitude = $_POST['longitude'] ?? '';
 $street  = $_POST['street'] ?? '';
 $city    = $_POST['city'] ?? '';
-$postal  = $_POST['postal_code'] ?? '';
+$postal  = $_POST['postal'] ?? '';
 $country = $_POST['country'] ?? '';
 
     // Profile photo upload
@@ -34,7 +34,7 @@ $country = $_POST['country'] ?? '';
         $profile_photo_name = 'profile_' . uniqid() . '.' . $ext;
         move_uploaded_file($_FILES['profilePhoto']['tmp_name'], "../uploads/user/$profile_photo_name");
     } else {
-        $profile_photo_name = $_POST['current_profile'] ?? $user['profile_photo'];
+      $profile_photo_name = $_POST['current_profile'] ?? null;
     }
 
     // Cover photo upload
@@ -43,7 +43,7 @@ $country = $_POST['country'] ?? '';
         $cover_photo_name = 'cover_' . uniqid() . '.' . $ext;
         move_uploaded_file($_FILES['coverPhoto']['tmp_name'], "../uploads/user/$cover_photo_name");
     } else {
-        $cover_photo_name = $_POST['current_cover'] ?? $user['cover_photo'];
+      $cover_photo_name = $_POST['current_cover'] ?? null;
     }
 
 
@@ -78,6 +78,13 @@ $stmt->execute([
 $stmt = $pdo->prepare("SELECT * FROM users WHERE user_id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$user) {
+  session_unset();
+  session_destroy();
+  header('Location: ../Html/login.html?error=no_user');
+  exit;
+}
 ?>
 
 
