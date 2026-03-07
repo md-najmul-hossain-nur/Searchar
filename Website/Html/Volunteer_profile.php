@@ -141,7 +141,7 @@ try {
     <div class="divider"></div>
      <!-- Bio -->
     <p class="user-bio">
-        <?= !empty($volunteer['bio']) ? e($volunteer['bio']) : 'ðŸ’¬ Add your bio in your profile so everyone knows a little about you' ?>
+      <?= !empty($volunteer['bio']) ? e($volunteer['bio']) : '&#128172; Tell people a little about yourself by adding a bio in your profile.' ?>
     </p>
   <ul class="info-list">
     <!-- Birthday -->

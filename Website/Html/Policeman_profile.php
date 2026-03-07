@@ -111,7 +111,7 @@ try {
             <div class="divider"></div>
             
             <p class="user-bio">
-                <?= !empty($user['bio']) ? e($user['bio']) : ' 💬 Add your bio in your profile so colleagues know a little about you' ?>
+              <?= !empty($user['bio']) ? e($user['bio']) : '&#128172; Tell people a little about yourself by adding a bio in your profile.' ?>
             </p>
 
         <ul class="info-list">

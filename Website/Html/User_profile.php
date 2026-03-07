@@ -44,7 +44,7 @@ function profileTimeAgo(?string $dateTime): string {
 // Fallback images
 $profile_pic = !empty($user['profile_photo']) ? '../uploads/user/' . $user['profile_photo'] : '../Images/default-profile.gif';
 $cover_pic = !empty($user['cover_photo']) ? '../uploads/user/' . $user['cover_photo'] : '../Images/default_cover.jpg';
-$bio_text = !empty($user['bio']) ? e($user['bio']) : "Add your bio in your profile so everyone knows a little about you.";
+$bio_text = !empty($user['bio']) ? e($user['bio']) : "Tell people a little about yourself by adding a bio in your profile.";
 
 $profilePosts = [];
 try {
@@ -129,7 +129,7 @@ try {
             <div class="divider"></div>
             
             <p class="user-bio">
-              <?= !empty($user['bio']) ? e($user['bio']) : 'Add your bio in your profile so everyone knows a little about you.' ?>
+              <?= !empty($user['bio']) ? e($user['bio']) : 'Tell people a little about yourself by adding a bio in your profile.' ?>
             </p>
 
         <ul class="info-list">

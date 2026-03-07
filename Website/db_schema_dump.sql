@@ -1,5 +1,4 @@
--- Searchar full schema
--- Generated from project code usage
+
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;

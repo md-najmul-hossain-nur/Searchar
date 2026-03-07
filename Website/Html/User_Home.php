@@ -3,16 +3,20 @@
 
 declare(strict_types=1);
 session_start();
+header('Content-Type: text/html; charset=UTF-8');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
 
 require_once __DIR__ . '/../Php/db.php'; // adjust path if necessary
 
-// If not authenticated, redirect to login
-if (empty($_SESSION['role']) || empty($_SESSION['user_id'])) {
+// User home must only allow authenticated normal users
+if (empty($_SESSION['role']) || $_SESSION['role'] !== 'user' || empty($_SESSION['user_id'])) {
     header('Location: ../Html/login.html');
     exit();
 }
 
-$role = (string) $_SESSION['role'];
+$role = 'user';
 $user_id = (int) $_SESSION['user_id'];
 
 // Role => table mapping (whitelist)
@@ -36,7 +40,7 @@ $id_col = $roleTableMap[$role]['id_col'];
 
 try {
     // Fetch the user row by id. Use whitelist for table/column interpolation.
-    $sql = "SELECT {$id_col}, full_name, email, mobile, profile_photo, NULL AS bio, cover_photo, date_of_birth, gender, street, city, country
+    $sql = "SELECT {$id_col}, full_name, email, mobile, profile_photo, bio, cover_photo, date_of_birth, gender, street, city, country
             FROM {$table} WHERE {$id_col} = :id LIMIT 1";
     $stmt = $pdo->prepare($sql);
     $stmt->execute(['id' => $user_id]);
@@ -82,6 +86,53 @@ if (!empty($user['date_of_birth'])) {
 // safe output helper
 function e($v) {
     return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
+function normalizeBrokenUtf8(?string $text): string {
+  $value = (string)($text ?? '');
+  if ($value === '') {
+    return '';
+  }
+
+  // Fix common mojibake when UTF-8 bytes were decoded as latin1/cp1252.
+  if (preg_match('/ðŸ|Ã.|â.|ï¸|Â./u', $value) !== 1) {
+    return $value;
+  }
+
+  $fixed = @iconv('ISO-8859-1', 'UTF-8//IGNORE', $value);
+  return is_string($fixed) && $fixed !== '' ? $fixed : $value;
+}
+
+function isPlaceholderBio(string $text): bool {
+  $normalized = strtolower(trim($text));
+  if ($normalized === '') {
+    return true;
+  }
+
+  // Match old and new placeholder variants regardless of emoji/mojibake.
+  return str_contains($normalized, 'add your bio in your profile so everyone knows a little about you')
+    || str_contains($normalized, 'tell people a little about yourself by adding a bio in your profile');
+}
+
+$bioRaw = (string)($user['bio'] ?? '');
+$bioText = trim(normalizeBrokenUtf8($bioRaw));
+if (isPlaceholderBio($bioText)) {
+  $bioText = '';
+}
+
+// Defensive fallback: re-fetch bio directly from users table if first row returned empty bio.
+if ($bioText === '' && $user_id > 0) {
+  try {
+    $bioStmt = $pdo->prepare('SELECT bio FROM users WHERE user_id = :id LIMIT 1');
+    $bioStmt->execute(['id' => $user_id]);
+    $bioDb = (string)($bioStmt->fetchColumn() ?: '');
+    $bioText = trim(normalizeBrokenUtf8($bioDb));
+    if (isPlaceholderBio($bioText)) {
+      $bioText = '';
+    }
+  } catch (Throwable $e) {
+    // Keep existing fallback text path.
+  }
 }
 
 function timeAgo(?string $datetime): string {
@@ -178,7 +229,7 @@ try {
   $posts = [];
 }
 
-// Now render a minimal HTML page â€” integrate this into your full template as needed.
+// Now render a minimal HTML page — integrate this into your full template as needed.
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -219,27 +270,25 @@ try {
 <img src="<?= isset($user['cover_photo']) 
               ? '../uploads/user/' . e($user['cover_photo']) 
               : '../Images/cover_default.jpg' ?>" 
-       class="cover" alt="Cover Photo">
+  class="cover" alt="Cover Photo" onerror="this.onerror=null;this.src='../Images/cover_default.jpg';">
          <!-- Profile image dynamic from DB -->
  <img src="<?= isset($user['profile_photo']) 
             ? '../uploads/user/' . e($user['profile_photo']) 
             : '../Images/default-profile.gif' ?>" 
      class="profile-pic" 
-     alt="Profile Photo">
+     alt="Profile Photo" onerror="this.onerror=null;this.src='../Images/default-profile.gif';">
      <?php $user_id = (int)$user['user_id']; ?>
       <!-- Edit button as image icon -->
         <button class="edit-btn" title="Edit Profile" onclick="location.href='../Html/User_profile.php?user_id=<?= $user_id ?>'">
   <img src="../Images/profile.gif" alt="Edit" />
 </button>
 
-<h3><?= e($user['full_name'] ?? 'â€”') ?></h3>
+<h3><?= e($user['full_name'] ?? '—') ?></h3>
 <p class="user-bio">
-    <?= !empty($user['bio']) 
-        ? e($user['bio']) 
-        : "ðŸ’¬ Add your bio in your profile so everyone knows a little about you!" ?>
+  <?= $bioText !== ''
+    ? e($bioText)
+  : "&#128172; Tell people a little about yourself by adding a bio in your profile." ?>
 </p>
-
-
 </div>
       
     <div class="page-like">
@@ -274,9 +323,9 @@ try {
 <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
 
 <!-- Buttons -->
-<button id="find-hospitals" style="padding:8px 15px;background:#f05454;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">ðŸ¥ Show Nearby Hospitals</button>
-<button id="find-fire" style="padding:8px 15px;background:#ff7f11;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">ðŸš’ Show Fire Stations</button>
-<button id="find-police" style="padding:8px 15px;background:#0077b6;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:10px;">ðŸ‘® Show Police Stations</button>
+<button id="find-hospitals" style="padding:8px 15px;background:#f05454;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">Show Nearby Hospitals</button>
+<button id="find-fire" style="padding:8px 15px;background:#ff7f11;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">Show Fire Stations</button>
+<button id="find-police" style="padding:8px 15px;background:#0077b6;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:10px;">Show Police Stations</button>
 
 <!-- Map Container -->
 <div id="emergency-map" style="height: 400px; border-radius: 8px; border: 2px solid #000; width: 100%; max-width: 100%; overflow: hidden; box-sizing: border-box; position: relative; z-index: 0;"></div>
@@ -298,7 +347,7 @@ try {
         <input type="text" placeholder="What's on your mind?" readonly>
       </div>
 
-<!-- âœ… Popup Modal -->
+<!-- ✅ Popup Modal -->
 <div id="postModal" class="post-modal">
   <div class="post-modal-content">
     
@@ -311,7 +360,7 @@ try {
       <p class="post-modal-subtitle">Upload photos or a video and post instantly</p>
     </div>
 
-    <!-- âœ… Facebook Toggle -->
+    <!-- ✅ Facebook Toggle -->
     <div class="facebook-toggle">
       <label class="facebook-toggle-switch">
         <input type="checkbox" id="facebookShareToggle">
@@ -348,10 +397,10 @@ try {
   </label>
 </div>
 
-    <!-- âœ… Textarea -->
+    <!-- ✅ Textarea -->
     <textarea id="postText" class="post-modal-textarea" placeholder="Say Something..."></textarea>
 
-    <!-- âœ… Post Preview (Auto-filled from clicked post) -->
+    <!-- ✅ Post Preview (Auto-filled from clicked post) -->
     <div class="post-modal-preview">
       <div id="sharedPostMeta" class="preview-meta">
         <img id="sharedPostAuthorImage" class="preview-meta-avatar" src="" alt="Author" />
@@ -365,24 +414,24 @@ try {
       <video id="sharedPostVideo" class="preview-video" src="" controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture oncontextmenu="return false;"></video>
     </div>
 
-    <!-- âœ… Media Upload Buttons -->
+    <!-- ✅ Media Upload Buttons -->
     <div class="post-media-options">
       <label>
         <input type="file" id="imageUpload" accept="image/*" multiple hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">ðŸ“· Photo</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
       </label>
       <label>
         <input type="file" id="videoUpload" accept="video/*" hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">ðŸŽ¥ Video</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
       </label>
     </div>
     <p class="post-media-hint">You can select up to 5 photos in one post.</p>
 
 
-    <!-- âœ… Media Preview (optional preview for uploaded file) -->
+    <!-- ✅ Media Preview (optional preview for uploaded file) -->
     <div id="mediaPreview" class="post-media-preview"></div>
 
-    <!-- âœ… Action Buttons -->
+    <!-- ✅ Action Buttons -->
     <div class="post-modal-actions">
       <button class="post-cancel-btn" onclick="closeModal()">Cancel</button>
       <button class="post-submit-btn" onclick="createPost()">Post</button>
@@ -438,7 +487,7 @@ try {
     ?>
     <div class="post" id="post-<?= $postId ?>" data-post-id="<?= $postId ?>" data-category="<?= e($postCategory) ?>" data-status="<?= e((string)($post['status'] ?? 'approved')) ?>" data-share-anonymous="<?= $isAnonymous ? '1' : '0' ?>">
       <div class="post-header">
-        <img src="<?= e($displayAuthorPhoto) ?>" alt="Author Photo">
+        <img src="<?= e($displayAuthorPhoto) ?>" alt="Author Photo" onerror="this.onerror=null;this.src='../Images/default-profile.gif';">
         <div>
           <h5><?= e($displayAuthorName) ?></h5>
           <small class="post-time" data-created-at="<?= e((string)($post['created_at'] ?? '')) ?>"><?= e(timeAgo((string)($post['created_at'] ?? ''))) ?></small>
@@ -725,13 +774,13 @@ try {
   <p class="helpdesk-cta">Tap the icon to open the form</p>
 </div>
      <div class="advert">
-                    <h4>Sponsored</h4>
+  <h4>Advertisement</h4>
   <div class="advert-slider">
     <div class="advert-track">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg" alt="SafeRide Helmet" data-ad-title="SafeRide Helmet" data-ad-text="Certified safety helmet with citywide delivery.">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg" alt="Health Plus Clinic" data-ad-title="Health Plus Clinic" data-ad-text="24/7 emergency support and trusted specialist care.">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg" alt="QuickFix Services" data-ad-title="QuickFix Services" data-ad-text="On-demand repair experts for home and office issues.">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg" alt="CitySecure App" data-ad-title="CitySecure App" data-ad-text="Real-time alerts and safety updates in your area.">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg">
     </div>
   </div>
 </div>
@@ -938,7 +987,7 @@ try {
          })();
        </script>
        <script src="../javascrpit/User_Home.js?v=20260301"></script>
-      <script src="../javascrpit/post_interactions_shared.js?v=20260307"></script>
+      <script src="../javascrpit/post_interactions_shared.js?v=20260307b"></script>
     </body>
 
 </html>

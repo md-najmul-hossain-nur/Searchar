@@ -1,7 +1,7 @@
-﻿<?php
+<?php
 declare(strict_types=1);
 session_start();
-require_once "../Php/db.php";
+require_once __DIR__ . '/../Php/db.php';
 
 // Check if user is logged in as volunteer
 if (
@@ -16,8 +16,7 @@ if (
 $volunteer_id = (int)$_SESSION['user_id'];
 
 try {
-    // FIX: Removed trailing comma and added more columns if you need
-    $stmt = $pdo->prepare("SELECT volunteer_id, full_name,  profile_photo, cover_photo, bio                       
+    $stmt = $pdo->prepare("SELECT volunteer_id, full_name, email, profile_photo, cover_photo, bio
                            FROM volunteers WHERE volunteer_id = :id LIMIT 1");
     $stmt->execute(['id' => $volunteer_id]);
     $volunteer = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -191,16 +190,16 @@ try {
 
     <!-- Bio -->
     <p class="user-bio">
-        <?= !empty($volunteer['bio']) ? e($volunteer['bio']) : 'ðŸ’¬ Add your bio in your profile so everyone knows a little about you' ?>
+      <?= !empty($volunteer['bio']) ? e($volunteer['bio']) : '&#128172; Tell people a little about yourself by adding a bio in your profile.' ?>
     </p>
 </div>
     
- <!-- ðŸŽ–ï¸ Volunteer Missions Panel -->
+ <!-- 🎖️ Volunteer Missions Panel -->
 <div class="Volunteer-rank">
   <h2>Volunteer Rank & Missions</h2>
 
   <div class="volunteer-rank-box">
-    <h3>ðŸŽ–ï¸ Real-Life Missions</h3>
+    <h3>🎖️ Real-Life Missions</h3>
 
     <div class="rank-game-panel" id="rank-game-panel">
       <div class="rank-headline">
@@ -226,33 +225,33 @@ try {
         <span>Platinum</span>
       </div>
 
-      <p id="rank-stats" class="rank-stats">Accepted 0 â€¢ Completed 0 â€¢ Busy 0</p>
-      <p id="rank-rules" class="rank-rules">+10 XP (Accept) â€¢ +20 XP (Complete) â€¢ +2 XP (Auto-close by Police)</p>
+      <p id="rank-stats" class="rank-stats">Accepted 0 • Completed 0 • Busy 0</p>
+      <p id="rank-rules" class="rank-rules">+10 XP (Accept) • +20 XP (Complete) • +2 XP (Auto-close by Police)</p>
     </div>
 
-    <button class="view-missions-btn" onclick="openMissionModal()">ðŸ“‹ View Missions</button>
+    <button class="view-missions-btn" onclick="openMissionModal()">📋 View Missions</button>
 
     <div id="rank-assigned-preview" class="rank-assigned-preview" aria-live="polite"></div>
 
     <!-- Certificate Display -->
     <div id="certificate-unlock" class="certificate-box hidden" aria-live="polite" data-volunteer-name="<?= e($volunteer['full_name'] ?? 'Volunteer') ?>">
-      <p id="certificate-message">ðŸŽ‰ Congratulations! Youâ€™ve reached <strong>Silver Responder</strong>!</p>
+      <p id="certificate-message">🎉 Congratulations! You’ve reached <strong>Silver Responder</strong>!</p>
       <div class="certificate-actions">
-        <button id="view-certificate-btn" class="view-certificate-btn" type="button">ðŸ… Certificate</button>
+        <button id="view-certificate-btn" class="view-certificate-btn" type="button">🏅 Certificate</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ðŸ§­ Volunteer Mission Modal -->
+<!-- 🧭 Volunteer Mission Modal -->
 <div id="volunteerMissionModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="missionModalTitle" tabindex="-1">
   <div class="modal-content">
     <button class="close" onclick="closeMissionModal()" aria-label="Close modal">&times;</button>
-    <h3 id="missionModalTitle">ðŸ§­ Missions for Your Rank</h3>
+    <h3 id="missionModalTitle">🧭 Missions for Your Rank</h3>
 
     <ul class="mission-list">
       <li id="mission-proof-single" class="mission-step" data-step="single">
-        <strong>ðŸ“¤ Mission Proof Submission</strong><br>
+        <strong>📤 Mission Proof Submission</strong><br>
         Upload one proof file (image/video/pdf) for your assigned mission.<br><br>
         <label>
           Submit Proof:
@@ -260,11 +259,11 @@ try {
         </label><br><br>
         <div id="mission-proof-preview" class="mission-preview-box"></div>
         <p id="mission-proof-status" class="mission-status-note"></p>
-        <button class="submit-proof-btn" data-mission-proof-submit="1">âœ… Submit Proof</button>
+        <button class="submit-proof-btn" data-mission-proof-submit="1">✅ Submit Proof</button>
       </li>
 
       <li id="mission-history-single" class="mission-step">
-        <strong>ðŸ—‚ Completed Missions History</strong><br>
+        <strong>🗂 Completed Missions History</strong><br>
         See your previously completed missions below.
         <div id="mission-history-list" class="mission-history-list"></div>
         <p id="mission-history-empty" class="mission-history-empty">No completed mission yet.</p>
@@ -289,9 +288,9 @@ try {
 <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
 
 <!-- Buttons -->
-<button id="find-hospitals" style="padding:8px 15px;background:#f05454;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">ðŸ¥ Show Nearby Hospitals</button>
-<button id="find-fire" style="padding:8px 15px;background:#ff7f11;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">ðŸš’ Show Fire Stations</button>
-<button id="find-police" style="padding:8px 15px;background:#0077b6;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:10px;">ðŸ‘® Show Police Stations</button>
+<button id="find-hospitals" style="padding:8px 15px;background:#f05454;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">🏥 Show Nearby Hospitals</button>
+<button id="find-fire" style="padding:8px 15px;background:#ff7f11;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">🚒 Show Fire Stations</button>
+<button id="find-police" style="padding:8px 15px;background:#0077b6;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:10px;">👮 Show Police Stations</button>
 
 <!-- Map Container -->
 <div id="emergency-map" style="height: 400px; border-radius: 8px;"></div>
@@ -311,7 +310,7 @@ try {
         <input type="text" placeholder="What's on your mind?" readonly>
       </div>
 
-<!-- âœ… Popup Modal -->
+<!-- ✅ Popup Modal -->
 <div id="postModal" class="post-modal">
   <div class="post-modal-content">
     
@@ -324,7 +323,7 @@ try {
       <p class="post-modal-subtitle">Upload photos or a video and post instantly</p>
     </div>
 
-    <!-- âœ… Facebook Toggle -->
+    <!-- ✅ Facebook Toggle -->
     <div class="facebook-toggle">
       <label class="facebook-toggle-switch">
         <input type="checkbox" id="facebookShareToggle">
@@ -361,10 +360,10 @@ try {
   </label>
 </div>
 
-    <!-- âœ… Textarea -->
+    <!-- ✅ Textarea -->
     <textarea id="postText" class="post-modal-textarea" placeholder="Say Something..."></textarea>
 
-    <!-- âœ… Post Preview (Auto-filled from clicked post) -->
+    <!-- ✅ Post Preview (Auto-filled from clicked post) -->
     <div class="post-modal-preview">
       <div id="sharedPostMeta" class="preview-meta">
         <img id="sharedPostAuthorImage" class="preview-meta-avatar" src="" alt="Author" />
@@ -378,25 +377,25 @@ try {
       <video id="sharedPostVideo" class="preview-video" src="" controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture oncontextmenu="return false;"></video>
     </div>
 
-    <!-- âœ… Media Upload Buttons -->
+    <!-- ✅ Media Upload Buttons -->
     <div class="post-media-options">
       <label>
         <input type="file" id="imageUpload" accept="image/*" multiple hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">ðŸ“· Photo</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
       </label>
       <label>
         <input type="file" id="videoUpload" accept="video/*" hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">ðŸŽ¥ Video</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
       </label>
     </div>
 
     <p class="post-media-hint">You can select up to 5 photos in one post.</p>
 
 
-    <!-- âœ… Media Preview (optional preview for uploaded file) -->
+    <!-- ✅ Media Preview (optional preview for uploaded file) -->
     <div id="mediaPreview" class="post-media-preview"></div>
 
-    <!-- âœ… Action Buttons -->
+    <!-- ✅ Action Buttons -->
     <div class="post-modal-actions">
       <button class="post-cancel-btn" onclick="closeModal()">Cancel</button>
       <button class="post-submit-btn" onclick="createPost()">Post</button>
@@ -1167,13 +1166,13 @@ try {
       </div>
 
      <div class="advert">
-                        <h4>Sponsored</h4>
+  <h4>Advertisement</h4>
   <div class="advert-slider">
     <div class="advert-track">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg" alt="SafeRide Helmet" data-ad-title="SafeRide Helmet" data-ad-text="Certified safety helmet with citywide delivery.">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg" alt="Health Plus Clinic" data-ad-title="Health Plus Clinic" data-ad-text="24/7 emergency support and trusted specialist care.">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg" alt="QuickFix Services" data-ad-title="QuickFix Services" data-ad-text="On-demand repair experts for home and office issues.">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg" alt="CitySecure App" data-ad-title="CitySecure App" data-ad-text="Real-time alerts and safety updates in your area.">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg">
+      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg">
     </div>
   </div>
 </div>
