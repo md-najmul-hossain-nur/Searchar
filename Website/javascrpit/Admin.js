@@ -3608,7 +3608,7 @@ function openAddVolunteerModal() {
     'Please share location and time details for faster action.',
     'We could not verify this yet. Please provide a clear photo or reference.',
     'This issue has been noted and marked for follow-up.',
-    'Emergency হলে সাথে সাথে 999 এ call করুন।'
+    'In an emergency, please call 999 immediately.'
   ];
   const section = document.getElementById('chatbot-logs');
   const body = document.getElementById('chatbot-logs-body');
@@ -3761,7 +3761,7 @@ function openAddVolunteerModal() {
     });
 
     if (!filtered.length) {
-      body.innerHTML = '<tr><td colspan="5">No chatbot logs found.</td></tr>';
+      body.innerHTML = '<tr><td colspan="4">No chatbot logs found.</td></tr>';
       return;
     }
 
@@ -3773,7 +3773,6 @@ function openAddVolunteerModal() {
         return `
       <tr>
         <td>${esc(formatTime(row.time))}</td>
-        <td><code>${esc(row.session_token || 'n/a')}</code></td>
         <td>${esc(row.question || '')}</td>
         <td>${esc(row.reply || '')}</td>
         <td>

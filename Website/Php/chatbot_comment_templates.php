@@ -28,7 +28,7 @@ function ensureTable(PDO $pdo): void {
         'Please share location and time details for faster action.',
         'We could not verify this yet. Please provide a clear photo or reference.',
         'This issue has been noted and marked for follow-up.',
-        'Emergency হলে সাথে সাথে 999 এ call করুন।'
+        'In an emergency, please call 999 immediately.'
     ];
 
     $insert = $pdo->prepare('INSERT IGNORE INTO chatbot_comment_templates (comment_text, sort_order, is_active) VALUES (:text, :sort_order, 1)');
@@ -38,6 +38,17 @@ function ensureTable(PDO $pdo): void {
             ':sort_order' => $index + 1,
         ]);
     }
+
+    // Auto-migrate legacy Bangla template text to the current English version.
+    $migrateStmt = $pdo->prepare(
+        'UPDATE chatbot_comment_templates
+         SET comment_text = :new_text
+         WHERE comment_text = :old_text'
+    );
+    $migrateStmt->execute([
+        ':new_text' => 'In an emergency, please call 999 immediately.',
+        ':old_text' => 'Emergency হলে সাথে সাথে 999 এ call করুন।',
+    ]);
 }
 
 try {
