@@ -45,16 +45,40 @@ try {
         $sourcePage = 'index';
     }
 
-    $stmt = $pdo->prepare(
-        'INSERT INTO chatbot_logs (question, reply, source_page, session_token, ip_address) VALUES (:q, :r, :s, :t, :ip)'
-    );
-    $stmt->execute([
-        ':q' => $question,
-        ':r' => $reply,
-        ':s' => $sourcePage,
-        ':t' => $sessionToken,
-        ':ip' => $ipAddress,
-    ]);
+    $colsStmt = $pdo->query('SHOW COLUMNS FROM chatbot_logs');
+    $existingCols = [];
+    if ($colsStmt) {
+        foreach ($colsStmt->fetchAll(PDO::FETCH_ASSOC) as $col) {
+            $existingCols[] = (string)($col['Field'] ?? '');
+        }
+    }
+
+    $insertCols = ['question', 'reply'];
+    $insertVals = [':q' => $question, ':r' => $reply];
+
+    if (in_array('source_page', $existingCols, true)) {
+        $insertCols[] = 'source_page';
+        $insertVals[':s'] = $sourcePage;
+    }
+    if (in_array('session_token', $existingCols, true)) {
+        $insertCols[] = 'session_token';
+        $insertVals[':t'] = $sessionToken;
+    }
+    if (in_array('ip_address', $existingCols, true)) {
+        $insertCols[] = 'ip_address';
+        $insertVals[':ip'] = $ipAddress;
+    }
+
+    $params = [];
+    if (isset($insertVals[':q'])) $params[] = ':q';
+    if (isset($insertVals[':r'])) $params[] = ':r';
+    if (isset($insertVals[':s'])) $params[] = ':s';
+    if (isset($insertVals[':t'])) $params[] = ':t';
+    if (isset($insertVals[':ip'])) $params[] = ':ip';
+
+    $sql = 'INSERT INTO chatbot_logs (' . implode(', ', $insertCols) . ') VALUES (' . implode(', ', $params) . ')';
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($insertVals);
 
     // Keep only latest 2000 logs to avoid unbounded growth.
     $pdo->exec(

@@ -10,6 +10,8 @@ CREATE DATABASE IF NOT EXISTS `searchar`
 USE `searchar`;
 
 DROP TABLE IF EXISTS `traffic_logs`;
+DROP TABLE IF EXISTS `chatbot_comment_templates`;
+DROP TABLE IF EXISTS `chatbot_admin_replies`;
 DROP TABLE IF EXISTS `chatbot_logs`;
 DROP TABLE IF EXISTS `camera_cctv_feeds`;
 DROP TABLE IF EXISTS `withdraw_requests`;
@@ -398,6 +400,30 @@ CREATE TABLE `chatbot_logs` (
 	`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (`id`),
 	KEY `idx_chatbot_logs_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `chatbot_admin_replies` (
+	`id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+	`session_token` VARCHAR(128) NOT NULL,
+	`reply_text` TEXT NOT NULL,
+	`is_delivered` TINYINT(1) NOT NULL DEFAULT 0,
+	`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`delivered_at` DATETIME DEFAULT NULL,
+	PRIMARY KEY (`id`),
+	KEY `idx_chatbot_admin_replies_session` (`session_token`),
+	KEY `idx_chatbot_admin_replies_delivered` (`is_delivered`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `chatbot_comment_templates` (
+	`id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+	`comment_text` VARCHAR(300) NOT NULL,
+	`is_active` TINYINT(1) NOT NULL DEFAULT 1,
+	`sort_order` INT NOT NULL DEFAULT 0,
+	`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY (`id`),
+	UNIQUE KEY `uq_chatbot_comment_templates_text` (`comment_text`),
+	KEY `idx_chatbot_comment_templates_active` (`is_active`),
+	KEY `idx_chatbot_comment_templates_sort` (`sort_order`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `traffic_logs` (

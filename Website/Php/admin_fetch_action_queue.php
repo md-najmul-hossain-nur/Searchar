@@ -250,8 +250,14 @@ try {
         'withdraw_pending' => 0,
         'mission_proof_pending' => 0,
         'report_pending' => 0,
+        'chat_log_total' => 0,
         'total' => count($queue),
     ];
+
+    if (tableExists($pdo, 'chatbot_logs')) {
+        $chatCount = (int)$pdo->query('SELECT COUNT(*) FROM chatbot_logs')->fetchColumn();
+        $summary['chat_log_total'] = $chatCount;
+    }
 
     foreach ($queue as $row) {
         $type = strtolower((string)($row['type'] ?? ''));

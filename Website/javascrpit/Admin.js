@@ -3022,7 +3022,8 @@ function openAddVolunteerModal() {
     const withdrawPending = Number(summary?.withdraw_pending || 0);
     const missionPending = Number(summary?.mission_proof_pending || 0);
     const reportPending = Number(summary?.report_pending || 0);
-    summaryEl.textContent = `Post ${postPending} • Report ${reportPending} • Missing ${missingPending} • Withdraw ${withdrawPending} • Proof ${missionPending}`;
+    const chatLogTotal = Number(summary?.chat_log_total || 0);
+    summaryEl.textContent = `Post ${postPending} • Report ${reportPending} • Missing ${missingPending} • Withdraw ${withdrawPending} • Proof ${missionPending} • Chat Log ${chatLogTotal}`;
   }
 
   function statusChip(statusText) {
@@ -3601,14 +3602,31 @@ function openAddVolunteerModal() {
 // Chatbot logs monitor for admin (backend-first with local fallback)
 (function () {
   const CHATBOT_LOG_KEY = 'searchar_chatbot_logs_v1';
+  const DEFAULT_QUICK_ADMIN_COMMENTS = [
+    'Thanks for your message. Our team is checking now.',
+    'Your report has been received and forwarded to the support team.',
+    'Please share location and time details for faster action.',
+    'We could not verify this yet. Please provide a clear photo or reference.',
+    'This issue has been noted and marked for follow-up.',
+    'Emergency হলে সাথে সাথে 999 এ call করুন।'
+  ];
   const section = document.getElementById('chatbot-logs');
   const body = document.getElementById('chatbot-logs-body');
   const filterInput = document.getElementById('chatbot-log-filter');
   const refreshBtn = document.getElementById('chatbot-log-refresh');
   const clearBtn = document.getElementById('chatbot-log-clear');
+  const templateInput = document.getElementById('chatbot-template-input');
+  const templateAddBtn = document.getElementById('chatbot-template-add');
+  const templateList = document.getElementById('chatbot-template-list');
   if (!section || !body) return;
 
   let cachedRows = [];
+  let pauseAutoRefreshUntil = 0;
+  let isAddingTemplate = false;
+  let quickCommentTemplates = DEFAULT_QUICK_ADMIN_COMMENTS.map((text, index) => ({
+    id: `default-${index + 1}`,
+    comment_text: text
+  }));
 
   function esc(v) {
     return String(v ?? '')
@@ -3636,6 +3654,104 @@ function openAddVolunteerModal() {
     return d.toLocaleString();
   }
 
+  function normalizeTemplateRows(rows) {
+    if (!Array.isArray(rows)) return [];
+    return rows
+      .map((item) => {
+        const id = String(item?.id ?? '').trim();
+        const comment = String(item?.comment_text ?? '').trim();
+        if (!comment) return null;
+        return { id, comment_text: comment };
+      })
+      .filter(Boolean);
+  }
+
+  function renderTemplateList() {
+    if (!templateList) return;
+    if (!quickCommentTemplates.length) {
+      templateList.innerHTML = '<span class="chatbot-template-pill">No comments available</span>';
+      return;
+    }
+
+    templateList.innerHTML = quickCommentTemplates.map((item) => {
+      const isDbRow = /^\d+$/.test(String(item.id));
+      const deleteBtn = isDbRow
+        ? `<button type="button" class="chatbot-template-delete" data-template-delete="${esc(item.id)}" title="Delete">x</button>`
+        : '';
+      return `<span class="chatbot-template-pill">${esc(item.comment_text)} ${deleteBtn}</span>`;
+    }).join('');
+  }
+
+  function renderQuickCommentOptions() {
+    const placeholder = '<option value="">Select a quick comment</option>';
+    const options = quickCommentTemplates
+      .map((item) => `<option value="${esc(item.comment_text)}">${esc(item.comment_text)}</option>`)
+      .join('');
+    return `${placeholder}${options}`;
+  }
+
+  async function fetchTemplateRowsFromServer() {
+    const res = await fetch('../Php/chatbot_comment_templates.php', {
+      credentials: 'same-origin',
+      cache: 'no-store'
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || !json || json.success !== true || !Array.isArray(json.data)) {
+      throw new Error(json?.error || 'template read failed');
+    }
+    return json.data;
+  }
+
+  async function refreshCommentTemplates() {
+    try {
+      const rows = await fetchTemplateRowsFromServer();
+      const normalized = normalizeTemplateRows(rows);
+      if (normalized.length) {
+        quickCommentTemplates = normalized;
+      } else {
+        quickCommentTemplates = DEFAULT_QUICK_ADMIN_COMMENTS.map((text, index) => ({
+          id: `default-${index + 1}`,
+          comment_text: text
+        }));
+      }
+    } catch (_e) {
+      quickCommentTemplates = DEFAULT_QUICK_ADMIN_COMMENTS.map((text, index) => ({
+        id: `default-${index + 1}`,
+        comment_text: text
+      }));
+    }
+
+    renderTemplateList();
+    renderRows(cachedRows);
+  }
+
+  async function addTemplateToServer(commentText) {
+    const res = await fetch('../Php/chatbot_comment_templates.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ action: 'add', comment_text: commentText })
+    });
+    const json = await res.json().catch(() => null);
+    if (!res.ok || !json || json.success !== true) {
+      throw new Error(json?.error || `template add failed (HTTP ${res.status})`);
+    }
+    return json;
+  }
+
+  async function deleteTemplateFromServer(templateId) {
+    const res = await fetch('../Php/chatbot_comment_templates.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ action: 'delete', id: templateId })
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || !json || json.success !== true) {
+      throw new Error(json?.error || 'template delete failed');
+    }
+  }
+
   function renderRows(rows) {
     const q = String(filterInput?.value || '').trim().toLowerCase();
     const filtered = rows.filter((row) => {
@@ -3645,16 +3761,32 @@ function openAddVolunteerModal() {
     });
 
     if (!filtered.length) {
-      body.innerHTML = '<tr><td colspan="3">No chatbot logs found.</td></tr>';
+      body.innerHTML = '<tr><td colspan="5">No chatbot logs found.</td></tr>';
       return;
     }
 
     body.innerHTML = filtered.map((row) => `
+      ${(() => {
+        const token = String(row.session_token || '').trim();
+        const disabled = token ? '' : 'disabled';
+        const btnLabel = token ? 'Send' : 'Unavailable';
+        return `
       <tr>
         <td>${esc(formatTime(row.time))}</td>
+        <td><code>${esc(row.session_token || 'n/a')}</code></td>
         <td>${esc(row.question || '')}</td>
         <td>${esc(row.reply || '')}</td>
+        <td>
+          <div class="chatbot-admin-reply-wrap">
+            <select class="chatbot-admin-reply-select" data-chatbot-reply-select="${esc(token)}" ${disabled}>
+              ${renderQuickCommentOptions()}
+            </select>
+            <button type="button" class="chatbot-admin-reply-send" data-chatbot-reply-send="${esc(token)}" ${disabled}>${btnLabel}</button>
+          </div>
+        </td>
       </tr>
+      `;
+      })()}
     `).join('');
   }
 
@@ -3686,13 +3818,141 @@ function openAddVolunteerModal() {
     return section.classList.contains('active');
   }
 
+  function isAutoRefreshPaused() {
+    return Date.now() < pauseAutoRefreshUntil;
+  }
+
+  function pauseAutoRefresh(ms = 10000) {
+    pauseAutoRefreshUntil = Date.now() + ms;
+  }
+
   if (filterInput) {
     filterInput.addEventListener('input', function () {
       renderRows(cachedRows);
     });
   }
 
-  if (refreshBtn) refreshBtn.addEventListener('click', refreshLogs);
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', function () {
+      refreshLogs();
+      refreshCommentTemplates();
+    });
+  }
+
+  if (templateAddBtn) {
+    templateAddBtn.addEventListener('click', async function () {
+      if (isAddingTemplate) return;
+      pauseAutoRefresh(10000);
+      const text = String(templateInput?.value || '').trim();
+      if (!text) {
+        alert('Please type a comment first.');
+        return;
+      }
+
+      isAddingTemplate = true;
+      templateAddBtn.disabled = true;
+      const prevLabel = templateAddBtn.textContent;
+      templateAddBtn.textContent = 'Adding...';
+
+      try {
+        const result = await addTemplateToServer(text);
+        if (templateInput) templateInput.value = '';
+        await refreshCommentTemplates();
+        if (result && result.message === 'duplicate') {
+          alert('This comment already exists in dropdown.');
+        }
+      } catch (_e) {
+        alert(`Could not add comment: ${_e?.message || 'unknown error'}`);
+      } finally {
+        isAddingTemplate = false;
+        templateAddBtn.disabled = false;
+        templateAddBtn.textContent = prevLabel;
+      }
+    });
+  }
+
+  if (templateInput) {
+    templateInput.addEventListener('focus', function () {
+      pauseAutoRefresh(15000);
+    });
+    templateInput.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        templateAddBtn?.click();
+      }
+    });
+  }
+
+  if (templateList) {
+    templateList.addEventListener('click', async function (event) {
+      const deleteBtn = event.target.closest('[data-template-delete]');
+      if (!deleteBtn) return;
+
+      const templateId = String(deleteBtn.getAttribute('data-template-delete') || '').trim();
+      if (!templateId) return;
+      const ok = window.confirm('Delete this dropdown comment?');
+      if (!ok) return;
+
+      try {
+        await deleteTemplateFromServer(templateId);
+        await refreshCommentTemplates();
+      } catch (_e) {
+        alert(`Could not delete comment: ${_e?.message || 'unknown error'}`);
+      }
+    });
+  }
+
+  body.addEventListener('click', async function (event) {
+    const sendBtn = event.target.closest('[data-chatbot-reply-send]');
+    if (!sendBtn) return;
+
+    pauseAutoRefresh(15000);
+
+    const token = String(sendBtn.getAttribute('data-chatbot-reply-send') || '').trim();
+    if (!token) {
+      alert('Missing user session token for this row.');
+      return;
+    }
+
+    const rowEl = sendBtn.closest('tr');
+    const selectEl = rowEl ? rowEl.querySelector('.chatbot-admin-reply-select') : null;
+    const text = String(selectEl?.value || '').trim();
+    if (!text) {
+      alert('Please select a comment from dropdown first.');
+      return;
+    }
+
+    sendBtn.disabled = true;
+    const prevLabel = sendBtn.textContent;
+    sendBtn.textContent = 'Sending...';
+
+    try {
+      const res = await fetch('../Php/chatbot_admin_reply_write.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+          session_token: token,
+          reply_text: text
+        })
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json || json.success !== true) {
+        throw new Error(json?.error || 'Reply send failed');
+      }
+
+      if (selectEl) selectEl.value = '';
+      sendBtn.textContent = 'Sent';
+      setTimeout(() => {
+        sendBtn.textContent = prevLabel;
+        sendBtn.disabled = false;
+      }, 800);
+    } catch (_e) {
+      sendBtn.textContent = prevLabel;
+      sendBtn.disabled = false;
+      alert(`Could not send admin reply: ${_e?.message || 'unknown error'}`);
+    }
+  });
 
   if (clearBtn) {
     clearBtn.addEventListener('click', async function () {
@@ -3717,6 +3977,7 @@ function openAddVolunteerModal() {
   document.addEventListener('admin:refresh-section', function (event) {
     if (String(event?.detail?.sectionId || '') === 'chatbot-logs') {
       refreshLogs();
+      refreshCommentTemplates();
     }
   });
 
@@ -3729,10 +3990,23 @@ function openAddVolunteerModal() {
 
   // Keep logs fresh without manual refresh while section is open.
   setInterval(function () {
-    if (isSectionActive()) {
+    if (isSectionActive() && !isAutoRefreshPaused()) {
       refreshLogs();
     }
-  }, 1000);
+  }, 5000);
 
+  body.addEventListener('focusin', function (event) {
+    if (event.target.closest('.chatbot-admin-reply-wrap')) {
+      pauseAutoRefresh(15000);
+    }
+  });
+
+  body.addEventListener('change', function (event) {
+    if (event.target.matches('.chatbot-admin-reply-select')) {
+      pauseAutoRefresh(15000);
+    }
+  });
+
+  refreshCommentTemplates();
   refreshLogs();
 })();

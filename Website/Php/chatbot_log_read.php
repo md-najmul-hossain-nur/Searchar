@@ -17,8 +17,21 @@ try {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
     );
 
+    $colsStmt = $pdo->query('SHOW COLUMNS FROM chatbot_logs');
+    $existingCols = [];
+    if ($colsStmt) {
+        foreach ($colsStmt->fetchAll(PDO::FETCH_ASSOC) as $col) {
+            $existingCols[] = (string)($col['Field'] ?? '');
+        }
+    }
+
+    $sessionTokenExpr = in_array('session_token', $existingCols, true) ? 'session_token' : "''";
+    $timeExpr = in_array('created_at', $existingCols, true)
+        ? 'DATE_FORMAT(created_at, "%Y-%m-%dT%H:%i:%s")'
+        : 'NULL';
+
     $stmt = $pdo->query(
-        'SELECT id, question, reply, DATE_FORMAT(created_at, "%Y-%m-%dT%H:%i:%s") AS time FROM chatbot_logs ORDER BY id ASC LIMIT 2000'
+        "SELECT id, question, reply, {$sessionTokenExpr} AS session_token, {$timeExpr} AS time FROM chatbot_logs ORDER BY id ASC LIMIT 2000"
     );
     $rows = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
 

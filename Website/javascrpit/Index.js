@@ -579,6 +579,7 @@ setupLatestNewsCarousel();
 
 function setupHomeChatbot() {
   const CHATBOT_LOG_KEY = 'searchar_chatbot_logs_v1';
+  const CHAT_SESSION_KEY = 'searchar_chat_session_token';
   const widget = document.getElementById('chatbotWidget');
   const panel = document.getElementById('chatbotPanel');
   const toggle = document.getElementById('chatbotToggle');
@@ -588,6 +589,21 @@ function setupHomeChatbot() {
   const messages = document.getElementById('chatbotMessages');
   const quickBox = document.getElementById('chatbotQuick');
   if (!panel || !toggle || !closeBtn || !form || !input || !messages) return;
+
+  const sessionToken = (() => {
+    try {
+      let token = localStorage.getItem(CHAT_SESSION_KEY);
+      if (!token) {
+        token = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        localStorage.setItem(CHAT_SESSION_KEY, token);
+      }
+      return token;
+    } catch (_e) {
+      return `${Date.now()}-guest`;
+    }
+  })();
+
+  let lastAdminReplyId = 0;
 
   const addMsg = (text, role) => {
     const item = document.createElement('div');
@@ -613,20 +629,6 @@ function setupHomeChatbot() {
     }
 
     // Also persist to server so Admin can see logs reliably across tabs/devices.
-    const sessionToken = (() => {
-      try {
-        const key = 'searchar_chat_session_token';
-        let token = localStorage.getItem(key);
-        if (!token) {
-          token = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-          localStorage.setItem(key, token);
-        }
-        return token;
-      } catch (_e) {
-        return '';
-      }
-    })();
-
     fetch('../Php/chatbot_log_write.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -678,6 +680,27 @@ function setupHomeChatbot() {
     }, 280);
   };
 
+  const pollAdminReplies = async () => {
+    try {
+      const res = await fetch(`../Php/chatbot_admin_reply_read.php?session_token=${encodeURIComponent(sessionToken)}&last_id=${lastAdminReplyId}`, {
+        credentials: 'same-origin',
+        cache: 'no-store'
+      });
+      const json = await res.json();
+      if (!res.ok || !json || json.success !== true || !Array.isArray(json.data)) return;
+      if (json.data.length === 0) return;
+
+      json.data.forEach((row) => {
+        const id = Number(row?.id || 0);
+        if (id > lastAdminReplyId) lastAdminReplyId = id;
+        const text = String(row?.reply_text || '').trim();
+        if (text) addMsg(`Admin: ${text}`, 'bot');
+      });
+    } catch (_e) {
+      // Silent fail to keep chat UX smooth.
+    }
+  };
+
   toggle.addEventListener('click', () => {
     if (panel.classList.contains('open')) {
       closePanel();
@@ -706,6 +729,9 @@ function setupHomeChatbot() {
       askAndReply(q);
     });
   }
+
+  pollAdminReplies();
+  setInterval(pollAdminReplies, 1800);
 }
 
 setupHomeChatbot();
