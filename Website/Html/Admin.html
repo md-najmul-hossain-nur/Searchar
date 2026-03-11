@@ -69,6 +69,9 @@
   <li data-section="reports">
     <span class="icon"><i class="fa-solid fa-file-lines"></i></span> Reports
   </li>
+  <li data-section="chatbot-logs">
+    <span class="icon"><i class="fa-solid fa-comments"></i></span> Chatbot Logs
+  </li>
 </ul>
 
     </div>
@@ -885,6 +888,27 @@
       <button type="button" class="secondary" onclick="closeCrimeAssignModal()">Cancel</button>
     </div>
   </div>
+</div>
+
+<div id="chatbot-logs" class="main-section">
+  <h2>Chatbot Logs</h2>
+  <div class="filters-bar chatbot-logs-actions">
+    <input id="chatbot-log-filter" type="text" placeholder="Search by question or reply" style="min-width: 320px;">
+    <button type="button" class="btn-refresh" id="chatbot-log-refresh">Refresh</button>
+    <button type="button" class="btn-export-report" id="chatbot-log-clear">Clear Logs</button>
+  </div>
+  <table class="styled-table">
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>User Question</th>
+        <th>Bot Reply</th>
+      </tr>
+    </thead>
+    <tbody id="chatbot-logs-body">
+      <tr><td colspan="3">No chatbot logs yet.</td></tr>
+    </tbody>
+  </table>
 </div>
 
 <div id="controls" class="main-section">

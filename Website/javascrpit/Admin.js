@@ -3597,3 +3597,142 @@ function openAddVolunteerModal() {
 
   exportBtn.addEventListener('click', exportTable);
 })();
+
+// Chatbot logs monitor for admin (backend-first with local fallback)
+(function () {
+  const CHATBOT_LOG_KEY = 'searchar_chatbot_logs_v1';
+  const section = document.getElementById('chatbot-logs');
+  const body = document.getElementById('chatbot-logs-body');
+  const filterInput = document.getElementById('chatbot-log-filter');
+  const refreshBtn = document.getElementById('chatbot-log-refresh');
+  const clearBtn = document.getElementById('chatbot-log-clear');
+  if (!section || !body) return;
+
+  let cachedRows = [];
+
+  function esc(v) {
+    return String(v ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function readLocalLogs() {
+    try {
+      const raw = localStorage.getItem(CHATBOT_LOG_KEY) || '[]';
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr : [];
+    } catch (_e) {
+      return [];
+    }
+  }
+
+  function formatTime(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return esc(iso);
+    return d.toLocaleString();
+  }
+
+  function renderRows(rows) {
+    const q = String(filterInput?.value || '').trim().toLowerCase();
+    const filtered = rows.filter((row) => {
+      if (!q) return true;
+      const hay = `${row?.question || ''} ${row?.reply || ''}`.toLowerCase();
+      return hay.includes(q);
+    });
+
+    if (!filtered.length) {
+      body.innerHTML = '<tr><td colspan="3">No chatbot logs found.</td></tr>';
+      return;
+    }
+
+    body.innerHTML = filtered.map((row) => `
+      <tr>
+        <td>${esc(formatTime(row.time))}</td>
+        <td>${esc(row.question || '')}</td>
+        <td>${esc(row.reply || '')}</td>
+      </tr>
+    `).join('');
+  }
+
+  async function fetchServerLogs() {
+    const res = await fetch('../Php/chatbot_log_read.php', {
+      credentials: 'same-origin',
+      cache: 'no-store'
+    });
+    const json = await res.json();
+    if (!json || json.success !== true || !Array.isArray(json.data)) {
+      throw new Error('Invalid chatbot log response');
+    }
+    return json.data;
+  }
+
+  async function refreshLogs() {
+    try {
+      const rows = await fetchServerLogs();
+      cachedRows = rows.slice().reverse();
+      renderRows(cachedRows);
+    } catch (_e) {
+      // Fallback for environments where backend endpoint is unavailable.
+      cachedRows = readLocalLogs().slice().reverse();
+      renderRows(cachedRows);
+    }
+  }
+
+  function isSectionActive() {
+    return section.classList.contains('active');
+  }
+
+  if (filterInput) {
+    filterInput.addEventListener('input', function () {
+      renderRows(cachedRows);
+    });
+  }
+
+  if (refreshBtn) refreshBtn.addEventListener('click', refreshLogs);
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', async function () {
+      const ok = window.confirm('Clear all chatbot logs?');
+      if (!ok) return;
+
+      try {
+        await fetch('../Php/chatbot_log_write.php?clear=1', {
+          method: 'POST',
+          credentials: 'same-origin'
+        });
+      } catch (_e) {
+        // Ignore and continue with local clear.
+      }
+
+      localStorage.removeItem(CHATBOT_LOG_KEY);
+      cachedRows = [];
+      renderRows(cachedRows);
+    });
+  }
+
+  document.addEventListener('admin:refresh-section', function (event) {
+    if (String(event?.detail?.sectionId || '') === 'chatbot-logs') {
+      refreshLogs();
+    }
+  });
+
+  // If logs change in another tab (Index page), refresh instantly.
+  window.addEventListener('storage', function (event) {
+    if (event.key === CHATBOT_LOG_KEY && isSectionActive()) {
+      refreshLogs();
+    }
+  });
+
+  // Keep logs fresh without manual refresh while section is open.
+  setInterval(function () {
+    if (isSectionActive()) {
+      refreshLogs();
+    }
+  }, 1000);
+
+  refreshLogs();
+})();

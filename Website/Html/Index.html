@@ -236,7 +236,7 @@ Be the reason someone reunites with their loved one — become a volunteer and b
 </button>
   </div>
 </div>
-<section class="latest-news-section">
+<section class="latest-news-section" id="latest-news">
   <div class="latest-news-label">BE FIRST TO READ</div>
   <h2 class="latest-news-title">LATEST NEWS</h2>
   <div class="latest-news-viewport">
@@ -320,6 +320,34 @@ A user-uploaded anonymous crime video helped police catch a suspect within 24 ho
     </div>
   </div>
 </div>
+<div class="chatbot-widget" id="chatbotWidget">
+  <button class="chatbot-fab" id="chatbotToggle" aria-label="Open chat support" title="Open chat support"><i class="fa fa-comments" aria-hidden="true"></i></button>
+  <div class="chatbot-panel" id="chatbotPanel" aria-hidden="true">
+    <div class="chatbot-header">
+      <div>
+        <strong>Searchar Assistant</strong>
+        <div class="chatbot-subtitle">Ask anything about this site</div>
+      </div>
+      <button class="chatbot-close" id="chatbotClose" aria-label="Close chat">x</button>
+    </div>
+    <div class="chatbot-help" id="chatbotHelpText">
+      You can ask about: Donation, Volunteer Join, Login, Report Clue, Latest News.
+    </div>
+    <div class="chatbot-quick" id="chatbotQuick">
+      <button type="button" class="chatbot-chip" data-q="How can I donate?">Donate</button>
+      <button type="button" class="chatbot-chip" data-q="How do I join as volunteer?">Volunteer</button>
+      <button type="button" class="chatbot-chip" data-q="How to report a clue?">Report Clue</button>
+      <button type="button" class="chatbot-chip" data-q="Where is latest news?">Latest News</button>
+    </div>
+    <div class="chatbot-messages" id="chatbotMessages">
+      <div class="chatbot-msg bot">Hi! Need help with donation, joining as volunteer, or reporting clues?</div>
+    </div>
+    <form class="chatbot-input-row" id="chatbotForm">
+      <input id="chatbotInput" type="text" placeholder="Type your message..." autocomplete="off">
+      <button type="submit">Send</button>
+    </form>
+  </div>
+</div>
   <footer class="site-footer">
   <div class="footer-container">
     <div class="footer-col">
@@ -365,6 +393,7 @@ A user-uploaded anonymous crime video helped police catch a suspect within 24 ho
 </table>
 
 </body>
+    <script src="../javascrpit/news_data.js"></script>
     <script src="../javascrpit/Index.js"></script>
 
 </html>

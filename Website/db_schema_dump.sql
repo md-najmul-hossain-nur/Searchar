@@ -10,6 +10,7 @@ CREATE DATABASE IF NOT EXISTS `searchar`
 USE `searchar`;
 
 DROP TABLE IF EXISTS `traffic_logs`;
+DROP TABLE IF EXISTS `chatbot_logs`;
 DROP TABLE IF EXISTS `camera_cctv_feeds`;
 DROP TABLE IF EXISTS `withdraw_requests`;
 DROP TABLE IF EXISTS `donations`;
@@ -385,6 +386,18 @@ CREATE TABLE `withdraw_requests` (
 	PRIMARY KEY (`withdraw_id`),
 	KEY `idx_withdraw_status` (`status`),
 	KEY `idx_withdraw_request_date` (`request_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `chatbot_logs` (
+	`id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+	`question` TEXT NOT NULL,
+	`reply` TEXT NOT NULL,
+	`source_page` VARCHAR(64) NOT NULL DEFAULT 'index',
+	`session_token` VARCHAR(128) DEFAULT NULL,
+	`ip_address` VARCHAR(64) DEFAULT NULL,
+	`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY (`id`),
+	KEY `idx_chatbot_logs_created_at` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `traffic_logs` (

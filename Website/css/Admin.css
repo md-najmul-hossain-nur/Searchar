@@ -2513,6 +2513,18 @@ h4 {
   color: #b4232f;
 }
 
+.chatbot-logs-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+#chatbot-logs .styled-table td {
+  vertical-align: top;
+  line-height: 1.5;
+}
+
 .post-status {
   display: inline-flex;
   align-items: center;

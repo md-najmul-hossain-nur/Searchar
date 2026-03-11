@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>News Details | Searchar</title>
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400|Roboto:400,700" rel="stylesheet">
+  <link rel="stylesheet" href="../css/News_Details.css">
+</head>
+<body>
+  <header class="navbar">
+    <div class="navbar-logo">
+      <a href="../Html/Index.html" aria-label="Go to home">
+        <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img">
+      </a>
+    </div>
+    <nav class="navbar-menu"></nav>
+  </header>
+
+  <main class="news-page">
+    <a class="news-back" href="../Html/Index.html#latest-news">&larr; Back to Home</a>
+    <article class="news-details-card">
+      <img id="newsImage" class="news-image" src="" alt="News image">
+      <div class="news-meta" id="newsDate"></div>
+      <h1 id="newsTitle" class="news-title"></h1>
+      <p id="newsDesc" class="news-desc"></p>
+      <div id="newsBody" class="news-body"></div>
+    </article>
+  </main>
+
+  <script src="../javascrpit/news_data.js"></script>
+  <script src="../javascrpit/News_Details.js"></script>
+</body>
+</html>

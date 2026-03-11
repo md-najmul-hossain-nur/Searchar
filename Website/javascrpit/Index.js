@@ -472,44 +472,8 @@ function setupLatestNewsCarousel() {
   const nextBtn = document.getElementById('latestNewsNextBtn');
   if (!track || !prevBtn || !nextBtn) return;
 
-  const latestNews = [
-    {
-      img: '../Images/help.jpg',
-      date: '24 Feb, 2025',
-      title: 'AI Assisted Search Team Reunites Missing Child',
-      desc: 'Coordinated alerts, verified community tips, and rapid response helped reunite a child with family in under 12 hours.'
-    },
-    {
-      img: '../Images/demo.jpg',
-      date: '10 Mar, 2025',
-      title: 'Volunteer Network Expands to 14 New Local Zones',
-      desc: 'New trained volunteers joined field support teams to strengthen real-time reporting and emergency coordination.'
-    },
-    {
-      img: '../Images/missing.jpeg',
-      date: '02 Apr, 2025',
-      title: 'Critical Case Solved Through Camera Contributor Evidence',
-      desc: 'Shared footage from local cameras provided a key timeline and helped investigators close a high-priority case.'
-    },
-    {
-      img: '../Images/together.jpg',
-      date: '21 Apr, 2025',
-      title: 'Community Patrol Drive Reduces Risk in Red-Zone Areas',
-      desc: 'Joint field activity with citizens and responders improved situational awareness and reduced incident frequency.'
-    },
-    {
-      img: '../Images/pexels-omaralnahi-18495.jpg',
-      date: '07 May, 2025',
-      title: 'Emergency Broadcast Feature Speeds Up Public Alerts',
-      desc: 'Faster incident broadcasting improved reach and enabled nearby volunteers to react quickly with verified updates.'
-    },
-    {
-      img: '../Images/makeachange.jpg',
-      date: '30 May, 2025',
-      title: 'Monthly Impact Report Shows Strong Rescue Momentum',
-      desc: 'This month recorded higher solved-case rates and stronger collaboration among police, volunteers, and donors.'
-    }
-  ];
+  const latestNews = Array.isArray(window.SEARCHAR_NEWS) ? window.SEARCHAR_NEWS : [];
+  if (latestNews.length === 0) return;
 
   const renderCard = (item) => `
     <div class="news-card">
@@ -519,7 +483,7 @@ function setupLatestNewsCarousel() {
       </div>
       <div class="news-card-headline">${item.title}</div>
       <div class="news-card-desc">${item.desc}</div>
-      <a href="#" class="news-card-readmore">Read More</a>
+      <a href="../Html/News_Details.html?news=${encodeURIComponent(item.id)}" class="news-card-readmore">Read More</a>
     </div>
   `;
 
@@ -612,3 +576,136 @@ function setupLatestNewsCarousel() {
 }
 
 setupLatestNewsCarousel();
+
+function setupHomeChatbot() {
+  const CHATBOT_LOG_KEY = 'searchar_chatbot_logs_v1';
+  const widget = document.getElementById('chatbotWidget');
+  const panel = document.getElementById('chatbotPanel');
+  const toggle = document.getElementById('chatbotToggle');
+  const closeBtn = document.getElementById('chatbotClose');
+  const form = document.getElementById('chatbotForm');
+  const input = document.getElementById('chatbotInput');
+  const messages = document.getElementById('chatbotMessages');
+  const quickBox = document.getElementById('chatbotQuick');
+  if (!panel || !toggle || !closeBtn || !form || !input || !messages) return;
+
+  const addMsg = (text, role) => {
+    const item = document.createElement('div');
+    item.className = `chatbot-msg ${role}`;
+    item.textContent = text;
+    messages.appendChild(item);
+    messages.scrollTop = messages.scrollHeight;
+  };
+
+  const saveLog = (question, reply) => {
+    try {
+      const prev = JSON.parse(localStorage.getItem(CHATBOT_LOG_KEY) || '[]');
+      const list = Array.isArray(prev) ? prev : [];
+      list.push({
+        time: new Date().toISOString(),
+        question: String(question || '').trim(),
+        reply: String(reply || '').trim()
+      });
+      const trimmed = list.slice(-300);
+      localStorage.setItem(CHATBOT_LOG_KEY, JSON.stringify(trimmed));
+    } catch (_e) {
+      // Ignore storage errors silently.
+    }
+
+    // Also persist to server so Admin can see logs reliably across tabs/devices.
+    const sessionToken = (() => {
+      try {
+        const key = 'searchar_chat_session_token';
+        let token = localStorage.getItem(key);
+        if (!token) {
+          token = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+          localStorage.setItem(key, token);
+        }
+        return token;
+      } catch (_e) {
+        return '';
+      }
+    })();
+
+    fetch('../Php/chatbot_log_write.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({
+        question: String(question || '').trim(),
+        reply: String(reply || '').trim(),
+        time: new Date().toISOString(),
+        source_page: 'index',
+        session_token: sessionToken
+      })
+    }).catch(() => {
+      // Keep chat responsive even if logging endpoint is unavailable.
+    });
+  };
+
+  const getReply = (q) => {
+    const text = q.toLowerCase();
+    if (text.includes('donat')) return 'To donate, click MAKE DONATION or Contribute Now on this page.';
+    if (text.includes('volunteer') || text.includes('join')) return 'To join as volunteer, click GET INVOLVED NOW and complete registration.';
+    if (text.includes('report') || text.includes('clue') || text.includes('crime')) return 'Please use the relevant logged-in dashboard to submit verified clues safely.';
+    if (text.includes('login') || text.includes('log in')) return 'Use the LOG IN button on top-right to access your account.';
+    if (text.includes('news')) return 'Check the LATEST NEWS section below. You can click Read More for full details.';
+    return 'I can help with donation, volunteer joining, login, and news navigation. Ask me anything about these.';
+  };
+
+  const openPanel = () => {
+    panel.classList.add('open');
+    panel.setAttribute('aria-hidden', 'false');
+    if (widget) widget.classList.add('is-open');
+    input.focus();
+  };
+
+  const closePanel = () => {
+    panel.classList.remove('open');
+    panel.setAttribute('aria-hidden', 'true');
+    if (widget) widget.classList.remove('is-open');
+  };
+
+  const askAndReply = (questionText) => {
+    const userText = String(questionText || '').trim();
+    if (!userText) return;
+
+    addMsg(userText, 'user');
+    const replyText = getReply(userText);
+    window.setTimeout(() => {
+      addMsg(replyText, 'bot');
+      saveLog(userText, replyText);
+    }, 280);
+  };
+
+  toggle.addEventListener('click', () => {
+    if (panel.classList.contains('open')) {
+      closePanel();
+      return;
+    }
+    openPanel();
+  });
+
+  closeBtn.addEventListener('click', closePanel);
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const userText = input.value.trim();
+    if (!userText) return;
+    input.value = '';
+    askAndReply(userText);
+  });
+
+  if (quickBox) {
+    quickBox.addEventListener('click', (e) => {
+      const btn = e.target.closest('.chatbot-chip');
+      if (!btn) return;
+      const q = String(btn.getAttribute('data-q') || '').trim();
+      if (!q) return;
+      if (!panel.classList.contains('open')) openPanel();
+      askAndReply(q);
+    });
+  }
+}
+
+setupHomeChatbot();
