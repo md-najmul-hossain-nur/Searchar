@@ -209,13 +209,22 @@ body {
 .card h3 {
   font-family: 'Montserrat', Arial, sans-serif;
   font-size: 1.4em;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
+  line-height: 1.25;
+  min-height: 2.6em;
+  display: flex;
+  align-items: center;
 }
 .card p {
   font-size: 1.05em;
   color: #e2e2e2;
-  margin-bottom: 22px;
+  margin-bottom: 18px;
   max-width: 320px;
+  line-height: 1.55;
+  flex: 1 1 auto;
+}
+.card .btn-dark {
+  margin-top: auto;
 }
 .card-donate {
   background: #1a232a;
@@ -388,7 +397,48 @@ body {
   padding: 36px 54px 36px 36px;
   gap: 36px;
   position: relative;
-  transition: all 0.3s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.donation-progress-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 12px;
+  background: linear-gradient(120deg, rgba(247, 92, 60, 0.12), rgba(86, 170, 255, 0.08), rgba(247, 92, 60, 0.12));
+  background-size: 220% 220%;
+  animation: none;
+  opacity: 0.35;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.donation-progress-card > * {
+  position: relative;
+  z-index: 2;
+}
+
+.donation-progress-card.reveal-ready .donation-image,
+.donation-progress-card.reveal-ready .donation-info,
+.donation-progress-card.reveal-ready .donation-progress-outer {
+  opacity: 0;
+  transform: translateY(18px);
+}
+
+.donation-progress-card.is-visible .donation-image,
+.donation-progress-card.is-visible .donation-info,
+.donation-progress-card.is-visible .donation-progress-outer {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity .65s ease, transform .65s ease;
+}
+
+.donation-progress-card.is-visible .donation-info {
+  transition-delay: .12s;
+}
+
+.donation-progress-card.is-visible .donation-progress-outer {
+  transition-delay: .24s;
 }
 
 /* === Donation Image === */
@@ -403,6 +453,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: none;
 }
 
 /* === Donation Info === */
@@ -412,43 +463,113 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
+  background: linear-gradient(140deg, rgba(255,255,255,0.16), rgba(255,255,255,0.06));
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 14px;
+  padding: 16px 18px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.22);
+  position: relative;
+  overflow: hidden;
+  animation: donationInfoReveal .45s ease-out both;
+}
+
+.donation-progress-card .donation-info .donation-particle {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.95), rgba(247, 92, 60, .45));
+  box-shadow: 0 0 10px rgba(255,255,255,.45);
+  opacity: 0;
+  pointer-events: none;
+  animation: donationParticleFloat var(--particle-duration, 4s) ease-in-out infinite;
+  animation-delay: var(--particle-delay, 0s);
+}
+
+.donation-progress-card .donation-info::before {
+  content: "";
+  position: absolute;
+  top: -120%;
+  left: -38%;
+  width: 58%;
+  height: 300%;
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.34) 45%, rgba(255,255,255,0) 100%);
+  transform: rotate(20deg);
+  animation: none;
+  opacity: .18;
+  pointer-events: none;
 }
 
 .donation-progress-card .donation-caption {
-  font-size: 1.06em;
-  opacity: 0.88;
-  font-weight: 500;
+  font-size: 0.78em;
+  opacity: 0.95;
+  font-weight: 700;
+  letter-spacing: 1.1px;
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 5px 10px;
+  border-radius: 999px;
+  color: #fef3dd;
+  background: rgba(247, 92, 60, 0.34);
+  border: 1px solid rgba(247, 92, 60, 0.55);
+  animation: none;
 }
 
 .donation-progress-card .donation-title {
   font-family: 'Montserrat', Arial, sans-serif;
-  font-size: 1.6em;
-  font-weight: 700;
-  margin: 0 0 8px 0;
+  font-size: 1.82em;
+  font-weight: 800;
+  margin: 2px 0 6px 0;
+  line-height: 1.2;
+  animation: none;
 }
 
 .donation-progress-card .donation-desc {
-  font-size: 1em;
-  opacity: 0.92;
-  line-height: 1.45;
-  margin-bottom: 10px;
-  max-width: 390px;
+  font-size: 0.98em;
+  opacity: 0.96;
+  line-height: 1.6;
+  margin-bottom: 8px;
+  max-width: 430px;
+  animation: none;
 }
 
 .donation-progress-card .donation-cta {
   font-family: 'Montserrat', Arial, sans-serif;
   font-weight: 700;
   color: #fff;
-  text-decoration: underline;
-  font-size: 1.13em;
+  text-decoration: none;
+  font-size: 0.96em;
   cursor: pointer;
-  margin-top: 8px;
-  transition: color 0.15s;
+  margin-top: 4px;
+  transition: transform 0.15s, background 0.15s, color 0.15s;
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  background: #f75c3c;
+  border: 1px solid #ff896f;
+  animation: none;
+}
+
+.donation-progress-card .donation-cta::after {
+  content: " ->";
+  font-size: 0.95em;
+  margin-left: 6px;
+  transition: transform .2s ease;
 }
 
 .donation-progress-card .donation-cta:hover {
-  color: #f75c3c;
+  color: #fff;
+  background: #e84a27;
+  transform: translateY(-1px);
+}
+
+.donation-progress-card .donation-cta:hover::after {
+  transform: translateX(3px);
 }
 
 /* === Circular Progress Bar === */
@@ -468,6 +589,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: none;
 }
 
 .donation-progress-card .donation-progress-circle svg {
@@ -477,6 +599,25 @@ body {
   width: 120px;
   height: 120px;
   transform: rotate(-90deg);
+}
+
+.donation-progress-card .donation-progress-circle svg circle:nth-child(2) {
+  animation: donationRingFill 1.4s ease-out .2s both;
+}
+
+.donation-progress-card .donation-progress-circle::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 2px solid rgba(247, 92, 60, 0.35);
+  animation: none;
+  display: none;
+  pointer-events: none;
+}
+
+.donation-progress-card:hover {
+  transform: translateY(-2px);
 }
 
 .donation-progress-card .donation-progress-circle .progress-text {
@@ -496,6 +637,126 @@ body {
   font-weight: 400;
   opacity: 0.92;
   margin-top: 3px;
+}
+
+@keyframes donationInfoReveal {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes donationGradientFlow {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes donationTextRise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes donationShimmer {
+  0%, 70%, 100% {
+    left: -38%;
+    opacity: 0;
+  }
+  18%, 42% {
+    left: 112%;
+    opacity: 1;
+  }
+}
+
+@keyframes donationBadgePulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(247, 92, 60, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(247, 92, 60, 0);
+  }
+}
+
+@keyframes donationFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes donationRingFill {
+  from {
+    stroke-dashoffset: 339.292;
+  }
+  to {
+    stroke-dashoffset: 101.7876;
+  }
+}
+
+@keyframes donationImageZoom {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+@keyframes donationRingPulse {
+  0% {
+    transform: scale(1);
+    opacity: .7;
+  }
+  100% {
+    transform: scale(1.16);
+    opacity: 0;
+  }
+}
+
+@keyframes donationParticleFloat {
+  0% {
+    transform: translateY(14px) scale(.8);
+    opacity: 0;
+  }
+  25% {
+    opacity: .85;
+  }
+  100% {
+    transform: translateY(-18px) scale(1.2);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .donation-progress-card .donation-info,
+  .donation-progress-card .donation-info::before,
+  .donation-progress-card .donation-caption,
+  .donation-progress-card .donation-title,
+  .donation-progress-card .donation-desc,
+  .donation-progress-card .donation-cta,
+  .donation-progress-card .donation-progress-circle,
+  .donation-progress-card .donation-image,
+  .donation-progress-card .donation-progress-circle::after,
+  .donation-progress-card .donation-progress-circle svg circle:nth-child(2),
+  .donation-progress-card::before,
+  .donation-progress-card .donation-info .donation-particle {
+    animation: none !important;
+  }
 }
 
 /* === Responsive Design === */
@@ -523,6 +784,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
 }
 
 .causes-label {
@@ -552,11 +814,21 @@ body {
 .causes-list {
   display: flex;
   gap: 34px;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: flex-start;
   margin: 0 auto;
   width: 82vw;
   max-width: 1320px;
+  transition: transform .95s cubic-bezier(.25, .8, .25, 1);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.causes-viewport {
+  width: 82vw;
+  max-width: 1320px;
+  overflow: hidden;
+  margin: 0 auto;
 }
 
 .cause-card {
@@ -641,50 +913,71 @@ body {
   color: #636363;
 }
 .cause-news-nav {
-   display: flex;
+  position: absolute;
+  top: 56%;
+  left: 50%;
+  width: calc(min(1320px, 82vw) + 196px);
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
   gap: 12px;
-  margin-top: 6px;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  pointer-events: none;
 }
 .cause-news-arrow {
-  background: #fff;
+  background: rgba(255, 255, 255, 0.94);
   color: #232e3a;
-  border: 1px solid #eee;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  font-size: 1.15em;
+  border: 1px solid #e4e4e4;
+  border-radius: 10px;
+  width: 54px;
+  height: 54px;
+  font-size: 1.42em;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s, border 0.2s;
+  transition: background 0.2s, border 0.2s, transform 0.2s;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.16);
+  pointer-events: auto;
 }
 .cause-news-arrow:hover {
   background: #e34c3b;
   border: 1px solid #e34c3b;
   color: #fff;
+  transform: translateY(-1px);
 }
 @media (max-width: 1200px) {
   .causes-list {
     gap: 18px;
-    width: 98vw;
-    flex-wrap: wrap;
+    width: auto;
+    flex-wrap: nowrap;
   }
+  .causes-viewport { width: 98vw; }
   .cause-card {
     width: 225px;
   }
 }
 @media (max-width: 900px) {
   .causes-list {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 14px;
-    width: 98vw;
+    width: auto;
   }
+  .causes-viewport { width: 98vw; }
   .cause-card {
-    width: 90vw;
+    width: 80vw;
     min-width: 220px;
-    max-width: 96vw;
-    margin-bottom: 18px;
+    max-width: 92vw;
+    margin-bottom: 10px;
+  }
+  .cause-news-nav {
+    position: static;
+    width: 100%;
+    margin-top: 14px;
+    justify-content: center;
+    transform: none;
+    pointer-events: auto;
   }
 }
 .hero-involved-bg {
@@ -782,7 +1075,11 @@ body {
 .rescue-stories-section {
   width: 100vw;
   min-height: 520px;
-  background: url('../Images/resuce.jpg') center center/cover no-repeat;
+  background:
+    radial-gradient(circle at 16% 22%, rgba(247, 92, 60, 0.22), transparent 52%),
+    radial-gradient(circle at 86% 78%, rgba(86, 170, 255, 0.18), transparent 48%),
+    linear-gradient(140deg, rgba(10, 24, 34, 0.9), rgba(24, 52, 69, 0.86)),
+    url('../Images/help.jpg') center center/cover no-repeat;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -796,8 +1093,8 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: #173245;
-  opacity: 0.77;
+  background: linear-gradient(180deg, rgba(8, 19, 28, 0.2), rgba(8, 19, 28, 0.62));
+  opacity: 1;
   z-index: 1;
 }
 
@@ -818,6 +1115,20 @@ body {
 }
 
 .rescue-stories-label {
+.rescue-story-fade {
+  animation: rescueStoryFade .55s ease;
+}
+
+@keyframes rescueStoryFade {
+  from {
+    opacity: .2;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
   background: #f75c3c;
   color: #fff;
   font-family: 'Montserrat', Arial, sans-serif;
@@ -971,8 +1282,9 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 38px 0 38px 0;
+  padding: 38px 0;
   font-family: 'Roboto', Arial, sans-serif;
+  position: relative;
 }
 
 .latest-news-label {
@@ -998,63 +1310,66 @@ body {
   margin-bottom: 34px;
 }
 
+.latest-news-viewport {
+  width: 82vw;
+  max-width: 1320px;
+  overflow: hidden;
+  margin: 0 auto;
+}
+
 .latest-news-cards {
   display: flex;
   gap: 32px;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: flex-start;
   margin-bottom: 28px;
+  transition: transform .95s cubic-bezier(.25, .8, .25, 1);
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .news-card {
   background: #fff;
   border-radius: 3px;
-  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.05);
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
   width: 270px;
   min-width: 200px;
   display: flex;
   flex-direction: column;
   transition: box-shadow 0.16s;
-  position: relative;
-  overflow: visible;
+  overflow: hidden;
 }
+
 .news-card:hover {
-  box-shadow: 0 6px 28px 0 rgba(50,50,50,0.13);
+  box-shadow: 0 6px 28px 0 rgba(50, 50, 50, 0.13);
 }
 
 .news-card-img {
   width: 100%;
   height: 160px;
-  background: #e3e3e3;
-  border-radius: 3px 3px 0 0;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.news-card-img img {
-  width: 100%;
-  height: 100%;
   object-fit: cover;
   display: block;
 }
 
-.news-card-content {
-  padding: 18px 18px 16px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  background: #fff;
-  border-radius: 0 0 3px 3px;
+.news-card-meta-row,
+.news-card-date,
+.news-card-headline,
+.news-card-desc,
+.news-card-readmore {
+  padding-left: 18px;
+  padding-right: 18px;
+}
+
+.news-card-meta-row {
+  margin-top: 14px;
+  margin-bottom: 4px;
 }
 
 .news-card-date {
   font-size: 0.93em;
   color: #767676;
-  margin-bottom: 4px;
   font-family: 'Roboto', Arial, sans-serif;
-  font-weight: 400;
-  letter-spacing: .3px;
+  letter-spacing: 0.3px;
 }
 
 .news-card-headline {
@@ -1062,14 +1377,14 @@ body {
   font-size: 1.08em;
   font-weight: bold;
   color: #e34c3b;
-  margin-bottom: 2px;
+  margin-bottom: 6px;
   line-height: 1.2;
 }
 
 .news-card-desc {
   font-size: 0.97em;
   color: #636363;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
   font-weight: 400;
   line-height: 1.4;
 }
@@ -1080,53 +1395,78 @@ body {
   font-family: 'Montserrat', Arial, sans-serif;
   font-weight: 700;
   font-size: 0.96em;
-  margin-top: 2px;
+  margin-top: auto;
+  margin-bottom: 16px;
   transition: color 0.2s;
 }
+
 .news-card-readmore:hover {
   color: #e34c3b;
   text-decoration: underline;
 }
 
 .latest-news-nav {
+  position: absolute;
+  top: 57%;
+  left: 50%;
+  width: calc(min(1320px, 82vw) + 196px);
   display: flex;
-  gap: 12px;
-  margin-top: 6px;
+  justify-content: space-between;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  pointer-events: none;
 }
 
 .latest-news-arrow {
-  background: #fff;
+  background: rgba(255, 255, 255, 0.94);
   color: #232e3a;
-  border: 1px solid #eee;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  font-size: 1.15em;
+  border: 1px solid #e4e4e4;
+  border-radius: 10px;
+  width: 54px;
+  height: 54px;
+  font-size: 1.42em;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s, border 0.2s;
+  transition: background 0.2s, border 0.2s, transform 0.2s;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.16);
+  pointer-events: auto;
 }
+
 .latest-news-arrow:hover {
   background: #e34c3b;
   border: 1px solid #e34c3b;
   color: #fff;
+  transform: translateY(-1px);
 }
 
 @media (max-width: 900px) {
-  .latest-news-cards {
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-  }
-  .news-card {
+  .latest-news-viewport {
     width: 98vw;
-    min-width: 120px;
-    max-width: 99vw;
   }
+
+  .latest-news-cards {
+    gap: 18px;
+    align-items: center;
+  }
+
+  .news-card {
+    width: 80vw;
+    max-width: 340px;
+  }
+
   .news-card-img {
-    height: 120px;
+    height: 180px;
+  }
+
+  .latest-news-nav {
+    position: static;
+    width: 100%;
+    margin-top: 14px;
+    justify-content: center;
+    transform: none;
+    pointer-events: auto;
   }
 }
 
