@@ -342,7 +342,7 @@ try {
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Main CSS -->
-  <link rel="stylesheet" href="../css/User_Home.css?v=20260405c">
+  <link rel="stylesheet" href="../css/User_Home.css?v=20260405h">
 
 </head>
 <body data-current-user-name="<?= e($user['full_name'] ?? 'User') ?>" data-profile-incomplete="<?= $isProfileIncomplete ? '1' : '0' ?>" data-profile-missing="<?= e($profileMissingLabel) ?>">
@@ -1064,6 +1064,53 @@ try {
   <div class="notifications-drawer-footer"></div>
 </aside>
 
+<button type="button" id="messengerFab" class="messenger-fab" aria-label="Open Messenger" title="Messenger">
+  <i class="fa fa-comments" aria-hidden="true"></i>
+</button>
+<div id="messengerBackdrop" class="messenger-backdrop" aria-hidden="true"></div>
+<aside id="messengerDrawer" class="messenger-drawer" aria-hidden="true">
+  <div class="messenger-drawer-header">
+    <h3>Messenger</h3>
+    <button type="button" id="messengerClose" class="messenger-close" aria-label="Close">&times;</button>
+  </div>
+  <div class="messenger-layout">
+    <aside class="messenger-list">
+      <div class="messenger-list-title">All</div>
+      <input type="text" class="messenger-search" placeholder="Search" aria-label="Search chats">
+      <div class="messenger-contact">
+        <div class="avatar">
+          <img src="../Images/businessman.gif" alt="Admin Logo" class="admin-avatar-img" onerror="this.onerror=null;this.src='../Images/default-profile.gif';">
+        </div>
+        <div>
+          <strong>Admin Desk</strong>
+          <small>Announcements and updates</small>
+        </div>
+      </div>
+    </aside>
+
+    <section class="messenger-chat">
+      <div class="messenger-chat-top">
+        <div class="avatar online">
+          <img src="../Images/businessman.gif" alt="Admin Logo" class="admin-avatar-img" onerror="this.onerror=null;this.src='../Images/default-profile.gif';">
+        </div>
+        <div>
+          <strong>Admin Desk</strong>
+          <small>Active now</small>
+        </div>
+      </div>
+      <div class="messenger-chat-feed">
+        <p class="messenger-bubble support">Hi, this is Admin Desk. How can we help you today?</p>
+      </div>
+      <div class="messenger-composer">
+        <input id="messengerInput" class="messenger-input" type="text" placeholder="Type a message..." autocomplete="off">
+        <button type="button" class="messenger-send" aria-label="Send">
+          <i class="fa fa-paper-plane" aria-hidden="true"></i>
+        </button>
+      </div>
+    </section>
+  </div>
+</aside>
+
        <script>
          (function () {
            const params = new URLSearchParams(window.location.search);
@@ -1102,7 +1149,7 @@ try {
            localStorage.setItem(todayKey, '1');
          })();
        </script>
-      <script src="../javascrpit/User_Home.js?v=20260405c"></script>
+      <script src="../javascrpit/User_Home.js?v=20260405d"></script>
       <script src="../javascrpit/post_interactions_shared.js?v=20260307b"></script>
     </body>
 

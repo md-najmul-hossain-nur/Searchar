@@ -355,6 +355,11 @@ const notificationsDrawer = document.getElementById('notificationsDrawer');
 const notificationsDrawerBackdrop = document.getElementById('notificationsDrawerBackdrop');
 const notificationsDrawerClose = document.getElementById('notificationsDrawerClose');
 const notificationsDrawerFooter = notificationsDrawer ? notificationsDrawer.querySelector('.notifications-drawer-footer') : null;
+const messengerFab = document.getElementById('messengerFab');
+const messengerDrawer = document.getElementById('messengerDrawer');
+const messengerBackdrop = document.getElementById('messengerBackdrop');
+const messengerClose = document.getElementById('messengerClose');
+const messengerInput = document.getElementById('messengerInput');
 let notificationsCache = [];
 
 function formatRelativeTime(createdAt, fallback) {
@@ -669,6 +674,23 @@ function closeNotificationsDrawer() {
   notificationsDrawer.setAttribute('aria-hidden', 'true');
 }
 
+function openMessengerDrawer() {
+  if (!messengerDrawer || !messengerBackdrop) return;
+  messengerDrawer.classList.add('open');
+  messengerBackdrop.classList.add('open');
+  messengerDrawer.setAttribute('aria-hidden', 'false');
+  if (messengerInput) {
+    messengerInput.focus();
+  }
+}
+
+function closeMessengerDrawer() {
+  if (!messengerDrawer || !messengerBackdrop) return;
+  messengerDrawer.classList.remove('open');
+  messengerBackdrop.classList.remove('open');
+  messengerDrawer.setAttribute('aria-hidden', 'true');
+}
+
 if (notificationsSeeMoreBtn) {
   notificationsSeeMoreBtn.addEventListener('click', openNotificationsDrawer);
 }
@@ -679,6 +701,18 @@ if (notificationsDrawerClose) {
 
 if (notificationsDrawerBackdrop) {
   notificationsDrawerBackdrop.addEventListener('click', closeNotificationsDrawer);
+}
+
+if (messengerFab) {
+  messengerFab.addEventListener('click', openMessengerDrawer);
+}
+
+if (messengerClose) {
+  messengerClose.addEventListener('click', closeMessengerDrawer);
+}
+
+if (messengerBackdrop) {
+  messengerBackdrop.addEventListener('click', closeMessengerDrawer);
 }
 
 ensureMarkAllReadButton();
@@ -702,6 +736,7 @@ if (allNotificationsList) {
 document.addEventListener('keydown', function (event) {
   if (event.key === 'Escape') {
     closeNotificationsDrawer();
+    closeMessengerDrawer();
   }
 });
 
