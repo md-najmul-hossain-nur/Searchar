@@ -42,8 +42,8 @@ function profileTimeAgo(?string $dateTime): string {
 }
 
 // Fallback images
-$profile_pic = !empty($user['profile_photo']) ? '../uploads/user/' . $user['profile_photo'] : '../Images/default-profile.gif';
-$cover_pic = !empty($user['cover_photo']) ? '../uploads/user/' . $user['cover_photo'] : '../Images/default_cover.jpg';
+$profile_pic = !empty($user['profile_photo']) ? '../uploads/user/' . $user['profile_photo'] : '../Images/demo_pic/profile.jpg';
+$cover_pic = !empty($user['cover_photo']) ? '../uploads/user/' . $user['cover_photo'] : '../Images/demo_pic/cover.jpg';
 $bio_text = !empty($user['bio']) ? e($user['bio']) : "Tell people a little about yourself by adding a bio in your profile.";
 
 $profilePosts = [];
@@ -110,12 +110,12 @@ try {
   </header>
   <!-- Cover & Profile Photo -->
 <div class="cover-photo">
-    <img src="<?= !empty($user['cover_photo']) ? '../uploads/user/' . e($user['cover_photo']) : '../Images/cover_default.jpg' ?>" 
-         alt="Cover" class="cover-img">
+        <img src="<?= !empty($user['cover_photo']) ? '../uploads/user/' . e($user['cover_photo']) : '../Images/demo_pic/cover.jpg' ?>"
+          alt="Cover" class="cover-img" onerror="this.onerror=null;this.src='../Images/default-cover.gif';">
     <div class="profile-pic-container">
-        <img src="<?= !empty($user['profile_photo']) ? '../uploads/user/' . e($user['profile_photo']) : '../Images/default-profile.gif' ?>" 
-             class="profile-pic" 
-             alt="Profile">
+           <img src="<?= !empty($user['profile_photo']) ? '../uploads/user/' . e($user['profile_photo']) : '../Images/demo_pic/profile.jpg' ?>"
+             class="profile-pic"
+             alt="Profile" onerror="this.onerror=null;this.src='../Images/default-profile.gif';">
     </div>
 
 

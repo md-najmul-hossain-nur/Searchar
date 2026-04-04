@@ -155,77 +155,8 @@ function showForm() {
           <input type="text" class="form-control" id="fullname" name="fullname" required>
         </div>
         <div class="mb-3">
-          <label for="email" class="form-label">Email Address </label>
-          <input type="email" class="form-control" id="email" name="email" required>
-        </div>
-        <div class="mb-3">
-          <label for="mobile" class="form-label">Mobile Number </label>
-          <input type="tel" class="form-control" id="mobile" name="mobile" maxlength="11" minlength="11" placeholder="e.g. 017xxxxxxxx" required>
-        </div>
-        <div class="mb-3">
-          <label for="nid" class="form-label">NID Number </label>
-          <input type="text" class="form-control" id="nid" name="nid" placeholder="10 or 17 digits" required>
-        </div>
-        <div class="mb-3">
-          <label for="nid_photo" class="form-label">Upload NID Photo </label>
-          <input type="file" class="form-control" id="nid_photo" name="nid_photo" accept=".jpg,.jpeg,.png" required>
-        </div>
-        <div class="mb-3">
-          <label for="profile_photo" class="form-label">Profile Photo </label>
-          <input type="file" class="form-control" id="profile_photo" name="profile_photo" accept=".jpg,.jpeg,.png">
-        </div>
-        <div class="mb-3">
-  <label for="cover_photo" class="form-label">Cover Photo</label>
-  <input type="file" class="form-control" id="cover_photo" name="cover_photo" accept=".jpg,.jpeg,.png">
-</div>
-
-        <div class="mb-3">
-          <label for="dob" class="form-label">Date of Birth </label>
-          <input type="date" class="form-control" id="dob" name="dob" required>
-        </div>
-        <div class="mb-3">
-          <label for="gender" class="form-label">Gender </label>
-          <select class="form-select" id="gender" name="gender" required>
-            <option value="">-- Select Gender --</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-        <p class="map-helper-text" style="margin:12px 0 8px 0; color:#425a78; font-size:1em;">
-          Please select your location by clicking the <b>Select location from map</b> button below.
-        </p>
-        <div class="mb-3">
-          <label for="street" class="form-label">Street Address</label>
-          <input type="text" id="street" name="street" class="form-control" placeholder="Enter street address" >
-        </div>
-        <div class="mb-3">
-          <label for="city" class="form-label">City</label>
-          <input type="text" id="city" name="city" class="form-control" placeholder="Enter city" >
-        </div>
-        <div class="mb-3">
-          <label for="postal" class="form-label">Postal Code</label>
-          <input type="text" id="postal" name="postal" class="form-control" placeholder="Enter postal code" >
-        </div>
-        <div class="mb-3">
-          <label for="country" class="form-label">Country</label>
-          <input type="text" id="country" name="country" class="form-control" placeholder="Enter country" >
-        </div>
-        <input type="hidden" id="latitude" name="latitude">
-        <input type="hidden" id="longitude" name="longitude">
-        <button type="button" class="btn btn-primary map-select-btn"
-                onclick="selectLocationFromMap()"
-                style="margin-bottom: 15px;">
-          Select location from map
-        </button>
-        <div id="mapModal" class="map-modal" style="display:none;">
-          <div class="map-modal-content" style="background:#fff; padding:15px; border-radius:8px; position:relative;">
-            <span class="map-close" onclick="closeMapModal()"
-                  style="position:absolute; top:8px; right:12px; cursor:pointer; font-size:20px;">&times;</span>
-            <div id="map" style="width:100%;height:320px; margin-bottom:10px;"></div>
-            <button id="currentLocationBtn" type="button" class="btn btn-secondary" onclick="getCurrentLocation()">Use Current Location</button>
-            <button id="saveLocationBtn" type="button" class="btn btn-success" onclick="saveMapLocation()">Save Location</button>
-          </div>
+          <label for="emailOrPhone" class="form-label">Email or Phone Number </label>
+          <input type="text" class="form-control" id="emailOrPhone" name="emailOrPhone" placeholder="example@mail.com or 017xxxxxxxx" required>
         </div>
         <div class="mb-3">
           <label for="password" class="form-label">Password </label>
@@ -609,22 +540,7 @@ function showForm() {
   saveSignupDraft();
 }
 
-// Bubble animation script (larger bubbles)
 document.addEventListener('DOMContentLoaded', () => {
-  const bubbleContainer = document.querySelector('.bubble-background');
-  for (let i = 0; i < 18; i++) {
-    const bubble = document.createElement('div');
-    bubble.classList.add('bubble');
-    // Increase bubble size: min 80px, max 180px
-    const size = Math.random() * (180 - 80) + 80; // px
-    bubble.style.width = `${size}px`;
-    bubble.style.height = `${size}px`;
-    bubble.style.left = `${Math.random() * 100}vw`;
-    bubble.style.animationDuration = `${Math.random() * (19 - 9) + 9}s`;
-    bubble.style.animationDelay = `-${Math.random() * 19}s`;
-    bubbleContainer.appendChild(bubble);
-  }
-
   const roleSelect = document.getElementById('role');
   const dynamicForm = document.getElementById('dynamicForm');
 

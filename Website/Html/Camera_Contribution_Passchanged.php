@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="UTF-8">
   <title>Change Password - Camera Contributor</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="../css/Camera_Contribution_Passchanged.css">
+  <link rel="stylesheet" href="../css/Camera_Contribution_Passchanged.css?v=20260405bg">
 </head>
 <body>
   <header class="navbar">
@@ -54,8 +54,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo">
     </div>
   </header>
-  <div class="bubble-background"></div>
-
   <main class="edit-passchanged-container">
     <div class="password-form-box">
       <div class="password-change-box">
@@ -88,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
   </main>
 
-  <script src="../javascrpit/Camera_Contribution_Passchanged.js"></script>
+  <script src="../javascrpit/Camera_Contribution_Passchanged.js?v=20260405bg"></script>
   <?php if (!empty($js_alert)): ?>
   <script>
     <?= $js_alert ?>

@@ -613,7 +613,20 @@ async function handleNotificationClick(row) {
   const notificationId = Number(row.getAttribute('data-notification-id'));
   const targetPostId = Number(row.getAttribute('data-target-post-id'));
   const targetCommentId = Number(row.getAttribute('data-target-comment-id'));
+  const notification = notificationsCache.find(item => Number(item.id) === notificationId) || null;
+
   await markNotificationRead(notificationId);
+
+  const title = String(notification && notification.title ? notification.title : '').toLowerCase();
+  const message = String(notification && notification.message ? notification.message : '').toLowerCase();
+  const profileIncomplete = document.body && document.body.getAttribute('data-profile-incomplete') === '1';
+  const isProfileReminder = profileIncomplete && title.includes('admin reminder') && message.includes('complete your profile');
+
+  if (isProfileReminder) {
+    closeNotificationsDrawer();
+    window.location.href = '../Html/User_Edit_profile.php';
+    return;
+  }
 
   if (targetPostId > 0) {
     closeNotificationsDrawer();

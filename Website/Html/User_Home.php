@@ -59,6 +59,108 @@ if (!$user) {
     exit();
 }
 
+  function ensureNotificationsTable(PDO $pdo): void {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS user_notifications (
+      notification_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      recipient_entity VARCHAR(60) NOT NULL,
+      recipient_id INT UNSIGNED NOT NULL,
+      title VARCHAR(190) NOT NULL,
+      message TEXT NOT NULL,
+      level VARCHAR(30) NOT NULL DEFAULT 'info',
+      is_read TINYINT(1) NOT NULL DEFAULT 0,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (notification_id),
+      INDEX idx_recipient (recipient_entity, recipient_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+  }
+
+  function buildUserImagePath(?string $fileName, string $demoFallback): string {
+    $file = trim((string)($fileName ?? ''));
+    if ($file !== '') {
+      return '../uploads/user/' . $file;
+    }
+    return $demoFallback;
+  }
+
+  function isUserProfileComplete(array $row): bool {
+    $required = ['date_of_birth', 'gender', 'street', 'city', 'country'];
+    foreach ($required as $key) {
+      if (trim((string)($row[$key] ?? '')) === '') {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  $demoProfilePath = '../Images/demo_pic/profile.jpg';
+  $demoCoverPath = '../Images/demo_pic/cover.jpg';
+
+  $profileImagePath = buildUserImagePath((string)($user['profile_photo'] ?? ''), $demoProfilePath);
+  $coverImagePath = buildUserImagePath((string)($user['cover_photo'] ?? ''), $demoCoverPath);
+
+  $missingProfileParts = [];
+  if (trim((string)($user['date_of_birth'] ?? '')) === '') $missingProfileParts[] = 'date of birth';
+  if (trim((string)($user['gender'] ?? '')) === '') $missingProfileParts[] = 'gender';
+  if (trim((string)($user['street'] ?? '')) === '') $missingProfileParts[] = 'street address';
+  if (trim((string)($user['city'] ?? '')) === '') $missingProfileParts[] = 'city';
+  if (trim((string)($user['country'] ?? '')) === '') $missingProfileParts[] = 'country';
+
+  $isProfileIncomplete = !isUserProfileComplete($user);
+  $profileMissingLabel = implode(', ', $missingProfileParts);
+
+  try {
+    ensureNotificationsTable($pdo);
+
+    if ($isProfileIncomplete) {
+      $existsReminder = $pdo->prepare("SELECT notification_id
+        FROM user_notifications
+        WHERE recipient_entity IN ('user', 'users')
+          AND recipient_id = :id
+          AND title = 'Admin Reminder'
+          AND message LIKE '%complete your profile%'
+        LIMIT 1");
+      $existsReminder->execute([':id' => $user_id]);
+
+      if (!$existsReminder->fetchColumn()) {
+        $insReminder = $pdo->prepare('INSERT INTO user_notifications (recipient_entity, recipient_id, title, message, level, is_read) VALUES (:entity, :id, :title, :message, :level, 0)');
+        $insReminder->execute([
+          ':entity' => 'user',
+          ':id' => $user_id,
+          ':title' => 'Admin Reminder',
+          ':message' => 'Please complete your profile from Edit Profile. Missing: ' . $profileMissingLabel . '. (Profile and cover photo are recommended.)',
+          ':level' => 'warning',
+        ]);
+      }
+    } else {
+      $deleteReminder = $pdo->prepare("DELETE FROM user_notifications
+        WHERE recipient_entity IN ('user', 'users')
+          AND recipient_id = :id
+          AND title = 'Admin Reminder'
+          AND message LIKE '%complete your profile%'");
+      $deleteReminder->execute([':id' => $user_id]);
+
+      $existsThanks = $pdo->prepare("SELECT notification_id
+        FROM user_notifications
+        WHERE recipient_entity IN ('user', 'users')
+          AND recipient_id = :id
+          AND title = 'Admin Thanks'
+        LIMIT 1");
+      $existsThanks->execute([':id' => $user_id]);
+
+      if (!$existsThanks->fetchColumn()) {
+        $insThanks = $pdo->prepare('INSERT INTO user_notifications (recipient_entity, recipient_id, title, message, level, is_read) VALUES (:entity, :id, :title, :message, :level, 0)');
+        $insThanks->execute([
+          ':entity' => 'user',
+          ':id' => $user_id,
+          ':title' => 'Admin Thanks',
+          ':message' => 'Thanks for completing your profile. Your account is now fully ready for emergency reporting.',
+          ':level' => 'info',
+        ]);
+      }
+    }
+  } catch (Throwable $e) {
+  }
+
 // Optional extra check: if session has email, ensure it matches DB record.
 // This defends against session tampering where role/user_id pair is inconsistent with email.
 if (!empty($_SESSION['email'])) {
@@ -170,7 +272,7 @@ function getAuthorPhoto(PDO $pdo, string $authorRole, int $authorId): string {
   }
 
   if (!isset($roleMap[$authorRole]) || $authorId <= 0) {
-    return $cache[$cacheKey] = '../Images/default-profile.gif';
+    return $cache[$cacheKey] = '../Images/demo_pic/profile.jpg';
   }
 
   $table = $roleMap[$authorRole]['table'];
@@ -187,7 +289,7 @@ function getAuthorPhoto(PDO $pdo, string $authorRole, int $authorId): string {
     // fall through to default image
   }
 
-  return $cache[$cacheKey] = '../Images/default-profile.gif';
+  return $cache[$cacheKey] = '../Images/demo_pic/profile.jpg';
 }
 
 $posts = [];
@@ -240,10 +342,10 @@ try {
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Main CSS -->
-  <link rel="stylesheet" href="../css/User_Home.css">
+  <link rel="stylesheet" href="../css/User_Home.css?v=20260405c">
 
 </head>
-<body data-current-user-name="<?= e($user['full_name'] ?? 'User') ?>">
+<body data-current-user-name="<?= e($user['full_name'] ?? 'User') ?>" data-profile-incomplete="<?= $isProfileIncomplete ? '1' : '0' ?>" data-profile-missing="<?= e($profileMissingLabel) ?>">
 <header class="navbar" style="display:flex; align-items:center; justify-content:space-between; padding:10px; position:sticky; top:0; z-index:2000; background:#fff;">
   <!-- Left: Logo -->
   <div class="navbar-logo">
@@ -267,14 +369,10 @@ try {
     <!-- Left Sidebar -->
     <div class="sidebar-left">
       <div class="profile-card">
-<img src="<?= isset($user['cover_photo']) 
-              ? '../uploads/user/' . e($user['cover_photo']) 
-              : '../Images/cover_default.jpg' ?>" 
-  class="cover" alt="Cover Photo" onerror="this.onerror=null;this.src='../Images/cover_default.jpg';">
+<img src="<?= e($coverImagePath) ?>"
+  class="cover" alt="Cover Photo" onerror="this.onerror=null;this.src='../Images/default-cover.gif';">
          <!-- Profile image dynamic from DB -->
- <img src="<?= isset($user['profile_photo']) 
-            ? '../uploads/user/' . e($user['profile_photo']) 
-            : '../Images/default-profile.gif' ?>" 
+ <img src="<?= e($profileImagePath) ?>"
      class="profile-pic" 
      alt="Profile Photo" onerror="this.onerror=null;this.src='../Images/default-profile.gif';">
      <?php $user_id = (int)$user['user_id']; ?>
@@ -952,6 +1050,7 @@ try {
 <button id="sendBtn">
     <img src="../Images/send.png" alt="Send" class="send-icon" />
   </button></div>
+</div>
 
 <div id="notificationsDrawerBackdrop" class="notifications-drawer-backdrop"></div>
 <aside id="notificationsDrawer" class="notifications-drawer" aria-hidden="true">
@@ -986,7 +1085,24 @@ try {
            window.history.replaceState({}, document.title, cleanUrl);
          })();
        </script>
-       <script src="../javascrpit/User_Home.js?v=20260301"></script>
+       <script>
+         (function () {
+           const body = document.body;
+           if (!body || body.getAttribute('data-profile-incomplete') !== '1') {
+             return;
+           }
+
+           const todayKey = 'searcharProfileReminderSeen_' + new Date().toISOString().slice(0, 10);
+           if (localStorage.getItem(todayKey) === '1') {
+             return;
+           }
+
+           const missing = body.getAttribute('data-profile-missing') || 'profile details';
+           alert('Admin Reminder: Please complete your profile from Edit Profile. Missing: ' + missing + '.');
+           localStorage.setItem(todayKey, '1');
+         })();
+       </script>
+      <script src="../javascrpit/User_Home.js?v=20260405c"></script>
       <script src="../javascrpit/post_interactions_shared.js?v=20260307b"></script>
     </body>
 

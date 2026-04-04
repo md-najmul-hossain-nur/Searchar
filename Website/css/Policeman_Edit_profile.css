@@ -3,8 +3,39 @@
 
 body {
   font-family: 'Roboto', Arial, sans-serif;
-  background: #fff;
+  background:
+    radial-gradient(980px 560px at 12% 14%, rgba(247, 92, 60, 0.2), transparent 64%),
+    radial-gradient(860px 500px at 86% 82%, rgba(227, 71, 28, 0.14), transparent 66%),
+    linear-gradient(145deg, #fff7f2 0%, #fdf1e8 46%, #fff9f5 100%);
   color: #1a232a;
+  position: relative;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(247, 92, 60, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(247, 92, 60, 0.08) 1px, transparent 1px);
+  background-size: 34px 34px;
+  opacity: 0.2;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  left: -160px;
+  bottom: -150px;
+  width: 540px;
+  height: 540px;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, rgba(247, 92, 60, 0.28) 0%, rgba(247, 92, 60, 0.08) 52%, transparent 74%);
+  filter: blur(2px);
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* Navbar */
@@ -376,36 +407,6 @@ body {
 }
 #currentLocationBtn:hover, #saveLocationBtn:hover {
   background: #e3471c;
-}
-/* Bubbles background */
-.bubble-background {
-  position: fixed;
-  top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.bubble {
-  position: absolute;
-  bottom: -120px;
-  border-radius: 50%;
-  opacity: 0.37;
-  background: linear-gradient(135deg, #cdb468 60%, #ffffff 100%);
-  animation: bubbleUp 15s linear infinite;
-}
-
-@keyframes bubbleUp {
-  0% {
-    transform: translateY(0) scale(1);
-    opacity: 0.48;
-  }
-  80% {
-    opacity: 0.31;
-  }
-  100% {
-    transform: translateY(-110vh) scale(1.2);
-    opacity: 0;
-  }
 }
 .back-button-container {
   margin-top: 1.5em;

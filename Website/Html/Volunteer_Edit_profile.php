@@ -105,7 +105,7 @@ if (!$user) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <link rel="stylesheet" href="../css/Volunteer_Edit_profile.css">
+  <link rel="stylesheet" href="../css/Volunteer_Edit_profile.css?v=20260405bg">
 </head>
 <body>
   <header class="navbar">
@@ -113,8 +113,6 @@ if (!$user) {
       <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo">
     </div>
   </header>
-  <div class="bubble-background"></div>
-
   <main class="edit-profile-container">
     <div class="edit-profile-header-vertical">
       <img src="../Images/edit-profile.gif" alt="Edit Icon" class="edit-profile-icon-vertical">
@@ -211,6 +209,6 @@ if (!$user) {
     </form>
   </main>
 
-  <script src="../javascrpit/Volunteer_Edit_profile.js"></script>
+  <script src="../javascrpit/Volunteer_Edit_profile.js?v=20260405bg"></script>
 </body>
 </html>

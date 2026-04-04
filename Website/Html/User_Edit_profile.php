@@ -14,13 +14,43 @@ function e($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
 
+function ensureNotificationsTable(PDO $pdo): void {
+  $pdo->exec("CREATE TABLE IF NOT EXISTS user_notifications (
+    notification_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    recipient_entity VARCHAR(60) NOT NULL,
+    recipient_id INT UNSIGNED NOT NULL,
+    title VARCHAR(190) NOT NULL,
+    message TEXT NOT NULL,
+    level VARCHAR(30) NOT NULL DEFAULT 'info',
+    is_read TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (notification_id),
+    INDEX idx_recipient (recipient_entity, recipient_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+}
+
+function isProfileComplete(array $row): bool {
+  return !empty($row['date_of_birth'])
+    && !empty($row['gender'])
+    && !empty($row['street'])
+    && !empty($row['city'])
+    && !empty($row['country']);
+}
+
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+  $beforeStmt = $pdo->prepare("SELECT profile_photo, cover_photo, date_of_birth, gender, street, city, country FROM users WHERE user_id = ? LIMIT 1");
+  $beforeStmt->execute([$user_id]);
+  $beforeRow = $beforeStmt->fetch(PDO::FETCH_ASSOC) ?: [];
+  $wasComplete = isProfileComplete($beforeRow);
 
     $full_name = $_POST['name'] ?? '';
     $email = $_POST['email'] ?? '';
     $mobile = $_POST['phone'] ?? '';
     $bio = $_POST['bio'] ?? '';
+  $date_of_birth = trim((string)($_POST['date_of_birth'] ?? ''));
+  $gender = trim((string)($_POST['gender'] ?? ''));
     $latitude = $_POST['latitude'] ?? '';
     $longitude = $_POST['longitude'] ?? '';
 $street  = $_POST['street'] ?? '';
@@ -50,7 +80,7 @@ $country = $_POST['country'] ?? '';
 
 // Update user in DB including address
 $stmt = $pdo->prepare("UPDATE users 
-    SET full_name = ?, email = ?, mobile = ?, bio = ?, profile_photo = ?, cover_photo = ?, latitude = ?, longitude = ?, street = ?, city = ?, postal_code = ?, country = ?
+  SET full_name = ?, email = ?, mobile = ?, bio = ?, profile_photo = ?, cover_photo = ?, date_of_birth = ?, gender = ?, latitude = ?, longitude = ?, street = ?, city = ?, postal_code = ?, country = ?
     WHERE user_id = ?");
 $stmt->execute([
     $full_name,
@@ -59,6 +89,8 @@ $stmt->execute([
     $bio,
     $profile_photo_name,
     $cover_photo_name,
+    $date_of_birth !== '' ? $date_of_birth : null,
+    $gender !== '' ? $gender : null,
     $latitude,
     $longitude,
     $street,
@@ -67,6 +99,40 @@ $stmt->execute([
     $country,
     $user_id
 ]);
+
+    $afterProfile = [
+      'profile_photo' => $profile_photo_name,
+      'cover_photo' => $cover_photo_name,
+      'date_of_birth' => $date_of_birth,
+      'gender' => $gender,
+      'street' => $street,
+      'city' => $city,
+      'country' => $country,
+    ];
+    $isNowComplete = isProfileComplete($afterProfile);
+
+    if ($isNowComplete) {
+      ensureNotificationsTable($pdo);
+      $deleteReminder = $pdo->prepare("DELETE FROM user_notifications
+        WHERE recipient_entity IN ('user', 'users')
+          AND recipient_id = :id
+          AND title = 'Admin Reminder'
+          AND message LIKE '%complete your profile%'");
+      $deleteReminder->execute([':id' => $user_id]);
+
+      $existsThanks = $pdo->prepare("SELECT notification_id FROM user_notifications WHERE recipient_entity IN ('user', 'users') AND recipient_id = :id AND title = 'Admin Thanks' LIMIT 1");
+      $existsThanks->execute([':id' => $user_id]);
+      if (!$existsThanks->fetchColumn()) {
+        $notify = $pdo->prepare('INSERT INTO user_notifications (recipient_entity, recipient_id, title, message, level, is_read) VALUES (:entity, :id, :title, :message, :level, 0)');
+        $notify->execute([
+          ':entity' => 'user',
+          ':id' => $user_id,
+          ':title' => 'Admin Thanks',
+          ':message' => 'Thanks for completing your profile. Your account is now fully ready.',
+          ':level' => 'info',
+        ]);
+      }
+    }
 
 
     // ✅ Redirect to profile page after successful save
@@ -96,7 +162,7 @@ if (!$user) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <link rel="stylesheet" href="../css/User_Edit_profile.css">
+  <link rel="stylesheet" href="../css/User_Edit_profile.css?v=20260405bg">
 </head>
 <body>
   <!-- Navbar -->
@@ -105,8 +171,6 @@ if (!$user) {
       <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo">
     </div>
   </header>
-
-  <div class="bubble-background"></div>
 
   <!-- Main Content -->
   <main class="edit-profile-container">
@@ -130,7 +194,7 @@ if (!$user) {
       <div class="cover-photo-section">
         <label for="coverPhoto" class="cover-label">Cover Photo</label>
         <div class="cover-preview">
-          <img id="coverPreview" src="<?= !empty($user['cover_photo']) ? '../uploads/user/' . e($user['cover_photo']) : '../Images/default-cover.gif' ?>" alt="Cover Photo Preview">
+          <img id="coverPreview" src="<?= !empty($user['cover_photo']) ? '../uploads/user/' . e($user['cover_photo']) : '../Images/demo_pic/cover.jpg' ?>" alt="Cover Photo Preview" onerror="this.onerror=null;this.src='../Images/default-cover.gif';">
         </div>
         <input type="file" id="coverPhoto" name="coverPhoto" accept="image/*" onchange="previewImage(event, 'coverPreview')">
       </div>
@@ -139,7 +203,7 @@ if (!$user) {
       <div class="profile-photo-section">
         <label for="profilePhoto" class="profile-label">Profile Picture</label>
         <div class="profile-preview">
-          <img id="profilePreview" src="<?= !empty($user['profile_photo']) ? '../uploads/user/' . e($user['profile_photo']) : '../Images/default-profile.gif' ?>" alt="Profile Picture Preview">
+          <img id="profilePreview" src="<?= !empty($user['profile_photo']) ? '../uploads/user/' . e($user['profile_photo']) : '../Images/demo_pic/profile.jpg' ?>" alt="Profile Picture Preview" onerror="this.onerror=null;this.src='../Images/default-profile.gif';">
         </div>
         <input type="file" id="profilePhoto" name="profilePhoto" accept="image/*" onchange="previewImage(event, 'profilePreview')">
       </div>
@@ -208,7 +272,7 @@ if (!$user) {
   </main>
 
   <!-- JavaScript -->
-  <script src="../javascrpit/User_Edit_profile.js"></script>
+  <script src="../javascrpit/User_Edit_profile.js?v=20260405bg"></script>
   <script>
 let map, marker, selectedLatLng;
 
