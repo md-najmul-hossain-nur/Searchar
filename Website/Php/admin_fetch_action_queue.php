@@ -236,6 +236,36 @@ try {
         }
     }
 
+    if (tableExists($pdo, 'volunteer_applications')) {
+        $sql = "SELECT application_id, full_name, email, mobile, status, created_at
+                FROM volunteer_applications
+                WHERE LOWER(COALESCE(status, 'pending')) = 'pending'
+                ORDER BY created_at DESC, application_id DESC
+                LIMIT 80";
+
+        $rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        foreach ($rows as $row) {
+            $applicationId = (int)($row['application_id'] ?? 0);
+            $fullName = trim((string)($row['full_name'] ?? '')) ?: 'Unknown user';
+            $email = trim((string)($row['email'] ?? ''));
+            $mobile = trim((string)($row['mobile'] ?? ''));
+            $contactLabel = $mobile !== '' ? $mobile : ($email !== '' ? $email : 'No contact');
+
+            $queue[] = [
+                'type' => 'Volunteer Application',
+                'submitted_by' => $fullName,
+                'actor_role' => 'User',
+                'item_ref' => $applicationId > 0 ? ('VA-' . str_pad((string)$applicationId, 3, '0', STR_PAD_LEFT)) : '—',
+                'item_label' => $contactLabel,
+                'status' => 'Pending',
+                'submitted_at' => normalizeDate((string)($row['created_at'] ?? '')),
+                'section' => 'volunteer',
+                'search_key' => $contactLabel,
+                'application_id' => $applicationId,
+            ];
+        }
+    }
+
     usort($queue, static function (array $a, array $b): int {
         $ta = strtotime((string)($a['submitted_at'] ?? '')) ?: 0;
         $tb = strtotime((string)($b['submitted_at'] ?? '')) ?: 0;
@@ -249,6 +279,7 @@ try {
         'missing_pending' => 0,
         'withdraw_pending' => 0,
         'mission_proof_pending' => 0,
+        'volunteer_pending' => 0,
         'report_pending' => 0,
         'chat_log_total' => 0,
         'total' => count($queue),
@@ -265,6 +296,7 @@ try {
         elseif ($type === 'missing report') $summary['missing_pending']++;
         elseif ($type === 'withdraw request') $summary['withdraw_pending']++;
         elseif ($type === 'mission proof') $summary['mission_proof_pending']++;
+        elseif ($type === 'volunteer application') $summary['volunteer_pending']++;
         elseif ($type === 'post report' || $type === 'comment report') $summary['report_pending']++;
     }
 

@@ -168,10 +168,7 @@ try {
       <div class="profile-card">
         <img src="<?= isset($user['cover_photo']) ? '../uploads/camera/' . e($user['cover_photo']) : '../Images/WhatsApp Image 2025-07-31 at 12.44.00_0c691462.jpg' ?>" class="cover">
         <img src="<?= isset($user['profile_photo']) ? '../uploads/camera/' . e($user['profile_photo']) : '../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg' ?>" class="profile-pic">
-        <!-- Edit button as image icon -->
-        <button class="edit-btn" title="Edit Profile" onclick="location.href='../Html/Camera_Contribution_profile.php'">
-  <img src="../Images/profile.gif" alt="Edit" />
-</button>
+        <button class="edit-btn" title="Profile" onclick="location.href='../Html/Camera_Contribution_profile.php'">Profile</button>
 
         <h3><?= e($user['full_name'] ?? '—') ?></h3>
         <p class="user-bio">

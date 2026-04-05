@@ -47,7 +47,22 @@ function fetchWarnedIdMap(PDO $pdo, string $role, array $ids): array {
 $data = [];
 
 try {
-    $stmt = $pdo->query('SELECT * FROM users LIMIT 300');
+    $hasVolunteerApplications = false;
+    $tableCheck = $pdo->query("SHOW TABLES LIKE 'volunteer_applications'");
+    if ($tableCheck && $tableCheck->fetch(PDO::FETCH_NUM)) {
+        $hasVolunteerApplications = true;
+    }
+
+    $sql = 'SELECT * FROM users';
+    if ($hasVolunteerApplications) {
+        $sql .= " WHERE user_id NOT IN (
+            SELECT user_id FROM volunteer_applications
+            WHERE LOWER(COALESCE(status, 'pending')) = 'approved'
+        )";
+    }
+    $sql .= ' LIMIT 300';
+
+    $stmt = $pdo->query($sql);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $ids = array_map(static fn(array $row): int => (int)pickField($row, ['user_id', 'id'], '0'), $rows);
     $warnedMap = fetchWarnedIdMap($pdo, 'user', $ids);

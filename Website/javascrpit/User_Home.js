@@ -2,8 +2,69 @@
 const chatInput = document.getElementById('chatInput');
 const sendBtn = document.getElementById('sendBtn');
 
+const volunteerApplyModal = document.getElementById('volunteerApplyModal');
+const volunteerApplyNoteInput = document.getElementById('volunteerApplyNote');
+
+function openVolunteerApplyModal() {
+  if (!volunteerApplyModal) return;
+  volunteerApplyModal.style.display = 'flex';
+  volunteerApplyModal.setAttribute('aria-hidden', 'false');
+}
+
+function closeVolunteerApplyModal() {
+  if (!volunteerApplyModal) return;
+  volunteerApplyModal.style.display = 'none';
+  volunteerApplyModal.setAttribute('aria-hidden', 'true');
+}
+
+async function submitVolunteerApplication() {
+  const note = String(volunteerApplyNoteInput?.value || '').trim();
+  const submitBtn = document.querySelector('.volunteer-apply-submit');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+  }
+
+  try {
+    const res = await fetch('../Php/volunteer_apply.php', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note })
+    });
+
+    const json = await res.json();
+    if (!json?.success) {
+      throw new Error(json?.error || 'Could not submit volunteer application.');
+    }
+
+    alert(json?.message || 'Volunteer application submitted successfully.');
+    closeVolunteerApplyModal();
+    window.location.reload();
+  } catch (error) {
+    alert(error?.message || 'Could not submit volunteer application right now.');
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit Application';
+    }
+  }
+}
+
+if (volunteerApplyModal) {
+  volunteerApplyModal.addEventListener('click', function (event) {
+    if (event.target === volunteerApplyModal) {
+      closeVolunteerApplyModal();
+    }
+  });
+}
+
+window.openVolunteerApplyModal = openVolunteerApplyModal;
+window.closeVolunteerApplyModal = closeVolunteerApplyModal;
+window.submitVolunteerApplication = submitVolunteerApplication;
+
 function openVolunteerInfo() {
-  alert('Volunteer signup from this page is currently unavailable. Please check back soon.');
+  openVolunteerApplyModal();
 }
 
 window.openVolunteerInfo = openVolunteerInfo;
@@ -129,24 +190,26 @@ if (copyDonationNumberBtn && donationNumberEl) {
   });
 }
 
-sendBtn.addEventListener('click', () => {
-  const msg = chatInput.value.trim();
-  if(msg === '') return;
+if (sendBtn && chatInput && chatWindow) {
+  sendBtn.addEventListener('click', () => {
+    const msg = chatInput.value.trim();
+    if (msg === '') return;
 
-  const msgDiv = document.createElement('div');
-  msgDiv.classList.add('message', 'sent');
-  msgDiv.textContent = msg;
+    const msgDiv = document.createElement('div');
+    msgDiv.classList.add('message', 'sent');
+    msgDiv.textContent = msg;
 
-  chatWindow.appendChild(msgDiv);
-  chatInput.value = '';
-  chatWindow.scrollTop = chatWindow.scrollHeight;
-});
+    chatWindow.appendChild(msgDiv);
+    chatInput.value = '';
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  });
 
-chatInput.addEventListener('keypress', (e) => {
-  if(e.key === 'Enter') {
-    sendBtn.click();
-  }
-});
+  chatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      sendBtn.click();
+    }
+  });
+}
 
 const modal = document.getElementById("postModal");
 const feed = document.getElementById("post-feed");
@@ -473,6 +536,160 @@ function openMissingForm() {
 
 function closeMissingForm() {
   document.getElementById("missingFormModal").style.display = "none";
+}
+
+const comboMissionsList = document.getElementById('comboMissionsList');
+const comboRankTitle = document.getElementById('comboRankTitle');
+const comboRankXp = document.getElementById('comboRankXp');
+const comboRankProgressText = document.getElementById('comboRankProgressText');
+const comboRankNext = document.getElementById('comboRankNext');
+const comboRankNeed = document.getElementById('comboRankNeed');
+const comboRankProgressBar = document.getElementById('comboRankProgressBar');
+const comboMissionStats = document.getElementById('comboMissionStats');
+
+const COMBO_RANKS = [
+  { key: 'bronze', title: 'Bronze Volunteer', nextTitle: 'Silver Responder', minXp: 0, nextXp: 380 },
+  { key: 'silver', title: 'Silver Responder', nextTitle: 'Gold Guardian', minXp: 380, nextXp: 900 },
+  { key: 'gold', title: 'Gold Guardian', nextTitle: 'Platinum Sentinel', minXp: 900, nextXp: 1700 },
+  { key: 'platinum', title: 'Platinum Sentinel', nextTitle: null, minXp: 1700, nextXp: null }
+];
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function missionCounts(items) {
+  const summary = { accepted: 0, completed: 0, busy: 0, autoClosed: 0 };
+  if (!Array.isArray(items)) return summary;
+
+  for (const item of items) {
+    const status = String(item?.status || '').toLowerCase();
+    const response = String(item?.response_status || '').toLowerCase();
+    const flags = [status, response];
+
+    if (flags.includes('accepted')) summary.accepted += 1;
+    if (flags.includes('completed')) summary.completed += 1;
+    if (flags.includes('rejected_busy')) summary.busy += 1;
+    if (flags.includes('closed_by_police')) summary.autoClosed += 1;
+  }
+
+  return summary;
+}
+
+function computeXp(summary) {
+  return (summary.accepted * 10) + (summary.completed * 20) + (summary.autoClosed * 2);
+}
+
+function resolveRank(xp) {
+  let current = COMBO_RANKS[0];
+  for (const rank of COMBO_RANKS) {
+    if (xp >= rank.minXp) current = rank;
+  }
+
+  if (!current.nextXp || !current.nextTitle) {
+    return {
+      ...current,
+      progressPercent: 100,
+      needXp: 0
+    };
+  }
+
+  const span = Math.max(1, current.nextXp - current.minXp);
+  const clamped = Math.max(0, Math.min(span, xp - current.minXp));
+  const progressPercent = Math.round((clamped / span) * 100);
+  const needXp = Math.max(0, current.nextXp - xp);
+
+  return {
+    ...current,
+    progressPercent,
+    needXp
+  };
+}
+
+function renderComboRank(items) {
+  if (!comboRankTitle || !comboRankXp || !comboRankProgressText || !comboRankNext || !comboRankNeed || !comboRankProgressBar || !comboMissionStats) {
+    return;
+  }
+
+  const summary = missionCounts(items);
+  const xp = computeXp(summary);
+  const rank = resolveRank(xp);
+
+  comboRankTitle.textContent = rank.title;
+  comboRankXp.textContent = `${xp} XP`;
+  comboRankProgressText.textContent = `${rank.progressPercent}%`;
+
+  if (rank.nextTitle && rank.nextXp) {
+    comboRankNext.textContent = `Next: ${rank.nextTitle}`;
+    comboRankNeed.textContent = `Need ${rank.needXp} XP`;
+  } else {
+    comboRankNext.textContent = 'Top Rank Achieved';
+    comboRankNeed.textContent = 'No next rank';
+  }
+
+  comboRankProgressBar.style.width = `${rank.progressPercent}%`;
+  comboMissionStats.textContent = `Accepted ${summary.accepted} • Completed ${summary.completed} • Busy ${summary.busy}`;
+}
+
+function missionStatusLabel(item) {
+  const status = String(item?.status || '').toLowerCase();
+  const response = String(item?.response_status || '').toLowerCase();
+  if (response === 'completed' || status === 'completed') return 'Completed';
+  if (response === 'accepted') return 'Accepted';
+  if (response === 'rejected_busy') return 'Rejected (Busy)';
+  return 'Assigned';
+}
+
+function renderComboMissions(items) {
+  renderComboRank(items);
+
+  if (!comboMissionsList) return;
+  if (!Array.isArray(items) || items.length === 0) {
+    comboMissionsList.innerHTML = '<p class="combo-missions-empty">No assigned crime mission right now.</p>';
+    return;
+  }
+
+  comboMissionsList.innerHTML = items.map((item) => {
+    const title = escapeHtml(String(item?.mission_title || 'Mission'));
+    const details = escapeHtml(String(item?.mission_details || '').trim());
+    const location = escapeHtml(String(item?.mission_location || '').trim());
+    const caseRef = escapeHtml(String(item?.case_ref || '').trim());
+    const assignedAt = escapeHtml(String(item?.assigned_at || '').trim());
+    const statusLabel = escapeHtml(missionStatusLabel(item));
+
+    return `
+      <article class="combo-mission-item">
+        <div class="combo-mission-top">
+          <strong>${title}</strong>
+          <span>${statusLabel}</span>
+        </div>
+        ${caseRef ? `<p>Case: ${caseRef}</p>` : ''}
+        ${location ? `<p>Location: ${location}</p>` : ''}
+        ${details ? `<p>${details}</p>` : ''}
+        ${assignedAt ? `<small>Assigned: ${assignedAt}</small>` : ''}
+      </article>
+    `;
+  }).join('');
+}
+
+async function loadComboMissions() {
+  if (!comboMissionsList) return;
+  try {
+    const res = await fetch('../Php/fetch_combo_missions.php', {
+      credentials: 'same-origin',
+      cache: 'no-store'
+    });
+    const json = await res.json();
+    const missions = json && json.success && Array.isArray(json.data) ? json.data : [];
+    renderComboMissions(missions);
+  } catch (error) {
+    comboMissionsList.innerHTML = '<p class="combo-missions-empty">Could not load combo missions right now.</p>';
+  }
 }
 
 const recentNotificationsList = document.getElementById('recentNotificationsList');
@@ -869,7 +1086,9 @@ document.addEventListener('keydown', function (event) {
 });
 
 loadUserNotifications();
+loadComboMissions();
 setInterval(loadUserNotifications, 30000);
+setInterval(loadComboMissions, 45000);
 refreshPostRelativeTimes();
 setInterval(refreshPostRelativeTimes, 60000);
 

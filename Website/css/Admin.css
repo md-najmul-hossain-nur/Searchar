@@ -2922,7 +2922,61 @@ h4 {
   max-width: 360px !important;
 }
 
-.navbar-avatar,
+.volunteer-approver-panel {
+  margin-top: 14px;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 12px;
+}
+
+.volunteer-approver-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.volunteer-approver-head h4 {
+  margin: 0;
+  font-size: 14px;
+  color: #111827;
+}
+
+.volunteer-approver-list {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.volunteer-approver-empty {
+  font-size: 13px;
+  color: #6b7280;
+  padding: 8px 0;
+}
+
+.volunteer-approver-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f9fafb;
+  padding: 10px;
+}
+
+.volunteer-approver-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.volunteer-approver-item p {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #374151;
+}
+
+.volunteer-approver-item-actions {
+  margin-top: 8px;
+}
 #admin-avatar {
   width: 36px !important;
   height: 36px !important;

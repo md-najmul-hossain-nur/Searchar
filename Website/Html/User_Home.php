@@ -40,7 +40,7 @@ $id_col = $roleTableMap[$role]['id_col'];
 
 try {
     // Fetch the user row by id. Use whitelist for table/column interpolation.
-  $sql = "SELECT {$id_col}, full_name, email, mobile, profile_photo, bio, cover_photo, date_of_birth, gender, street, city, country, latitude, longitude
+  $sql = "SELECT {$id_col}, full_name, email, mobile, nid_number, profile_photo, bio, cover_photo, date_of_birth, gender, street, city, country, latitude, longitude
             FROM {$table} WHERE {$id_col} = :id LIMIT 1";
     $stmt = $pdo->prepare($sql);
     $stmt->execute(['id' => $user_id]);
@@ -222,6 +222,31 @@ function isPlaceholderBio(string $text): bool {
     || str_contains($normalized, 'tell people a little about yourself by adding a bio in your profile');
 }
 
+function ensureVolunteerApplicationsTable(PDO $pdo): void {
+  $pdo->exec("CREATE TABLE IF NOT EXISTS volunteer_applications (
+    application_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    user_id INT UNSIGNED NOT NULL,
+    full_name VARCHAR(150) NOT NULL,
+    email VARCHAR(255) DEFAULT NULL,
+    mobile VARCHAR(30) DEFAULT NULL,
+    nid_number VARCHAR(100) DEFAULT NULL,
+    city VARCHAR(120) DEFAULT NULL,
+    country VARCHAR(120) DEFAULT NULL,
+    note TEXT DEFAULT NULL,
+    status VARCHAR(30) NOT NULL DEFAULT 'pending',
+    reviewed_by VARCHAR(100) DEFAULT NULL,
+    review_note VARCHAR(255) DEFAULT NULL,
+    volunteer_id INT UNSIGNED DEFAULT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    reviewed_at DATETIME DEFAULT NULL,
+    PRIMARY KEY (application_id),
+    UNIQUE KEY uq_volunteer_application_user (user_id),
+    KEY idx_volunteer_application_status (status),
+    KEY idx_volunteer_application_created (created_at)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+}
+
 $bioRaw = (string)($user['bio'] ?? '');
 $bioText = trim(normalizeBrokenUtf8($bioRaw));
 if (isPlaceholderBio($bioText)) {
@@ -242,6 +267,64 @@ if ($bioText === '' && $user_id > 0) {
     // Keep existing fallback text path.
   }
 }
+
+$volunteerApplyStatus = 'not_applied';
+$volunteerApplyNote = '';
+$volunteerCanSwitch = false;
+$volunteerStatusText = 'Not applied yet';
+
+try {
+  ensureVolunteerApplicationsTable($pdo);
+
+  $lookupEmail = trim((string)($user['email'] ?? ''));
+  $lookupMobile = trim((string)($user['mobile'] ?? ''));
+  $lookupNid = trim((string)($user['nid_number'] ?? ''));
+
+  if ($lookupEmail !== '' || $lookupMobile !== '' || $lookupNid !== '') {
+    $volExists = $pdo->prepare('SELECT volunteer_id FROM volunteers WHERE email = :email OR mobile = :mobile OR nid_number = :nid LIMIT 1');
+    $volExists->execute([
+      ':email' => $lookupEmail,
+      ':mobile' => $lookupMobile,
+      ':nid' => $lookupNid,
+    ]);
+    $existingVolunteerId = (int)($volExists->fetchColumn() ?: 0);
+    if ($existingVolunteerId > 0) {
+      $volunteerApplyStatus = 'approved';
+      $volunteerCanSwitch = true;
+      $volunteerStatusText = 'Approved';
+    }
+  }
+
+  if (!$volunteerCanSwitch) {
+    $appStmt = $pdo->prepare('SELECT status, review_note FROM volunteer_applications WHERE user_id = :uid LIMIT 1');
+    $appStmt->execute([':uid' => $user_id]);
+    $appRow = $appStmt->fetch(PDO::FETCH_ASSOC);
+    if ($appRow) {
+      $status = strtolower(trim((string)($appRow['status'] ?? 'pending')));
+      if (in_array($status, ['pending', 'approved', 'rejected'], true)) {
+        $volunteerApplyStatus = $status;
+      }
+      $volunteerApplyNote = trim((string)($appRow['review_note'] ?? ''));
+      if ($volunteerApplyStatus === 'approved') {
+        $volunteerCanSwitch = true;
+      }
+    }
+
+    if ($volunteerApplyStatus === 'approved') {
+      $volunteerStatusText = 'Approved';
+    } elseif ($volunteerApplyStatus === 'pending') {
+      $volunteerStatusText = 'Pending admin approval';
+    } elseif ($volunteerApplyStatus === 'rejected') {
+      $volunteerStatusText = 'Rejected (you can apply again)';
+    }
+  }
+} catch (Throwable $e) {
+  $volunteerApplyStatus = 'not_applied';
+  $volunteerCanSwitch = false;
+  $volunteerStatusText = 'Not applied yet';
+}
+
+$showComboVolunteerBadge = ($volunteerCanSwitch || $volunteerApplyStatus === 'approved');
 
 function timeAgo(?string $datetime): string {
   if (!$datetime) return 'Just now';
@@ -348,7 +431,7 @@ try {
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Main CSS -->
-  <link rel="stylesheet" href="../css/User_Home.css?v=20260405h">
+  <link rel="stylesheet" href="../css/User_Home.css?v=20260406c">
 
 </head>
 <body data-current-user-name="<?= e($user['full_name'] ?? 'User') ?>" data-profile-incomplete="<?= $isProfileIncomplete ? '1' : '0' ?>" data-profile-missing="<?= e($profileMissingLabel) ?>">
@@ -382,16 +465,22 @@ try {
      class="profile-pic" 
      alt="Profile Photo" onerror="this.onerror=null;this.src='../Images/default-profile.gif';">
      <?php $user_id = (int)$user['user_id']; ?>
-      <!-- Edit button as image icon -->
-        <button class="edit-btn" title="Edit Profile" onclick="location.href='../Html/User_profile.php?user_id=<?= $user_id ?>'">
-  <img src="../Images/profile.gif" alt="Edit" />
-</button>
+      <button class="edit-btn" title="Profile" onclick="location.href='../Html/User_profile.php?user_id=<?= $user_id ?>'">Profile</button>
 
-<h3><?= e($user['full_name'] ?? '—') ?></h3>
-<p class="user-bio">
-  <?= $bioText !== ''
+<h3 class="profile-name-row">
+  <span><?= e($user['full_name'] ?? '—') ?></span>
+  <?php if ($showComboVolunteerBadge): ?>
+    <span class="profile-combo-badge" title="Volunteer Combo User">
+      <img src="../Images/volunteering.gif" class="profile-volunteer-badge" alt="Volunteer Combo Badge" onerror="this.closest('.profile-combo-badge').style.display='none'">
+      <span>Combo</span>
+    </span>
+  <?php endif; ?>
+</h3>
+<?php $hasUserBio = ($bioText !== ''); ?>
+<p class="user-bio<?= $hasUserBio ? '' : ' is-placeholder' ?>">
+  <?= $hasUserBio
     ? e($bioText)
-  : "&#128172; Tell people a little about yourself by adding a bio in your profile." ?>
+  : "Tell people a little about yourself by adding a bio in your profile." ?>
 </p>
 </div>
       
@@ -453,7 +542,72 @@ try {
   <h4>Become a Volunteer</h4>
   <p>Join our community and help us make a real difference in emergency response.</p>
   <p class="volunteer-note">Get verified, receive mission alerts, and support people in critical moments.</p>
-  <button class="volunteer-btn" type="button" onclick="openVolunteerInfo()">Sign Up</button>
+  <p class="volunteer-status volunteer-status-<?= e($volunteerApplyStatus) ?>">Status: <?= e($volunteerStatusText) ?></p>
+  <?php if ($volunteerCanSwitch): ?>
+    <button class="volunteer-btn" type="button" disabled>Volunteer Features Enabled In This User Account</button>
+    <p class="volunteer-note">No need to switch mode. You will receive volunteer mission notifications and tasks here.</p>
+  <?php elseif ($volunteerApplyStatus === 'pending'): ?>
+    <button class="volunteer-btn" type="button" disabled>Pending Approval</button>
+  <?php else: ?>
+    <button class="volunteer-btn" type="button" onclick="openVolunteerApplyModal()">Apply as Volunteer</button>
+  <?php endif; ?>
+  <?php if ($volunteerApplyStatus === 'rejected' && $volunteerApplyNote !== ''): ?>
+    <p class="volunteer-review-note">Admin note: <?= e($volunteerApplyNote) ?></p>
+  <?php endif; ?>
+
+  <?php if ($volunteerCanSwitch): ?>
+    <div id="comboMissionsPanel" class="combo-missions-panel">
+      <h5>Your Volunteer Missions (Combo)</h5>
+      <div id="comboRankCard" class="combo-rank-card">
+        <h6>Volunteer Rank &amp; Missions</h6>
+        <div class="combo-rank-top">
+          <strong id="comboRankTitle">Bronze Volunteer</strong>
+          <span id="comboRankXp">0 XP</span>
+        </div>
+        <div class="combo-rank-progress-row">
+          <span id="comboRankProgressText">0%</span>
+          <span id="comboRankNext">Next: Silver Responder</span>
+        </div>
+        <div class="combo-rank-progress-track" aria-hidden="true">
+          <div id="comboRankProgressBar" class="combo-rank-progress-bar" style="width: 0%;"></div>
+        </div>
+        <p id="comboRankNeed" class="combo-rank-need">Need 380 XP</p>
+        <div class="combo-rank-tiers" aria-hidden="true">
+          <span>Bronze</span>
+          <span>Silver</span>
+          <span>Gold</span>
+          <span>Platinum</span>
+        </div>
+        <p id="comboMissionStats" class="combo-mission-stats">Accepted 0 • Completed 0 • Busy 0</p>
+        <p class="combo-xp-rules">+10 XP (Accept) • +20 XP (Complete) • +2 XP (Auto-close by Police)</p>
+      </div>
+      <div id="comboMissionsList" class="combo-missions-list">
+        <p class="combo-missions-empty">Loading missions...</p>
+      </div>
+    </div>
+  <?php endif; ?>
+</div>
+
+<div id="volunteerApplyModal" class="volunteer-apply-modal" style="display:none;" aria-hidden="true">
+  <div class="volunteer-apply-modal-content">
+    <button type="button" class="volunteer-apply-close" onclick="closeVolunteerApplyModal()">&times;</button>
+    <h3>Volunteer Application</h3>
+    <p class="volunteer-apply-subtitle">Submit your request from this user account. Admin will review and approve.</p>
+
+    <div class="volunteer-apply-user-info">
+      <p><strong>Name:</strong> <?= e($user['full_name'] ?? '') ?></p>
+      <p><strong>Email:</strong> <?= e($user['email'] ?? '') ?></p>
+      <p><strong>Mobile:</strong> <?= e($user['mobile'] ?? '') ?></p>
+    </div>
+
+    <label for="volunteerApplyNote">Why do you want to volunteer? (optional)</label>
+    <textarea id="volunteerApplyNote" rows="4" placeholder="Write a short note for admin review"></textarea>
+
+    <div class="volunteer-apply-actions">
+      <button type="button" class="volunteer-apply-cancel" onclick="closeVolunteerApplyModal()">Cancel</button>
+      <button type="button" class="volunteer-apply-submit" onclick="submitVolunteerApplication()">Submit Application</button>
+    </div>
+  </div>
 </div>
 
 
@@ -1087,20 +1241,6 @@ try {
   </div>
 </div>
 
-<div class="group-chat-section" hidden>
-  <h4>Group Chat</h4>
-  <div class="chat-window" id="chatWindow">
-    <!-- Messages will appear here -->
-    <div class="message received">Welcome to the group chat!</div>
-  </div>
- <div class="chat-input-area">
-  <input type="text" id="chatInput" placeholder="Type your message..." />
-  <img src="../Images/smile.png" alt="Emoji" class="chat-icon" />
-<button id="sendBtn">
-    <img src="../Images/send.png" alt="Send" class="send-icon" />
-  </button></div>
-</div>
-
 <div id="notificationsDrawerBackdrop" class="notifications-drawer-backdrop"></div>
 <aside id="notificationsDrawer" class="notifications-drawer" aria-hidden="true">
   <div class="notifications-drawer-header">
@@ -1198,7 +1338,31 @@ try {
            localStorage.setItem(todayKey, '1');
          })();
        </script>
-      <script src="../javascrpit/User_Home.js?v=20260405d"></script>
+       <script>
+         (function () {
+           const params = new URLSearchParams(window.location.search);
+           const status = params.get('volunteer_switch');
+           if (!status) return;
+
+           const messages = {
+             unauthorized: 'Please login as user first to switch role.',
+             invalid_user: 'User account is invalid. Please login again.',
+             user_not_found: 'User account was not found.',
+             profile_incomplete: 'Please add email, mobile, and NID in your profile before switching.',
+             not_approved: 'Volunteer mode is not available yet. Wait for admin approval.',
+             error: 'Could not switch to volunteer mode right now.'
+           };
+
+           if (messages[status]) {
+             alert(messages[status]);
+           }
+
+           params.delete('volunteer_switch');
+           const cleanUrl = window.location.pathname + (params.toString() ? ('?' + params.toString()) : '');
+           window.history.replaceState({}, document.title, cleanUrl);
+         })();
+       </script>
+      <script src="../javascrpit/User_Home.js?v=20260406b"></script>
       <script src="../javascrpit/post_interactions_shared.js?v=20260307b"></script>
     </body>
 

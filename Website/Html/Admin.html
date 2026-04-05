@@ -177,6 +177,7 @@
               <tr><td colspan="6">Loading pending actions…</td></tr>
             </tbody>
           </table>
+
         </div>
         <div class="social-traffic-card">
           <div class="st-header">
@@ -211,6 +212,10 @@
       <label class="tables-visibility-chip">
         <input type="checkbox" class="table-visibility-checkbox" data-table-target="users-table-section" checked>
         Users
+      </label>
+      <label class="tables-visibility-chip">
+        <input type="checkbox" class="table-visibility-checkbox" data-table-target="combo-table-section" checked>
+        User + Volunteer Combo
       </label>
       <label class="tables-visibility-chip">
         <input type="checkbox" class="table-visibility-checkbox" data-table-target="volunteers-table-section" checked>
@@ -249,6 +254,30 @@
     </thead>
     <tbody id="users-table-body">
       <tr><td colspan="5">Loading...</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <!-- Combo Table (User + Volunteer Approved) -->
+  <div id="combo-table-section">
+  <div class="tables-divider"></div>
+  <h2>Combo Accounts (User + Volunteer)</h2>
+  <div class="filters-bar">
+    <input id="combo-filter-text" type="text" placeholder="Search by name/email/mobile" style="min-width: 320px;">
+  </div>
+  <table class="styled-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Mobile</th>
+        <th>Volunteer ID</th>
+        <th>Features</th>
+        <th>Approved At</th>
+      </tr>
+    </thead>
+    <tbody id="combo-table-body">
+      <tr><td colspan="6">Loading...</td></tr>
     </tbody>
   </table>
   </div>
@@ -669,6 +698,23 @@
 </div>
 <div id="volunteer" class="main-section">
   <h2>Volunteer Missions</h2>
+  <div id="volunteer-approver-panel" class="volunteer-approver-panel">
+    <div class="volunteer-approver-head">
+      <h4>Volunteer Approver</h4>
+      <div class="filters-bar" style="margin:0; padding:0; box-shadow:none; background:transparent;">
+        <input id="vol-approver-filter-text" type="text" placeholder="Search by name/email/mobile" style="min-width: 240px;">
+        <select id="vol-approver-filter-status">
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+          <option value="all">All</option>
+        </select>
+      </div>
+    </div>
+    <div id="volunteer-approver-list" class="volunteer-approver-list">
+      <div class="volunteer-approver-empty">Loading volunteer applications...</div>
+    </div>
+  </div>
   <div class="filters-bar" id="volunteer-filters">
     <input id="volunteer-filter-text" type="text" placeholder="Search volunteer, mission, location">
     <select id="volunteer-filter-status">
@@ -1219,6 +1265,8 @@
     }
 
     let usersData = [];
+    let comboUsersData = [];
+    let volunteerApprovalsData = [];
     let volunteersData = [];
     let camerasData = [];
 
@@ -1813,6 +1861,179 @@
       renderUsersTable(filtered);
     }
 
+    function renderComboTable(rows) {
+      const tbody = document.getElementById('combo-table-body');
+      if (!tbody) return;
+      if (!rows.length) {
+        setRows(tbody, '<tr><td colspan="6">No combo accounts found.</td></tr>');
+        return;
+      }
+
+      const html = rows.map(r => {
+        const name = escapeHtml(r.full_name || '—');
+        const email = escapeHtml(r.email || '—');
+        const mobile = escapeHtml(r.mobile || '—');
+        const volunteerId = escapeHtml(r.volunteer_id || '—');
+        const occupation = escapeHtml(r.occupation || 'Community Volunteer');
+        const availability = escapeHtml(r.availability || 'Flexible');
+        const reviewedAt = escapeHtml(r.reviewed_at || r.created_at || '—');
+
+        return `
+          <tr>
+            <td>${name}</td>
+            <td>${email}</td>
+            <td>${mobile}</td>
+            <td>${volunteerId}</td>
+            <td>${occupation} • ${availability}</td>
+            <td>${reviewedAt}</td>
+          </tr>
+        `;
+      }).join('');
+
+      setRows(tbody, html);
+    }
+
+    function applyComboFilters() {
+      const text = (document.getElementById('combo-filter-text')?.value || '').trim().toLowerCase();
+      const tokens = text.split(/\s+/).filter(Boolean);
+
+      return comboUsersData.filter(item => {
+        const haystack = `${item.full_name || ''} ${item.email || ''} ${item.mobile || ''} ${item.volunteer_id || ''} ${item.occupation || ''} ${item.availability || ''}`.toLowerCase();
+        return !tokens.length || tokens.every(token => haystack.includes(token));
+      });
+    }
+
+    function filterComboTable() {
+      const filtered = applyComboFilters();
+      renderComboTable(filtered);
+    }
+
+    function renderVolunteerApproverTable(rows) {
+      const list = document.getElementById('volunteer-approver-list');
+      if (!list) return;
+      if (!rows.length) {
+        list.innerHTML = '<div class="volunteer-approver-empty">No volunteer applications found.</div>';
+        return;
+      }
+
+      const html = rows.map(r => {
+        const applicationId = Number(r.application_id || 0);
+        const status = String(r.status || 'pending').toLowerCase();
+        const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+        const statusClass = status === 'approved'
+          ? 'status-active'
+          : (status === 'rejected' ? 'status-rejected' : 'status-pending');
+
+        const actionHtml = status === 'pending'
+          ? `<div class="queue-volunteer-actions">
+               <button type="button" class="approve-btn" data-vol-approver-action="approve" data-application-id="${applicationId}">Approve</button>
+               <button type="button" class="reject-btn" data-vol-approver-action="reject" data-application-id="${applicationId}">Reject</button>
+             </div>`
+          : 'Completed';
+
+        return `
+          <article class="volunteer-approver-item">
+            <div class="volunteer-approver-item-top">
+              <strong>VA-${String(applicationId).padStart(3, '0')} • ${escapeHtml(r.full_name || '—')}</strong>
+              <span class="${statusClass}">${statusLabel}</span>
+            </div>
+            <p>Email: ${escapeHtml(r.email || '—')} | Mobile: ${escapeHtml(r.mobile || '—')}</p>
+            <p>Note: ${escapeHtml(r.note || r.review_note || '—')}</p>
+            <p>Submitted: ${escapeHtml(r.created_at || '—')}</p>
+            <div class="volunteer-approver-item-actions">${actionHtml}</div>
+          </article>
+        `;
+      }).join('');
+
+      list.innerHTML = html;
+    }
+
+    function applyVolunteerApproverFilters() {
+      const text = (document.getElementById('vol-approver-filter-text')?.value || '').trim().toLowerCase();
+      const selectedStatus = (document.getElementById('vol-approver-filter-status')?.value || 'pending').toLowerCase();
+      const tokens = text.split(/\s+/).filter(Boolean);
+
+      return volunteerApprovalsData.filter(item => {
+        const rowStatus = String(item.status || 'pending').toLowerCase();
+        const matchesStatus = selectedStatus === 'all' || rowStatus === selectedStatus;
+        if (!matchesStatus) return false;
+
+        const haystack = `${item.full_name || ''} ${item.email || ''} ${item.mobile || ''} ${item.note || ''} ${item.review_note || ''} ${item.application_id || ''}`.toLowerCase();
+        return !tokens.length || tokens.every(token => haystack.includes(token));
+      });
+    }
+
+    function filterVolunteerApproverTable() {
+      const filtered = applyVolunteerApproverFilters();
+      renderVolunteerApproverTable(filtered);
+    }
+
+    async function reviewVolunteerApplication(applicationId, action) {
+      const reviewNote = action === 'reject'
+        ? (prompt('Reject reason (optional):', 'Please review your profile and apply again.') || '').trim()
+        : '';
+
+      const res = await fetch('../Php/admin_review_volunteer_application.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+          application_id: applicationId,
+          action,
+          review_note: reviewNote
+        })
+      });
+
+      const json = await res.json();
+      if (!json || !json.success) {
+        throw new Error(json?.error || 'Application review failed');
+      }
+      return json;
+    }
+
+    function bindVolunteerApproverActions() {
+      const list = document.getElementById('volunteer-approver-list');
+      if (!list) return;
+
+      list.addEventListener('click', async (event) => {
+        const button = event.target.closest('[data-vol-approver-action]');
+        if (!button) return;
+
+        const action = String(button.getAttribute('data-vol-approver-action') || '').toLowerCase();
+        const applicationId = Number(button.getAttribute('data-application-id') || 0);
+        if (!['approve', 'reject'].includes(action) || applicationId <= 0) return;
+
+        const original = button.textContent;
+        button.disabled = true;
+        button.textContent = action === 'approve' ? 'Approving...' : 'Rejecting...';
+
+        try {
+          await reviewVolunteerApplication(applicationId, action);
+          await loadAdminData();
+          document.dispatchEvent(new CustomEvent('admin:refresh-section', {
+            detail: { sectionId: 'dashboard' }
+          }));
+        } catch (err) {
+          alert(err?.message || 'Could not update volunteer application');
+        } finally {
+          button.disabled = false;
+          button.textContent = original;
+        }
+      });
+    }
+
+    function attachComboFilterListeners() {
+      const text = document.getElementById('combo-filter-text');
+      if (text) text.addEventListener('input', filterComboTable);
+    }
+
+    function attachVolunteerApproverFilterListeners() {
+      const text = document.getElementById('vol-approver-filter-text');
+      const status = document.getElementById('vol-approver-filter-status');
+      if (text) text.addEventListener('input', filterVolunteerApproverTable);
+      if (status) status.addEventListener('change', filterVolunteerApproverTable);
+    }
+
     function attachUserFilterListeners() {
       const text = document.getElementById('user-filter-text');
       if (text) text.addEventListener('input', filterUsers);
@@ -2110,8 +2331,11 @@
     }
 
     attachUserFilterListeners();
+    attachComboFilterListeners();
+    attachVolunteerApproverFilterListeners();
     attachVolunteerFilterListeners();
     attachCctvFilterListeners();
+    bindVolunteerApproverActions();
 
     function applyTablesVisibilityFromCheckboxes() {
       const checkboxes = Array.from(document.querySelectorAll('.table-visibility-checkbox'));
@@ -2234,7 +2458,7 @@
     });
   }
 
-    (async function loadAdminData() {
+    async function loadAdminData() {
       // Users table (only users)
       try {
         const users = await fetchJSON('../Php/admin_fetch_users.php');
@@ -2265,6 +2489,29 @@
         filterVolunteers();
       }
 
+      // Combo table (approved user + volunteer)
+      try {
+        const combos = await fetchJSON('../Php/admin_fetch_combo_users.php');
+        comboUsersData = combos && combos.success && Array.isArray(combos.data) ? combos.data : [];
+        filterComboTable();
+      } catch (e) {
+        console.error('Combo users fetch failed', e);
+        comboUsersData = [];
+        filterComboTable();
+      }
+
+      // Volunteer approver table
+      try {
+        const approvalStatus = (document.getElementById('vol-approver-filter-status')?.value || 'pending').toLowerCase();
+        const approvals = await fetchJSON(`../Php/admin_fetch_volunteer_applications.php?status=${encodeURIComponent(approvalStatus)}`);
+        volunteerApprovalsData = approvals && approvals.success && Array.isArray(approvals.data) ? approvals.data : [];
+        filterVolunteerApproverTable();
+      } catch (e) {
+        console.error('Volunteer approvals fetch failed', e);
+        volunteerApprovalsData = [];
+        filterVolunteerApproverTable();
+      }
+
       // Camera contributors map (reuse CCTV map)
       try {
         const cams = await fetchJSON('../Php/admin_fetch_cameras.php');
@@ -2286,10 +2533,20 @@
         console.error('Policemen fetch failed', e);
         renderPolicemenTable([]);
       }
-    })();
+    }
+
+    window.loadAdminData = loadAdminData;
+    loadAdminData();
+
+    document.addEventListener('admin:refresh-section', (event) => {
+      const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
+      if (sectionId === 'dashboard' || sectionId === 'tables') {
+        loadAdminData();
+      }
+    });
   </script>
   <!-- Chart.js CDN for demo chart drawing (remove if you use your own chart lib) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-      <script src="../javascrpit/Admin.js?v=20260227b"></script>
+      <script src="../javascrpit/Admin.js?v=20260405e"></script>
 </body>
 </html>

@@ -3054,9 +3054,10 @@ function openAddVolunteerModal() {
     const missingPending = Number(summary?.missing_pending || 0);
     const withdrawPending = Number(summary?.withdraw_pending || 0);
     const missionPending = Number(summary?.mission_proof_pending || 0);
+    const volunteerPending = Number(summary?.volunteer_pending || 0);
     const reportPending = Number(summary?.report_pending || 0);
     const chatLogTotal = Number(summary?.chat_log_total || 0);
-    summaryEl.textContent = `Post ${postPending} • Report ${reportPending} • Missing ${missingPending} • Withdraw ${withdrawPending} • Proof ${missionPending} • Chat Log ${chatLogTotal}`;
+    summaryEl.textContent = `Post ${postPending} • Volunteer ${volunteerPending} • Report ${reportPending} • Missing ${missingPending} • Withdraw ${withdrawPending} • Proof ${missionPending} • Chat Log ${chatLogTotal}`;
   }
 
   function statusChip(statusText) {
@@ -3081,6 +3082,7 @@ function openAddVolunteerModal() {
       const itemLabel = String(row?.item_label || '—').trim() || '—';
       const section = String(row?.section || '').trim().toLowerCase();
       const searchKey = String(row?.search_key || '').trim();
+      const actionHtml = `<button type="button" class="ghost" data-queue-open="1" data-queue-section="${esc(section)}" data-queue-search="${esc(searchKey)}" data-queue-ref="${esc(itemRef)}">Open</button>`;
 
       return `
         <tr>
@@ -3089,7 +3091,7 @@ function openAddVolunteerModal() {
           <td><strong>${esc(itemRef)}</strong><br><small>${esc(itemLabel)}</small></td>
           <td>${statusChip(String(row?.status || 'Pending'))}</td>
           <td>${esc(fmtDate(row?.submitted_at || ''))}</td>
-          <td><button type="button" class="ghost" data-queue-open="1" data-queue-section="${esc(section)}" data-queue-search="${esc(searchKey)}" data-queue-ref="${esc(itemRef)}">Open</button></td>
+          <td>${actionHtml}</td>
         </tr>
       `;
     }).join('');

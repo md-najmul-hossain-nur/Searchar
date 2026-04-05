@@ -176,11 +176,8 @@ try {
          class="profile-pic" 
          alt="Profile">
 
-    <!-- Edit button as image icon -->
-    <button class="edit-btn" title="Edit Profile" 
-        onclick="location.href='../Html/Volunteer_profile.php?user_id=<?= e($volunteer_id); ?>'">
-        <img src="../Images/profile.gif" alt="Edit" />
-    </button>
+    <button class="edit-btn" title="Profile" 
+      onclick="location.href='../Html/Volunteer_profile.php?user_id=<?= e($volunteer_id); ?>'">Profile</button>
 
     <!-- Volunteer name and icon -->
     <h2>
