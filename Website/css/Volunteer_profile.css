@@ -928,29 +928,28 @@ body {
   height: auto;
   min-height: 34px;
   padding: 8px 14px;
-  border: 1px solid #d9e1ec;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #ffffff 0%, #f3f6fb 100%);
-  color: #1f2937;
+  border: none;
+  border-radius: 8px;
+  background: #f75c3c;
+  color: #ffffff;
   font-size: 12px;
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: 0.3px;
   white-space: nowrap;
   cursor: pointer;
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.1);
+  box-shadow: 0 4px 10px rgba(247, 92, 60, 0.3);
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 
 .edit-btn:hover {
-  border-color: #c4d0df;
-  background: #ffffff;
-  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.14);
+  background: #e3471c;
+  box-shadow: 0 6px 14px rgba(227, 71, 28, 0.35);
   transform: translateY(-1px);
 }
 
 .edit-btn:focus-visible {
-  outline: 2px solid rgba(59, 130, 246, 0.45);
+  outline: 2px solid rgba(247, 92, 60, 0.45);
   outline-offset: 2px;
 }
 

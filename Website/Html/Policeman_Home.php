@@ -490,7 +490,7 @@ try {
       <div class="profile-card">
         <img src="<?= isset($user['cover_photo']) ? '../uploads/police/' . e($user['cover_photo']) : '../Images/default-cover.gif' ?>" class="cover">
         <img src="<?= isset($user['profile_photo']) ? '../uploads/police/' . e($user['profile_photo']) : '../Images/default-profile.gif' ?>" class="profile-pic">
-        <button class="edit-btn" title="Profile" onclick="location.href='../Html/Policeman_profile.php'">Profile</button>
+        <button class="edit-btn" title="Profile Setting" onclick="location.href='../Html/Policeman_profile.php'">Profile</button>
 
         <h3><?= e($user['full_name'] ?? '—') ?></h3>
         <p class="user-bio"><?= !empty($user['bio']) ? e($user['bio']) : 'Any one can join with us.' ?></p>

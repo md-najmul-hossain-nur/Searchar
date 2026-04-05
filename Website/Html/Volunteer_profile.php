@@ -130,8 +130,8 @@ try {
   <div class="main-content">
     <div class="left-panel">
   <div class="card user-info" style="position: relative;">
-      <button class="edit-btn" title="Profile" 
-        onclick="location.href='../Html/Volunteer_Edit_profile.php?user_id=<?php echo $volunteer_id; ?>'">Profile</button>
+      <button class="edit-btn" title="Profile Setting" 
+        onclick="location.href='../Html/Volunteer_Edit_profile.php?user_id=<?php echo $volunteer_id; ?>'"><img src="../Images/settings.gif" alt="" aria-hidden="true"> Profile Setting</button>
           <h2>
                 <?= e($volunteer['full_name'] ?? 'Volunteer Name') ?>
             </h2>

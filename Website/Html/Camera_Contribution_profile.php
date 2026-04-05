@@ -103,7 +103,7 @@ try {
   <div class="main-content">
     <div class="left-panel">
   <div class="card user-info" style="position: relative;">
-        <button class="edit-btn" title="Profile" onclick="location.href='../Html/Camera_Contribution_Edit_profile.php?camera_id=<?= $user_id ?>'">Profile</button>
+        <button class="edit-btn" title="Profile Setting" onclick="location.href='../Html/Camera_Contribution_Edit_profile.php?camera_id=<?= $user_id ?>'"><img src="../Images/settings.gif" alt="" aria-hidden="true"> Profile Setting</button>
      <h2><?= e($user['full_name'] ?? 'User Name') ?></h2>
             <div class="divider"></div>
             

@@ -176,7 +176,7 @@ try {
          class="profile-pic" 
          alt="Profile">
 
-    <button class="edit-btn" title="Profile" 
+    <button class="edit-btn" title="Profile Setting" 
       onclick="location.href='../Html/Volunteer_profile.php?user_id=<?= e($volunteer_id); ?>'">Profile</button>
 
     <!-- Volunteer name and icon -->

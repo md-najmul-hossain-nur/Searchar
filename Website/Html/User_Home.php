@@ -465,14 +465,14 @@ try {
      class="profile-pic" 
      alt="Profile Photo" onerror="this.onerror=null;this.src='../Images/default-profile.gif';">
      <?php $user_id = (int)$user['user_id']; ?>
-      <button class="edit-btn" title="Profile" onclick="location.href='../Html/User_profile.php?user_id=<?= $user_id ?>'">Profile</button>
+      <button class="edit-btn" title="Profile " onclick="location.href='../Html/User_profile.php?user_id=<?= $user_id ?>'">Profile</button>
 
 <h3 class="profile-name-row">
   <span><?= e($user['full_name'] ?? '—') ?></span>
   <?php if ($showComboVolunteerBadge): ?>
-    <span class="profile-combo-badge" title="Volunteer Combo User">
-      <img src="../Images/volunteering.gif" class="profile-volunteer-badge" alt="Volunteer Combo Badge" onerror="this.closest('.profile-combo-badge').style.display='none'">
-      <span>Combo</span>
+    <span class="profile-combo-badge" title="Volunteer Plus User">
+      <img src="../Images/volunteering.gif" class="profile-volunteer-badge" alt="Volunteer Plus Badge" onerror="this.closest('.profile-combo-badge').style.display='none'">
+      <span>Volunteer Plus</span>
     </span>
   <?php endif; ?>
 </h3>
@@ -557,7 +557,7 @@ try {
 
   <?php if ($volunteerCanSwitch): ?>
     <div id="comboMissionsPanel" class="combo-missions-panel">
-      <h5>Your Volunteer Missions (Combo)</h5>
+      <h5>Your Volunteer Missions (Plus)</h5>
       <div id="comboRankCard" class="combo-rank-card">
         <h6>Volunteer Rank &amp; Missions</h6>
         <div class="combo-rank-top">
