@@ -30,17 +30,24 @@ function ensureNotificationsTable(PDO $pdo): void {
 }
 
 function isProfileComplete(array $row): bool {
-  return !empty($row['date_of_birth'])
-    && !empty($row['gender'])
-    && !empty($row['street'])
-    && !empty($row['city'])
-    && !empty($row['country']);
+  $required = ['date_of_birth', 'gender', 'city', 'country'];
+  foreach ($required as $key) {
+    if (trim((string)($row[$key] ?? '')) === '') {
+      return false;
+    }
+  }
+
+  $street = trim((string)($row['street'] ?? ''));
+  $lat = trim((string)($row['latitude'] ?? ''));
+  $lng = trim((string)($row['longitude'] ?? ''));
+
+  return $street !== '' || ($lat !== '' && $lng !== '');
 }
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-  $beforeStmt = $pdo->prepare("SELECT profile_photo, cover_photo, date_of_birth, gender, street, city, country FROM users WHERE user_id = ? LIMIT 1");
+  $beforeStmt = $pdo->prepare("SELECT profile_photo, cover_photo, date_of_birth, gender, street, city, country, latitude, longitude FROM users WHERE user_id = ? LIMIT 1");
   $beforeStmt->execute([$user_id]);
   $beforeRow = $beforeStmt->fetch(PDO::FETCH_ASSOC) ?: [];
   $wasComplete = isProfileComplete($beforeRow);
@@ -53,10 +60,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $gender = trim((string)($_POST['gender'] ?? ''));
     $latitude = $_POST['latitude'] ?? '';
     $longitude = $_POST['longitude'] ?? '';
-$street  = $_POST['street'] ?? '';
-$city    = $_POST['city'] ?? '';
-$postal  = $_POST['postal'] ?? '';
-$country = $_POST['country'] ?? '';
+$street  = trim((string)($_POST['street'] ?? ''));
+$city    = trim((string)($_POST['city'] ?? ''));
+$postal  = trim((string)($_POST['postal'] ?? ''));
+$country = trim((string)($_POST['country'] ?? ''));
 
     // Profile photo upload
     if (!empty($_FILES['profilePhoto']['name']) && $_FILES['profilePhoto']['error'] === 0) {
@@ -108,6 +115,8 @@ $stmt->execute([
       'street' => $street,
       'city' => $city,
       'country' => $country,
+      'latitude' => $latitude,
+      'longitude' => $longitude,
     ];
     $isNowComplete = isProfileComplete($afterProfile);
 

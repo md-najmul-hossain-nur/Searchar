@@ -166,7 +166,16 @@ try {
 
     $donations = [];
     if (tableExists($pdo, 'donations')) {
-        $stmt = $pdo->query("SELECT donor_name, amount, date, anonymous, message FROM donations ORDER BY date DESC LIMIT 100");
+        $hasSenderMobile = columnExists($pdo, 'donations', 'sender_mobile');
+        $hasTxId = columnExists($pdo, 'donations', 'tx_id');
+        $hasReceiverNumber = columnExists($pdo, 'donations', 'receiver_number');
+
+        $selectParts = ['donor_name', 'amount', 'date', 'anonymous', 'message'];
+        $selectParts[] = $hasSenderMobile ? 'sender_mobile' : 'NULL AS sender_mobile';
+        $selectParts[] = $hasTxId ? 'tx_id' : 'NULL AS tx_id';
+        $selectParts[] = $hasReceiverNumber ? 'receiver_number' : 'NULL AS receiver_number';
+
+        $stmt = $pdo->query('SELECT ' . implode(', ', $selectParts) . ' FROM donations ORDER BY date DESC LIMIT 100');
         $donations = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 

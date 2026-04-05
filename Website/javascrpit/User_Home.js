@@ -2,6 +2,133 @@
 const chatInput = document.getElementById('chatInput');
 const sendBtn = document.getElementById('sendBtn');
 
+function openVolunteerInfo() {
+  alert('Volunteer signup from this page is currently unavailable. Please check back soon.');
+}
+
+window.openVolunteerInfo = openVolunteerInfo;
+
+const donationModal = document.getElementById('donationModal');
+const donationForm = document.getElementById('donationForm');
+const donationAmountInput = document.getElementById('donationAmount');
+const donationTxIdInput = document.getElementById('donationTxId');
+const donationNumberEl = document.getElementById('donationReceiverNumber');
+const copyDonationNumberBtn = document.getElementById('copyDonationNumberBtn');
+
+function openDonationPopup() {
+  if (!donationModal) return;
+  donationModal.style.display = 'flex';
+  donationModal.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('donation-modal-open');
+}
+
+function closeDonationPopup() {
+  if (!donationModal) return;
+  donationModal.style.display = 'none';
+  donationModal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('donation-modal-open');
+}
+
+window.openDonationPopup = openDonationPopup;
+window.closeDonationPopup = closeDonationPopup;
+
+if (donationModal) {
+  donationModal.addEventListener('click', function (event) {
+    if (event.target === donationModal) {
+      closeDonationPopup();
+    }
+  });
+}
+
+if (donationAmountInput) {
+  document.querySelectorAll('.donation-quick-amounts button[data-amount]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const amount = btn.getAttribute('data-amount') || '';
+      donationAmountInput.value = amount;
+      donationAmountInput.focus();
+    });
+  });
+}
+
+if (donationForm) {
+  donationForm.addEventListener('submit', async function (event) {
+    event.preventDefault();
+
+    const amount = Number(donationAmountInput ? donationAmountInput.value : 0);
+    const txId = String(donationTxIdInput ? donationTxIdInput.value : '').trim();
+    const donorName = String(document.getElementById('donationName')?.value || '').trim();
+    const donorPhone = String(document.getElementById('donationPhone')?.value || '').trim();
+    const receiverNumber = String(donationNumberEl ? donationNumberEl.textContent : '').trim();
+    if (!amount || amount < 50) {
+      alert('Please enter a valid donation amount (minimum 50 BDT).');
+      return;
+    }
+
+    if (!donorName) {
+      alert('Please enter your full name.');
+      return;
+    }
+
+    if (!donorPhone) {
+      alert('Please enter your mobile number.');
+      return;
+    }
+
+    if (txId.length < 6) {
+      alert('Please enter a valid Transaction ID (TxID).');
+      return;
+    }
+
+    const submitBtn = donationForm.querySelector('.donation-submit');
+    if (submitBtn) submitBtn.disabled = true;
+
+    try {
+      const res = await fetch('../Php/save_donation.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          donor_name: donorName,
+          donor_phone: donorPhone,
+          amount,
+          tx_id: txId,
+          receiver_number: receiverNumber
+        })
+      });
+
+      const json = await res.json();
+      if (!json?.success) {
+        throw new Error(json?.error || 'Could not submit donation.');
+      }
+
+      alert('Thank you. Your donation request with TxID has been submitted successfully.');
+      donationForm.reset();
+      closeDonationPopup();
+    } catch (error) {
+      alert(error?.message || 'Could not submit donation right now.');
+    } finally {
+      if (submitBtn) submitBtn.disabled = false;
+    }
+  });
+}
+
+if (copyDonationNumberBtn && donationNumberEl) {
+  copyDonationNumberBtn.addEventListener('click', async function () {
+    const number = String(donationNumberEl.textContent || '').trim();
+    if (!number) return;
+
+    try {
+      await navigator.clipboard.writeText(number);
+      copyDonationNumberBtn.textContent = 'Copied';
+      setTimeout(() => {
+        copyDonationNumberBtn.textContent = 'Copy';
+      }, 1200);
+    } catch (_) {
+      alert('Could not copy number automatically. Please copy manually: ' + number);
+    }
+  });
+}
+
 sendBtn.addEventListener('click', () => {
   const msg = chatInput.value.trim();
   if(msg === '') return;
@@ -735,6 +862,7 @@ if (allNotificationsList) {
 
 document.addEventListener('keydown', function (event) {
   if (event.key === 'Escape') {
+    closeDonationPopup();
     closeNotificationsDrawer();
     closeMessengerDrawer();
   }

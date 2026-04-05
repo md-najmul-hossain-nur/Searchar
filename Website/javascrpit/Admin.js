@@ -2583,8 +2583,17 @@ function openAddVolunteerModal() {
   const donationsTopDonor = document.getElementById('donations-top-donor');
   const withdrawTotalAmount = document.getElementById('withdraw-total-amount');
   const withdrawPendingCount = document.getElementById('withdraw-pending-count');
+  const miscSectionIds = ['donations', 'broadcast', 'volunteer', 'withdraw'];
+  let isLoadingMiscSections = false;
 
   if (!donationsBody && !broadcastBody && !missionsBody && !withdrawBody) return;
+
+  function shouldAutoRefreshMiscSections() {
+    if (document.hidden) return false;
+    const activeSection = document.querySelector('.main-section.active');
+    const activeId = String(activeSection?.id || '').toLowerCase();
+    return miscSectionIds.includes(activeId);
+  }
 
   function esc(v) {
     return String(v ?? '')
@@ -2648,6 +2657,11 @@ function openAddVolunteerModal() {
   }
 
   async function loadMiscSections() {
+    if (isLoadingMiscSections) {
+      return;
+    }
+
+    isLoadingMiscSections = true;
     try {
       const res = await fetch('../Php/admin_fetch_misc_sections.php', {
         credentials: 'same-origin',
@@ -2689,22 +2703,26 @@ function openAddVolunteerModal() {
 
       if (donationsBody) {
         if (!donations.length) {
-          setNoData(donationsBody, 6, 'No donations found.');
+          setNoData(donationsBody, 8, 'No donations found.');
         } else {
           donationsBody.innerHTML = donations.map(d => `
             <tr>
               <td>${esc(d.donor_name || 'Anonymous')}</td>
+              <td>${esc(d.sender_mobile || '—')}</td>
+              <td>${esc(d.tx_id || '—')}</td>
               <td>৳${esc(Number(d.amount || 0).toFixed(2))}</td>
               <td>${esc(fmtDate(d.date))}</td>
               <td>${Number(d.anonymous || 0) === 1 ? 'Yes' : 'No'}</td>
               <td>${esc(d.message || '—')}</td>
-              <td><button type="button" data-donation-report="1" data-donor-name="${esc(d.donor_name || 'Anonymous')}" data-donation-amount="${esc(Number(d.amount || 0).toFixed(2))}" data-donation-date="${esc(d.date || '')}" data-donation-anon="${esc(Number(d.anonymous || 0))}" data-donation-message="${esc(d.message || '')}">Report</button></td>
+              <td><button type="button" data-donation-report="1" data-donor-name="${esc(d.donor_name || 'Anonymous')}" data-donation-mobile="${esc(d.sender_mobile || '')}" data-donation-txid="${esc(d.tx_id || '')}" data-donation-amount="${esc(Number(d.amount || 0).toFixed(2))}" data-donation-date="${esc(d.date || '')}" data-donation-anon="${esc(Number(d.anonymous || 0))}" data-donation-message="${esc(d.message || '')}">Report</button></td>
             </tr>
           `).join('');
 
           donationsBody.querySelectorAll('[data-donation-report]').forEach(btn => {
             btn.addEventListener('click', () => {
               const donorName = String(btn.getAttribute('data-donor-name') || 'Anonymous');
+              const donorMobile = String(btn.getAttribute('data-donation-mobile') || '').trim() || '—';
+              const donationTxId = String(btn.getAttribute('data-donation-txid') || '').trim() || '—';
               const amount = String(btn.getAttribute('data-donation-amount') || '0.00');
               const dateText = String(btn.getAttribute('data-donation-date') || '');
               const anonymous = String(btn.getAttribute('data-donation-anon') || '0') === '1' ? 'Yes' : 'No';
@@ -2723,7 +2741,7 @@ function openAddVolunteerModal() {
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#39;');
 
-              popup.document.write(`<!doctype html><html><head><title>Donation Report</title><style>body{font-family:Arial,sans-serif;padding:20px;color:#1f2937}h2{margin-top:0}table{border-collapse:collapse;width:100%;margin-top:12px}th,td{border:1px solid #d1d5db;padding:10px;text-align:left}th{background:#f3f4f6}</style></head><body><h2>Donation Report</h2><table><tr><th>Donor</th><td>${safe(donorName)}</td></tr><tr><th>Amount</th><td>৳${safe(amount)}</td></tr><tr><th>Date</th><td>${safe(fmtDate(dateText))}</td></tr><tr><th>Anonymous</th><td>${safe(anonymous)}</td></tr><tr><th>Message</th><td>${safe(message)}</td></tr></table><p style="margin-top:16px;color:#6b7280">Generated from SEARCHAR Admin Panel</p></body></html>`);
+              popup.document.write(`<!doctype html><html><head><title>Donation Report</title><style>body{font-family:Arial,sans-serif;padding:20px;color:#1f2937}h2{margin-top:0}table{border-collapse:collapse;width:100%;margin-top:12px}th,td{border:1px solid #d1d5db;padding:10px;text-align:left}th{background:#f3f4f6}</style></head><body><h2>Donation Report</h2><table><tr><th>Donor</th><td>${safe(donorName)}</td></tr><tr><th>Mobile</th><td>${safe(donorMobile)}</td></tr><tr><th>TxID</th><td>${safe(donationTxId)}</td></tr><tr><th>Amount</th><td>৳${safe(amount)}</td></tr><tr><th>Date</th><td>${safe(fmtDate(dateText))}</td></tr><tr><th>Anonymous</th><td>${safe(anonymous)}</td></tr><tr><th>Message</th><td>${safe(message)}</td></tr></table><p style="margin-top:16px;color:#6b7280">Generated from SEARCHAR Admin Panel</p></body></html>`);
               popup.document.close();
             });
           });
@@ -2968,7 +2986,7 @@ function openAddVolunteerModal() {
         }
       }
     } catch (error) {
-      if (donationsBody) setNoData(donationsBody, 6, 'Failed to load donations.');
+      if (donationsBody) setNoData(donationsBody, 8, 'Failed to load donations.');
       if (broadcastBody) setNoData(broadcastBody, 6, 'Failed to load broadcast notifications.');
       if (missionsBody) setNoData(missionsBody, 9, 'Failed to load volunteer missions.');
       if (withdrawBody) setNoData(withdrawBody, 5, 'Failed to load withdrawals.');
@@ -2979,6 +2997,8 @@ function openAddVolunteerModal() {
       if (volunteerTotalMissions) volunteerTotalMissions.textContent = '0';
       if (volunteerThisMonth) volunteerThisMonth.textContent = '0';
       console.error('misc section load failed', error);
+    } finally {
+      isLoadingMiscSections = false;
     }
   }
 
@@ -2987,10 +3007,23 @@ function openAddVolunteerModal() {
   document.addEventListener('admin:refresh-section', (event) => {
     const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
     if (!sectionId) return;
-    if (['donations', 'broadcast', 'volunteer', 'withdraw'].includes(sectionId)) {
+    if (miscSectionIds.includes(sectionId)) {
       loadMiscSections();
     }
   });
+
+  document.addEventListener('admin:section-activated', (event) => {
+    const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
+    if (miscSectionIds.includes(sectionId)) {
+      loadMiscSections();
+    }
+  });
+
+  setInterval(() => {
+    if (shouldAutoRefreshMiscSections()) {
+      loadMiscSections();
+    }
+  }, 10000);
 })();
 
 // Dashboard pending action queue
@@ -3561,7 +3594,56 @@ function openAddVolunteerModal() {
     URL.revokeObjectURL(url);
   }
 
-  exportBtn.addEventListener('click', exportTable);
+  function inferFileNameFromHeader(contentDisposition) {
+    const raw = String(contentDisposition || '');
+    const match = raw.match(/filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i);
+    const encoded = match?.[1] || match?.[2] || '';
+    if (!encoded) return '';
+    try {
+      return decodeURIComponent(encoded);
+    } catch (_) {
+      return encoded;
+    }
+  }
+
+  async function exportDonationsReport() {
+    const originalText = exportBtn.innerHTML;
+    exportBtn.disabled = true;
+    exportBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Exporting...';
+
+    try {
+      const res = await fetch('../Php/admin_donations_report.php', {
+        method: 'GET',
+        credentials: 'same-origin',
+        cache: 'no-store'
+      });
+
+      if (!res.ok) {
+        throw new Error('Export endpoint failed');
+      }
+
+      const blob = await res.blob();
+      const fileName = inferFileNameFromHeader(res.headers.get('content-disposition'))
+        || `donations_report_${new Date().toISOString().slice(0,10)}.csv`;
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.warn('Backend donation export failed, falling back to table export.', error);
+      exportTable();
+    } finally {
+      exportBtn.disabled = false;
+      exportBtn.innerHTML = originalText;
+    }
+  }
+
+  exportBtn.addEventListener('click', exportDonationsReport);
 })();
 
 // Withdraw export: download current table as CSV
