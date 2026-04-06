@@ -1275,26 +1275,6 @@ var policeIcon = L.icon({
         locateAndShow("police station", policeIcon);
     });
 });
-// Open Modal and Set Preview
-document.querySelectorAll('.share-btn').forEach(btn => {
-  btn.addEventListener('click', function () {
-    const post = this.closest('.post');
-    const postHeader = post ? post.querySelector('.post-header') : null;
-    notifyPostInteraction(post?.dataset?.postId, 'share');
-    const text = post.querySelector('p')?.innerText || '';
-    const imageSrc = post.querySelector('.post-img')?.getAttribute('src') || '';
-    const videoSrc = getPostVideoSource(post);
-    const category = post?.dataset?.category || 'general';
-    const authorImage = postHeader?.querySelector('img')?.getAttribute('src') || '../Images/default-profile.gif';
-    const authorName = postHeader?.querySelector('h5')?.innerText || 'Unknown User';
-    const timeAgo = postHeader?.querySelector('small')?.innerText || '';
-
-    shareContext = { text, imageSrc, videoSrc, category, authorImage, authorName, timeAgo };
-    isShareMode = true;
-
-    openModal(true);
-  });
-});
 initFeedVideoCenterPlayButtons();
 
 function filterPosts(category) {

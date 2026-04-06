@@ -19,6 +19,8 @@ DROP TABLE IF EXISTS `donations`;
 DROP TABLE IF EXISTS `auth_users`;
 DROP TABLE IF EXISTS `signup_blacklist`;
 DROP TABLE IF EXISTS `volunteer_missions`;
+DROP TABLE IF EXISTS `user_combo_roles`;
+DROP TABLE IF EXISTS `volunteer_applications`;
 DROP TABLE IF EXISTS `user_notifications`;
 DROP TABLE IF EXISTS `missing_person_reports`;
 DROP TABLE IF EXISTS `comment_reports`;
@@ -196,6 +198,7 @@ CREATE TABLE `post_comments` (
 	`parent_comment_id` BIGINT UNSIGNED DEFAULT NULL,
 	`actor_role` VARCHAR(50) NOT NULL,
 	`actor_id` INT UNSIGNED NOT NULL,
+	`is_anonymous` TINYINT(1) NOT NULL DEFAULT 0,
 	`comment_text` TEXT NOT NULL,
 	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (`comment_id`),
@@ -312,7 +315,46 @@ CREATE TABLE `user_notifications` (
 	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (`notification_id`),
 	KEY `idx_recipient` (`recipient_entity`, `recipient_id`),
+	KEY `idx_notification_target_post` (`target_post_id`),
 	KEY `idx_notification_created` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `volunteer_applications` (
+	`application_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+	`user_id` INT UNSIGNED NOT NULL,
+	`full_name` VARCHAR(150) NOT NULL,
+	`email` VARCHAR(255) DEFAULT NULL,
+	`mobile` VARCHAR(30) DEFAULT NULL,
+	`nid_number` VARCHAR(100) DEFAULT NULL,
+	`city` VARCHAR(120) DEFAULT NULL,
+	`country` VARCHAR(120) DEFAULT NULL,
+	`note` TEXT DEFAULT NULL,
+	`status` VARCHAR(30) NOT NULL DEFAULT 'pending',
+	`reviewed_by` VARCHAR(100) DEFAULT NULL,
+	`review_note` VARCHAR(255) DEFAULT NULL,
+	`volunteer_id` INT UNSIGNED DEFAULT NULL,
+	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	`reviewed_at` DATETIME DEFAULT NULL,
+	PRIMARY KEY (`application_id`),
+	UNIQUE KEY `uq_volunteer_application_user` (`user_id`),
+	KEY `idx_volunteer_application_status` (`status`),
+	KEY `idx_volunteer_application_created` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `user_combo_roles` (
+	`combo_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+	`user_id` INT UNSIGNED NOT NULL,
+	`volunteer_id` INT UNSIGNED NOT NULL,
+	`status` VARCHAR(30) NOT NULL DEFAULT 'approved',
+	`approved_by` VARCHAR(100) DEFAULT NULL,
+	`approved_at` DATETIME DEFAULT NULL,
+	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	PRIMARY KEY (`combo_id`),
+	UNIQUE KEY `uq_user_combo_user` (`user_id`),
+	UNIQUE KEY `uq_user_combo_volunteer` (`volunteer_id`),
+	KEY `idx_user_combo_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `volunteer_missions` (

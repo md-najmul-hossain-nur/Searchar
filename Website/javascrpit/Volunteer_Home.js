@@ -248,21 +248,6 @@ var policeIcon = L.icon({
     });
 });
 
-// Open Modal and Set Preview
-document.querySelectorAll('.share-btn').forEach(btn => {
-  btn.addEventListener('click', function () {
-    const post = this.closest('.post');
-    const text = post.querySelector('p')?.innerText || '';
-    const img = post.querySelector('.post-img')?.getAttribute('src') || '';
-
-    // Fill preview
-    document.getElementById('sharedPostText').innerText = text;
-    document.getElementById('sharedPostImage').src = img;
-
-    // Show modal in center
-    document.getElementById('postModal').style.display = 'flex';
-  });
-});
 function closeModal() {
   document.getElementById('postModal').style.display = 'none';
   document.getElementById('postText').value = '';

@@ -1,5 +1,8 @@
-﻿<?php
+<?php
 declare(strict_types=1);
+
+// Keep endpoint output JSON-only even when PHP warnings/notices exist.
+@ini_set('display_errors', '0');
 
 header('Content-Type: application/json; charset=utf-8');
 session_start();
@@ -17,7 +20,7 @@ function canonicalRole(string $role): string {
         'user', 'users' => 'user',
         'police', 'policeman', 'policemen' => 'police',
         'volunteer', 'volunteers' => 'volunteer',
-        'contributor', 'camera_contributor', 'camera_contributors' => 'contributor',
+        'contributor', 'camera_contributor', 'camera_contributors', 'camera', 'cameraman', 'camera_man' => 'contributor',
         default => 'user',
     };
 }
@@ -81,7 +84,8 @@ function timeAgo(?string $datetime): string {
 }
 
 function ensureInteractionTables(PDO $pdo): void {
-    $pdo->exec("CREATE TABLE IF NOT EXISTS post_likes (
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS post_likes (
         like_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         post_id INT UNSIGNED NOT NULL,
         actor_role VARCHAR(50) NOT NULL,
@@ -92,8 +96,12 @@ function ensureInteractionTables(PDO $pdo): void {
         KEY idx_post_likes_post (post_id),
         KEY idx_post_likes_actor (actor_role, actor_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    } catch (Throwable $e) {
+        // Keep interactions working even if schema migration is restricted.
+    }
 
-    $pdo->exec("CREATE TABLE IF NOT EXISTS post_comments (
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS post_comments (
         comment_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         post_id INT UNSIGNED NOT NULL,
         parent_comment_id BIGINT UNSIGNED DEFAULT NULL,
@@ -107,8 +115,12 @@ function ensureInteractionTables(PDO $pdo): void {
         KEY idx_post_comments_parent (parent_comment_id),
         KEY idx_post_comments_actor (actor_role, actor_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    } catch (Throwable $e) {
+        // Keep interactions working even if schema migration is restricted.
+    }
 
-    $pdo->exec("CREATE TABLE IF NOT EXISTS user_notifications (
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS user_notifications (
         notification_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
         recipient_entity VARCHAR(60) NOT NULL,
         recipient_id INT UNSIGNED NOT NULL,
@@ -122,20 +134,32 @@ function ensureInteractionTables(PDO $pdo): void {
         PRIMARY KEY (notification_id),
         KEY idx_recipient (recipient_entity, recipient_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-
-    $hasTarget = $pdo->query("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user_notifications' AND COLUMN_NAME = 'target_post_id' LIMIT 1")->fetchColumn();
-    if (!$hasTarget) {
-        $pdo->exec("ALTER TABLE user_notifications ADD COLUMN target_post_id INT UNSIGNED DEFAULT NULL AFTER is_read");
+    } catch (Throwable $e) {
+        // Notifications are optional for interaction success.
     }
 
-    $hasMeta = $pdo->query("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user_notifications' AND COLUMN_NAME = 'meta_json' LIMIT 1")->fetchColumn();
-    if (!$hasMeta) {
-        $pdo->exec("ALTER TABLE user_notifications ADD COLUMN meta_json TEXT NULL AFTER message");
+    try {
+        $hasTarget = $pdo->query("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user_notifications' AND COLUMN_NAME = 'target_post_id' LIMIT 1")->fetchColumn();
+        if (!$hasTarget) {
+            $pdo->exec("ALTER TABLE user_notifications ADD COLUMN target_post_id INT UNSIGNED DEFAULT NULL AFTER is_read");
+        }
+    } catch (Throwable $e) {
     }
 
-    $hasCommentAnonymous = $pdo->query("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'post_comments' AND COLUMN_NAME = 'is_anonymous' LIMIT 1")->fetchColumn();
-    if (!$hasCommentAnonymous) {
-        $pdo->exec("ALTER TABLE post_comments ADD COLUMN is_anonymous TINYINT(1) NOT NULL DEFAULT 0 AFTER actor_id");
+    try {
+        $hasMeta = $pdo->query("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user_notifications' AND COLUMN_NAME = 'meta_json' LIMIT 1")->fetchColumn();
+        if (!$hasMeta) {
+            $pdo->exec("ALTER TABLE user_notifications ADD COLUMN meta_json TEXT NULL AFTER message");
+        }
+    } catch (Throwable $e) {
+    }
+
+    try {
+        $hasCommentAnonymous = $pdo->query("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'post_comments' AND COLUMN_NAME = 'is_anonymous' LIMIT 1")->fetchColumn();
+        if (!$hasCommentAnonymous) {
+            $pdo->exec("ALTER TABLE post_comments ADD COLUMN is_anonymous TINYINT(1) NOT NULL DEFAULT 0 AFTER actor_id");
+        }
+    } catch (Throwable $e) {
     }
 }
 
@@ -158,48 +182,52 @@ function actorSnapshot(PDO $pdo, string $canonicalRole, int $actorId): array {
 }
 
 function createInteractionNotification(PDO $pdo, int $postId, string $actionType, string $actorRole, int $actorId, string $actorName, string $commentText = '', int $commentId = 0): void {
-    $postStmt = $pdo->prepare('SELECT id, author_role, author_id FROM posts WHERE id = :id LIMIT 1');
-    $postStmt->execute([':id' => $postId]);
-    $post = $postStmt->fetch(PDO::FETCH_ASSOC);
-    if (!$post) {
-        return;
+    try {
+        $postStmt = $pdo->prepare('SELECT id, author_role, author_id FROM posts WHERE id = :id LIMIT 1');
+        $postStmt->execute([':id' => $postId]);
+        $post = $postStmt->fetch(PDO::FETCH_ASSOC);
+        if (!$post) {
+            return;
+        }
+
+        $authorRole = canonicalRole((string)($post['author_role'] ?? ''));
+        $authorId = (int)($post['author_id'] ?? 0);
+        if ($authorId <= 0) {
+            return;
+        }
+
+        if ($authorRole === $actorRole && $authorId === $actorId) {
+            return;
+        }
+
+        $title = $actionType === 'like' ? 'Someone liked your post' : 'New comment on your post';
+        $message = $actionType === 'like'
+            ? ($actorName . ' liked your post.')
+            : ($actorName . ' commented on your post: "' . mb_substr(trim($commentText), 0, 120) . '"');
+
+        $meta = [
+            'action_type' => $actionType,
+            'post_id' => $postId,
+            'actor_role' => $actorRole,
+            'actor_id' => $actorId,
+        ];
+        if ($commentId > 0) {
+            $meta['comment_id'] = $commentId;
+        }
+
+        $ins = $pdo->prepare('INSERT INTO user_notifications (recipient_entity, recipient_id, title, message, meta_json, level, is_read, target_post_id) VALUES (:entity, :rid, :title, :message, :meta_json, :level, 0, :post_id)');
+        $ins->execute([
+            ':entity' => recipientEntityForRole($authorRole),
+            ':rid' => $authorId,
+            ':title' => $title,
+            ':message' => $message,
+            ':meta_json' => json_encode($meta, JSON_UNESCAPED_UNICODE),
+            ':level' => 'info',
+            ':post_id' => $postId,
+        ]);
+    } catch (Throwable $e) {
+        error_log('post_interactions notification skipped: ' . $e->getMessage());
     }
-
-    $authorRole = canonicalRole((string)($post['author_role'] ?? ''));
-    $authorId = (int)($post['author_id'] ?? 0);
-    if ($authorId <= 0) {
-        return;
-    }
-
-    if ($authorRole === $actorRole && $authorId === $actorId) {
-        return;
-    }
-
-    $title = $actionType === 'like' ? 'Someone liked your post' : 'New comment on your post';
-    $message = $actionType === 'like'
-        ? ($actorName . ' liked your post.')
-        : ($actorName . ' commented on your post: "' . mb_substr(trim($commentText), 0, 120) . '"');
-
-    $meta = [
-        'action_type' => $actionType,
-        'post_id' => $postId,
-        'actor_role' => $actorRole,
-        'actor_id' => $actorId,
-    ];
-    if ($commentId > 0) {
-        $meta['comment_id'] = $commentId;
-    }
-
-    $ins = $pdo->prepare('INSERT INTO user_notifications (recipient_entity, recipient_id, title, message, meta_json, level, is_read, target_post_id) VALUES (:entity, :rid, :title, :message, :meta_json, :level, 0, :post_id)');
-    $ins->execute([
-        ':entity' => recipientEntityForRole($authorRole),
-        ':rid' => $authorId,
-        ':title' => $title,
-        ':message' => $message,
-        ':meta_json' => json_encode($meta, JSON_UNESCAPED_UNICODE),
-        ':level' => 'info',
-        ':post_id' => $postId,
-    ]);
 }
 
 function fetchComments(PDO $pdo, int $postId): array {
@@ -483,5 +511,5 @@ try {
     }
     error_log('post_interactions error: ' . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'Failed to process request']);
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }

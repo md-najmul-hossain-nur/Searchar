@@ -479,7 +479,6 @@ try {
       <div class="post-actions">
         <span class="like-btn"><i class="fa fa-heart"></i> Like</span>
         <span class="comment-btn"><i class="fa fa-comment"></i> Comment</span>
-        <span class="share-btn"><i class="fa fa-share"></i> Share</span>
       </div>
 
       <section class="comment-module" style="display:none;">
@@ -510,7 +509,6 @@ try {
   <div class="post-actions">
     <span class="like-btn"><i class="fa fa-heart"></i> 201 Likes</span>
     <span class="comment-btn"><i class="fa fa-comment"></i> 41</span>
-    <span class="share-btn"><i class="fa fa-share"></i> 7</span>
   </div>
 
 <section class="comment-module" style="display:none;">
@@ -727,7 +725,6 @@ try {
   <div class="post-actions">
     <span class="like-btn"><i class="fa fa-heart"></i> 201 Likes</span>
     <span class="comment-btn"><i class="fa fa-comment"></i> 41</span>
-    <span class="share-btn"><i class="fa fa-share"></i> 7</span>
   </div>
 
 <section class="comment-module" style="display:none;">
@@ -944,7 +941,6 @@ try {
   <div class="post-actions">
     <span class="like-btn"><i class="fa fa-heart"></i> 201 Likes</span>
     <span class="comment-btn"><i class="fa fa-comment"></i> 41</span>
-    <span class="share-btn"><i class="fa fa-share"></i> 7</span>
   </div>
 
 <section class="comment-module" style="display:none;">
@@ -1278,7 +1274,7 @@ try {
      </body>
        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
        <script src="../javascrpit/Volunteer_Home.js"></script>
-      <script src="../javascrpit/post_interactions_shared.js?v=20260307"></script>
+      <script src="../javascrpit/post_interactions_shared.js?v=20260406d"></script>
        <script src="../javascrpit/notifications_shared.js"></script>
 
 </html>

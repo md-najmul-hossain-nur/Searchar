@@ -225,15 +225,26 @@
 
   async function getJson(url, options) {
     const res = await fetch(url, options);
+    const contentType = String(res.headers.get('content-type') || '').toLowerCase();
     let json = null;
+    let rawText = '';
     try {
-      json = await res.json();
+      if (contentType.includes('application/json')) {
+        json = await res.json();
+      } else {
+        rawText = await res.text();
+      }
     } catch (_) {
       json = null;
     }
 
     if (!res.ok || !json || json.success !== true) {
-      const message = (json && json.error) ? json.error : 'Request failed';
+      const bodyHint = rawText
+        ? (' | ' + rawText.replace(/\s+/g, ' ').trim().slice(0, 180))
+        : '';
+      const message = (json && json.error)
+        ? json.error
+        : `Request failed (HTTP ${res.status})${bodyHint}`;
       throw new Error(message);
     }
 
@@ -550,7 +561,6 @@
         <div class="post-actions">
           <span class="like-btn"><i class="fa fa-heart"></i> Like</span>
           <span class="comment-btn"><i class="fa fa-comment"></i> Comment</span>
-          <span class="share-btn"><i class="fa fa-share"></i> Share</span>
         </div>
         <section class="comment-module" style="display:none;">
           <div class="comment-input-area">
@@ -1050,7 +1060,7 @@
           await toggleLike(post);
         } catch (error) {
           console.error('toggle like failed', error);
-          alert('Could not update like right now.');
+          alert(error?.message || 'Could not update like right now.');
         }
         return;
       }
@@ -1061,15 +1071,6 @@
         if (!post) return;
         event.preventDefault();
         toggleCommentModule(post);
-        return;
-      }
-
-      const shareBtn = target.closest('.share-btn');
-      if (shareBtn) {
-        const post = shareBtn.closest('.post');
-        if (!post) return;
-        event.preventDefault();
-        openShareModalFallback(post);
         return;
       }
 
@@ -1132,7 +1133,7 @@
           if (replyBox) replyBox.remove();
         } catch (error) {
           console.error('add comment failed', error);
-          alert('Could not send comment right now.');
+          alert(error?.message || 'Could not send comment right now.');
         } finally {
           sendBtn.removeAttribute('disabled');
         }
