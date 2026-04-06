@@ -95,7 +95,7 @@ try {
 <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Main CSS -->
-  <link rel="stylesheet" href="../css/User_profile.css">
+  <link rel="stylesheet" href="../css/User_profile.css?v=20260406h">
   <link rel="stylesheet" href="../css/notifications_shared.css">
 
 </head>

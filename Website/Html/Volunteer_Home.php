@@ -140,7 +140,7 @@ try {
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Main CSS -->
-  <link rel="stylesheet" href="../css/Volunteer_Home.css">
+  <link rel="stylesheet" href="../css/Volunteer_Home.css?v=20260406e">
   <link rel="stylesheet" href="../css/notifications_shared.css">
   <style>
     .main-section { display:none; }

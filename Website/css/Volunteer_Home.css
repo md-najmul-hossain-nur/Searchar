@@ -2178,3 +2178,36 @@ background: linear-gradient(80deg, #d1b75a);
   align-items: center;
   justify-content: center;
 }
+
+/* Desktop sticky sidebar layout */
+@media screen and (min-width: 993px) {
+  .container {
+    align-items: flex-start;
+  }
+
+  .sidebar-left,
+  .sidebar-right {
+    position: sticky;
+    top: 118px;
+    align-self: flex-start;
+    max-height: calc(100vh - 118px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+  }
+
+  .main-feed {
+    min-height: calc(100vh - 118px);
+  }
+}
+
+@media screen and (max-width: 992px) {
+  .sidebar-left,
+  .sidebar-right {
+    position: static;
+    top: auto;
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+  }
+}
