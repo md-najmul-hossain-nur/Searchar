@@ -8,8 +8,11 @@
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+
   <!-- Main CSS -->
   <link rel="stylesheet" href="../css/User_Home.css">
+  <link rel="stylesheet" href="../css/RedZone.css">
 </head>
 
 <body>
@@ -24,7 +27,7 @@
 
   <!-- Email + Logout -->
   <div style="display:flex; align-items:center; gap:10px; margin-right:40px;">
-    <span>user@email.com</span>
+    <span id="rzUserEmail">user@email.com</span>
     <button class="navbar-donate"
       onclick="window.location.href='../Php/logout.php';"
       style="display:flex; align-items:center; gap:5px;">
@@ -45,36 +48,104 @@
     <div class="profile-card">
 
       <!-- Cover Photo -->
-      <img src="../Images/cover_default.jpg" class="cover" alt="Cover Photo">
+      <img id="rzCoverPhoto" src="../Images/cover_default.jpg" class="cover" alt="Cover Photo">
 
       <!-- Profile Picture -->
-      <img src="../Images/default-profile.gif" class="profile-pic" alt="Profile Photo">
+      <img id="rzProfilePhoto" src="../Images/default-profile.gif" class="profile-pic" alt="Profile Photo">
 
       <!-- Edit Button -->
-      <button class="edit-btn" title="Profile Setting"
-        onclick="location.href='../Html/User_profile.html'">Profile</button>
+      <button id="rzProfileBtn" class="edit-btn" title="Profile Setting"
+        onclick="location.href='../Html/User_profile.php'">Profile</button>
 
-      <h3>Najmul Nur</h3>
+      <h3 id="rzUserName">User Name</h3>
+      <small id="rzUserRole" style="display:block; color:#64748b; margin-top:-4px; margin-bottom:8px;">Role</small>
 
-      <p class="user-bio">
-        &#128172; Tell people a little about yourself by adding a bio in your profile.
+      <p id="rzUserBio" class="user-bio">
+        Tell people a little about yourself by adding a bio in your profile.
       </p>
 
     </div>
 
-    <!-- Contribution Section -->
-    <div class="page-like">
-      <h4>Make a Contribution</h4>
+    <!-- Advertisement Section -->
+    <div class="ad-zone">
+      <h4>Advertisement</h4>
 
-      <button class="donate-btn"
-        onclick="window.location.href='../Html/Donated.html'">
-        Donate Now
-      </button>
+      <div class="ad-ticker" aria-hidden="true">
+        <div class="ad-ticker-track">Special Offer | City CCTV Bundle | First Aid Bootcamp | Community Safety Partner</div>
+      </div>
+
+      <article class="ad-card ad-card-primary">
+        <small>Sponsored</small>
+        <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg" alt="Camera plan" class="ad-thumb">
+        <h5 class="ad-title-animate">Secure Home Camera Plan</h5>
+        <p>Protect your area with live monitoring and instant alerts.</p>
+        <a href="#!">Learn More</a>
+      </article>
+
+      <article class="ad-card">
+        <small>Partner Offer</small>
+        <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg" alt="Training offer" class="ad-thumb ad-thumb-small">
+        <h5 class="ad-title-animate delay">Emergency First Aid Training</h5>
+        <p>Join the weekend session and earn a verified safety badge.</p>
+        <a href="#!">Book Seat</a>
+      </article>
     </div>
 
   </div>
 
+  <main class="redzone-main">
+    <section class="rz-head-card">
+      <div>
+        <h2>Red Zone Heat Map</h2>
+        <p>Crime, fire, and missing person incident intensity across the city.</p>
+      </div>
+      <button id="rzLocateBtn" type="button" class="rz-locate-btn">
+        <i class="fa-solid fa-location-crosshairs"></i>
+        My Location
+      </button>
+    </section>
+
+    <section class="rz-filter-card">
+      <div class="rz-filter-group" id="rzCategoryGroup">
+        <label class="rz-chip active"><input type="checkbox" value="all" checked>All</label>
+        <label class="rz-chip"><input type="checkbox" value="crime">Crime</label>
+        <label class="rz-chip"><input type="checkbox" value="fire">Fire</label>
+        <label class="rz-chip"><input type="checkbox" value="missing_person">Missing Person</label>
+      </div>
+      <div class="rz-filter-group rz-segment" id="rzTimeGroup">
+        <button type="button" class="active" data-hours="24">24h</button>
+        <button type="button" data-hours="168">7d</button>
+        <button type="button" data-hours="720">30d</button>
+        <button type="button" data-hours="all">All</button>
+      </div>
+      <div class="rz-slider-wrap">
+        <label for="rzRadius">Heat Radius <span id="rzRadiusValue">30px</span></label>
+        <input id="rzRadius" type="range" min="18" max="52" value="30" step="1">
+      </div>
+    </section>
+
+    <section class="rz-map-card">
+      <div id="redZoneMap" aria-label="Crime and incident heat map"></div>
+      <div class="rz-legend">
+        <strong>Heat Intensity</strong>
+        <div class="rz-legend-bar"></div>
+        <div class="rz-legend-labels"><span>Low</span><span>Medium</span><span>High</span></div>
+      </div>
+      <aside class="rz-hotspot-panel">
+        <div class="rz-hotspot-head">
+          <h3>Hotspots</h3>
+          <span id="rzHotspotCount">0 zones</span>
+        </div>
+        <ul id="rzHotspotList"></ul>
+      </aside>
+    </section>
+  </main>
+
 </div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+<script src="../javascrpit/RedZone.js?v=20260406c"></script>
 
 </body>
 </html>

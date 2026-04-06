@@ -486,14 +486,25 @@ try {
 
      <div class="advert">
   <h4>Advertisement</h4>
-  <div class="advert-slider">
-    <div class="advert-track">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg">
-    </div>
+  <div class="ad-ticker" aria-hidden="true">
+    <div class="ad-ticker-track">Special Offer | City CCTV Bundle | First Aid Bootcamp | Community Safety Partner</div>
   </div>
+
+  <article class="ad-card ad-card-primary">
+    <small>Sponsored</small>
+    <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg" alt="Camera plan" class="ad-thumb">
+    <h5 class="ad-title-animate">Secure Home Camera Plan</h5>
+    <p>Protect your area with live monitoring and instant alerts.</p>
+    <a href="#!">Learn More</a>
+  </article>
+
+  <article class="ad-card">
+    <small>Partner Offer</small>
+    <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg" alt="Training offer" class="ad-thumb ad-thumb-small">
+    <h5 class="ad-title-animate delay">Emergency First Aid Training</h5>
+    <p>Join the weekend session and earn a verified safety badge.</p>
+    <a href="#!">Book Seat</a>
+  </article>
 </div>
 
 <div class="notifications">
