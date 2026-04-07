@@ -1755,8 +1755,7 @@
           if (!entity || !id) return;
           const deleted = await handleDelete(entity, id, name);
           if (deleted) {
-            const row = btn.closest('tr');
-            if (row) row.remove();
+            await loadAdminData();
           }
         });
       });
@@ -1820,7 +1819,11 @@
       const html = rows.map(r => {
         const entity = 'users';
         const recordId = r.user_id || '';
+        const isCombo = Boolean(r.is_combo);
         const name = r.name || '—';
+        const displayName = isCombo
+          ? `${escapeHtml(name)} <span class="status-active" style="margin-left:6px; font-size:11px; padding:2px 8px;">Combo</span>`
+          : escapeHtml(name);
         const email = r.email || '—';
         const phone = r.phone || '—';
         const location = r.location || '—';
@@ -1839,10 +1842,10 @@
         });
         return `
           <tr>
-            <td>${name}</td>
-            <td>${email}</td>
-            <td>${phone}</td>
-            <td>${location}</td>
+            <td>${displayName}</td>
+            <td>${escapeHtml(email)}</td>
+            <td>${escapeHtml(phone)}</td>
+            <td>${escapeHtml(location)}</td>
             <td class="actions-cell">
               <div class="actions-wrap">
                 <button class="view-profile-btn" data-profile="${profileData}">View Profile</button>
@@ -1866,7 +1869,7 @@
       const textTokens = text.split(/\s+/).filter(Boolean);
 
       return usersData.filter(u => {
-        const haystack = `${u.name || ''} ${u.full_name || ''} ${u.email || ''} ${u.phone || ''} ${u.mobile || ''} ${u.location || ''} ${u.city || ''} ${u.street || ''}`.toLowerCase();
+        const haystack = `${u.name || ''} ${u.full_name || ''} ${u.email || ''} ${u.phone || ''} ${u.mobile || ''} ${u.location || ''} ${u.city || ''} ${u.street || ''} ${u.role || ''}`.toLowerCase();
         const matchesText = !textTokens.length || textTokens.every(token => haystack.includes(token));
         return matchesText;
       });

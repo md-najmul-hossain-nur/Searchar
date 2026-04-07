@@ -3,6 +3,12 @@ declare(strict_types=1);
 header('Content-Type: application/json');
 require_once __DIR__ . '/db.php';
 
+function tableExists(PDO $pdo, string $tableName): bool {
+    $stmt = $pdo->prepare("SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :name LIMIT 1");
+    $stmt->execute([':name' => $tableName]);
+    return (bool)$stmt->fetchColumn();
+}
+
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         throw new RuntimeException('Invalid request method');
@@ -103,6 +109,8 @@ try {
         $mobile = isset($row['mobile']) ? (string)$row['mobile'] : null;
         $nid = isset($row['nid_number']) ? (string)$row['nid_number'] : null;
 
+        $pdo->beginTransaction();
+
         $blk = $pdo->prepare("INSERT INTO signup_blacklist (entity, email, mobile, nid_number, reason, blocked_by)
                               VALUES (:entity, :email, :mobile, :nid, 'Deleted by admin', 'admin')");
         $blk->execute([
@@ -112,8 +120,22 @@ try {
             ':nid' => $nid,
         ]);
 
+        if ($entity === 'users') {
+            if (tableExists($pdo, 'volunteer_applications')) {
+                $delCombo = $pdo->prepare("DELETE FROM volunteer_applications WHERE user_id = :uid");
+                $delCombo->execute([':uid' => $id]);
+            }
+
+            if (tableExists($pdo, 'user_combo_roles')) {
+                $delComboRole = $pdo->prepare("DELETE FROM user_combo_roles WHERE user_id = :uid");
+                $delComboRole->execute([':uid' => $id]);
+            }
+        }
+
         $del = $pdo->prepare("DELETE FROM `{$table}` WHERE `{$idCol}` = :id LIMIT 1");
         $del->execute([':id' => $id]);
+
+        $pdo->commit();
 
         echo json_encode(['success' => true]);
         exit;
@@ -121,5 +143,8 @@ try {
 
     throw new RuntimeException('Unsupported action');
 } catch (Throwable $e) {
+    if (isset($pdo) && $pdo instanceof PDO && $pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
     echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }

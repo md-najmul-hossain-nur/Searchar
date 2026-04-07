@@ -53,14 +53,19 @@ try {
         $hasVolunteerApplications = true;
     }
 
-    $sql = 'SELECT * FROM users';
     if ($hasVolunteerApplications) {
-        $sql .= " WHERE user_id NOT IN (
-            SELECT user_id FROM volunteer_applications
-            WHERE LOWER(COALESCE(status, 'pending')) = 'approved'
-        )";
+        $sql = "SELECT u.*,
+                       EXISTS(
+                           SELECT 1
+                           FROM volunteer_applications va
+                           WHERE va.user_id = u.user_id
+                             AND LOWER(COALESCE(va.status, 'pending')) = 'approved'
+                       ) AS is_combo
+                FROM users u
+                LIMIT 300";
+    } else {
+        $sql = 'SELECT u.*, 0 AS is_combo FROM users u LIMIT 300';
     }
-    $sql .= ' LIMIT 300';
 
     $stmt = $pdo->query($sql);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -92,7 +97,8 @@ try {
             'lat'           => $coords['lat'],
             'lon'           => $coords['lon'],
             'created_at'    => pickField($row, ['created_at'], ''),
-            'role'          => 'User',
+            'is_combo'      => (int)($row['is_combo'] ?? 0) === 1,
+            'role'          => (int)($row['is_combo'] ?? 0) === 1 ? 'User + Volunteer' : 'User',
             'warned_by_admin' => isset($warnedMap[$recordId]),
         ];
     }
