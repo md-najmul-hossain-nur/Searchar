@@ -1370,6 +1370,7 @@
       const editBtn = document.getElementById('profile-edit-btn');
       const saveBtn = document.getElementById('profile-save-btn');
       const cancelBtn = document.getElementById('profile-cancel-btn');
+      const footerEl = cancelBtn ? cancelBtn.closest('.profile-modal__footer') : null;
       if (!modal || !titleEl || !gridEl || !editBtn || !saveBtn || !cancelBtn) return;
 
       currentProfile = profile || null;
@@ -1431,7 +1432,15 @@
           return `../${raw}`;
         }
 
+        const uploadsAt = raw.indexOf('uploads/');
+        if (uploadsAt > 0) {
+          return `../${raw.slice(uploadsAt)}`;
+        }
+
         if (/^(user|volunteer|camera|police)\//i.test(raw)) {
+          if (/^(user|volunteer|camera|police)\/uploads\//i.test(raw)) {
+            return `../${raw.replace(/^(user|volunteer|camera|police)\//i, '')}`;
+          }
           return `../uploads/${raw}`;
         }
 
@@ -1447,7 +1456,9 @@
         '__title',
         '__entity',
         '__id',
+        '__readOnly',
         'password_hash',
+        'profile_photo_entity',
         'lat',
         'lon',
         'latitude',
@@ -1455,6 +1466,7 @@
       ]);
 
       const entity = profile && profile.__entity ? profile.__entity : '';
+      const readOnly = Boolean(profile && profile.__readOnly);
       const editableKeys = new Set(editableFieldsByEntity[entity] || []);
   const hasMediaJson = Boolean(profile && profile.media_json);
 
@@ -1542,8 +1554,11 @@
           return `<div class="profile-modal__row"><div class="profile-modal__label">${label}</div><div class="profile-modal__value"><input type="${inputType}" class="profile-modal__input" data-edit-key="${key}" value="${escapeHtml(inputVal)}" /></div></div>`;
         }
         if (imageKeys.has(key) && val !== '—' && isImagePath(val)) {
-          const src = normalizeAssetPath(val, key, entity);
-          return `<div class="profile-modal__row"><div class="profile-modal__label">${label}</div><div class="profile-modal__value"><img class="profile-modal__img" src="${src}" alt="${label}"><a class="profile-modal__img-link" href="${src}" target="_blank" rel="noopener">Open image</a></div></div>`;
+          const imageEntity = key === 'profile_photo'
+            ? (String(profile?.profile_photo_entity || '').trim() || entity)
+            : entity;
+          const src = normalizeAssetPath(val, key, imageEntity);
+          return `<div class="profile-modal__row"><div class="profile-modal__label">${label}</div><div class="profile-modal__value"><img class="profile-modal__img" src="${src}" alt="${label}" onerror="this.onerror=null;this.src='../Images/default-profile.gif';"><a class="profile-modal__img-link" href="${src}" target="_blank" rel="noopener">Open image</a></div></div>`;
         }
 
         if (key === 'media_json' || key === 'media_path') {
@@ -1556,10 +1571,13 @@
 
       gridEl.innerHTML = html || '<div class="profile-modal__row"><div class="profile-modal__value">No details found.</div></div>';
 
-      const canEdit = Boolean(entity && profile && profile.__id && editableFieldsByEntity[entity]);
+      const canEdit = Boolean(!readOnly && entity && profile && profile.__id && editableFieldsByEntity[entity]);
       editBtn.classList.toggle('hidden', !canEdit || editMode);
       saveBtn.classList.toggle('hidden', !editMode || !canEdit);
       cancelBtn.textContent = editMode ? 'Back' : 'Cancel';
+      if (footerEl) {
+        footerEl.style.display = readOnly ? 'none' : '';
+      }
 
       modal.classList.add('open');
     }

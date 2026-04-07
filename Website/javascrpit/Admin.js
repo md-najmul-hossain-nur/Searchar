@@ -2814,6 +2814,7 @@ function openAddVolunteerModal() {
               groupsMap.set(key, {
                 volunteer_name: m?.volunteer_name || 'Volunteer',
                 profile_photo: m?.profile_photo || '',
+                profile_photo_entity: m?.profile_photo_entity || '',
                 volunteer_rank: m?.volunteer_rank || 'Junior',
                 volunteer_points: Number(m?.volunteer_points || 0),
                 missions: []
@@ -2823,6 +2824,7 @@ function openAddVolunteerModal() {
             g.volunteer_points = Math.max(Number(g.volunteer_points || 0), Number(m?.volunteer_points || 0));
             g.volunteer_rank = m?.volunteer_rank || g.volunteer_rank;
             g.profile_photo = g.profile_photo || (m?.profile_photo || '');
+            g.profile_photo_entity = g.profile_photo_entity || (m?.profile_photo_entity || '');
             g.missions.push(m);
           });
 
@@ -2843,6 +2845,27 @@ function openAddVolunteerModal() {
             const pending = Math.max(0, missionCount - done - busy);
             const proofDone = g.missions.filter(m => String(m.proof_file || '').trim() !== '').length;
             const latest = g.missions[0] || {};
+            const volunteerProfilePayload = encodeURIComponent(JSON.stringify({
+              __title: 'Volunteer Mission Profile',
+              __readOnly: true,
+              __entity: 'volunteers',
+              __id: latest?.volunteer_id || '',
+              volunteer_id: latest?.volunteer_id || '',
+              full_name: g?.volunteer_name || 'Volunteer',
+              volunteer_name: g?.volunteer_name || 'Volunteer',
+              profile_photo: g?.profile_photo || '',
+              profile_photo_entity: g?.profile_photo_entity || '',
+              volunteer_rank: g?.volunteer_rank || 'Junior',
+              volunteer_points: Number(g?.volunteer_points || 0),
+              total_missions: missionCount,
+              pending_missions: pending,
+              completed_missions: done,
+              busy_missions: busy,
+              proofs_submitted: `${proofDone}/${missionCount}`,
+              latest_mission_title: latest?.mission_title || '—',
+              latest_mission_location: latest?.mission_location || '—',
+              last_assigned_at: latest?.assigned_at || ''
+            }));
 
             const detailsHtml = g.missions.map((m, idx) => {
               const state = normalizeMissionState(m.status, m.response_status).lifeState;
@@ -2877,7 +2900,7 @@ function openAddVolunteerModal() {
               <tr>
                 <td>
                   ${esc(g.volunteer_name || 'Volunteer')} <small>(${missionCount} missions)</small>
-                  ${g.profile_photo ? ` • <a href="${esc(volunteerProfileUrl(g.profile_photo))}" target="_blank" rel="noopener">View Profile</a>` : ''}
+                  • <button type="button" class="view-profile-btn" data-volunteer-profile="${esc(volunteerProfilePayload)}">View Profile</button>
                 </td>
                 <td><strong>${esc(latest.mission_title || 'Mission')}</strong></td>
                 <td>${esc(fmtDate(latest.assigned_at))}</td>
@@ -2918,6 +2941,19 @@ function openAddVolunteerModal() {
                 detailRow.style.display = 'table-row';
                 btn.setAttribute('data-expanded', '1');
                 btn.textContent = 'Hide Missions';
+              }
+            });
+          });
+
+          missionsBody.querySelectorAll('[data-volunteer-profile]').forEach((btn) => {
+            btn.addEventListener('click', () => {
+              try {
+                const payload = JSON.parse(decodeURIComponent(String(btn.getAttribute('data-volunteer-profile') || '')));
+                if (typeof window.openProfileModal === 'function') {
+                  window.openProfileModal(payload, false);
+                }
+              } catch (error) {
+                console.error('volunteer profile parse failed', error);
               }
             });
           });
