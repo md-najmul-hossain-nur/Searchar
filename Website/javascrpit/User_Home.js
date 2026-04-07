@@ -337,6 +337,106 @@ function initFeedVideoCenterPlayButtons() {
   });
 }
 
+function getCurrentUserDisplayName() {
+  const bodyName = String(document.body?.dataset?.currentUserName || '').trim();
+  if (bodyName) return bodyName;
+  const profileName = String(document.querySelector('.profile-card h2 span')?.textContent || '').trim();
+  return profileName || 'You';
+}
+
+function getCurrentUserPhoto() {
+  const profilePhoto = String(document.querySelector('.profile-card .profile-pic')?.getAttribute('src') || '').trim();
+  return profilePhoto || '../Images/default-profile.gif';
+}
+
+function escapeWithLineBreaks(value) {
+  return escapeHtml(value).replace(/\n/g, '<br>');
+}
+
+function prependPendingPostToFeed(postData) {
+  const filterBar = document.querySelector('.filter-bar-section');
+  if (!filterBar) return;
+
+  const nowIso = new Date().toISOString();
+  const tempId = `local-pending-${Date.now()}`;
+  const safeText = String(postData?.text || '').trim();
+  const textHtml = safeText ? `<p>${escapeWithLineBreaks(safeText)}</p>` : '';
+  const imageUrls = Array.isArray(postData?.imageUrls) ? postData.imageUrls : [];
+  const videoUrl = String(postData?.videoUrl || '').trim();
+
+  let mediaHtml = '';
+  if (imageUrls.length > 1) {
+    mediaHtml = `
+      <div class="post-image-grid">
+        ${imageUrls.map((url) => `<img src="${escapeHtml(url)}" class="post-grid-img" alt="Post Image">`).join('')}
+      </div>
+    `;
+  } else if (imageUrls.length === 1) {
+    mediaHtml = `<img src="${escapeHtml(imageUrls[0])}" class="post-img" alt="Post Image">`;
+  } else if (videoUrl) {
+    mediaHtml = `
+      <video class="post-video" controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture oncontextmenu="return false;" preload="metadata">
+        <source src="${escapeHtml(videoUrl)}" type="video/mp4">
+        Your browser does not support video.
+      </video>
+    `;
+  }
+
+  const displayName = postData?.isAnonymous ? 'Anonymous' : getCurrentUserDisplayName();
+  const displayPhoto = postData?.isAnonymous ? '../Images/anonymously.gif' : getCurrentUserPhoto();
+
+  const article = document.createElement('div');
+  article.className = 'post';
+  article.id = tempId;
+  article.setAttribute('data-post-id', tempId);
+  article.setAttribute('data-category', String(postData?.category || 'general'));
+  article.setAttribute('data-status', 'pending');
+  article.setAttribute('data-share-anonymous', postData?.isAnonymous ? '1' : '0');
+  article.innerHTML = `
+    <div class="post-header">
+      <img src="${escapeHtml(displayPhoto)}" alt="Author Photo" onerror="this.onerror=null;this.src='../Images/default-profile.gif';">
+      <div>
+        <h5>${escapeHtml(displayName)}</h5>
+        <small class="post-time" data-created-at="${escapeHtml(nowIso)}">Just now</small>
+      </div>
+    </div>
+    <div style="margin-top:6px; font-size:12px; font-weight:700; color:#9a3412;">Pending admin review</div>
+    ${textHtml}
+    ${mediaHtml}
+    <div class="post-actions">
+      <span class="like-btn"><i class="fa fa-heart"></i> Like</span>
+      <span class="comment-btn"><i class="fa fa-comment"></i> Comment</span>
+    </div>
+    <section class="comment-module" style="display:none;">
+      <div class="comment-input-area">
+        <div class="comment-editor" contenteditable="true" data-placeholder="Write a comment..."></div>
+        <button class="comment-send-btn">
+          <img src="../Images/send.png" alt="Send">
+        </button>
+      </div>
+      <h4 class="comments-title">All Comments</h4>
+      <ul></ul>
+    </section>
+  `;
+
+  const placeholder = Array.from(document.querySelectorAll('.post')).find((el) => {
+    const text = String(el.textContent || '').toLowerCase();
+    return text.includes('no published posts yet');
+  });
+  if (placeholder) {
+    placeholder.remove();
+  }
+
+  const firstPost = filterBar.parentElement?.querySelector('.post');
+  if (firstPost) {
+    firstPost.parentElement.insertBefore(article, firstPost);
+  } else {
+    filterBar.insertAdjacentElement('afterend', article);
+  }
+
+  initFeedVideoCenterPlayButtons();
+}
+
 function openModal(isShareMode = false) {
   const isSharing = Boolean(isShareMode);
   const mediaOptions = document.querySelector('.post-media-options');
@@ -545,10 +645,16 @@ function createPost() {
   }).then(r => r.json())
     .then(res => {
       if (res && res.success) {
-        // reload page so saved posts (or admin view) can pick up the new contribution
-        alert('Saved successfully. Your contribution is stored and will be available to case reviewers.');
+        const pendingPost = {
+          text: finalText,
+          category,
+          isAnonymous: shareAnonymous === '1',
+          imageUrls: selectedImages.map((file) => URL.createObjectURL(file)),
+          videoUrl: selectedVideo ? URL.createObjectURL(selectedVideo) : ''
+        };
         closeModal();
-        window.location.reload();
+        prependPendingPostToFeed(pendingPost);
+        alert('Saved successfully. Post added instantly (pending admin review).');
       } else {
         alert('Save failed: ' + (res.error || 'Unknown'));
       }
