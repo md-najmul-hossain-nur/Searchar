@@ -312,7 +312,7 @@ try {
 
     if ($action === 'reject') {
         // Delete only if still pending/null
-        $stmt = $pdo->prepare("DELETE FROM posts WHERE id = :id AND (status IS NULL OR status = 'pending')");
+        $stmt = $pdo->prepare("DELETE FROM posts WHERE id = :id AND LOWER(COALESCE(status, 'pending')) = 'pending'");
         $stmt->execute([':id' => $postId]);
 
         if ($stmt->rowCount() === 0) {
@@ -353,7 +353,7 @@ try {
     }
 
     // Approve path: update only if still pending/null
-    $stmt = $pdo->prepare("UPDATE posts SET status = :status WHERE id = :id AND (status IS NULL OR status = 'pending')");
+    $stmt = $pdo->prepare("UPDATE posts SET status = :status WHERE id = :id AND LOWER(COALESCE(status, 'pending')) = 'pending'");
     $stmt->execute([':status' => $targetStatus, ':id' => $postId]);
 
     if ($stmt->rowCount() === 0) {

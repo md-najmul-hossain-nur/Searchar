@@ -679,15 +679,7 @@
         </tr>
       </thead>
       <tbody id="donations-table-body">
-        <tr>
-          <td>John S.</td><td>017XXXXXXXX</td><td>TX123ABC</td><td>৳5,000</td><td>2025-07-20</td><td>No</td>
-          <td>"Good luck!"</td>
-          <td>
-            <button>Allocate</button>
-            <button>Report</button>
-          </td>
-        </tr>
-        <!-- More rows... -->
+        <tr><td colspan="8">Loading donations...</td></tr>
       </tbody>
     </table>
   </div>
@@ -1086,9 +1078,32 @@
     initAvatarPanel();
 
     // Helper to fetch JSON safely
+    let adminPhpEndpointBroken = false;
+    let adminPhpEndpointWarningShown = false;
+
     async function fetchJSON(url) {
-      const res = await fetch(url, { credentials: 'same-origin' });
-      return res.json();
+      if (adminPhpEndpointBroken) {
+        throw new Error('PHP endpoints are currently unavailable in this runtime.');
+      }
+
+      const res = await fetch(url, { credentials: 'same-origin', cache: 'no-store' });
+      const raw = await res.text();
+      const trimmed = String(raw || '').trim();
+
+      if (trimmed.startsWith('<?php')) {
+        adminPhpEndpointBroken = true;
+        if (!adminPhpEndpointWarningShown) {
+          adminPhpEndpointWarningShown = true;
+          alert('PHP endpoint returned raw source code. Please open this app via XAMPP/Apache (localhost), not a static server.');
+        }
+        throw new Error('PHP source returned instead of JSON.');
+      }
+
+      try {
+        return JSON.parse(trimmed || '{}');
+      } catch (_err) {
+        throw new Error('Invalid JSON response from server endpoint.');
+      }
     }
 
     function setRows(tbody, rowsHtml) {

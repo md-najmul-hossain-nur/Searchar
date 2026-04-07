@@ -353,18 +353,57 @@ function escapeWithLineBreaks(value) {
   return escapeHtml(value).replace(/\n/g, '<br>');
 }
 
-function prependPendingPostToFeed(postData) {
-  const filterBar = document.querySelector('.filter-bar-section');
-  if (!filterBar) return;
 
-  const nowIso = new Date().toISOString();
-  const tempId = `local-pending-${Date.now()}`;
-  const safeText = String(postData?.text || '').trim();
-  const textHtml = safeText ? `<p>${escapeWithLineBreaks(safeText)}</p>` : '';
-  const imageUrls = Array.isArray(postData?.imageUrls) ? postData.imageUrls : [];
-  const videoUrl = String(postData?.videoUrl || '').trim();
+function normalizeMediaUrl(path) {
+  const raw = String(path || '').trim();
+  if (!raw) return '';
+  if (raw.startsWith('http://') || raw.startsWith('https://') || raw.startsWith('../')) {
+    return raw;
+  }
+  return `../${raw.replace(/^\/+/, '')}`;
+}
 
+function parseImageListFromRow(row) {
+  const images = [];
+  const jsonText = String(row?.media_json || '').trim();
+  if (jsonText) {
+    try {
+      const parsed = JSON.parse(jsonText);
+      if (Array.isArray(parsed)) {
+        parsed.forEach((item) => {
+          const url = normalizeMediaUrl(item);
+          if (url) images.push(url);
+        });
+      }
+    } catch (_e) {}
+  }
+
+  if (!images.length && String(row?.media_type || '') === 'image') {
+    const single = normalizeMediaUrl(row?.media_path || '');
+    if (single) images.push(single);
+  }
+
+  return images;
+}
+
+function buildApprovedPostElement(row) {
+  const postId = Number(row?.id || 0);
+  if (!postId) return null;
+
+  const category = String(row?.category || 'general');
+  const authorName = String(row?.author_name || 'Unknown User');
+  const authorPhoto = normalizeMediaUrl(row?.author_photo || '../Images/default-profile.gif') || '../Images/default-profile.gif';
+  const createdAt = String(row?.created_at || '');
+  const timeAgo = String(row?.time_ago || 'Just now');
+  const postText = String(row?.text || '');
+  const mediaType = String(row?.media_type || '');
+  const videoUrl = mediaType === 'video' ? normalizeMediaUrl(row?.media_path || '') : '';
+  const imageUrls = parseImageListFromRow(row);
+  const isAnonymous = Number(row?.share_anonymous || 0) === 1;
+
+  const textHtml = postText ? `<p>${escapeWithLineBreaks(postText)}</p>` : '';
   let mediaHtml = '';
+
   if (imageUrls.length > 1) {
     mediaHtml = `
       <div class="post-image-grid">
@@ -382,25 +421,21 @@ function prependPendingPostToFeed(postData) {
     `;
   }
 
-  const displayName = postData?.isAnonymous ? 'Anonymous' : getCurrentUserDisplayName();
-  const displayPhoto = postData?.isAnonymous ? '../Images/anonymously.gif' : getCurrentUserPhoto();
-
   const article = document.createElement('div');
   article.className = 'post';
-  article.id = tempId;
-  article.setAttribute('data-post-id', tempId);
-  article.setAttribute('data-category', String(postData?.category || 'general'));
-  article.setAttribute('data-status', 'pending');
-  article.setAttribute('data-share-anonymous', postData?.isAnonymous ? '1' : '0');
+  article.id = `post-${postId}`;
+  article.setAttribute('data-post-id', String(postId));
+  article.setAttribute('data-category', category);
+  article.setAttribute('data-status', 'approved');
+  article.setAttribute('data-share-anonymous', isAnonymous ? '1' : '0');
   article.innerHTML = `
     <div class="post-header">
-      <img src="${escapeHtml(displayPhoto)}" alt="Author Photo" onerror="this.onerror=null;this.src='../Images/default-profile.gif';">
+      <img src="${escapeHtml(authorPhoto)}" alt="Author Photo" onerror="this.onerror=null;this.src='../Images/default-profile.gif';">
       <div>
-        <h5>${escapeHtml(displayName)}</h5>
-        <small class="post-time" data-created-at="${escapeHtml(nowIso)}">Just now</small>
+        <h5>${escapeHtml(authorName)}</h5>
+        <small class="post-time" data-created-at="${escapeHtml(createdAt)}">${escapeHtml(timeAgo)}</small>
       </div>
     </div>
-    <div style="margin-top:6px; font-size:12px; font-weight:700; color:#9a3412;">Pending admin review</div>
     ${textHtml}
     ${mediaHtml}
     <div class="post-actions">
@@ -418,23 +453,69 @@ function prependPendingPostToFeed(postData) {
       <ul></ul>
     </section>
   `;
+  return article;
+}
+
+function getMaxRenderedPostId() {
+  let maxId = 0;
+  document.querySelectorAll('.post[data-post-id]').forEach((post) => {
+    const id = Number(post.getAttribute('data-post-id'));
+    if (Number.isInteger(id) && id > maxId) {
+      maxId = id;
+    }
+  });
+  return maxId;
+}
+
+function insertApprovedPostToTop(row) {
+  const id = Number(row?.id || 0);
+  if (!id) return;
+  if (document.querySelector(`.post[data-post-id="${id}"]`)) return;
+
+  const card = buildApprovedPostElement(row);
+  if (!card) return;
+
+  const filterBar = document.querySelector('.filter-bar-section');
+  if (!filterBar) return;
 
   const placeholder = Array.from(document.querySelectorAll('.post')).find((el) => {
     const text = String(el.textContent || '').toLowerCase();
     return text.includes('no published posts yet');
   });
-  if (placeholder) {
-    placeholder.remove();
-  }
+  if (placeholder) placeholder.remove();
 
   const firstPost = filterBar.parentElement?.querySelector('.post');
   if (firstPost) {
-    firstPost.parentElement.insertBefore(article, firstPost);
+    firstPost.parentElement.insertBefore(card, firstPost);
   } else {
-    filterBar.insertAdjacentElement('afterend', article);
+    filterBar.insertAdjacentElement('afterend', card);
   }
+}
 
-  initFeedVideoCenterPlayButtons();
+let latestApprovedPostId = getMaxRenderedPostId();
+
+async function pollApprovedPosts() {
+  try {
+    const res = await fetch(`../Php/fetch_latest_approved_posts.php?since_id=${latestApprovedPostId}`, {
+      credentials: 'same-origin',
+      cache: 'no-store'
+    });
+    const json = await res.json();
+    const rows = json?.success && Array.isArray(json.rows) ? json.rows : [];
+    if (!rows.length) return;
+
+    rows.forEach((row) => {
+      insertApprovedPostToTop(row);
+      const id = Number(row?.id || 0);
+      if (id > latestApprovedPostId) latestApprovedPostId = id;
+    });
+
+    initFeedVideoCenterPlayButtons();
+    refreshPostRelativeTimes();
+    filterPosts(window.currentPostFilter || 'all', true);
+  } catch (error) {
+    console.error('approved post polling failed', error);
+  }
 }
 
 function openModal(isShareMode = false) {
@@ -645,16 +726,8 @@ function createPost() {
   }).then(r => r.json())
     .then(res => {
       if (res && res.success) {
-        const pendingPost = {
-          text: finalText,
-          category,
-          isAnonymous: shareAnonymous === '1',
-          imageUrls: selectedImages.map((file) => URL.createObjectURL(file)),
-          videoUrl: selectedVideo ? URL.createObjectURL(selectedVideo) : ''
-        };
         closeModal();
-        prependPendingPostToFeed(pendingPost);
-        alert('Saved successfully. Post added instantly (pending admin review).');
+        alert('Saved successfully. Your post is waiting for admin approval. It will appear after approval.');
       } else {
         alert('Save failed: ' + (res.error || 'Unknown'));
       }
@@ -1782,8 +1855,10 @@ document.addEventListener('keydown', function (event) {
 
 loadUserNotifications();
 loadComboMissions();
+pollApprovedPosts();
 setInterval(loadUserNotifications, 30000);
 setInterval(loadComboMissions, 45000);
+setInterval(pollApprovedPosts, 12000);
 refreshPostRelativeTimes();
 setInterval(refreshPostRelativeTimes, 60000);
 
@@ -1973,10 +2048,25 @@ var policeIcon = L.icon({
 initFeedVideoCenterPlayButtons();
 
 function filterPosts(category) {
+  const programmatic = arguments[1] === true;
+  window.currentPostFilter = category;
   // Remove .active from all filter buttons
   document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
   // Add .active to the clicked button
-  event.target.classList.add('active');
+  if (!programmatic && typeof event !== 'undefined' && event && event.target) {
+    event.target.classList.add('active');
+  } else {
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      const text = String(btn.textContent || '').toLowerCase();
+      if (
+        (category === 'all' && text.includes('all')) ||
+        (category === 'mission' && text.includes('mission')) ||
+        (category === 'disaster' && text.includes('disaster'))
+      ) {
+        btn.classList.add('active');
+      }
+    });
+  }
   // Show/hide posts
   document.querySelectorAll('.post').forEach(post => {
     if (category === 'all' || post.dataset.category === category) {

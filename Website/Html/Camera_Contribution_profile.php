@@ -193,7 +193,7 @@ try {
                 ? '../Images/anonymously.gif'
                 : (!empty($user['profile_photo']) ? '../uploads/camera/' . e($user['profile_photo']) : '../Images/default-profile.gif');
             ?>
-            <div class="card post" data-share-anonymous="<?= $isAnonymous ? '1' : '0' ?>">
+            <div class="card post" data-post-id="<?= (int)($post['id'] ?? 0) ?>" data-category="<?= e((string)($post['category'] ?? 'general')) ?>" data-share-anonymous="<?= $isAnonymous ? '1' : '0' ?>">
               <div class="post-header">
                 <img class="mini-profile" src="<?= e($displayAuthorPhoto) ?>" alt="Profile">
                 <div>

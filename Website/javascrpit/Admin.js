@@ -393,6 +393,7 @@ setInterval(loadCameraSeries, 30000);
 
 // Post control actions (Approve / Reject)
 let applyPostControlFilters = null;
+let postControlActionInFlight = 0;
 
 document.addEventListener('click', function (event) {
   const groupToggleButton = event.target.closest('[data-post-group-toggle]');
@@ -562,6 +563,7 @@ document.addEventListener('click', function (event) {
   if (rejectButton && rejectButton !== actionButton) rejectButton.disabled = true;
 
   const targetStatus = action === 'approve' ? 'approved' : 'rejected';
+  postControlActionInFlight += 1;
 
   function setStatusUI(statusText) {
     statusElement.textContent = statusText;
@@ -612,6 +614,9 @@ document.addEventListener('click', function (event) {
       if (approveButton && approveButton !== actionButton) approveButton.disabled = false;
       if (rejectButton && rejectButton !== actionButton) rejectButton.disabled = false;
       alert('Could not update status. This post may already be decided or a network error occurred.');
+    })
+    .finally(() => {
+      postControlActionInFlight = Math.max(0, postControlActionInFlight - 1);
     });
 });
 
@@ -967,14 +972,14 @@ document.addEventListener('click', function (event) {
   applyPostControlFilters = applyPostControlFiltersWithOrder;
   document.addEventListener('admin:section-activated', function (event) {
     const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
-    if (sectionId === 'post-control') {
+    if (sectionId === 'post-control' && postControlActionInFlight === 0) {
       loadPostRows();
     }
   });
 
   document.addEventListener('admin:refresh-section', function (event) {
     const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
-    if (sectionId === 'post-control') {
+    if (sectionId === 'post-control' && postControlActionInFlight === 0) {
       loadPostRows();
     }
   });
@@ -3220,20 +3225,34 @@ function openAddVolunteerModal() {
     }, 350);
   }
 
+  let actionQueueBroken = false;
+
   async function loadActionQueue() {
+    if (actionQueueBroken) return;
     try {
       const res = await fetch('../Php/admin_fetch_action_queue.php', {
         credentials: 'same-origin',
         cache: 'no-store'
       });
-      const json = await res.json();
+      const raw = await res.text();
+      const trimmed = String(raw || '').trim();
+      if (trimmed.startsWith('<?php')) {
+        actionQueueBroken = true;
+        throw new Error('PHP source returned instead of JSON.');
+      }
+
+      const json = JSON.parse(trimmed || '{}');
       if (!json?.success) throw new Error(json?.error || 'Failed to load action queue');
       setSummary(json.summary || {});
       renderRows(Array.isArray(json.rows) ? json.rows : []);
     } catch (error) {
       console.error('action queue load failed', error);
       if (summaryEl) summaryEl.textContent = 'Load failed';
-      queueBody.innerHTML = '<tr><td colspan="6">Failed to load pending actions.</td></tr>';
+      if (actionQueueBroken) {
+        queueBody.innerHTML = '<tr><td colspan="6">PHP endpoint is not executing. Run project through XAMPP/Apache localhost.</td></tr>';
+      } else {
+        queueBody.innerHTML = '<tr><td colspan="6">Failed to load pending actions.</td></tr>';
+      }
     }
   }
 
@@ -4147,5 +4166,5 @@ function openAddVolunteerModal() {
   }
 
   triggerAllSectionRefreshes();
-  setInterval(triggerAllSectionRefreshes, 12000);
+  setInterval(triggerAllSectionRefreshes, 30000);
 })();

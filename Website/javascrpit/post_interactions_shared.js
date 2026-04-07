@@ -511,6 +511,10 @@
     return 'all';
   }
 
+  function getFeedRootContainer() {
+    return document.querySelector('.main-feed') || document.getElementById('post-feed');
+  }
+
   function buildPostCardHtml(row) {
     const postId = Number(row?.id || 0);
     if (!postId) return '';
@@ -582,12 +586,19 @@
 
   function insertNewPosts(rows) {
     if (!Array.isArray(rows) || rows.length === 0) return;
-    const feedRoot = document.querySelector('.main-feed');
+    const feedRoot = getFeedRootContainer();
     if (!feedRoot) return;
 
     const activeCategory = getActiveFeedCategory();
     const sorted = [...rows].sort((a, b) => Number(a?.id || 0) - Number(b?.id || 0));
     const firstExistingPost = feedRoot.querySelector('.post[data-post-id]');
+
+    const emptyCard = Array.from(feedRoot.querySelectorAll('.post')).find(post => {
+      return String(post.textContent || '').toLowerCase().includes('no posts yet');
+    });
+    if (emptyCard) {
+      emptyCard.remove();
+    }
 
     sorted.forEach(row => {
       const postId = Number(row?.id || 0);
