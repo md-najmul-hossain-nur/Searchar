@@ -574,6 +574,15 @@ const comboRankNext = document.getElementById('comboRankNext');
 const comboRankNeed = document.getElementById('comboRankNeed');
 const comboRankProgressBar = document.getElementById('comboRankProgressBar');
 const comboMissionStats = document.getElementById('comboMissionStats');
+const volunteerMissionModal = document.getElementById('volunteerMissionModal');
+const missionProofFileInput = document.getElementById('mission-proof-file');
+const missionProofPreview = document.getElementById('mission-proof-preview');
+const missionProofStatus = document.getElementById('mission-proof-status');
+const missionProofSubmitBtn = document.querySelector('[data-mission-proof-submit="1"]');
+const missionHistoryList = document.getElementById('mission-history-list');
+const missionHistoryEmpty = document.getElementById('mission-history-empty');
+
+let comboMissionsCache = [];
 
 const COMBO_RANKS = [
   { key: 'bronze', title: 'Bronze Volunteer', nextTitle: 'Silver Responder', minXp: 0, nextXp: 380 },
@@ -673,7 +682,88 @@ function missionStatusLabel(item) {
   return 'Assigned';
 }
 
+function isMissionClosed(item) {
+  const status = String(item?.status || '').toLowerCase();
+  const response = String(item?.response_status || '').toLowerCase();
+  return ['completed', 'rejected_busy', 'closed_by_police'].includes(status)
+    || ['completed', 'rejected_busy', 'closed_by_police'].includes(response);
+}
+
+function getCurrentComboMissionForProof() {
+  if (!Array.isArray(comboMissionsCache) || comboMissionsCache.length === 0) return null;
+  const active = comboMissionsCache.find(item => !isMissionClosed(item));
+  return active || comboMissionsCache[0] || null;
+}
+
+function renderMissionHistoryFromCombo() {
+  if (!missionHistoryList || !missionHistoryEmpty) return;
+
+  const completed = (Array.isArray(comboMissionsCache) ? comboMissionsCache : []).filter(item => {
+    const status = String(item?.status || '').toLowerCase();
+    const response = String(item?.response_status || '').toLowerCase();
+    return status === 'completed' || response === 'completed';
+  });
+
+  if (completed.length === 0) {
+    missionHistoryList.innerHTML = '';
+    missionHistoryEmpty.style.display = 'block';
+    return;
+  }
+
+  missionHistoryEmpty.style.display = 'none';
+  missionHistoryList.innerHTML = completed.map((item) => {
+    const title = escapeHtml(String(item?.mission_title || 'Mission'));
+    const caseRef = escapeHtml(String(item?.case_ref || '').trim());
+    const assignedAt = escapeHtml(String(item?.assigned_at || '').trim());
+
+    return `
+      <div class="mission-history-item">
+        <strong>${title}</strong>
+        ${caseRef ? `<div>Case: ${caseRef}</div>` : ''}
+        ${assignedAt ? `<small>Assigned: ${assignedAt}</small>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function updateMissionProofUiState() {
+  if (!missionProofStatus || !missionProofSubmitBtn) return;
+
+  const mission = getCurrentComboMissionForProof();
+  if (!mission) {
+    missionProofStatus.textContent = 'No mission available right now.';
+    missionProofSubmitBtn.disabled = true;
+    return;
+  }
+
+  if (isMissionClosed(mission)) {
+    missionProofStatus.textContent = 'This mission is already closed/completed.';
+    missionProofSubmitBtn.disabled = true;
+    return;
+  }
+
+  missionProofStatus.textContent = `Selected mission: ${String(mission?.mission_title || 'Mission')}`;
+  missionProofSubmitBtn.disabled = false;
+}
+
+function openMissionModal() {
+  if (!volunteerMissionModal) return;
+  volunteerMissionModal.classList.remove('hidden');
+  volunteerMissionModal.focus();
+  renderMissionHistoryFromCombo();
+  updateMissionProofUiState();
+}
+
+function closeMissionModal() {
+  if (!volunteerMissionModal) return;
+  volunteerMissionModal.classList.add('hidden');
+}
+
+window.openMissionModal = openMissionModal;
+window.closeMissionModal = closeMissionModal;
+
 function renderComboMissions(items) {
+  comboMissionsCache = Array.isArray(items) ? items : [];
   renderComboRank(items);
 
   if (!comboMissionsList) return;
@@ -682,27 +772,27 @@ function renderComboMissions(items) {
     return;
   }
 
-  comboMissionsList.innerHTML = items.map((item) => {
-    const title = escapeHtml(String(item?.mission_title || 'Mission'));
-    const details = escapeHtml(String(item?.mission_details || '').trim());
-    const location = escapeHtml(String(item?.mission_location || '').trim());
-    const caseRef = escapeHtml(String(item?.case_ref || '').trim());
-    const assignedAt = escapeHtml(String(item?.assigned_at || '').trim());
-    const statusLabel = escapeHtml(missionStatusLabel(item));
-
-    return `
+  const activeMission = getCurrentComboMissionForProof();
+  if (!activeMission) {
+    comboMissionsList.innerHTML = '<p class="combo-missions-empty">No active mission right now. Use View Missions for details.</p>';
+  } else {
+    const title = escapeHtml(String(activeMission?.mission_title || 'Assigned Mission'));
+    const statusLabel = escapeHtml(missionStatusLabel(activeMission));
+    comboMissionsList.innerHTML = `
       <article class="combo-mission-item">
         <div class="combo-mission-top">
           <strong>${title}</strong>
           <span>${statusLabel}</span>
         </div>
-        ${caseRef ? `<p>Case: ${caseRef}</p>` : ''}
-        ${location ? `<p>Location: ${location}</p>` : ''}
-        ${details ? `<p>${details}</p>` : ''}
-        ${assignedAt ? `<small>Assigned: ${assignedAt}</small>` : ''}
+        <p>Open <strong>View Missions</strong> for full mission popup.</p>
       </article>
     `;
-  }).join('');
+  }
+
+  if (volunteerMissionModal && !volunteerMissionModal.classList.contains('hidden')) {
+    renderMissionHistoryFromCombo();
+    updateMissionProofUiState();
+  }
 }
 
 async function loadComboMissions() {
@@ -716,8 +806,97 @@ async function loadComboMissions() {
     const missions = json && json.success && Array.isArray(json.data) ? json.data : [];
     renderComboMissions(missions);
   } catch (error) {
+    comboMissionsCache = [];
     comboMissionsList.innerHTML = '<p class="combo-missions-empty">Could not load combo missions right now.</p>';
+    updateMissionProofUiState();
   }
+}
+
+if (missionProofFileInput && missionProofPreview) {
+  missionProofFileInput.addEventListener('change', function () {
+    const file = missionProofFileInput.files && missionProofFileInput.files[0] ? missionProofFileInput.files[0] : null;
+    missionProofPreview.innerHTML = '';
+    if (!file) return;
+
+    if (file.type.startsWith('image/')) {
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(file);
+      img.alt = 'Mission proof image';
+      missionProofPreview.appendChild(img);
+      return;
+    }
+
+    if (file.type.startsWith('video/')) {
+      const video = document.createElement('video');
+      video.src = URL.createObjectURL(file);
+      video.controls = true;
+      missionProofPreview.appendChild(video);
+      return;
+    }
+
+    const p = document.createElement('p');
+    p.textContent = `Selected file: ${file.name}`;
+    missionProofPreview.appendChild(p);
+  });
+}
+
+if (missionProofSubmitBtn) {
+  missionProofSubmitBtn.addEventListener('click', async function () {
+    const selectedFile = missionProofFileInput?.files && missionProofFileInput.files[0] ? missionProofFileInput.files[0] : null;
+    if (!selectedFile) {
+      alert('Please select a proof file first.');
+      return;
+    }
+
+    const mission = getCurrentComboMissionForProof();
+    const missionId = Number(mission?.mission_id || 0);
+    if (!missionId) {
+      alert('No active assigned mission found for proof submission.');
+      return;
+    }
+
+    missionProofSubmitBtn.disabled = true;
+    const prevText = missionProofSubmitBtn.textContent;
+    missionProofSubmitBtn.textContent = 'Submitting...';
+    if (missionProofStatus) missionProofStatus.textContent = 'Uploading proof...';
+
+    try {
+      const fd = new FormData();
+      fd.append('mission_id', String(missionId));
+      fd.append('proof_file', selectedFile, selectedFile.name);
+
+      const res = await fetch('../Php/volunteer_submit_mission_proof.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        body: fd
+      });
+      const json = await res.json();
+
+      if (!json?.success) {
+        throw new Error(json?.error || 'Could not submit mission proof.');
+      }
+
+      if (missionProofStatus) missionProofStatus.textContent = 'Proof submitted successfully.';
+      alert('Mission proof submitted successfully.');
+      missionProofFileInput.value = '';
+      if (missionProofPreview) missionProofPreview.innerHTML = '';
+      await loadComboMissions();
+    } catch (error) {
+      if (missionProofStatus) missionProofStatus.textContent = error?.message || 'Could not submit mission proof.';
+      alert(error?.message || 'Could not submit mission proof.');
+    } finally {
+      missionProofSubmitBtn.disabled = false;
+      missionProofSubmitBtn.textContent = prevText || '✅ Submit Proof';
+    }
+  });
+}
+
+if (volunteerMissionModal) {
+  volunteerMissionModal.addEventListener('click', function (event) {
+    if (event.target === volunteerMissionModal) {
+      closeMissionModal();
+    }
+  });
 }
 
 const recentNotificationsList = document.getElementById('recentNotificationsList');
@@ -1108,6 +1287,7 @@ if (allNotificationsList) {
 document.addEventListener('keydown', function (event) {
   if (event.key === 'Escape') {
     closeVolunteerApplyModal();
+    closeMissionModal();
     closeDonationPopup();
     closeNotificationsDrawer();
     closeMessengerDrawer();
