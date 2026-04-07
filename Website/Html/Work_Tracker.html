@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SEARCHAR Work Tracker</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/Work_Tracker.css">
+</head>
+<body>
+  <header class="tracker-header">
+    <div class="brand">
+      <img src="../Images/logo.png" alt="SEARCHAR logo">
+      <div>
+        <h1>SEARCHAR Work Tracker</h1>
+        <p>Pending tasks + known bugs for User Home, Admin, and all Html pages</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a class="link-btn" href="../Html/Work_Tracker.html?scope=user_home&page=User_Home.php"><i class="fa-solid fa-house"></i> User Home Tasks</a>
+      <a class="link-btn" href="../Html/Work_Tracker.html?scope=admin&page=Admin.html"><i class="fa-solid fa-user-shield"></i> Admin Tasks</a>
+      <a class="link-btn" href="../Html/Work_Tracker.html?scope=policeman&page=Policeman_Home.php"><i class="fa-solid fa-shield-halved"></i> Policeman Tasks</a>
+      <a class="link-btn" href="../Html/Work_Tracker.html?scope=volunteer&page=Volunteer_Home.php"><i class="fa-solid fa-handshake-angle"></i> Volunteer Tasks</a>
+      <a class="link-btn" href="../Html/Work_Tracker.html?scope=cameraman&page=Camera_Contribution_Home.php"><i class="fa-solid fa-video"></i> Cameraman Tasks</a>
+    </div>
+  </header>
+
+  <main class="tracker-main">
+    <section class="panel filters-panel">
+      <h2>Filters</h2>
+      <div class="filters-row">
+        <label>
+          Scope
+          <select id="filter-scope">
+            <option value="all">All Scopes</option>
+            <option value="user_home">User Home</option>
+            <option value="admin">Admin</option>
+            <option value="policeman">Policeman</option>
+            <option value="volunteer">Volunteer</option>
+            <option value="cameraman">Cameraman</option>
+            <option value="shared">All Html Pages</option>
+          </select>
+        </label>
+        <label>
+          Type
+          <select id="filter-type">
+            <option value="all">All Types</option>
+            <option value="task">Task</option>
+            <option value="bug">Bug</option>
+          </select>
+        </label>
+        <label>
+          Status
+          <select id="filter-status">
+            <option value="all">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="in_progress">In Progress</option>
+            <option value="blocked">Blocked</option>
+            <option value="done">Done</option>
+          </select>
+        </label>
+        <label>
+          Page
+          <select id="filter-page">
+            <option value="all">All Html Files</option>
+          </select>
+        </label>
+      </div>
+      <div class="filters-row">
+        <label class="grow">
+          Search
+          <input id="filter-search" type="text" placeholder="Search title, details, page">
+        </label>
+      </div>
+    </section>
+
+    <section class="panel form-panel">
+      <h2>Add New Item</h2>
+      <form id="task-form" class="task-form">
+        <label>
+          Title
+          <input id="new-title" type="text" required placeholder="What is pending?">
+        </label>
+        <label>
+          Scope
+          <select id="new-scope" required>
+            <option value="user_home">User Home</option>
+            <option value="admin">Admin</option>
+            <option value="policeman">Policeman</option>
+            <option value="volunteer">Volunteer</option>
+            <option value="cameraman">Cameraman</option>
+            <option value="shared">All Html Pages</option>
+          </select>
+        </label>
+        <label>
+          Type
+          <select id="new-type" required>
+            <option value="task">Task</option>
+            <option value="bug">Bug</option>
+          </select>
+        </label>
+        <label>
+          Status
+          <select id="new-status" required>
+            <option value="pending">Pending</option>
+            <option value="in_progress">In Progress</option>
+            <option value="blocked">Blocked</option>
+            <option value="done">Done</option>
+          </select>
+        </label>
+        <label>
+          Priority
+          <select id="new-priority" required>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </label>
+        <label class="full-width">
+          Details
+          <textarea id="new-details" rows="3" placeholder="Short details..."></textarea>
+        </label>
+        <label>
+          Page Name
+          <select id="new-page" required>
+            <option value="">Select Html file</option>
+          </select>
+        </label>
+        <div class="form-actions">
+          <button type="submit" class="primary-btn"><i class="fa-solid fa-plus"></i> Add Item</button>
+          <button type="button" id="reset-seed" class="ghost-btn">Reset Default List</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel list-panel">
+      <div class="list-head">
+        <h2>Pending List</h2>
+        <p id="summary-text">0 items</p>
+      </div>
+      <div id="task-list" class="task-list"></div>
+    </section>
+  </main>
+
+  <script src="../javascrpit/Work_Tracker.js"></script>
+</body>
+</html>

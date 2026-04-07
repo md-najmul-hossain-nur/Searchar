@@ -1,0 +1,245 @@
+:root {
+  --bg: #f6f8fb;
+  --card: #ffffff;
+  --text: #17212f;
+  --muted: #5f6b7a;
+  --line: #d8e0ea;
+  --primary: #1f6feb;
+  --danger: #c53030;
+  --ok: #2f855a;
+  --warn: #b7791f;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  background: linear-gradient(135deg, #eef4ff 0%, #f8fbff 45%, #f3f7fb 100%);
+  color: var(--text);
+}
+
+.tracker-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom: 1px solid var(--line);
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.brand p {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.link-btn {
+  text-decoration: none;
+  border: 1px solid var(--line);
+  padding: 8px 12px;
+  border-radius: 10px;
+  color: var(--text);
+  font-weight: 600;
+  background: #fff;
+}
+
+.link-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.tracker-main {
+  max-width: 1180px;
+  margin: 20px auto;
+  padding: 0 14px 30px;
+  display: grid;
+  gap: 14px;
+}
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.panel h2 {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+
+.filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #243447;
+}
+
+label.grow { flex: 1; min-width: 220px; }
+
+select, input, textarea {
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 9px 10px;
+  font-size: 14px;
+  background: #fff;
+}
+
+.task-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px;
+}
+
+.full-width { grid-column: 1 / -1; }
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  align-items: end;
+}
+
+.primary-btn, .ghost-btn {
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.primary-btn {
+  background: var(--primary);
+  color: #fff;
+}
+
+.ghost-btn {
+  background: #fff;
+  color: var(--text);
+  border-color: var(--line);
+}
+
+.list-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#summary-text {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.task-list {
+  display: grid;
+  gap: 10px;
+}
+
+.task-item {
+  border: 1px solid var(--line);
+  border-left: 6px solid #90a4b8;
+  border-radius: 12px;
+  padding: 10px;
+  background: #fbfdff;
+}
+
+.task-item.priority-high { border-left-color: var(--danger); }
+.task-item.priority-medium { border-left-color: var(--warn); }
+.task-item.priority-low { border-left-color: var(--ok); }
+
+.task-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.task-title {
+  margin: 0;
+  font-size: 15px;
+}
+
+.badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: #ecf2fb;
+  color: #24446a;
+}
+
+.badge.type-bug { background: #fee2e2; color: #9b1c1c; }
+.badge.status-done { background: #dcfce7; color: #166534; }
+.badge.status-blocked { background: #fef3c7; color: #92400e; }
+.badge.status-in_progress { background: #dbeafe; color: #1d4ed8; }
+
+.task-meta {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.task-desc {
+  margin: 7px 0 0;
+  font-size: 13px;
+}
+
+.task-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.small-btn {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 6px 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+@media (max-width: 680px) {
+  .tracker-header { flex-direction: column; align-items: flex-start; }
+  .header-actions { width: 100%; }
+}

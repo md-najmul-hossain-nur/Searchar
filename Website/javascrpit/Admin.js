@@ -1775,7 +1775,9 @@ function openAddVolunteerModal() {
   const crimeActionState = new Map();
   let currentAssignCaseId = null;
   let currentAssignMedia = [];
+  let currentAssignCoords = null;
   let assignCandidates = [];
+  const ASSIGN_RANGE_KM = 2;
 
   function getCrimeActionState(caseId) {
     const key = String(caseId || '');
@@ -1906,7 +1908,9 @@ function openAddVolunteerModal() {
             status: String(v.status || '').toLowerCase() === 'busy' ? 'busy' : 'available',
             role: 'volunteer',
             recipient_entity: 'volunteer',
-            recipient_id: Number(v.volunteer_id || 0)
+            recipient_id: Number(v.volunteer_id || 0),
+            lat: Number(v.lat ?? v.latitude),
+            lng: Number(v.lng ?? v.lon ?? v.longitude)
           }))
         : [];
 
@@ -1920,8 +1924,19 @@ function openAddVolunteerModal() {
   function closeCrimeAssignModal() {
     if (assignModal) assignModal.classList.remove('open');
     currentAssignCaseId = null;
+    currentAssignCoords = null;
   }
   window.closeCrimeAssignModal = closeCrimeAssignModal;
+
+  function haversineDistanceKm(lat1, lng1, lat2, lng2) {
+    const toRad = (deg) => (deg * Math.PI) / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+      + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return 6371 * c;
+  }
 
   function renderAssignList(landmark) {
     if (!assignList) return;
@@ -1939,68 +1954,35 @@ function openAddVolunteerModal() {
       return true;
     });
 
-    const term = String(landmark || '').trim().toLowerCase();
+    const caseLat = Number(currentAssignCoords?.lat);
+    const caseLng = Number(currentAssignCoords?.lng);
 
-    const nearbyAreas = {
-      banani: ['gulshan', 'kawran bazar', 'dhanmondi', 'farmgate'],
-      gulshan: ['banani', 'badda', 'bashundhara'],
-      dhanmondi: ['farmgate', 'mohammadpur', 'kawran bazar', 'banani'],
-      farmgate: ['dhanmondi', 'kawran bazar', 'mohammadpur', 'banani'],
-      uttara: ['mirpur', 'banani'],
-      mirpur: ['uttara', 'mohammadpur', 'farmgate'],
-      jatrabari: ['badda', 'kawran bazar'],
-      mohammadpur: ['dhanmondi', 'farmgate', 'mirpur'],
-      badda: ['gulshan', 'bashundhara', 'jatrabari'],
-      bashundhara: ['badda', 'gulshan', 'banani'],
-      'kawran bazar': ['farmgate', 'banani', 'dhanmondi']
-    };
-
-    const normalized = term
-      .replace('crossing', '')
-      .replace('intersection', '')
-      .replace('bus stand', '')
-      .replace(/\s+/g, ' ')
-      .trim();
-
-    const allAreas = Object.keys(nearbyAreas);
-    const baseArea = allAreas.find(area => normalized.includes(area)) || '';
-
+    const hasCaseCoords = Number.isFinite(caseLat) && Number.isFinite(caseLng);
     let filtered = [];
-    let matchType = 'All areas';
+    let matchType = `Within ${ASSIGN_RANGE_KM} KM`;
 
-    if (baseArea) {
-      filtered = eligibleSource.filter(v => String(v.location || '').toLowerCase().includes(baseArea));
-      if (filtered.length) matchType = 'Exact match';
-
-      if (!filtered.length) {
-        const nearSet = new Set([baseArea, ...(nearbyAreas[baseArea] || [])]);
-        filtered = eligibleSource.filter(v => {
-          const loc = String(v.location || '').toLowerCase();
-          return Array.from(nearSet).some(area => loc.includes(area));
-        });
-        if (filtered.length) matchType = 'Nearby match';
-      }
-    } else if (normalized) {
-      filtered = eligibleSource.filter(v => String(v.location || '').toLowerCase().includes(normalized));
-      if (filtered.length) matchType = 'Exact match';
-      if (!filtered.length) {
-        filtered = eligibleSource.filter(v => {
-          const loc = String(v.location || '').toLowerCase();
-          return normalized.split(' ').some(token => token && loc.includes(token));
-        });
-        if (filtered.length) matchType = 'Nearby match';
-      }
-    }
-
-    if (!filtered.length) {
-      filtered = eligibleSource;
-      matchType = 'All areas';
+    if (hasCaseCoords) {
+      filtered = eligibleSource
+        .map(v => {
+          const vLat = Number(v.lat);
+          const vLng = Number(v.lng);
+          if (!Number.isFinite(vLat) || !Number.isFinite(vLng)) {
+            return null;
+          }
+          const distanceKm = haversineDistanceKm(caseLat, caseLng, vLat, vLng);
+          return { ...v, distanceKm };
+        })
+        .filter(v => v && v.distanceKm <= ASSIGN_RANGE_KM)
+        .sort((a, b) => a.distanceKm - b.distanceKm);
+    } else {
+      matchType = 'Case coordinates unavailable';
+      filtered = [];
     }
 
     const header = `<div class="assign-vol-meta" style="padding:4px 8px 10px; font-weight:700;">Showing: ${matchType}</div>`;
 
     if (!filtered.length) {
-      assignList.innerHTML = `${header}<div class="assign-vol-meta" style="padding:8px;">No available volunteers for this case.</div>`;
+      assignList.innerHTML = `${header}<div class="assign-vol-meta" style="padding:8px;">No available volunteers within ${ASSIGN_RANGE_KM} KM for this case.</div>`;
       return;
     }
 
@@ -2010,7 +1992,7 @@ function openAddVolunteerModal() {
           <span>
             <input type="checkbox" value="${v.id}" data-recipient-entity="${v.recipient_entity || ''}" data-recipient-id="${v.recipient_id || ''}" data-recipient-name="${v.name || ''}">
             <strong>${v.name}</strong>
-            <div class="assign-vol-meta">${v.location || 'Location unavailable'} • ${v.status}</div>
+            <div class="assign-vol-meta">${v.location || 'Location unavailable'} • ${v.status} • ${Number(v.distanceKm).toFixed(2)} KM</div>
           </span>
         </label>
       `;
@@ -2055,9 +2037,12 @@ function openAddVolunteerModal() {
     }
   }
 
-  function openAssignModal(caseId, landmark, media = []) {
+  function openAssignModal(caseId, landmark, media = [], coords = null) {
     currentAssignCaseId = caseId;
     currentAssignMedia = Array.isArray(media) ? media : [];
+    currentAssignCoords = coords && Number.isFinite(Number(coords.lat)) && Number.isFinite(Number(coords.lng))
+      ? { lat: Number(coords.lat), lng: Number(coords.lng) }
+      : null;
     if (assignCaseIdEl) assignCaseIdEl.textContent = caseId;
     if (assignCaseLandmarkEl) assignCaseLandmarkEl.textContent = landmark || '—';
     renderAssignList(landmark || '');
@@ -2554,7 +2539,7 @@ function openAddVolunteerModal() {
         if (state.assigned || state.rejected) return;
         const crime = demoCrimes.find(c => c.id === id);
         if (String(crime?.status || '').toLowerCase() === 'closed') return;
-        openAssignModal(id, crime?.landmark || '', crime?.media || []);
+        openAssignModal(id, crime?.landmark || '', crime?.media || [], { lat: crime?.lat, lng: crime?.lng });
         return;
       }
 
