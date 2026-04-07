@@ -607,12 +607,26 @@ try {
         <p class="combo-missions-empty">Loading missions...</p>
       </div>
 
+      <div id="comboCertificateUnlock" class="certificate-box hidden" aria-live="polite" data-volunteer-name="<?= e($user['full_name'] ?? 'Volunteer') ?>">
+        <p id="comboCertificateMessage">🎉 Congratulations! You’ve reached <strong>Silver Responder</strong>! Certificate unlocked.</p>
+        <div class="certificate-actions">
+          <button id="comboViewCertificateBtn" class="view-certificate-btn" type="button">🏅 Certificate</button>
+        </div>
+      </div>
+
       <div id="volunteerMissionModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="missionModalTitle" tabindex="-1">
         <div class="modal-content">
           <button class="close" onclick="closeMissionModal()" aria-label="Close modal">&times;</button>
           <h3 id="missionModalTitle">🧭 Missions for Your Rank</h3>
 
           <ul class="mission-list">
+            <li id="mission-assigned-single" class="mission-step">
+              <strong>🚨 Admin Assigned Cases</strong><br>
+              These are the missions assigned by admin for your volunteer rank.
+              <div id="mission-assigned-list" class="mission-assigned-list"></div>
+              <p id="mission-assigned-empty" class="mission-history-empty">No assigned mission right now.</p>
+            </li>
+
             <li id="mission-proof-single" class="mission-step" data-step="single">
               <strong>📤 Mission Proof Submission</strong><br>
               Upload one proof file (image/video/pdf) for your assigned mission.<br><br>
@@ -1425,6 +1439,7 @@ try {
            window.history.replaceState({}, document.title, cleanUrl);
          })();
        </script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
       <script src="../javascrpit/User_Home.js?v=20260406b"></script>
       <script src="../javascrpit/post_interactions_shared.js?v=20260406d"></script>
     </body>

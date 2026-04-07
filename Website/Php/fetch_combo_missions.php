@@ -39,11 +39,24 @@ try {
         exit;
     }
 
-    $stmt = $pdo->prepare("SELECT mission_id, mission_title, mission_details, mission_location, status, response_status, case_ref, assigned_at
-                           FROM volunteer_missions
-                           WHERE volunteer_id = :vid
-                           ORDER BY assigned_at DESC, mission_id DESC
-                           LIMIT 20");
+    $hasNotifications = tableExists($pdo, 'user_notifications');
+    $query = "SELECT vm.mission_id, vm.mission_title, vm.mission_details, vm.mission_location, vm.status, vm.response_status, vm.case_ref, vm.assigned_at";
+    if ($hasNotifications) {
+        $query .= ", COALESCE(un.meta_json, '') AS meta_json";
+    } else {
+        $query .= ", '' AS meta_json";
+    }
+
+    $query .= " FROM volunteer_missions vm";
+    if ($hasNotifications) {
+        $query .= " LEFT JOIN user_notifications un ON un.notification_id = vm.source_notification_id";
+    }
+
+    $query .= " WHERE vm.volunteer_id = :vid
+                ORDER BY vm.assigned_at DESC, vm.mission_id DESC
+                LIMIT 20";
+
+    $stmt = $pdo->prepare($query);
     $stmt->execute([':vid' => $volunteerId]);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
@@ -57,6 +70,7 @@ try {
             'response_status' => (string)($row['response_status'] ?? 'pending'),
             'case_ref' => (string)($row['case_ref'] ?? ''),
             'assigned_at' => (string)($row['assigned_at'] ?? ''),
+            'meta_json' => (string)($row['meta_json'] ?? ''),
         ];
     }, $rows);
 

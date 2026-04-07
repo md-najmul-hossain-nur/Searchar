@@ -581,8 +581,34 @@ const missionProofStatus = document.getElementById('mission-proof-status');
 const missionProofSubmitBtn = document.querySelector('[data-mission-proof-submit="1"]');
 const missionHistoryList = document.getElementById('mission-history-list');
 const missionHistoryEmpty = document.getElementById('mission-history-empty');
+const missionAssignedList = document.getElementById('mission-assigned-list');
+const missionAssignedEmpty = document.getElementById('mission-assigned-empty');
+const comboCertificateUnlock = document.getElementById('comboCertificateUnlock');
+const comboCertificateMessage = document.getElementById('comboCertificateMessage');
+const comboViewCertificateBtn = document.getElementById('comboViewCertificateBtn');
+
+if (volunteerMissionModal && volunteerMissionModal.parentElement !== document.body) {
+  // Keep modal at document root so fixed backdrop covers the full page.
+  document.body.appendChild(volunteerMissionModal);
+}
+
+function syncMissionModalOffset() {
+  if (!volunteerMissionModal) return;
+  const navbar = document.querySelector('.navbar');
+  if (!navbar) return;
+  const rect = navbar.getBoundingClientRect();
+  const offset = Math.max(0, Math.ceil(rect.bottom));
+  volunteerMissionModal.style.setProperty('--modal-navbar-offset', `${offset}px`);
+}
 
 let comboMissionsCache = [];
+let comboCertificateSnapshot = {
+  unlocked: false,
+  rank: 'Bronze Volunteer',
+  points: 0,
+  completedMissions: 0,
+  volunteerName: 'Volunteer'
+};
 
 const COMBO_RANKS = [
   { key: 'bronze', title: 'Bronze Volunteer', nextTitle: 'Silver Responder', minXp: 0, nextXp: 380 },
@@ -598,6 +624,159 @@ function escapeHtml(value) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function getComboCertificateVolunteerName() {
+  const dataName = String(comboCertificateUnlock?.dataset?.volunteerName || '').trim();
+  if (dataName) return dataName;
+  const profileName = document.querySelector('.profile-card h2')?.childNodes?.[0]?.textContent;
+  return String(profileName || '').trim() || 'Volunteer';
+}
+
+function getComboRankUnlockMessage(rankRaw) {
+  const rank = String(rankRaw || '').trim();
+  const safeRank = escapeHtml(rank);
+  if (rank === 'Silver Responder') {
+    return `🎉 Congratulations! You’ve reached <strong>${safeRank}</strong>! Certificate unlocked.`;
+  }
+  if (rank === 'Gold Guardian') {
+    return `🏆 Incredible progress! You are now <strong>${safeRank}</strong>. Your upgraded certificate is ready.`;
+  }
+  if (rank === 'Platinum Sentinel') {
+    return `👑 Legendary achievement! You reached <strong>${safeRank}</strong>. Your elite certificate is ready.`;
+  }
+  return '';
+}
+
+function getComboCertificateRankTheme(rankRaw) {
+  const rank = String(rankRaw || '').toLowerCase();
+  if (rank.includes('platinum')) {
+    return { key: 'platinum', ribbon: 'PLATINUM', bg: [246, 251, 255], primary: [39, 84, 122], secondary: [146, 186, 214], nameColor: [26, 78, 125], bodyColor: [23, 37, 51], divider: [147, 197, 253] };
+  }
+  if (rank.includes('gold')) {
+    return { key: 'gold', ribbon: 'GOLD', bg: [255, 252, 241], primary: [161, 98, 7], secondary: [253, 224, 71], nameColor: [146, 64, 14], bodyColor: [69, 26, 3], divider: [251, 191, 36] };
+  }
+  if (rank.includes('silver')) {
+    return { key: 'silver', ribbon: 'SILVER', bg: [248, 250, 252], primary: [71, 85, 105], secondary: [203, 213, 225], nameColor: [51, 65, 85], bodyColor: [30, 41, 59], divider: [148, 163, 184] };
+  }
+  return { key: 'bronze', ribbon: 'BRONZE', bg: [255, 248, 244], primary: [146, 64, 14], secondary: [253, 186, 116], nameColor: [180, 83, 9], bodyColor: [67, 20, 7], divider: [234, 179, 122] };
+}
+
+function buildComboCertificatePdf() {
+  const jsPdfLib = window.jspdf?.jsPDF;
+  if (!jsPdfLib) {
+    throw new Error('Certificate PDF library is not loaded.');
+  }
+
+  const doc = new jsPdfLib({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const theme = getComboCertificateRankTheme(comboCertificateSnapshot.rank);
+
+  doc.setFillColor(...theme.bg);
+  doc.rect(0, 0, pageWidth, pageHeight, 'F');
+
+  doc.setDrawColor(...theme.primary);
+  doc.setLineWidth(3);
+  doc.rect(24, 24, pageWidth - 48, pageHeight - 48);
+
+  doc.setDrawColor(...theme.secondary);
+  doc.setLineWidth(1.2);
+  doc.rect(36, 36, pageWidth - 72, pageHeight - 72);
+
+  doc.setFillColor(...theme.primary);
+  doc.roundedRect((pageWidth / 2) - 54, 46, 108, 28, 8, 8, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text(theme.ribbon, pageWidth / 2, 64, { align: 'center' });
+
+  doc.setTextColor(...theme.primary);
+  doc.setFont('times', 'bolditalic');
+  doc.setFontSize(22);
+  doc.text('SEARCHAR VOLUNTEER HONOR', pageWidth / 2, 104, { align: 'center' });
+
+  doc.setTextColor(55, 65, 81);
+  doc.setFont('times', 'normal');
+  doc.setFontSize(17);
+  doc.text('Certificate of Achievement', pageWidth / 2, 132, { align: 'center' });
+
+  doc.setTextColor(...theme.nameColor);
+  doc.setFont('times', 'bold');
+  doc.setFontSize(36);
+  doc.text(comboCertificateSnapshot.volunteerName, pageWidth / 2, 238, { align: 'center' });
+
+  doc.setTextColor(...theme.bodyColor);
+  doc.setFont('times', 'normal');
+  doc.setFontSize(16);
+  doc.text(`in recognition of outstanding service as a ${comboCertificateSnapshot.rank}`, pageWidth / 2, 286, { align: 'center' });
+  doc.text(`and successfully completing ${comboCertificateSnapshot.completedMissions} mission(s) with dedication and courage`, pageWidth / 2, 314, { align: 'center' });
+
+  doc.setDrawColor(...theme.divider);
+  doc.setLineWidth(1.1);
+  doc.line((pageWidth / 2) - 215, 332, (pageWidth / 2) + 215, 332);
+
+  const issuedOn = new Date().toLocaleDateString();
+  doc.setTextColor(31, 41, 55);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(12);
+  doc.text(`Issued on: ${issuedOn}`, 78, pageHeight - 114);
+
+  doc.setDrawColor(120, 120, 120);
+  doc.line(pageWidth - 288, pageHeight - 120, pageWidth - 82, pageHeight - 120);
+  doc.setTextColor(...theme.bodyColor);
+  doc.setFont('times', 'italic');
+  doc.setFontSize(14);
+  doc.text('SEARCHAR Admin', pageWidth - 182, pageHeight - 128, { align: 'center' });
+
+  return doc;
+}
+
+function bindComboCertificateActions() {
+  if (!comboViewCertificateBtn) return;
+  comboViewCertificateBtn.disabled = !comboCertificateSnapshot.unlocked;
+  comboViewCertificateBtn.onclick = () => {
+    if (!comboCertificateSnapshot.unlocked) {
+      alert('Complete more XP to unlock the certificate.');
+      return;
+    }
+    try {
+      const doc = buildComboCertificatePdf();
+      doc.output('dataurlnewwindow');
+    } catch (e) {
+      alert(e?.message || 'Could not open certificate PDF.');
+    }
+  };
+}
+
+function renderComboCertificate(rank, xp, summary) {
+  if (!comboCertificateUnlock || !comboCertificateMessage) return;
+
+  const completed = Number(summary?.completed || 0);
+  const unlocked = rank && rank.title !== 'Bronze Volunteer' && completed > 0;
+
+  comboCertificateSnapshot = {
+    unlocked,
+    rank: String(rank?.title || 'Bronze Volunteer'),
+    points: Number(xp || 0),
+    completedMissions: completed,
+    volunteerName: getComboCertificateVolunteerName()
+  };
+
+  if (!unlocked) {
+    comboCertificateUnlock.classList.add('hidden');
+    comboCertificateUnlock.setAttribute('hidden', 'hidden');
+    bindComboCertificateActions();
+    return;
+  }
+
+  const unlockMessage = getComboRankUnlockMessage(comboCertificateSnapshot.rank)
+    || `🎉 Congratulations! You reached <strong>${escapeHtml(comboCertificateSnapshot.rank)}</strong>! Certificate unlocked.`;
+
+  comboCertificateMessage.innerHTML = unlockMessage;
+  comboCertificateUnlock.classList.remove('hidden');
+  comboCertificateUnlock.removeAttribute('hidden');
+  bindComboCertificateActions();
 }
 
 function missionCounts(items) {
@@ -671,6 +850,7 @@ function renderComboRank(items) {
 
   comboRankProgressBar.style.width = `${rank.progressPercent}%`;
   comboMissionStats.textContent = `Accepted ${summary.accepted} • Completed ${summary.completed} • Busy ${summary.busy}`;
+  renderComboCertificate(rank, xp, summary);
 }
 
 function missionStatusLabel(item) {
@@ -687,6 +867,64 @@ function isMissionClosed(item) {
   const response = String(item?.response_status || '').toLowerCase();
   return ['completed', 'rejected_busy', 'closed_by_police'].includes(status)
     || ['completed', 'rejected_busy', 'closed_by_police'].includes(response);
+}
+
+function renderComboMissionMedia(metaJsonText) {
+  let meta = null;
+  try {
+    meta = metaJsonText ? JSON.parse(metaJsonText) : null;
+  } catch (_e) {
+    meta = null;
+  }
+
+  const media = Array.isArray(meta?.media) ? meta.media : [];
+  if (!media.length) return '';
+
+  const resolveMediaUrl = (rawUrl) => {
+    const url = String(rawUrl || '').trim();
+    if (!url) return '';
+    if (/^https?:\/\//i.test(url)) return url;
+    if (url.startsWith('../') || url.startsWith('./') || url.startsWith('/')) return url;
+    return `../${url}`;
+  };
+
+  const inferKind = (type, url) => {
+    const t = String(type || '').toLowerCase();
+    const u = String(url || '').toLowerCase();
+    if (t.includes('video') || /\.(mp4|webm|mov|m4v)(\?|#|$)/.test(u)) return 'video';
+    if (t.includes('audio') || /\.(mp3|wav|m4a|ogg)(\?|#|$)/.test(u)) return 'audio';
+    if (t.includes('image') || t.includes('photo') || /\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?|#|$)/.test(u)) return 'image';
+    if (t.includes('pdf') || /\.pdf(\?|#|$)/.test(u)) return 'pdf';
+    return 'file';
+  };
+
+  const mediaHtml = media.map((item) => {
+    const url = resolveMediaUrl(item?.url || '');
+    if (!url) return '';
+    const kind = inferKind(item?.type || '', url);
+
+    if (kind === 'video') {
+      return `<video class="assignment-media" controls preload="metadata" src="${escapeHtml(url)}"></video>`;
+    }
+
+    if (kind === 'image') {
+      return `
+        <div class="assignment-media-item">
+          <img class="assignment-media" src="${escapeHtml(url)}" alt="Mission evidence" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
+          <a class="assignment-media-fallback" href="${escapeHtml(url)}" target="_blank" rel="noopener" style="display:none;">Open evidence file</a>
+        </div>
+      `;
+    }
+
+    if (kind === 'pdf' || kind === 'file') {
+      return `<a class="assignment-media-fallback" href="${escapeHtml(url)}" target="_blank" rel="noopener">Open evidence file</a>`;
+    }
+
+    return '';
+  }).join('');
+
+  if (!mediaHtml) return '';
+  return `<div class="assignment-media-wrap"><div class="assignment-media-title">Evidence</div>${mediaHtml}</div>`;
 }
 
 function getCurrentComboMissionForProof() {
@@ -726,6 +964,42 @@ function renderMissionHistoryFromCombo() {
   }).join('');
 }
 
+function renderAssignedMissionsInModal() {
+  if (!missionAssignedList || !missionAssignedEmpty) return;
+
+  const missions = Array.isArray(comboMissionsCache) ? comboMissionsCache : [];
+  if (missions.length === 0) {
+    missionAssignedList.innerHTML = '';
+    missionAssignedEmpty.style.display = 'block';
+    return;
+  }
+
+  missionAssignedEmpty.style.display = 'none';
+  missionAssignedList.innerHTML = missions.map((item) => {
+    const title = escapeHtml(String(item?.mission_title || 'Mission'));
+    const details = escapeHtml(String(item?.mission_details || '').trim());
+    const location = escapeHtml(String(item?.mission_location || '').trim());
+    const caseRef = escapeHtml(String(item?.case_ref || '').trim());
+    const assignedAt = escapeHtml(String(item?.assigned_at || '').trim());
+    const statusLabel = escapeHtml(missionStatusLabel(item));
+    const mediaBlock = renderComboMissionMedia(String(item?.meta_json || ''));
+
+    return `
+      <article class="mission-assigned-item">
+        <div class="mission-assigned-top">
+          <strong>${title}</strong>
+          <span>${statusLabel}</span>
+        </div>
+        ${caseRef ? `<p><strong>Case:</strong> ${caseRef}</p>` : ''}
+        ${location ? `<p><strong>Location:</strong> ${location}</p>` : ''}
+        ${details ? `<p>${details}</p>` : ''}
+        ${mediaBlock}
+        ${assignedAt ? `<small>Assigned: ${assignedAt}</small>` : ''}
+      </article>
+    `;
+  }).join('');
+}
+
 function updateMissionProofUiState() {
   if (!missionProofStatus || !missionProofSubmitBtn) return;
 
@@ -748,8 +1022,10 @@ function updateMissionProofUiState() {
 
 function openMissionModal() {
   if (!volunteerMissionModal) return;
+  syncMissionModalOffset();
   volunteerMissionModal.classList.remove('hidden');
   volunteerMissionModal.focus();
+  renderAssignedMissionsInModal();
   renderMissionHistoryFromCombo();
   updateMissionProofUiState();
 }
@@ -790,6 +1066,7 @@ function renderComboMissions(items) {
   }
 
   if (volunteerMissionModal && !volunteerMissionModal.classList.contains('hidden')) {
+    renderAssignedMissionsInModal();
     renderMissionHistoryFromCombo();
     updateMissionProofUiState();
   }
@@ -892,6 +1169,8 @@ if (missionProofSubmitBtn) {
 }
 
 if (volunteerMissionModal) {
+  syncMissionModalOffset();
+  window.addEventListener('resize', syncMissionModalOffset);
   volunteerMissionModal.addEventListener('click', function (event) {
     if (event.target === volunteerMissionModal) {
       closeMissionModal();
