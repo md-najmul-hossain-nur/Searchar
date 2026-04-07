@@ -20,11 +20,19 @@ try {
         exit;
     }
 
-    $sql = "SELECT crime_id, case_ref, report_type, severity, status, landmark, reporter_name,
-                   anonymous, anon_token, description, media_path, media_json, lat, lng,
-                   submitted_at, updated_at
-            FROM crime_reports
-            ORDER BY submitted_at DESC, crime_id DESC
+        $sql = "SELECT cr.crime_id, cr.case_ref, cr.source_type, cr.source_ref_id,
+                 cr.report_type, cr.severity, cr.status, cr.landmark, cr.reporter_name,
+                 cr.anonymous, cr.anon_token, cr.description, cr.media_path, cr.media_json,
+                 cr.lat, cr.lng, cr.submitted_at, cr.updated_at,
+                 mpr.photo_filename AS missing_photo_filename,
+                 p.media_path AS post_media_path,
+                 p.media_json AS post_media_json
+             FROM crime_reports cr
+             LEFT JOIN missing_person_reports mpr
+                 ON cr.source_type = 'missing_person' AND cr.source_ref_id = mpr.report_id
+             LEFT JOIN posts p
+                 ON cr.source_type = 'post' AND cr.source_ref_id = p.id
+            ORDER BY cr.submitted_at DESC, cr.crime_id DESC
             LIMIT 1000";
 
     $stmt = $pdo->query($sql);
@@ -39,7 +47,9 @@ try {
             $parsed = json_decode($mediaJson, true);
             if (is_array($parsed)) {
                 foreach ($parsed as $item) {
-                    $candidate = is_array($item) ? (string)($item['path'] ?? $item['url'] ?? '') : (string)$item;
+                    $candidate = is_array($item)
+                        ? (string)($item['path'] ?? $item['url'] ?? $item['media_path'] ?? $item['file'] ?? $item['src'] ?? '')
+                        : (string)$item;
                     $candidate = trim($candidate);
                     if ($candidate !== '') {
                         $media[] = ['type' => 'media', 'url' => $candidate, 'hash' => ''];
@@ -50,6 +60,43 @@ try {
 
         if ($mediaPath !== '' && count($media) === 0) {
             $media[] = ['type' => 'media', 'url' => $mediaPath, 'hash' => ''];
+        }
+
+        if (count($media) === 0) {
+            $sourceType = strtolower(trim((string)($row['source_type'] ?? '')));
+
+            if ($sourceType === 'missing_person') {
+                $photo = trim((string)($row['missing_photo_filename'] ?? ''));
+                if ($photo !== '') {
+                    $media[] = [
+                        'type' => 'media',
+                        'url' => 'uploads/missing_person/' . ltrim($photo, '/'),
+                        'hash' => ''
+                    ];
+                }
+            } elseif ($sourceType === 'post') {
+                $postMediaJson = trim((string)($row['post_media_json'] ?? ''));
+                $postMediaPath = trim((string)($row['post_media_path'] ?? ''));
+
+                if ($postMediaJson !== '') {
+                    $parsedPost = json_decode($postMediaJson, true);
+                    if (is_array($parsedPost)) {
+                        foreach ($parsedPost as $item) {
+                            $candidate = is_array($item)
+                                ? (string)($item['path'] ?? $item['url'] ?? $item['media_path'] ?? $item['file'] ?? $item['src'] ?? '')
+                                : (string)$item;
+                            $candidate = trim($candidate);
+                            if ($candidate !== '') {
+                                $media[] = ['type' => 'media', 'url' => ltrim($candidate, '/'), 'hash' => ''];
+                            }
+                        }
+                    }
+                }
+
+                if (count($media) === 0 && $postMediaPath !== '') {
+                    $media[] = ['type' => 'media', 'url' => ltrim($postMediaPath, '/'), 'hash' => ''];
+                }
+            }
         }
 
         return [

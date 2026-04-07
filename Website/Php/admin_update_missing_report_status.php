@@ -109,7 +109,7 @@ try {
         throw new RuntimeException('Invalid action');
     }
 
-    $rowStmt = $pdo->prepare('SELECT report_id, full_name, reporter_name, last_seen_location, status, created_at FROM missing_person_reports WHERE report_id = :id LIMIT 1');
+    $rowStmt = $pdo->prepare('SELECT report_id, full_name, reporter_name, last_seen_location, photo_filename, status, created_at FROM missing_person_reports WHERE report_id = :id LIMIT 1');
     $rowStmt->execute([':id' => $reportId]);
     $row = $rowStmt->fetch(PDO::FETCH_ASSOC);
 
@@ -149,15 +149,18 @@ try {
         $caseRef = 'MP' . str_pad((string)$reportId, 4, '0', STR_PAD_LEFT);
         $landmark = trim((string)($row['last_seen_location'] ?? ''));
         $reporterName = trim((string)($row['reporter_name'] ?? ''));
+                $photoFilename = trim((string)($row['photo_filename'] ?? ''));
+                $mediaPath = $photoFilename !== '' ? ('uploads/missing_person/' . ltrim($photoFilename, '/')) : null;
+                $mediaJson = $mediaPath ? json_encode([$mediaPath], JSON_UNESCAPED_SLASHES) : null;
         $createdAt = trim((string)($row['created_at'] ?? ''));
         if ($createdAt === '') {
             $createdAt = date('Y-m-d H:i:s');
         }
 
         $upsertCrime = $pdo->prepare("INSERT INTO crime_reports
-            (case_ref, source_type, source_ref_id, report_type, severity, status, landmark, reporter_name, anonymous, description, submitted_at, updated_at, lat, lng)
+                        (case_ref, source_type, source_ref_id, report_type, severity, status, landmark, reporter_name, anonymous, description, media_path, media_json, submitted_at, updated_at, lat, lng)
             VALUES
-            (:case_ref, 'missing_person', :source_ref_id, 'missing_person', 'high', 'new', :landmark, :reporter_name, 0, :description, :submitted_at, NOW(), :lat, :lng)
+                        (:case_ref, 'missing_person', :source_ref_id, 'missing_person', 'high', 'new', :landmark, :reporter_name, 0, :description, :media_path, :media_json, :submitted_at, NOW(), :lat, :lng)
             ON DUPLICATE KEY UPDATE
               source_ref_id = VALUES(source_ref_id),
               report_type = VALUES(report_type),
@@ -167,6 +170,8 @@ try {
               reporter_name = VALUES(reporter_name),
               anonymous = 0,
               description = VALUES(description),
+                            media_path = VALUES(media_path),
+                            media_json = VALUES(media_json),
               submitted_at = VALUES(submitted_at),
               updated_at = NOW(),
               closed_at = NULL");
@@ -177,6 +182,8 @@ try {
             ':landmark' => $landmark !== '' ? $landmark : 'Unknown location',
             ':reporter_name' => $reporterName !== '' ? $reporterName : 'Unknown',
             ':description' => 'Escalated from Missing Persons',
+            ':media_path' => $mediaPath,
+            ':media_json' => $mediaJson,
             ':submitted_at' => $createdAt,
             ':lat' => 23.8103,
             ':lng' => 90.4125,

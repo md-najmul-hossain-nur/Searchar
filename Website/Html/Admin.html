@@ -589,7 +589,7 @@
 <div id="crime" class="main-section">
   <h2>Crime Reporting</h2>
   <div class="filters-bar crime-filters">
-    <input id="crime-filter-text" type="text" placeholder="Search by type, landmark, token">
+    <input id="crime-filter-text" type="text" placeholder="Search by case, type, landmark">
     <select id="crime-filter-type">
       <option value="">Type</option>
       <option value="theft">Theft</option>
@@ -1461,7 +1461,16 @@
         if (value === null || value === undefined || value === '') return [];
 
         const pushSafe = (arr, item) => {
-          const raw = String(item || '').trim();
+          if (item === null || item === undefined) return;
+          let candidate = '';
+
+          if (typeof item === 'object') {
+            candidate = String(item.url || item.path || item.media_path || item.file || item.src || '').trim();
+          } else {
+            candidate = String(item || '').trim();
+          }
+
+          const raw = candidate;
           if (!raw) return;
           arr.push(raw);
         };

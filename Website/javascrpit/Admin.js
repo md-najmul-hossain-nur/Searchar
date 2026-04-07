@@ -461,6 +461,41 @@ document.addEventListener('click', function (event) {
     const reporter = row?.dataset?.authorName || 'Unknown';
     const text = row?.dataset?.text || '';
     const landmark = row?.dataset?.category || '';
+    const mediaPathRaw = String(row?.dataset?.mediaPath || '').trim();
+    const mediaJsonRaw = String(row?.dataset?.mediaJson || '').trim();
+
+    const toAbsoluteLike = (v) => {
+      const s = String(v || '').trim();
+      if (!s) return '';
+      if (/^https?:\/\//i.test(s) || s.startsWith('../')) return s;
+      return `../${s.replace(/^\/+/, '')}`;
+    };
+
+    const mediaUrls = [];
+    if (mediaJsonRaw) {
+      try {
+        const parsed = JSON.parse(mediaJsonRaw);
+        if (Array.isArray(parsed)) {
+          parsed.forEach((item) => {
+            let raw = '';
+            if (typeof item === 'string') {
+              raw = item;
+            } else if (item && typeof item === 'object') {
+              raw = String(item.url || item.path || item.media_path || item.file || item.src || '');
+            }
+            const normalized = toAbsoluteLike(raw);
+            if (normalized) mediaUrls.push(normalized);
+          });
+        }
+      } catch (_err) {}
+    }
+
+    const normalizedMediaPath = toAbsoluteLike(mediaPathRaw);
+    if (!mediaUrls.length && normalizedMediaPath) {
+      mediaUrls.push(normalizedMediaPath);
+    }
+
+    const mediaPayload = mediaUrls.map((url) => ({ type: 'media', url, hash: '' }));
 
     sendCrimeBtn.disabled = true;
     const prevLabel = sendCrimeBtn.textContent;
@@ -486,7 +521,8 @@ document.addEventListener('click', function (event) {
             status: 'new',
             landmark,
             reporter,
-            description: text
+            description: text,
+            media: mediaPayload
           });
         }
 
@@ -935,6 +971,13 @@ document.addEventListener('click', function (event) {
       loadPostRows();
     }
   });
+
+  document.addEventListener('admin:refresh-section', function (event) {
+    const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
+    if (sectionId === 'post-control') {
+      loadPostRows();
+    }
+  });
   loadPostRows();
 })();
 
@@ -1111,6 +1154,13 @@ document.addEventListener('click', function (event) {
   window.loadAdminPostActivity = loadAdminPostActivity;
 
   document.addEventListener('admin:section-activated', function (event) {
+    const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
+    if (sectionId === 'admin-post') {
+      loadAdminPostActivity();
+    }
+  });
+
+  document.addEventListener('admin:refresh-section', function (event) {
     const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
     if (sectionId === 'admin-post') {
       loadAdminPostActivity();
@@ -2143,7 +2193,14 @@ function openAddVolunteerModal() {
       fillOpacity: 0.6
     });
 
-    const mediaList = (crime.media || []).map(m => `<li>${m.type || 'media'} — hash ${m.hash || '—'}</li>`).join('');
+    const mediaList = (crime.media || []).map((m, idx) => {
+      const mediaUrl = String(m?.url || m?.path || '').trim();
+      const mediaType = String(m?.type || 'media').trim() || 'media';
+      if (!mediaUrl) {
+        return `<li>${mediaType}</li>`;
+      }
+      return `<li><a href="${mediaUrl}" target="_blank" rel="noopener">${mediaType} ${idx + 1}</a></li>`;
+    }).join('');
     const popup = `
       <div style="min-width:220px;">
         <div style="font-weight:800; margin-bottom:4px;">${crime.id} • ${statusLabel(crime.status)}</div>
@@ -2152,7 +2209,6 @@ function openAddVolunteerModal() {
         <div><strong>Landmark:</strong> ${crime.landmark || '—'}</div>
         <div><strong>Submitted:</strong> ${formatDateLocal(crime.submitted)}</div>
         <div><strong>Reporter:</strong> ${crime.anonymous ? 'Anonymous' : (crime.reporter || '—')}</div>
-        ${crime.anonymous && crime.token ? `<div><strong>Token:</strong> ${crime.token}</div>` : ''}
         <div><strong>Evidence:</strong><ul style="padding-left:18px; margin:6px 0 0;">${mediaList || '<li>None</li>'}</ul></div>
       </div>`;
 
@@ -2281,7 +2337,7 @@ function openAddVolunteerModal() {
       }
 
       if (q) {
-        const haystack = `${r.id} ${r.type} ${r.landmark || ''} ${r.token || ''} ${statusVal}`.toLowerCase();
+        const haystack = `${r.id} ${r.type} ${r.landmark || ''} ${statusVal}`.toLowerCase();
         if (!haystack.includes(q)) return false;
       }
 
@@ -2399,6 +2455,10 @@ function openAddVolunteerModal() {
     const crime = demoCrimes.find(c => c.id === id);
     if (!crime) return;
 
+    const mediaFiles = (Array.isArray(crime.media) ? crime.media : [])
+      .map((item) => String(item?.url || item?.path || '').trim())
+      .filter(Boolean);
+
     const payload = {
       __title: `Case ${crime.id}`,
       case_id: crime.id,
@@ -2410,10 +2470,9 @@ function openAddVolunteerModal() {
       updated_at: formatDateLocal(crime.updated_at),
       coordinates: `${crime.lat.toFixed(5)}, ${crime.lng.toFixed(5)}`,
       reporter: crime.anonymous ? 'Anonymous' : (crime.reporter || '—'),
-      token: crime.anonymous ? (crime.token || '—') : '',
-      reward_paid: crime.reward_paid ? 'Yes' : 'No',
       description: crime.description || '',
-      media_json: JSON.stringify(crime.media || [])
+      media_path: mediaFiles[0] || '',
+      media_json: JSON.stringify(mediaFiles)
     };
 
     if (typeof window.openProfileModal === 'function') {
@@ -2567,10 +2626,7 @@ function openAddVolunteerModal() {
   if (!donationsBody && !broadcastBody && !missionsBody && !withdrawBody) return;
 
   function shouldAutoRefreshMiscSections() {
-    if (document.hidden) return false;
-    const activeSection = document.querySelector('.main-section.active');
-    const activeId = String(activeSection?.id || '').toLowerCase();
-    return miscSectionIds.includes(activeId);
+    return !document.hidden;
   }
 
   function esc(v) {
@@ -4077,4 +4133,34 @@ function openAddVolunteerModal() {
 
   refreshCommentTemplates();
   refreshLogs();
+})();
+
+// Global auto refresh heartbeat for all major admin sections.
+(function () {
+  const refreshSections = [
+    'dashboard',
+    'post-control',
+    'admin-post',
+    'crime',
+    'missing',
+    'donations',
+    'broadcast',
+    'volunteer',
+    'volunteer-approver',
+    'withdraw',
+    'reports',
+    'chatbot-logs'
+  ];
+
+  function triggerAllSectionRefreshes() {
+    if (document.hidden) return;
+    refreshSections.forEach((sectionId) => {
+      document.dispatchEvent(new CustomEvent('admin:refresh-section', {
+        detail: { sectionId }
+      }));
+    });
+  }
+
+  triggerAllSectionRefreshes();
+  setInterval(triggerAllSectionRefreshes, 12000);
 })();

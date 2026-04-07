@@ -46,6 +46,36 @@ function ensureNotificationsTable(PDO $pdo): void {
     }
 }
 
+function ensureCrimeReportsTable(PDO $pdo): void {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS crime_reports (
+        crime_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        case_ref VARCHAR(80) NOT NULL,
+        source_type VARCHAR(40) NOT NULL DEFAULT 'missing_person',
+        source_ref_id BIGINT UNSIGNED DEFAULT NULL,
+        report_type VARCHAR(60) NOT NULL DEFAULT 'missing_person',
+        severity VARCHAR(20) NOT NULL DEFAULT 'high',
+        status VARCHAR(30) NOT NULL DEFAULT 'new',
+        landmark VARCHAR(255) DEFAULT NULL,
+        reporter_name VARCHAR(150) DEFAULT NULL,
+        anonymous TINYINT(1) NOT NULL DEFAULT 0,
+        anon_token VARCHAR(80) DEFAULT NULL,
+        description TEXT DEFAULT NULL,
+        media_path VARCHAR(255) DEFAULT NULL,
+        media_json TEXT DEFAULT NULL,
+        lat DECIMAL(10,7) DEFAULT NULL,
+        lng DECIMAL(10,7) DEFAULT NULL,
+        submitted_at DATETIME NOT NULL,
+        updated_at DATETIME NOT NULL,
+        closed_at DATETIME DEFAULT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (crime_id),
+        UNIQUE KEY uq_crime_reports_case_ref (case_ref),
+        KEY idx_crime_reports_status (status),
+        KEY idx_crime_reports_source (source_type, source_ref_id),
+        KEY idx_crime_reports_submitted (submitted_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+}
+
 $allowedActions = [
     'approve' => 'approved',
     'reject'  => 'rejected',
@@ -82,7 +112,7 @@ try {
         $pdo->exec("ALTER TABLE posts ADD COLUMN report_closed_at DATETIME DEFAULT NULL AFTER reported_at");
     }
 
-    $postStmt = $pdo->prepare('SELECT id, author_role, author_id, author_name, status, report_status FROM posts WHERE id = :id LIMIT 1');
+    $postStmt = $pdo->prepare('SELECT id, author_role, author_id, author_name, category, text, media_path, media_json, share_anonymous, status, report_status, created_at FROM posts WHERE id = :id LIMIT 1');
     $postStmt->execute([':id' => $postId]);
     $postRow = $postStmt->fetch(PDO::FETCH_ASSOC);
     if (!$postRow) {
@@ -120,6 +150,85 @@ try {
             ]);
             exit;
         }
+
+        ensureCrimeReportsTable($pdo);
+
+        $caseRef = 'PT' . str_pad((string)$postId, 4, '0', STR_PAD_LEFT);
+        $category = trim((string)($postRow['category'] ?? ''));
+        $reportType = $category !== '' ? strtolower($category) : 'post_report';
+        $description = trim((string)($postRow['text'] ?? ''));
+        $submittedAt = trim((string)($postRow['created_at'] ?? ''));
+        if ($submittedAt === '') {
+            $submittedAt = date('Y-m-d H:i:s');
+        }
+
+        $mediaPathRaw = trim((string)($postRow['media_path'] ?? ''));
+        $mediaPath = $mediaPathRaw !== '' ? ltrim($mediaPathRaw, '/') : null;
+
+        $mediaJsonRaw = trim((string)($postRow['media_json'] ?? ''));
+        $mediaJson = null;
+        if ($mediaJsonRaw !== '') {
+            $parsed = json_decode($mediaJsonRaw, true);
+            if (is_array($parsed)) {
+                $normalized = [];
+                foreach ($parsed as $item) {
+                    if (is_string($item)) {
+                        $v = trim($item);
+                    } elseif (is_array($item)) {
+                        $v = trim((string)($item['url'] ?? $item['path'] ?? $item['media_path'] ?? $item['src'] ?? ''));
+                    } else {
+                        $v = '';
+                    }
+                    if ($v !== '') {
+                        $normalized[] = ltrim($v, '/');
+                    }
+                }
+                if ($normalized) {
+                    $mediaJson = json_encode($normalized, JSON_UNESCAPED_SLASHES);
+                    if (!$mediaPath) {
+                        $mediaPath = $normalized[0];
+                    }
+                }
+            }
+        }
+
+        if (!$mediaJson && $mediaPath) {
+            $mediaJson = json_encode([$mediaPath], JSON_UNESCAPED_SLASHES);
+        }
+
+        $upsertCrime = $pdo->prepare("INSERT INTO crime_reports
+            (case_ref, source_type, source_ref_id, report_type, severity, status, landmark, reporter_name, anonymous, description, media_path, media_json, submitted_at, updated_at, lat, lng)
+            VALUES
+            (:case_ref, 'post', :source_ref_id, :report_type, 'medium', 'new', :landmark, :reporter_name, :anonymous, :description, :media_path, :media_json, :submitted_at, NOW(), :lat, :lng)
+            ON DUPLICATE KEY UPDATE
+              source_ref_id = VALUES(source_ref_id),
+              report_type = VALUES(report_type),
+              severity = VALUES(severity),
+              status = 'new',
+              landmark = VALUES(landmark),
+              reporter_name = VALUES(reporter_name),
+              anonymous = VALUES(anonymous),
+              description = VALUES(description),
+              media_path = VALUES(media_path),
+              media_json = VALUES(media_json),
+              submitted_at = VALUES(submitted_at),
+              updated_at = NOW(),
+              closed_at = NULL");
+
+        $upsertCrime->execute([
+            ':case_ref' => $caseRef,
+            ':source_ref_id' => $postId,
+            ':report_type' => $reportType,
+            ':landmark' => $category !== '' ? $category : 'Post report',
+            ':reporter_name' => trim((string)($postRow['author_name'] ?? '')) ?: 'Unknown',
+            ':anonymous' => ((int)($postRow['share_anonymous'] ?? 0) === 1) ? 1 : 0,
+            ':description' => $description !== '' ? $description : 'Escalated from Post Report',
+            ':media_path' => $mediaPath,
+            ':media_json' => $mediaJson,
+            ':submitted_at' => $submittedAt,
+            ':lat' => 23.8103,
+            ':lng' => 90.4125,
+        ]);
 
         $notifyPolice = $pdo->prepare('INSERT INTO user_notifications (recipient_entity, recipient_id, title, message, level, is_read, target_post_id) VALUES (:entity, :rid, :title, :message, :level, 0, :post_id)');
         $notifyPolice->execute([
@@ -170,6 +279,17 @@ try {
                 'report_status' => $row['report_status'] ?? 'not_reported',
             ]);
             exit;
+        }
+
+        if (tableExists($pdo, 'crime_reports')) {
+            $caseRef = 'PT' . str_pad((string)$postId, 4, '0', STR_PAD_LEFT);
+            $closeCrime = $pdo->prepare("UPDATE crime_reports
+                SET status = 'closed', closed_at = NOW(), updated_at = NOW()
+                WHERE case_ref = :case_ref OR (source_type = 'post' AND source_ref_id = :post_id)");
+            $closeCrime->execute([
+                ':case_ref' => $caseRef,
+                ':post_id' => $postId,
+            ]);
         }
 
         $notifyPolice = $pdo->prepare('INSERT INTO user_notifications (recipient_entity, recipient_id, title, message, level, is_read, target_post_id) VALUES (:entity, :rid, :title, :message, :level, 0, :post_id)');
