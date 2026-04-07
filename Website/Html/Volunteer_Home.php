@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 declare(strict_types=1);
 session_start();
 require_once __DIR__ . '/../Php/db.php';
@@ -71,7 +71,7 @@ function getAuthorPhoto(PDO $pdo, string $authorRole, int $authorId): string {
   }
 
   if (!isset($roleMap[$authorRole]) || $authorId <= 0) {
-    return $cache[$cacheKey] = '../Images/default-profile.gif';
+    return $cache[$cacheKey] = '../Images/demo_pic/profile.jpg';
   }
 
   $table = $roleMap[$authorRole]['table'];
@@ -88,7 +88,7 @@ function getAuthorPhoto(PDO $pdo, string $authorRole, int $authorId): string {
   } catch (Exception $e) {
   }
 
-  return $cache[$cacheKey] = '../Images/default-profile.gif';
+  return $cache[$cacheKey] = '../Images/demo_pic/profile.jpg';
 }
 
 $posts = [];
@@ -172,7 +172,7 @@ try {
          alt="Cover" class="cover">
 
     <!-- Profile Photo -->
-    <img src="<?= !empty($volunteer['profile_photo']) ? '../uploads/volunteer/' . e($volunteer['profile_photo']) : '../Images/default-profile.gif' ?>" 
+    <img src="<?= !empty($volunteer['profile_photo']) ? '../uploads/volunteer/' . e($volunteer['profile_photo']) : '../Images/demo_pic/profile.jpg' ?>" 
          class="profile-pic" 
          alt="Profile">
 
@@ -191,12 +191,12 @@ try {
     </p>
 </div>
     
- <!-- 🎖️ Volunteer Missions Panel -->
+ <!-- ðŸŽ–ï¸ Volunteer Missions Panel -->
 <div class="Volunteer-rank">
   <h2>Volunteer Rank & Missions</h2>
 
   <div class="volunteer-rank-box">
-    <h3>🎖️ Real-Life Missions</h3>
+    <h3>ðŸŽ–ï¸ Real-Life Missions</h3>
 
     <div class="rank-game-panel" id="rank-game-panel">
       <div class="rank-headline">
@@ -222,33 +222,33 @@ try {
         <span>Platinum</span>
       </div>
 
-      <p id="rank-stats" class="rank-stats">Accepted 0 • Completed 0 • Busy 0</p>
-      <p id="rank-rules" class="rank-rules">+10 XP (Accept) • +20 XP (Complete) • +2 XP (Auto-close by Police)</p>
+      <p id="rank-stats" class="rank-stats">Accepted 0 â€¢ Completed 0 â€¢ Busy 0</p>
+      <p id="rank-rules" class="rank-rules">+10 XP (Accept) â€¢ +20 XP (Complete) â€¢ +2 XP (Auto-close by Police)</p>
     </div>
 
-    <button class="view-missions-btn" onclick="openMissionModal()">📋 View Missions</button>
+    <button class="view-missions-btn" onclick="openMissionModal()">ðŸ“‹ View Missions</button>
 
     <div id="rank-assigned-preview" class="rank-assigned-preview" aria-live="polite"></div>
 
     <!-- Certificate Display -->
     <div id="certificate-unlock" class="certificate-box hidden" aria-live="polite" data-volunteer-name="<?= e($volunteer['full_name'] ?? 'Volunteer') ?>">
-      <p id="certificate-message">🎉 Congratulations! You’ve reached <strong>Silver Responder</strong>!</p>
+      <p id="certificate-message">ðŸŽ‰ Congratulations! Youâ€™ve reached <strong>Silver Responder</strong>!</p>
       <div class="certificate-actions">
-        <button id="view-certificate-btn" class="view-certificate-btn" type="button">🏅 Certificate</button>
+        <button id="view-certificate-btn" class="view-certificate-btn" type="button">ðŸ… Certificate</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- 🧭 Volunteer Mission Modal -->
+<!-- ðŸ§­ Volunteer Mission Modal -->
 <div id="volunteerMissionModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="missionModalTitle" tabindex="-1">
   <div class="modal-content">
     <button class="close" onclick="closeMissionModal()" aria-label="Close modal">&times;</button>
-    <h3 id="missionModalTitle">🧭 Missions for Your Rank</h3>
+    <h3 id="missionModalTitle">ðŸ§­ Missions for Your Rank</h3>
 
     <ul class="mission-list">
       <li id="mission-proof-single" class="mission-step" data-step="single">
-        <strong>📤 Mission Proof Submission</strong><br>
+        <strong>ðŸ“¤ Mission Proof Submission</strong><br>
         Upload one proof file (image/video/pdf) for your assigned mission.<br><br>
         <label>
           Submit Proof:
@@ -256,11 +256,11 @@ try {
         </label><br><br>
         <div id="mission-proof-preview" class="mission-preview-box"></div>
         <p id="mission-proof-status" class="mission-status-note"></p>
-        <button class="submit-proof-btn" data-mission-proof-submit="1">✅ Submit Proof</button>
+        <button class="submit-proof-btn" data-mission-proof-submit="1">âœ… Submit Proof</button>
       </li>
 
       <li id="mission-history-single" class="mission-step">
-        <strong>🗂 Completed Missions History</strong><br>
+        <strong>ðŸ—‚ Completed Missions History</strong><br>
         See your previously completed missions below.
         <div id="mission-history-list" class="mission-history-list"></div>
         <p id="mission-history-empty" class="mission-history-empty">No completed mission yet.</p>
@@ -285,9 +285,9 @@ try {
 <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
 
 <!-- Buttons -->
-<button id="find-hospitals" style="padding:8px 15px;background:#f05454;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">🏥 Show Nearby Hospitals</button>
-<button id="find-fire" style="padding:8px 15px;background:#ff7f11;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">🚒 Show Fire Stations</button>
-<button id="find-police" style="padding:8px 15px;background:#0077b6;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:10px;">👮 Show Police Stations</button>
+<button id="find-hospitals" style="padding:8px 15px;background:#f05454;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">ðŸ¥ Show Nearby Hospitals</button>
+<button id="find-fire" style="padding:8px 15px;background:#ff7f11;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">ðŸš’ Show Fire Stations</button>
+<button id="find-police" style="padding:8px 15px;background:#0077b6;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:10px;">ðŸ‘® Show Police Stations</button>
 
 <!-- Map Container -->
 <div id="emergency-map" style="height: 400px; border-radius: 8px;"></div>
@@ -307,7 +307,7 @@ try {
         <input type="text" placeholder="What's on your mind?" readonly>
       </div>
 
-<!-- ✅ Popup Modal -->
+<!-- âœ… Popup Modal -->
 <div id="postModal" class="post-modal">
   <div class="post-modal-content">
     
@@ -320,7 +320,7 @@ try {
       <p class="post-modal-subtitle">Upload photos or a video and post instantly</p>
     </div>
 
-    <!-- ✅ Facebook Toggle -->
+    <!-- âœ… Facebook Toggle -->
     <div class="facebook-toggle">
       <label class="facebook-toggle-switch">
         <input type="checkbox" id="facebookShareToggle">
@@ -357,10 +357,10 @@ try {
   </label>
 </div>
 
-    <!-- ✅ Textarea -->
+    <!-- âœ… Textarea -->
     <textarea id="postText" class="post-modal-textarea" placeholder="Say Something..."></textarea>
 
-    <!-- ✅ Post Preview (Auto-filled from clicked post) -->
+    <!-- âœ… Post Preview (Auto-filled from clicked post) -->
     <div class="post-modal-preview">
       <div id="sharedPostMeta" class="preview-meta">
         <img id="sharedPostAuthorImage" class="preview-meta-avatar" src="" alt="Author" />
@@ -374,25 +374,25 @@ try {
       <video id="sharedPostVideo" class="preview-video" src="" controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture oncontextmenu="return false;"></video>
     </div>
 
-    <!-- ✅ Media Upload Buttons -->
+    <!-- âœ… Media Upload Buttons -->
     <div class="post-media-options">
       <label>
         <input type="file" id="imageUpload" accept="image/*" multiple hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">ðŸ“· Photo</button>
       </label>
       <label>
         <input type="file" id="videoUpload" accept="video/*" hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">ðŸŽ¥ Video</button>
       </label>
     </div>
 
     <p class="post-media-hint">You can select up to 5 photos in one post.</p>
 
 
-    <!-- ✅ Media Preview (optional preview for uploaded file) -->
+    <!-- âœ… Media Preview (optional preview for uploaded file) -->
     <div id="mediaPreview" class="post-media-preview"></div>
 
-    <!-- ✅ Action Buttons -->
+    <!-- âœ… Action Buttons -->
     <div class="post-modal-actions">
       <button class="post-cancel-btn" onclick="closeModal()">Cancel</button>
       <button class="post-submit-btn" onclick="createPost()">Post</button>

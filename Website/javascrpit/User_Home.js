@@ -346,7 +346,7 @@ function getCurrentUserDisplayName() {
 
 function getCurrentUserPhoto() {
   const profilePhoto = String(document.querySelector('.profile-card .profile-pic')?.getAttribute('src') || '').trim();
-  return profilePhoto || '../Images/default-profile.gif';
+  return profilePhoto || '../Images/demo_pic/profile.jpg';
 }
 
 function escapeWithLineBreaks(value) {
@@ -392,7 +392,7 @@ function buildApprovedPostElement(row) {
 
   const category = String(row?.category || 'general');
   const authorName = String(row?.author_name || 'Unknown User');
-  const authorPhoto = normalizeMediaUrl(row?.author_photo || '../Images/default-profile.gif') || '../Images/default-profile.gif';
+  const authorPhoto = normalizeMediaUrl(row?.author_photo || '../Images/demo_pic/profile.jpg') || '../Images/demo_pic/profile.jpg';
   const createdAt = String(row?.created_at || '');
   const timeAgo = String(row?.time_ago || 'Just now');
   const postText = String(row?.text || '');
@@ -430,7 +430,7 @@ function buildApprovedPostElement(row) {
   article.setAttribute('data-share-anonymous', isAnonymous ? '1' : '0');
   article.innerHTML = `
     <div class="post-header">
-      <img src="${escapeHtml(authorPhoto)}" alt="Author Photo" onerror="this.onerror=null;this.src='../Images/default-profile.gif';">
+      <img src="${escapeHtml(authorPhoto)}" alt="Author Photo" onerror="this.onerror=null;this.src='../Images/demo_pic/profile.jpg';">
       <div>
         <h5>${escapeHtml(authorName)}</h5>
         <small class="post-time" data-created-at="${escapeHtml(createdAt)}">${escapeHtml(timeAgo)}</small>
@@ -547,7 +547,7 @@ function openModal(isShareMode = false) {
   if (isSharing) {
     if (sharedPostMeta && sharedPostAuthorImage && sharedPostAuthorName && sharedPostTime) {
       sharedPostMeta.style.display = 'flex';
-      sharedPostAuthorImage.src = shareContext?.authorImage || '../Images/default-profile.gif';
+      sharedPostAuthorImage.src = shareContext?.authorImage || '../Images/demo_pic/profile.jpg';
       sharedPostAuthorName.innerText = shareContext?.authorName || 'Unknown User';
       sharedPostTime.innerText = shareContext?.timeAgo || '';
     }

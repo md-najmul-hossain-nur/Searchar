@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 
 declare(strict_types=1);
@@ -221,7 +221,7 @@ function normalizeBrokenUtf8(?string $text): string {
   }
 
   // Fix common mojibake when UTF-8 bytes were decoded as latin1/cp1252.
-  if (preg_match('/ðŸ|Ã.|â.|ï¸|Â./u', $value) !== 1) {
+  if (preg_match('/Ã°Å¸|Ãƒ.|Ã¢.|Ã¯Â¸|Ã‚./u', $value) !== 1) {
     return $value;
   }
 
@@ -438,7 +438,7 @@ try {
   $posts = [];
 }
 
-// Now render a minimal HTML page — integrate this into your full template as needed.
+// Now render a minimal HTML page â€” integrate this into your full template as needed.
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -481,12 +481,12 @@ try {
          <!-- Profile image dynamic from DB -->
  <img src="<?= e($profileImagePath) ?>"
      class="profile-pic" 
-     alt="Profile Photo" onerror="this.onerror=null;this.src='../Images/default-profile.gif';">
+     alt="Profile Photo" onerror="this.onerror=null;this.src='../Images/demo_pic/profile.jpg';">
      <?php $user_id = (int)$user['user_id']; ?>
       <button class="edit-btn" title="Profile " onclick="location.href='../Html/User_profile.php?user_id=<?= $user_id ?>'">Profile</button>
 
 <h3 class="profile-name-row">
-  <span><?= e($user['full_name'] ?? '—') ?></span>
+  <span><?= e($user['full_name'] ?? 'â€”') ?></span>
   <?php if ($showComboVolunteerBadge): ?>
     <span class="profile-combo-badge" title="Volunteer Plus User">
       <img src="../Images/volunteering.gif" class="profile-volunteer-badge" alt="Volunteer Plus Badge" onerror="this.closest('.profile-combo-badge').style.display='none'">
@@ -599,36 +599,36 @@ try {
           <span>Gold</span>
           <span>Platinum</span>
         </div>
-        <p id="comboMissionStats" class="combo-mission-stats">Accepted 0 • Completed 0 • Busy 0</p>
-        <p class="combo-xp-rules">+10 XP (Accept) • +20 XP (Complete) • +2 XP (Auto-close by Police)</p>
+        <p id="comboMissionStats" class="combo-mission-stats">Accepted 0 â€¢ Completed 0 â€¢ Busy 0</p>
+        <p class="combo-xp-rules">+10 XP (Accept) â€¢ +20 XP (Complete) â€¢ +2 XP (Auto-close by Police)</p>
       </div>
-      <button class="view-missions-btn" type="button" onclick="openMissionModal()">📋 View Missions</button>
+      <button class="view-missions-btn" type="button" onclick="openMissionModal()">ðŸ“‹ View Missions</button>
       <div id="comboMissionsList" class="combo-missions-list">
         <p class="combo-missions-empty">Loading missions...</p>
       </div>
 
       <div id="comboCertificateUnlock" class="certificate-box hidden" aria-live="polite" data-volunteer-name="<?= e($user['full_name'] ?? 'Volunteer') ?>">
-        <p id="comboCertificateMessage">🎉 Congratulations! You’ve reached <strong>Silver Responder</strong>! Certificate unlocked.</p>
+        <p id="comboCertificateMessage">ðŸŽ‰ Congratulations! Youâ€™ve reached <strong>Silver Responder</strong>! Certificate unlocked.</p>
         <div class="certificate-actions">
-          <button id="comboViewCertificateBtn" class="view-certificate-btn" type="button">🏅 Certificate</button>
+          <button id="comboViewCertificateBtn" class="view-certificate-btn" type="button">ðŸ… Certificate</button>
         </div>
       </div>
 
       <div id="volunteerMissionModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="missionModalTitle" tabindex="-1">
         <div class="modal-content">
           <button class="close" onclick="closeMissionModal()" aria-label="Close modal">&times;</button>
-          <h3 id="missionModalTitle">🧭 Missions for Your Rank</h3>
+          <h3 id="missionModalTitle">ðŸ§­ Missions for Your Rank</h3>
 
           <ul class="mission-list">
             <li id="mission-assigned-single" class="mission-step">
-              <strong>🚨 Admin Assigned Cases</strong><br>
+              <strong>ðŸš¨ Admin Assigned Cases</strong><br>
               These are the missions assigned by admin for your volunteer rank.
               <div id="mission-assigned-list" class="mission-assigned-list"></div>
               <p id="mission-assigned-empty" class="mission-history-empty">No assigned mission right now.</p>
             </li>
 
             <li id="mission-proof-single" class="mission-step" data-step="single">
-              <strong>📤 Mission Proof Submission</strong><br>
+              <strong>ðŸ“¤ Mission Proof Submission</strong><br>
               Upload one proof file (image/video/pdf) for your assigned mission.<br><br>
               <label>
                 Submit Proof:
@@ -636,11 +636,11 @@ try {
               </label><br><br>
               <div id="mission-proof-preview" class="mission-preview-box"></div>
               <p id="mission-proof-status" class="mission-status-note"></p>
-              <button type="button" class="submit-proof-btn" data-mission-proof-submit="1">✅ Submit Proof</button>
+              <button type="button" class="submit-proof-btn" data-mission-proof-submit="1">âœ… Submit Proof</button>
             </li>
 
             <li id="mission-history-single" class="mission-step">
-              <strong>🗂 Completed Missions History</strong><br>
+              <strong>ðŸ—‚ Completed Missions History</strong><br>
               See your previously completed missions below.
               <div id="mission-history-list" class="mission-history-list"></div>
               <p id="mission-history-empty" class="mission-history-empty">No completed mission yet.</p>
@@ -716,7 +716,7 @@ try {
         <input type="text" placeholder="What's on your mind?" readonly>
       </div>
 
-<!-- ✅ Popup Modal -->
+<!-- âœ… Popup Modal -->
 <div id="postModal" class="post-modal">
   <div class="post-modal-content">
     
@@ -729,7 +729,7 @@ try {
       <p class="post-modal-subtitle">Upload photos or a video and post instantly</p>
     </div>
 
-    <!-- ✅ Facebook Toggle -->
+    <!-- âœ… Facebook Toggle -->
     <div class="facebook-toggle">
       <label class="facebook-toggle-switch">
         <input type="checkbox" id="facebookShareToggle">
@@ -766,10 +766,10 @@ try {
   </label>
 </div>
 
-    <!-- ✅ Textarea -->
+    <!-- âœ… Textarea -->
     <textarea id="postText" class="post-modal-textarea" placeholder="Say Something..."></textarea>
 
-    <!-- ✅ Post Preview (Auto-filled from clicked post) -->
+    <!-- âœ… Post Preview (Auto-filled from clicked post) -->
     <div class="post-modal-preview">
       <div id="sharedPostMeta" class="preview-meta">
         <img id="sharedPostAuthorImage" class="preview-meta-avatar" src="" alt="Author" />
@@ -783,24 +783,24 @@ try {
       <video id="sharedPostVideo" class="preview-video" src="" controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture oncontextmenu="return false;"></video>
     </div>
 
-    <!-- ✅ Media Upload Buttons -->
+    <!-- âœ… Media Upload Buttons -->
     <div class="post-media-options">
       <label>
         <input type="file" id="imageUpload" accept="image/*" multiple hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">ðŸ“· Photo</button>
       </label>
       <label>
         <input type="file" id="videoUpload" accept="video/*" hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">ðŸŽ¥ Video</button>
       </label>
     </div>
     <p class="post-media-hint">You can select up to 5 photos in one post.</p>
 
 
-    <!-- ✅ Media Preview (optional preview for uploaded file) -->
+    <!-- âœ… Media Preview (optional preview for uploaded file) -->
     <div id="mediaPreview" class="post-media-preview"></div>
 
-    <!-- ✅ Action Buttons -->
+    <!-- âœ… Action Buttons -->
     <div class="post-modal-actions">
       <button class="post-cancel-btn" onclick="closeModal()">Cancel</button>
       <button class="post-submit-btn" onclick="createPost()">Post</button>
@@ -856,7 +856,7 @@ try {
     ?>
     <div class="post" id="post-<?= $postId ?>" data-post-id="<?= $postId ?>" data-category="<?= e($postCategory) ?>" data-status="<?= e((string)($post['status'] ?? 'approved')) ?>" data-share-anonymous="<?= $isAnonymous ? '1' : '0' ?>">
       <div class="post-header">
-        <img src="<?= e($displayAuthorPhoto) ?>" alt="Author Photo" onerror="this.onerror=null;this.src='../Images/default-profile.gif';">
+        <img src="<?= e($displayAuthorPhoto) ?>" alt="Author Photo" onerror="this.onerror=null;this.src='../Images/demo_pic/profile.jpg';">
         <div>
           <h5><?= e($displayAuthorName) ?></h5>
           <small class="post-time" data-created-at="<?= e((string)($post['created_at'] ?? '')) ?>"><?= e(timeAgo((string)($post['created_at'] ?? ''))) ?></small>
@@ -1347,7 +1347,7 @@ try {
       <input type="text" class="messenger-search" placeholder="Search" aria-label="Search chats">
       <div class="messenger-contact">
         <div class="avatar">
-          <img src="../Images/businessman.gif" alt="Admin Logo" class="admin-avatar-img" onerror="this.onerror=null;this.src='../Images/default-profile.gif';">
+          <img src="../Images/businessman.gif" alt="Admin Logo" class="admin-avatar-img" onerror="this.onerror=null;this.src='../Images/demo_pic/profile.jpg';">
         </div>
         <div>
           <strong>Admin Desk</strong>
@@ -1359,7 +1359,7 @@ try {
     <section class="messenger-chat">
       <div class="messenger-chat-top">
         <div class="avatar online">
-          <img src="../Images/businessman.gif" alt="Admin Logo" class="admin-avatar-img" onerror="this.onerror=null;this.src='../Images/default-profile.gif';">
+          <img src="../Images/businessman.gif" alt="Admin Logo" class="admin-avatar-img" onerror="this.onerror=null;this.src='../Images/demo_pic/profile.jpg';">
         </div>
         <div>
           <strong>Admin Desk</strong>

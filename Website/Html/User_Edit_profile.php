@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once __DIR__ . '/../Php/db.php'; // Make sure $pdo is set
 session_start();
 
@@ -144,7 +144,7 @@ $stmt->execute([
     }
 
 
-    // ✅ Redirect to profile page after successful save
+    // âœ… Redirect to profile page after successful save
     header("Location: ../Html/User_profile.php");
     exit;
 }
@@ -190,7 +190,7 @@ if (!$user) {
 
     <!-- Back Button -->
     <div class="back-button-container">
-      <a href="../Html/User_profile.php" class="back-btn">← Back</a>
+      <a href="../Html/User_profile.php" class="back-btn">â† Back</a>
     </div>
 
     <form class="edit-profile-form" method="POST" enctype="multipart/form-data">
@@ -212,7 +212,7 @@ if (!$user) {
       <div class="profile-photo-section">
         <label for="profilePhoto" class="profile-label">Profile Picture</label>
         <div class="profile-preview">
-          <img id="profilePreview" src="<?= !empty($user['profile_photo']) ? '../uploads/user/' . e($user['profile_photo']) : '../Images/demo_pic/profile.jpg' ?>" alt="Profile Picture Preview" onerror="this.onerror=null;this.src='../Images/default-profile.gif';">
+          <img id="profilePreview" src="<?= !empty($user['profile_photo']) ? '../uploads/user/' . e($user['profile_photo']) : '../Images/demo_pic/profile.jpg' ?>" alt="Profile Picture Preview" onerror="this.onerror=null;this.src='../Images/demo_pic/profile.jpg';">
         </div>
         <input type="file" id="profilePhoto" name="profilePhoto" accept="image/*" onchange="previewImage(event, 'profilePreview')">
       </div>
@@ -424,3 +424,4 @@ function saveMapLocation() {
 
 </body>
 </html>
+

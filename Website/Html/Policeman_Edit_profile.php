@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once __DIR__ . '/../Php/db.php';
 session_start();
 
@@ -122,7 +122,7 @@ if (!$user) {
     </div>
 
     <div class="back-button-container">
-      <a href="../Html/Policeman_profile.php" class="back-btn">← Back</a>
+      <a href="../Html/Policeman_profile.php" class="back-btn">â† Back</a>
     </div>
 
     <?php if (!empty($error ?? '')): ?>
@@ -147,7 +147,7 @@ if (!$user) {
       <div class="profile-photo-section">
         <label for="profilePhoto" class="profile-label">Profile Picture</label>
         <div class="profile-preview">
-          <img id="profilePreview" src="<?= !empty($user['profile_photo']) ? '../uploads/police/' . e($user['profile_photo']) : '../Images/default-profile.gif' ?>" alt="Profile Picture Preview">
+          <img id="profilePreview" src="<?= !empty($user['profile_photo']) ? '../uploads/police/' . e($user['profile_photo']) : '../Images/demo_pic/profile.jpg' ?>" alt="Profile Picture Preview">
         </div>
         <input type="file" id="profilePhoto" name="profilePhoto" accept="image/*" onchange="previewImage(event, 'profilePreview')">
       </div>
@@ -348,3 +348,4 @@ if (!$user) {
 </style>
 </body>
 </html>
+

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 declare(strict_types=1);
 
 header('Content-Type: application/json; charset=utf-8');
@@ -72,7 +72,7 @@ try {
 
     $profilePhoto = $photoRaw !== ''
         ? ('../uploads/' . $cfg['upload_folder'] . '/' . $photoRaw)
-        : '../Images/default-profile.gif';
+        : '../Images/demo_pic/profile.jpg';
 
     $coverPhoto = $coverRaw !== ''
         ? ('../uploads/' . $cfg['upload_folder'] . '/' . $coverRaw)
@@ -94,3 +94,4 @@ try {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => 'Could not load profile']);
 }
+

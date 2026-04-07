@@ -52,7 +52,7 @@ function profileTimeAgo(?string $dateTime): string {
 }
 
 // 6. Fallback images and bio
-$profile_pic = !empty($volunteer['profile_photo']) ? '../uploads/volunteer/' . e($volunteer['profile_photo']) : '../Images/default-profile.gif';
+$profile_pic = !empty($volunteer['profile_photo']) ? '../uploads/volunteer/' . e($volunteer['profile_photo']) : '../Images/demo_pic/profile.jpg';
 $cover_pic   = !empty($volunteer['cover_photo'])   ? '../uploads/volunteer/' . e($volunteer['cover_photo'])   : '../Images/cover_default.jpg';
 $bio_text    = !empty($volunteer['bio']) ? e($volunteer['bio']) : "ðŸ’¬ Bio not added yet. Go to <a href='../Html/Volunteer_Edit_profile.html'>edit profile</a> to add your bio!";
 
@@ -124,7 +124,7 @@ try {
          alt="Cover" class="cover-img">
     <div class="profile-pic-container">
  <!-- Profile Photo -->
-    <img src="<?= !empty($volunteer['profile_photo']) ? '../uploads/volunteer/' . e($volunteer['profile_photo']) : '../Images/default-profile.gif' ?>" 
+    <img src="<?= !empty($volunteer['profile_photo']) ? '../uploads/volunteer/' . e($volunteer['profile_photo']) : '../Images/demo_pic/profile.jpg' ?>" 
          class="profile-pic" 
          alt="Profile">    </div>
   <div class="main-content">
@@ -206,7 +206,7 @@ try {
           $displayAuthorName = $isAnonymous ? 'Anonymous' : $postAuthorName;
           $displayAuthorPhoto = $isAnonymous
             ? '../Images/anonymously.gif'
-            : (!empty($volunteer['profile_photo']) ? '../uploads/volunteer/' . e($volunteer['profile_photo']) : '../Images/default-profile.gif');
+            : (!empty($volunteer['profile_photo']) ? '../uploads/volunteer/' . e($volunteer['profile_photo']) : '../Images/demo_pic/profile.jpg');
         ?>
         <div class="card post" data-post-id="<?= (int)($post['id'] ?? 0) ?>" data-share-anonymous="<?= $isAnonymous ? '1' : '0' ?>">
           <div class="post-header">

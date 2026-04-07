@@ -191,7 +191,7 @@ try {
               $displayAuthorName = $isAnonymous ? 'Anonymous' : $postAuthorName;
               $displayAuthorPhoto = $isAnonymous
                 ? '../Images/anonymously.gif'
-                : (!empty($user['profile_photo']) ? '../uploads/camera/' . e($user['profile_photo']) : '../Images/default-profile.gif');
+                : (!empty($user['profile_photo']) ? '../uploads/camera/' . e($user['profile_photo']) : '../Images/demo_pic/profile.jpg');
             ?>
             <div class="card post" data-post-id="<?= (int)($post['id'] ?? 0) ?>" data-category="<?= e((string)($post['category'] ?? 'general')) ?>" data-share-anonymous="<?= $isAnonymous ? '1' : '0' ?>">
               <div class="post-header">
@@ -473,3 +473,4 @@ try {
 <script src="../javascrpit/post_interactions_shared.js?v=20260406d"></script>
 <script src="../javascrpit/notifications_shared.js"></script>
 </html>
+

@@ -116,7 +116,7 @@ try {
     $feedPosts = [];
 }
 
-$profilePhoto = !empty($user['profile_photo']) ? '../uploads/camera/' . e($user['profile_photo']) : '../Images/default-profile.gif';
+$profilePhoto = !empty($user['profile_photo']) ? '../uploads/camera/' . e($user['profile_photo']) : '../Images/demo_pic/profile.jpg';
 $coverPhoto = !empty($user['cover_photo']) ? '../uploads/camera/' . e($user['cover_photo']) : '../Images/cover_default.jpg';
 $displayName = !empty($user['full_name']) ? (string)$user['full_name'] : 'Camera Contributor';
 $emailText = !empty($user['email']) ? (string)$user['email'] : 'Guest';
@@ -326,3 +326,4 @@ if ($latestFeed) {
   <script src="../javascrpit/Camera_Contribution_Feed.js"></script>
 </body>
 </html>
+

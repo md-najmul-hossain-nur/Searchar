@@ -367,12 +367,12 @@
     const cleanedNavbarAvatar = String(navbarAvatar || '').trim();
     if (cleanedNavbarAvatar) return cleanedNavbarAvatar;
 
-    return '../Images/default-profile.gif';
+    return '../Images/demo_pic/profile.jpg';
   }
 
   function normalizePhoto(value) {
     const src = String(value || '').trim();
-    return src || '../Images/default-profile.gif';
+    return src || '../Images/demo_pic/profile.jpg';
   }
 
   function ensurePostReportModal() {
@@ -392,14 +392,14 @@
         <form id="postReportForm">
           <div class="post-report-users">
             <div class="post-report-user">
-              <img id="postReportReporterPhoto" class="post-report-avatar" src="../Images/default-profile.gif" alt="Reporter Photo">
+              <img id="postReportReporterPhoto" class="post-report-avatar" src="../Images/demo_pic/profile.jpg" alt="Reporter Photo">
               <div class="post-report-user-meta">
                 <div class="post-report-user-label">Reporter</div>
                 <div class="post-report-user-name" id="postReportReporterName">â€”</div>
               </div>
             </div>
             <div class="post-report-user">
-              <img id="postReportReportedPhoto" class="post-report-avatar" src="../Images/default-profile.gif" alt="Reported User Photo">
+              <img id="postReportReportedPhoto" class="post-report-avatar" src="../Images/demo_pic/profile.jpg" alt="Reported User Photo">
               <div class="post-report-user-meta">
                 <div class="post-report-user-label">Reported User</div>
                 <div class="post-report-user-name" id="postReportReportedName">â€”</div>
@@ -520,7 +520,7 @@
     if (!postId) return '';
 
     const authorName = escapeHtml(String(row?.author_name || 'Unknown User'));
-    const authorPhoto = escapeHtml(normalizeAssetPath(row?.author_photo || '../Images/default-profile.gif'));
+    const authorPhoto = escapeHtml(normalizeAssetPath(row?.author_photo || '../Images/demo_pic/profile.jpg'));
     const category = escapeHtml(String(row?.category || 'general'));
     const text = String(row?.text || '');
     const textHtml = text.trim() ? `<p>${escapeHtml(text).replace(/\n/g, '<br>')}</p>` : '';
@@ -868,7 +868,7 @@
       <li data-comment-id="${commentId}">
         <div class="comment" data-comment-id="${commentId}">
           <div class="comment-img">
-            <img src="${escapeHtml(comment.actor_photo || '../Images/default-profile.gif')}" alt="">
+            <img src="${escapeHtml(comment.actor_photo || '../Images/demo_pic/profile.jpg')}" alt="">
           </div>
           <div class="comment-content">
             <div class="comment-details">
@@ -1200,3 +1200,4 @@
     bootstrap();
   }
 })();
+

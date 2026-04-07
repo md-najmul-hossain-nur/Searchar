@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 declare(strict_types=1);
 
 // Keep endpoint output JSON-only even when PHP warnings/notices exist.
@@ -165,7 +165,7 @@ function ensureInteractionTables(PDO $pdo): void {
 
 function actorSnapshot(PDO $pdo, string $canonicalRole, int $actorId): array {
     if ($actorId <= 0) {
-        return ['name' => 'Someone', 'photo' => '../Images/default-profile.gif'];
+        return ['name' => 'Someone', 'photo' => '../Images/demo_pic/profile.jpg'];
     }
 
     $map = roleSqlMap($canonicalRole);
@@ -177,7 +177,7 @@ function actorSnapshot(PDO $pdo, string $canonicalRole, int $actorId): array {
     $uploadFolder = (string)($map['upload_folder'] ?? 'user');
     return [
         'name' => trim((string)($row['full_name'] ?? '')) ?: 'Someone',
-        'photo' => $photoRaw !== '' ? ('../uploads/' . $uploadFolder . '/' . $photoRaw) : '../Images/default-profile.gif',
+        'photo' => $photoRaw !== '' ? ('../uploads/' . $uploadFolder . '/' . $photoRaw) : '../Images/demo_pic/profile.jpg',
     ];
 }
 
@@ -268,7 +268,7 @@ function fetchComments(PDO $pdo, int $postId): array {
             $uploadFolder = (string)($map['upload_folder'] ?? 'user');
             $profiles[$role . ':' . $personId] = [
                 'name' => trim((string)($p['full_name'] ?? '')) ?: 'Someone',
-                'photo' => $photoRaw !== '' ? ('../uploads/' . $uploadFolder . '/' . $photoRaw) : '../Images/default-profile.gif',
+                'photo' => $photoRaw !== '' ? ('../uploads/' . $uploadFolder . '/' . $photoRaw) : '../Images/demo_pic/profile.jpg',
             ];
         }
     }
@@ -280,7 +280,7 @@ function fetchComments(PDO $pdo, int $postId): array {
     foreach ($rows as $row) {
         $role = canonicalRole((string)($row['actor_role'] ?? ''));
         $actorId = (int)($row['actor_id'] ?? 0);
-        $profile = $profiles[$role . ':' . $actorId] ?? ['name' => 'Someone', 'photo' => '../Images/default-profile.gif'];
+        $profile = $profiles[$role . ':' . $actorId] ?? ['name' => 'Someone', 'photo' => '../Images/demo_pic/profile.jpg'];
         $commentAnonymous = (int)($row['is_anonymous'] ?? 0) === 1;
         $shouldMask = $commentAnonymous;
 
@@ -513,3 +513,4 @@ try {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
+

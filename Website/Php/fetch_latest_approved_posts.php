@@ -55,7 +55,7 @@ function getAuthorPhoto(PDO $pdo, string $authorRole, int $authorId): string {
     ];
 
     if (!isset($roleMap[$authorRole]) || $authorId <= 0) {
-        return '../Images/default-profile.gif';
+        return '../Images/demo_pic/profile.jpg';
     }
 
     $table = $roleMap[$authorRole]['table'];
@@ -72,7 +72,7 @@ function getAuthorPhoto(PDO $pdo, string $authorRole, int $authorId): string {
     } catch (Throwable $e) {
     }
 
-    return '../Images/default-profile.gif';
+    return '../Images/demo_pic/profile.jpg';
 }
 
 function anonymousDisplayName(): string {
@@ -157,3 +157,4 @@ try {
         'error' => 'Failed to fetch latest posts'
     ]);
 }
+

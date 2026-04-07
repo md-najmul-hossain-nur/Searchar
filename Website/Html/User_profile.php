@@ -115,7 +115,7 @@ try {
     <div class="profile-pic-container">
            <img src="<?= !empty($user['profile_photo']) ? '../uploads/user/' . e($user['profile_photo']) : '../Images/demo_pic/profile.jpg' ?>"
              class="profile-pic"
-             alt="Profile" onerror="this.onerror=null;this.src='../Images/default-profile.gif';">
+             alt="Profile" onerror="this.onerror=null;this.src='../Images/demo_pic/profile.jpg';">
     </div>
 
 
@@ -213,7 +213,7 @@ try {
           $displayAuthorName = $isAnonymous ? 'Anonymous' : $postAuthorName;
           $displayAuthorPhoto = $isAnonymous
             ? '../Images/anonymously.gif'
-            : (!empty($user['profile_photo']) ? '../uploads/user/' . e($user['profile_photo']) : '../Images/default-profile.gif');
+            : (!empty($user['profile_photo']) ? '../uploads/user/' . e($user['profile_photo']) : '../Images/demo_pic/profile.jpg');
         ?>
         <div class="card post" data-post-id="<?= (int)($post['id'] ?? 0) ?>" data-share-anonymous="<?= $isAnonymous ? '1' : '0' ?>">
           <div class="post-header">

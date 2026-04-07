@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 declare(strict_types=1);
 session_start();
 require_once __DIR__ . '/../Php/db.php';
@@ -99,7 +99,7 @@ try {
   <div class="cover-photo">
     <img src="<?= !empty($user['cover_photo']) ? '../uploads/police/' . e($user['cover_photo']) : '../Images/default-cover.gif' ?>" alt="Cover" class="cover-img">
     <div class="profile-pic-container">
-      <img class="profile-pic" src="<?= !empty($user['profile_photo']) ? '../uploads/police/' . e($user['profile_photo']) : '../Images/default-profile.gif' ?>" alt="Profile">
+      <img class="profile-pic" src="<?= !empty($user['profile_photo']) ? '../uploads/police/' . e($user['profile_photo']) : '../Images/demo_pic/profile.jpg' ?>" alt="Profile">
     </div>
   <div class="main-content">
     <div class="left-panel">
@@ -115,37 +115,37 @@ try {
         <ul class="info-list">
     <!-- Badge ID -->
     <li>
-        <span class="icon">🏷️</span>
+        <span class="icon">ðŸ·ï¸</span>
         <?= !empty($user['badge_id']) ? e($user['badge_id']) : 'Badge not set' ?>
     </li>
 
     <!-- Designation -->
     <li>
-        <span class="icon">💼</span>
+        <span class="icon">ðŸ’¼</span>
         <?= !empty($user['designation']) ? e($user['designation']) : 'Designation not set' ?>
     </li>
 
     <!-- Station -->
     <li>
-        <span class="icon">🏢</span>
+        <span class="icon">ðŸ¢</span>
         <?= !empty($user['station']) ? e($user['station']) : 'Station not set' ?>
     </li>
 
     <!-- Email -->
     <li>
-        <span class="icon">✉️</span>
+        <span class="icon">âœ‰ï¸</span>
         <?= !empty($user['email']) ? e($user['email']) : 'No email provided' ?>
     </li>
 
     <!-- Street / Address -->
     <li>
-        <span class="icon">🏠</span>
+        <span class="icon">ðŸ </span>
         <?= !empty($user['street']) ? e($user['street']) : 'No street provided' ?>
     </li>
 
     <!-- City / Country -->
     <li>
-        <span class="icon">🌍</span>
+        <span class="icon">ðŸŒ</span>
         <?= !empty($user['city']) ? e($user['city']) : 'No city provided' ?>,
         <?= !empty($user['country']) ? e($user['country']) : 'No country provided' ?>
     </li>
@@ -161,7 +161,7 @@ try {
 </div>
     <div class="center-panel">
   <div class="card share-box">
-    <img class="mini-profile" src="<?= !empty($user['profile_photo']) ? '../uploads/police/' . e($user['profile_photo']) : '../Images/default-profile.gif' ?>" alt="Profile">
+    <img class="mini-profile" src="<?= !empty($user['profile_photo']) ? '../uploads/police/' . e($user['profile_photo']) : '../Images/demo_pic/profile.jpg' ?>" alt="Profile">
     <input type="text" placeholder="What's on your mind?" onclick="openModal()">
   </div>
 
@@ -198,7 +198,7 @@ try {
               $displayAuthorName = $isAnonymous ? 'Anonymous' : $postAuthorName;
               $displayAuthorPhoto = $isAnonymous
                 ? '../Images/anonymously.gif'
-                : (!empty($user['profile_photo']) ? '../uploads/police/' . e($user['profile_photo']) : '../Images/default-profile.gif');
+                : (!empty($user['profile_photo']) ? '../uploads/police/' . e($user['profile_photo']) : '../Images/demo_pic/profile.jpg');
             ?>
             <div class="card post" data-post-id="<?= (int)($post['id'] ?? 0) ?>" data-category="<?= e((string)($post['category'] ?? 'general')) ?>" data-share-anonymous="<?= $isAnonymous ? '1' : '0' ?>">
               <div class="post-header">
@@ -301,11 +301,11 @@ try {
     <div class="post-media-options">
       <label>
         <input type="file" id="imageUpload" accept="image/*" multiple hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">ðŸ“· Photo</button>
       </label>
       <label>
         <input type="file" id="videoUpload" accept="video/*" hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">ðŸŽ¥ Video</button>
       </label>
     </div>
 
@@ -340,7 +340,7 @@ try {
   cursor: pointer;
   display: flex;
   align-items: center;
-  padding: 6px 18px; /* ↓ reduced height */
+  padding: 6px 18px; /* â†“ reduced height */
   border: 2px solid #1a73e8;
   border-radius: 16px; /* slightly smaller for balance */
   font-weight: 450;
@@ -354,7 +354,7 @@ try {
 }
 
 .category-icon {
-  width: 24px; /* ↓ smaller icons */
+  width: 24px; /* â†“ smaller icons */
   height: 24px;
   object-fit: contain;
 }
@@ -474,3 +474,4 @@ try {
 <script src="../javascrpit/post_interactions_shared.js?v=20260406d"></script>
 <script src="../javascrpit/notifications_shared.js"></script>
 </html>
+
