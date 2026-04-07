@@ -40,7 +40,7 @@ try {
     }
 
     $hasNotifications = tableExists($pdo, 'user_notifications');
-    $query = "SELECT vm.mission_id, vm.mission_title, vm.mission_details, vm.mission_location, vm.status, vm.response_status, vm.case_ref, vm.assigned_at";
+    $query = "SELECT vm.mission_id, vm.source_notification_id, vm.mission_title, vm.mission_details, vm.mission_location, vm.status, vm.response_status, vm.case_ref, vm.assigned_at";
     if ($hasNotifications) {
         $query .= ", COALESCE(un.meta_json, '') AS meta_json";
     } else {
@@ -63,6 +63,7 @@ try {
     $data = array_map(static function (array $row): array {
         return [
             'mission_id' => (int)($row['mission_id'] ?? 0),
+            'source_notification_id' => (int)($row['source_notification_id'] ?? 0),
             'mission_title' => (string)($row['mission_title'] ?? 'Mission'),
             'mission_details' => (string)($row['mission_details'] ?? ''),
             'mission_location' => (string)($row['mission_location'] ?? ''),

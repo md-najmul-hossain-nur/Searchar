@@ -1438,6 +1438,60 @@ body.volunteer-apply-open .notifications-drawer {
   color: #475569;
 }
 
+.mission-response-wrap {
+  margin-top: 10px;
+}
+
+.mission-response {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.mission-response.pending {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+.mission-response.accepted {
+  background: #ecfdf3;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.mission-response.rejected {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.mission-response-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.reject-mission-btn {
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.reject-mission-btn:disabled,
+.submit-proof-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .mission-assigned-item small {
   display: block;
   margin-top: 6px;

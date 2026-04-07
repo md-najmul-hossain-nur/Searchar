@@ -11,6 +11,12 @@ function columnExists(PDO $pdo, string $tableName, string $columnName): bool {
     return (bool)$stmt->fetchColumn();
 }
 
+function tableExists(PDO $pdo, string $tableName): bool {
+    $stmt = $pdo->prepare("SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :t LIMIT 1");
+    $stmt->execute([':t' => $tableName]);
+    return (bool)$stmt->fetchColumn();
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['success' => false, 'error' => 'Method not allowed']);
@@ -25,17 +31,45 @@ if (empty($_SESSION['user_id']) || empty($_SESSION['role'])) {
 
 $role = strtolower(trim((string)$_SESSION['role']));
 $userId = (int)$_SESSION['user_id'];
-if ($role !== 'volunteer') {
+
+$volunteerId = 0;
+if ($role === 'volunteer') {
+    $volunteerId = $userId;
+} elseif ($role === 'user') {
+    if (!tableExists($pdo, 'volunteer_applications')) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'error' => 'Volunteer profile not linked for this account']);
+        exit;
+    }
+
+    $map = $pdo->prepare("SELECT volunteer_id
+                          FROM volunteer_applications
+                          WHERE user_id = :uid
+                            AND LOWER(COALESCE(status, 'pending')) = 'approved'
+                            AND volunteer_id IS NOT NULL
+                            AND volunteer_id > 0
+                          ORDER BY application_id DESC
+                          LIMIT 1");
+    $map->execute([':uid' => $userId]);
+    $volunteerId = (int)($map->fetchColumn() ?: 0);
+
+    if ($volunteerId <= 0) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'error' => 'No approved volunteer profile found for this user account']);
+        exit;
+    }
+} else {
     http_response_code(403);
-    echo json_encode(['success' => false, 'error' => 'Only volunteers can respond']);
+    echo json_encode(['success' => false, 'error' => 'Only volunteer-enabled accounts can respond']);
     exit;
 }
 
 $payload = json_decode(file_get_contents('php://input') ?: '', true);
 $notificationId = (int)($payload['notification_id'] ?? 0);
+$missionIdPayload = (int)($payload['mission_id'] ?? 0);
 $action = strtolower(trim((string)($payload['action'] ?? '')));
 
-if ($notificationId <= 0 || !in_array($action, ['accept', 'reject'], true)) {
+if (($notificationId <= 0 && $missionIdPayload <= 0) || !in_array($action, ['accept', 'reject'], true)) {
     http_response_code(400);
     echo json_encode(['success' => false, 'error' => 'Invalid payload']);
     exit;
@@ -75,11 +109,14 @@ try {
         $pdo->exec("ALTER TABLE volunteer_missions ADD COLUMN case_ref VARCHAR(80) DEFAULT NULL AFTER response_status");
     }
 
-    $sel = $pdo->prepare('SELECT notification_id, message, meta_json FROM user_notifications WHERE notification_id = :id AND recipient_entity IN ("volunteer", "volunteers") AND recipient_id = :rid LIMIT 1');
-    $sel->execute([':id' => $notificationId, ':rid' => $userId]);
-    $row = $sel->fetch(PDO::FETCH_ASSOC);
+    $row = null;
+    if ($notificationId > 0 && tableExists($pdo, 'user_notifications')) {
+        $sel = $pdo->prepare('SELECT notification_id, message, meta_json FROM user_notifications WHERE notification_id = :id AND recipient_entity IN ("volunteer", "volunteers", "user", "users") AND recipient_id = :rid LIMIT 1');
+        $sel->execute([':id' => $notificationId, ':rid' => $userId]);
+        $row = $sel->fetch(PDO::FETCH_ASSOC) ?: null;
+    }
 
-    if (!$row) {
+    if (!$row && $missionIdPayload <= 0) {
         http_response_code(404);
         echo json_encode(['success' => false, 'error' => 'Assignment notification not found']);
         exit;
@@ -94,7 +131,7 @@ try {
                 $meta = $decoded;
             }
         }
-        $missionId = (int)($meta['mission_id'] ?? 0);
+        $missionId = $missionIdPayload > 0 ? $missionIdPayload : (int)($meta['mission_id'] ?? 0);
         $caseRef = trim((string)($meta['case_id'] ?? ''));
 
         $updated = 0;
@@ -104,7 +141,7 @@ try {
                 ':status' => 'rejected_busy',
                 ':response_status' => 'rejected_busy',
                 ':mid' => $missionId,
-                ':vid' => $userId,
+                ':vid' => $volunteerId,
             ]);
             $updated = $updMission->rowCount();
         } else {
@@ -113,7 +150,7 @@ try {
                 ':status' => 'rejected_busy',
                 ':response_status' => 'rejected_busy',
                 ':nid' => $notificationId,
-                ':vid' => $userId,
+                ':vid' => $volunteerId,
             ]);
             $updated = $updMission->rowCount();
         }
@@ -123,41 +160,47 @@ try {
             $updCase->execute([
                 ':status' => 'rejected_busy',
                 ':response_status' => 'rejected_busy',
-                ':vid' => $userId,
+                ':vid' => $volunteerId,
                 ':case_ref' => $caseRef,
             ]);
         }
 
-        $del = $pdo->prepare('DELETE FROM user_notifications WHERE notification_id = :id AND recipient_id = :rid LIMIT 1');
-        $del->execute([
-            ':id' => $notificationId,
-            ':rid' => $userId,
-        ]);
+        if ($notificationId > 0 && $row) {
+            $del = $pdo->prepare('DELETE FROM user_notifications WHERE notification_id = :id AND recipient_id = :rid LIMIT 1');
+            $del->execute([
+                ':id' => $notificationId,
+                ':rid' => $userId,
+            ]);
+        }
 
         echo json_encode(['success' => true, 'action' => $action, 'deleted' => true]);
         exit;
     }
 
     $message = (string)($row['message'] ?? '');
-    if (!str_contains(strtolower($message), '[response: accepted]') && !str_contains(strtolower($message), '[response: rejected_busy]')) {
-        $message = trim($message . ' ' . $responseTag);
-    } else {
-        $message = preg_replace('/\[Response:\s*(accepted|rejected_busy)\]/i', $responseTag, $message) ?: $message;
+    if ($row) {
+        if (!str_contains(strtolower($message), '[response: accepted]') && !str_contains(strtolower($message), '[response: rejected_busy]')) {
+            $message = trim($message . ' ' . $responseTag);
+        } else {
+            $message = preg_replace('/\[Response:\s*(accepted|rejected_busy)\]/i', $responseTag, $message) ?: $message;
+        }
     }
 
     $acceptedAt = (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format(DateTimeInterface::ATOM);
-    if (preg_match('/\[AcceptedAt:\s*[^\]]+\]/i', $message) === 1) {
-        $message = preg_replace('/\[AcceptedAt:\s*[^\]]+\]/i', '[AcceptedAt: ' . $acceptedAt . ']', $message) ?: $message;
-    } else {
-        $message = trim($message . ' [AcceptedAt: ' . $acceptedAt . ']');
-    }
+    if ($row) {
+        if (preg_match('/\[AcceptedAt:\s*[^\]]+\]/i', $message) === 1) {
+            $message = preg_replace('/\[AcceptedAt:\s*[^\]]+\]/i', '[AcceptedAt: ' . $acceptedAt . ']', $message) ?: $message;
+        } else {
+            $message = trim($message . ' [AcceptedAt: ' . $acceptedAt . ']');
+        }
 
-    $upd = $pdo->prepare('UPDATE user_notifications SET message = :message, is_read = 1 WHERE notification_id = :id AND recipient_id = :rid');
-    $upd->execute([
-        ':message' => $message,
-        ':id' => $notificationId,
-        ':rid' => $userId,
-    ]);
+        $upd = $pdo->prepare('UPDATE user_notifications SET message = :message, is_read = 1 WHERE notification_id = :id AND recipient_id = :rid');
+        $upd->execute([
+            ':message' => $message,
+            ':id' => $notificationId,
+            ':rid' => $userId,
+        ]);
+    }
 
     $meta = [];
     $metaRaw = (string)($row['meta_json'] ?? '');
@@ -167,7 +210,7 @@ try {
             $meta = $decoded;
         }
     }
-    $missionId = (int)($meta['mission_id'] ?? 0);
+    $missionId = $missionIdPayload > 0 ? $missionIdPayload : (int)($meta['mission_id'] ?? 0);
     $caseRef = trim((string)($meta['case_id'] ?? ''));
     $missionLabel = trim((string)($meta['mission_label'] ?? 'Assigned Mission'));
     $missionNote = trim((string)($meta['mission_note'] ?? ''));
@@ -180,7 +223,7 @@ try {
             ':status' => 'accepted',
             ':response_status' => 'accepted',
             ':mid' => $missionId,
-            ':vid' => $userId,
+            ':vid' => $volunteerId,
         ]);
         $updated = $updMission->rowCount();
     } else {
@@ -189,7 +232,7 @@ try {
             ':status' => 'accepted',
             ':response_status' => 'accepted',
             ':nid' => $notificationId,
-            ':vid' => $userId,
+            ':vid' => $volunteerId,
         ]);
         $updated = $updMission->rowCount();
     }
@@ -200,7 +243,7 @@ try {
             ':status' => 'accepted',
             ':response_status' => 'accepted',
             ':nid' => $notificationId,
-            ':vid' => $userId,
+            ':vid' => $volunteerId,
             ':case_ref' => $caseRef,
         ]);
         $updated = $updCase->rowCount();
@@ -209,7 +252,7 @@ try {
     if ($updated < 1) {
         $insMission = $pdo->prepare('INSERT INTO volunteer_missions (volunteer_id, mission_title, mission_details, mission_location, status, response_status, case_ref, source_notification_id, assigned_by) VALUES (:volunteer_id, :mission_title, :mission_details, :mission_location, :status, :response_status, :case_ref, :source_notification_id, :assigned_by)');
         $insMission->execute([
-            ':volunteer_id' => $userId,
+            ':volunteer_id' => $volunteerId,
             ':mission_title' => $missionLabel !== '' ? $missionLabel : 'Assigned Mission',
             ':mission_details' => $missionNote !== '' ? $missionNote : null,
             ':mission_location' => $landmark !== '' ? $landmark : null,

@@ -862,6 +862,28 @@ function missionStatusLabel(item) {
   return 'Assigned';
 }
 
+function renderComboMissionResponseBadge(item) {
+  const response = String(item?.response_status || '').toLowerCase();
+  const status = String(item?.status || '').toLowerCase();
+
+  if (response === 'accepted' || status === 'accepted') {
+    return '<span class="mission-response accepted">Accepted</span>';
+  }
+  if (response === 'rejected_busy' || status === 'rejected_busy') {
+    return '<span class="mission-response rejected">Rejected (Busy)</span>';
+  }
+  if (response === 'completed' || status === 'completed') {
+    return '<span class="mission-response accepted">Completed</span>';
+  }
+  return '<span class="mission-response pending">Pending response</span>';
+}
+
+function isComboMissionAccepted(item) {
+  const status = String(item?.status || '').toLowerCase();
+  const response = String(item?.response_status || '').toLowerCase();
+  return response === 'accepted' || status === 'accepted' || response === 'completed' || status === 'completed';
+}
+
 function isMissionClosed(item) {
   const status = String(item?.status || '').toLowerCase();
   const response = String(item?.response_status || '').toLowerCase();
@@ -929,8 +951,42 @@ function renderComboMissionMedia(metaJsonText) {
 
 function getCurrentComboMissionForProof() {
   if (!Array.isArray(comboMissionsCache) || comboMissionsCache.length === 0) return null;
+  const accepted = comboMissionsCache.find(item => !isMissionClosed(item) && isComboMissionAccepted(item));
+  if (accepted) return accepted;
   const active = comboMissionsCache.find(item => !isMissionClosed(item));
   return active || comboMissionsCache[0] || null;
+}
+
+async function submitComboMissionResponse(item, action) {
+  const notificationId = Number(item?.source_notification_id || 0);
+  const missionId = Number(item?.mission_id || 0);
+
+  if (!notificationId && !missionId) {
+    alert('Mission response metadata is missing.');
+    return;
+  }
+
+  try {
+    const res = await fetch('../Php/volunteer_assignment_response.php', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        notification_id: notificationId,
+        mission_id: missionId,
+        action
+      })
+    });
+
+    const json = await res.json();
+    if (!json?.success) {
+      throw new Error(json?.error || 'Failed to update mission response.');
+    }
+
+    await loadComboMissions();
+  } catch (error) {
+    alert(error?.message || 'Could not update mission response right now.');
+  }
 }
 
 function renderMissionHistoryFromCombo() {
@@ -967,10 +1023,20 @@ function renderMissionHistoryFromCombo() {
 function renderAssignedMissionsInModal() {
   if (!missionAssignedList || !missionAssignedEmpty) return;
 
-  const missions = Array.isArray(comboMissionsCache) ? comboMissionsCache : [];
+  const missions = (Array.isArray(comboMissionsCache) ? comboMissionsCache : []).filter((item) => {
+    const status = String(item?.status || '').toLowerCase();
+    const response = String(item?.response_status || '').toLowerCase();
+
+    // Keep only currently actionable missions in this panel.
+    if (['completed', 'rejected_busy', 'closed_by_police'].includes(status)) return false;
+    if (['completed', 'rejected_busy', 'closed_by_police'].includes(response)) return false;
+    return response === 'pending' || response === 'accepted' || response === '';
+  });
+
   if (missions.length === 0) {
     missionAssignedList.innerHTML = '';
     missionAssignedEmpty.style.display = 'block';
+    missionAssignedEmpty.textContent = 'No active assigned mission right now.';
     return;
   }
 
@@ -983,9 +1049,13 @@ function renderAssignedMissionsInModal() {
     const assignedAt = escapeHtml(String(item?.assigned_at || '').trim());
     const statusLabel = escapeHtml(missionStatusLabel(item));
     const mediaBlock = renderComboMissionMedia(String(item?.meta_json || ''));
+    const missionId = Number(item?.mission_id || 0);
+    const response = String(item?.response_status || '').toLowerCase();
+    const status = String(item?.status || '').toLowerCase();
+    const canRespond = response === 'pending' && !['completed', 'rejected_busy', 'closed_by_police'].includes(status);
 
     return `
-      <article class="mission-assigned-item">
+      <article class="mission-assigned-item" data-combo-mission-id="${missionId}">
         <div class="mission-assigned-top">
           <strong>${title}</strong>
           <span>${statusLabel}</span>
@@ -993,11 +1063,36 @@ function renderAssignedMissionsInModal() {
         ${caseRef ? `<p><strong>Case:</strong> ${caseRef}</p>` : ''}
         ${location ? `<p><strong>Location:</strong> ${location}</p>` : ''}
         ${details ? `<p>${details}</p>` : ''}
+        <div class="mission-response-wrap">${renderComboMissionResponseBadge(item)}</div>
+        <div class="mission-response-actions">
+          <button type="button" class="submit-proof-btn" data-combo-mission-action="accept" ${canRespond ? '' : 'disabled'}>✅ Accept Mission</button>
+          <button type="button" class="reject-mission-btn" data-combo-mission-action="reject" ${canRespond ? '' : 'disabled'}>⛔ Reject (Busy)</button>
+        </div>
         ${mediaBlock}
         ${assignedAt ? `<small>Assigned: ${assignedAt}</small>` : ''}
       </article>
     `;
   }).join('');
+
+  const cardNodes = missionAssignedList.querySelectorAll('[data-combo-mission-id]');
+  cardNodes.forEach((card) => {
+    const missionId = Number(card.getAttribute('data-combo-mission-id') || 0);
+    const missionItem = missions.find(m => Number(m?.mission_id || 0) === missionId);
+    if (!missionItem) return;
+
+    card.querySelectorAll('[data-combo-mission-action]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const action = String(btn.getAttribute('data-combo-mission-action') || '');
+        if (!['accept', 'reject'].includes(action)) return;
+
+        card.querySelectorAll('[data-combo-mission-action]').forEach(b => {
+          b.disabled = true;
+        });
+
+        await submitComboMissionResponse(missionItem, action);
+      });
+    });
+  });
 }
 
 function updateMissionProofUiState() {
@@ -1012,6 +1107,12 @@ function updateMissionProofUiState() {
 
   if (isMissionClosed(mission)) {
     missionProofStatus.textContent = 'This mission is already closed/completed.';
+    missionProofSubmitBtn.disabled = true;
+    return;
+  }
+
+  if (!isComboMissionAccepted(mission)) {
+    missionProofStatus.textContent = 'Please accept the mission first to submit proof.';
     missionProofSubmitBtn.disabled = true;
     return;
   }
