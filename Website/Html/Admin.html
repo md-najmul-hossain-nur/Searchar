@@ -912,7 +912,9 @@
   <div class="profile-modal__card">
     <div class="profile-modal__header">
       <div class="profile-modal__title">Assign Volunteers</div>
-      <button class="profile-modal__close" type="button" onclick="closeCrimeAssignModal()">Ã—</button>
+      <button class="profile-modal__close" type="button" onclick="closeCrimeAssignModal()" aria-label="Close">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
     </div>
     <div class="assign-modal__context">
       <div><strong>Case:</strong> <span id="assign-case-id">â€”</span></div>
@@ -996,7 +998,9 @@
     <div class="profile-modal__card">
       <div class="profile-modal__header">
         <div class="profile-modal__title" id="profile-modal-title">Profile Details</div>
-        <button class="profile-modal__close" type="button" onclick="closeProfileModal()">Ã—</button>
+        <button class="profile-modal__close" type="button" onclick="closeProfileModal()" aria-label="Close">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
       </div>
       <div id="profile-modal-grid" class="profile-modal__grid"></div>
       <div class="profile-modal__footer">
@@ -1011,7 +1015,9 @@
     <div class="profile-modal__card">
       <div class="profile-modal__header">
         <div class="profile-modal__title">Add Officer</div>
-        <button class="profile-modal__close" type="button" onclick="closeAddOfficerModal()">Ã—</button>
+        <button class="profile-modal__close" type="button" onclick="closeAddOfficerModal()" aria-label="Close">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
       </div>
       <div class="profile-modal__grid">
         <div class="profile-modal__row"><div class="profile-modal__label">Full Name</div><div class="profile-modal__value"><input type="text" id="add-officer-full-name" class="profile-modal__input" placeholder="Officer full name"></div></div>
