@@ -146,19 +146,26 @@ body {
 }
 
 .navbar-title {
-  font-size: 18px;
-  font-weight: bold;
-  letter-spacing: 1px;
+  flex: 1 1 auto;
+  min-width: 170px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  color: #1f2a44;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .navbar-search {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   position: relative;
   justify-content: flex-end;
-  width: min(62vw, 640px);
+  width: clamp(360px, 56vw, 700px);
   max-width: 100%;
+  min-width: 0;
 }
 
 .global-smart-search {
@@ -2877,7 +2884,8 @@ h4 {
 
 /* Unified Navbar Logo */
 .navbar {
-  width: 100% !important;
+  width: auto !important;
+  max-width: none !important;
   height: auto !important;
   min-height: 72px !important;
   padding: 12px 20px !important;
@@ -2915,11 +2923,12 @@ h4 {
   width: 100% !important;
   gap: 10px !important;
   justify-content: flex-end !important;
+  align-items: center !important;
 }
 
 .global-smart-search {
   min-width: 220px !important;
-  max-width: 360px !important;
+  max-width: 430px !important;
 }
 
 .volunteer-approver-panel {
@@ -2978,8 +2987,10 @@ h4 {
   margin-top: 8px;
 }
 #admin-avatar {
-  width: 36px !important;
-  height: 36px !important;
+  width: 44px !important;
+  height: 44px !important;
+  display: block;
+  flex-shrink: 0;
   margin-left: 0 !important;
   border: 2px solid #e6edf8;
   border-radius: 50%;
@@ -2990,6 +3001,11 @@ h4 {
   .navbar {
     min-height: 56px !important;
     padding: 8px 8px !important;
+  }
+
+  .navbar-title {
+    min-width: 120px;
+    font-size: 15px;
   }
 
   .navbar > div:last-child {
@@ -3004,8 +3020,8 @@ h4 {
 
   .navbar-avatar,
   #admin-avatar {
-    width: 30px !important;
-    height: 30px !important;
+    width: 36px !important;
+    height: 36px !important;
   }
 }
 

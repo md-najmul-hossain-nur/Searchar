@@ -269,6 +269,7 @@ setInterval(loadCameraSeries, 30000);
         { terms: ['post', 'post control'], id: 'post-control' },
         { terms: ['donation', 'donations control'], id: 'donations' },
         { terms: ['broadcast', 'notifications'], id: 'broadcast' },
+        { terms: ['volunteer approver', 'approver', 'approval'], id: 'volunteer-approver' },
         { terms: ['volunteer', 'volunteer missions'], id: 'volunteer' },
         { terms: ['withdraw', 'withdraw control'], id: 'withdraw' },
         { terms: ['review'], id: 'review' },
@@ -3231,7 +3232,7 @@ function openAddVolunteerModal() {
 
   document.addEventListener('admin:refresh-section', (event) => {
     const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
-    if (['post-control', 'missing', 'volunteer', 'withdraw', 'reports', 'dashboard'].includes(sectionId)) {
+    if (['post-control', 'missing', 'volunteer', 'volunteer-approver', 'withdraw', 'reports', 'dashboard'].includes(sectionId)) {
       loadActionQueue();
     }
   });

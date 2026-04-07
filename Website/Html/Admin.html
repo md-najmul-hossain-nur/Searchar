@@ -51,6 +51,9 @@
   <li data-section="post-control">
     <span class="icon"><i class="fa-solid fa-clipboard-check"></i></span> Post Control
   </li>
+  <li data-section="volunteer-approver">
+    <span class="icon"><i class="fa-solid fa-handshake-angle"></i></span> Volunteer Approver
+  </li> 
   <li data-section="donations">
     <span class="icon"><i class="fa-solid fa-hand-holding-dollar"></i></span> Donations Control
   </li>
@@ -78,16 +81,15 @@
   </div>
   <div class="main-content">
     <div class="navbar">
-      <div class="navbar-title"></div>
+      <div class="navbar-title">Admin Dashboard</div>
       <div class="navbar-search">
         <div class="global-smart-search">
           <div class="global-smart-search-field">
             <i class="fa-solid fa-magnifying-glass" ></i>
-            <input id="global-smart-search" type="text" placeholder="Quick search: section/name/phone" aria-label="Quick smart search" title="Type section, person name, phone, or case ID to jump to the matching section. Example: crime, volunteer, 017..., CR-2026-001">
+            <input id="global-smart-search" type="text" placeholder="Quick search" aria-label="Quick smart search" title="Quick search">
           </div>
-          <div class="global-smart-search-hint">Search by section, name, phone, or case ID (e.g., crime, volunteer, 017..., CR-2026-001)</div>
         </div>
-        <img class="" id="admin-avatar" src="../Images/businessman.gif" alt="User Avatar">
+        <img class="navbar-avatar" id="admin-avatar" src="../Images/businessman.gif" alt="User Avatar">
         <div id="avatar-panel" class="avatar-panel">
           <div class="avatar-panel__user">Signed in as Admin</div>
           <button class="avatar-panel__logout" onclick="window.location.href='../Php/logout.php';">
@@ -698,23 +700,6 @@
 </div>
 <div id="volunteer" class="main-section">
   <h2>Volunteer Missions</h2>
-  <div id="volunteer-approver-panel" class="volunteer-approver-panel">
-    <div class="volunteer-approver-head">
-      <h4>Volunteer Approver</h4>
-      <div class="filters-bar" style="margin:0; padding:0; box-shadow:none; background:transparent;">
-        <input id="vol-approver-filter-text" type="text" placeholder="Search by name/email/mobile" style="min-width: 240px;">
-        <select id="vol-approver-filter-status">
-          <option value="pending">Pending</option>
-          <option value="approved">Approved</option>
-          <option value="rejected">Rejected</option>
-          <option value="all">All</option>
-        </select>
-      </div>
-    </div>
-    <div id="volunteer-approver-list" class="volunteer-approver-list">
-      <div class="volunteer-approver-empty">Loading volunteer applications...</div>
-    </div>
-  </div>
   <div class="filters-bar" id="volunteer-filters">
     <input id="volunteer-filter-text" type="text" placeholder="Search volunteer, mission, location">
     <select id="volunteer-filter-status">
@@ -762,6 +747,28 @@
     <div class="widget">This Month: <span id="volunteer-this-month">0</span></div>
   </div>
 </div>
+
+<div id="volunteer-approver" class="main-section">
+  <h2>Volunteer Approver</h2>
+  <div id="volunteer-approver-panel" class="volunteer-approver-panel">
+    <div class="volunteer-approver-head">
+      <h4>Volunteer Approver</h4>
+      <div class="filters-bar" style="margin:0; padding:0; box-shadow:none; background:transparent;">
+        <input id="vol-approver-filter-text" type="text" placeholder="Search by name/email/mobile" style="min-width: 240px;">
+        <select id="vol-approver-filter-status">
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+          <option value="all">All</option>
+        </select>
+      </div>
+    </div>
+    <div id="volunteer-approver-list" class="volunteer-approver-list">
+      <div class="volunteer-approver-empty">Loading volunteer applications...</div>
+    </div>
+  </div>
+</div>
+
 <div id="withdraw" class="main-section">
   <h2>Withdraw Control</h2>
   <div class="filters-bar" id="withdraw-filters">
