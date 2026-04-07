@@ -2887,8 +2887,8 @@ h4 {
   width: auto !important;
   max-width: none !important;
   height: auto !important;
-  min-height: 72px !important;
-  padding: 12px 20px !important;
+  min-height: 86px !important;
+  padding: 16px 20px !important;
   box-sizing: border-box;
   display: flex !important;
   align-items: center !important;

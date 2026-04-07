@@ -930,13 +930,31 @@ margin-bottom: -100px;
 
 .volunteer-apply-modal {
   position: fixed;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   display: none;
   align-items: center;
   justify-content: center;
   background: rgba(15, 23, 42, 0.6);
-  z-index: 2100;
+  z-index: 5200;
   padding: 16px;
+}
+
+body.volunteer-apply-open {
+  overflow: hidden;
+}
+
+body.volunteer-apply-open .messenger-fab,
+body.volunteer-apply-open .messenger-backdrop,
+body.volunteer-apply-open .messenger-drawer,
+body.volunteer-apply-open .notifications-drawer-backdrop,
+body.volunteer-apply-open .notifications-drawer {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .volunteer-apply-modal-content {

@@ -30,6 +30,29 @@ function ensureVolunteerApplicationsTable(PDO $pdo): void {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 }
 
+function buildVolunteerMissingProfileParts(array $user): array {
+    $missing = [];
+
+    if (trim((string)($user['full_name'] ?? '')) === '') $missing[] = 'full name';
+    if (trim((string)($user['email'] ?? '')) === '') $missing[] = 'email';
+    if (trim((string)($user['mobile'] ?? '')) === '') $missing[] = 'mobile';
+    if (trim((string)($user['nid_number'] ?? '')) === '') $missing[] = 'NID number';
+    if (trim((string)($user['date_of_birth'] ?? '')) === '') $missing[] = 'date of birth';
+    if (trim((string)($user['gender'] ?? '')) === '') $missing[] = 'gender';
+
+    $street = trim((string)($user['street'] ?? ''));
+    $lat = trim((string)($user['latitude'] ?? ''));
+    $lng = trim((string)($user['longitude'] ?? ''));
+    if ($street === '' && ($lat === '' || $lng === '')) {
+        $missing[] = 'street address or map location';
+    }
+
+    if (trim((string)($user['city'] ?? '')) === '') $missing[] = 'city';
+    if (trim((string)($user['country'] ?? '')) === '') $missing[] = 'country';
+
+    return $missing;
+}
+
 try {
     if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
         throw new RuntimeException('Invalid request method');
@@ -47,7 +70,7 @@ try {
 
     ensureVolunteerApplicationsTable($pdo);
 
-    $userStmt = $pdo->prepare('SELECT user_id, full_name, email, mobile, nid_number, city, country FROM users WHERE user_id = :id LIMIT 1');
+    $userStmt = $pdo->prepare('SELECT user_id, full_name, email, mobile, nid_number, city, country, date_of_birth, gender, street, latitude, longitude FROM users WHERE user_id = :id LIMIT 1');
     $userStmt->execute([':id' => $userId]);
     $user = $userStmt->fetch(PDO::FETCH_ASSOC);
     if (!$user) {
@@ -61,8 +84,9 @@ try {
     $city = trim((string)($user['city'] ?? ''));
     $country = trim((string)($user['country'] ?? ''));
 
-    if ($fullName === '' || $email === '' || $mobile === '' || $nidNumber === '') {
-        throw new RuntimeException('Please complete profile with full name, email, mobile, and NID before applying.');
+    $missingParts = buildVolunteerMissingProfileParts($user);
+    if (count($missingParts) > 0) {
+        throw new RuntimeException('Please complete your profile first before volunteer apply. Missing: ' . implode(', ', $missingParts) . '.');
     }
 
     $input = json_decode(file_get_contents('php://input') ?: '', true);

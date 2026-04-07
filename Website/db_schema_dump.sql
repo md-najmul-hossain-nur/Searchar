@@ -22,6 +22,7 @@ DROP TABLE IF EXISTS `volunteer_missions`;
 DROP TABLE IF EXISTS `user_combo_roles`;
 DROP TABLE IF EXISTS `volunteer_applications`;
 DROP TABLE IF EXISTS `user_notifications`;
+DROP TABLE IF EXISTS `crime_reports`;
 DROP TABLE IF EXISTS `missing_person_reports`;
 DROP TABLE IF EXISTS `comment_reports`;
 DROP TABLE IF EXISTS `post_reports`;
@@ -300,6 +301,34 @@ CREATE TABLE `missing_person_reports` (
 	PRIMARY KEY (`report_id`),
 	KEY `idx_missing_status` (`status`),
 	KEY `idx_missing_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `crime_reports` (
+	`crime_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+	`case_ref` VARCHAR(80) NOT NULL,
+	`source_type` VARCHAR(40) NOT NULL DEFAULT 'missing_person',
+	`source_ref_id` BIGINT UNSIGNED DEFAULT NULL,
+	`report_type` VARCHAR(60) NOT NULL DEFAULT 'missing_person',
+	`severity` VARCHAR(20) NOT NULL DEFAULT 'high',
+	`status` VARCHAR(30) NOT NULL DEFAULT 'new',
+	`landmark` VARCHAR(255) DEFAULT NULL,
+	`reporter_name` VARCHAR(150) DEFAULT NULL,
+	`anonymous` TINYINT(1) NOT NULL DEFAULT 0,
+	`anon_token` VARCHAR(80) DEFAULT NULL,
+	`description` TEXT DEFAULT NULL,
+	`media_path` VARCHAR(255) DEFAULT NULL,
+	`media_json` TEXT DEFAULT NULL,
+	`lat` DECIMAL(10,7) DEFAULT NULL,
+	`lng` DECIMAL(10,7) DEFAULT NULL,
+	`submitted_at` DATETIME NOT NULL,
+	`updated_at` DATETIME NOT NULL,
+	`closed_at` DATETIME DEFAULT NULL,
+	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY (`crime_id`),
+	UNIQUE KEY `uq_crime_reports_case_ref` (`case_ref`),
+	KEY `idx_crime_reports_status` (`status`),
+	KEY `idx_crime_reports_source` (`source_type`, `source_ref_id`),
+	KEY `idx_crime_reports_submitted` (`submitted_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `user_notifications` (

@@ -4,20 +4,48 @@ const sendBtn = document.getElementById('sendBtn');
 
 const volunteerApplyModal = document.getElementById('volunteerApplyModal');
 const volunteerApplyNoteInput = document.getElementById('volunteerApplyNote');
+const volunteerApplyReady = volunteerApplyModal
+  ? volunteerApplyModal.getAttribute('data-profile-ready') === '1'
+  : true;
+const volunteerApplyMissing = volunteerApplyModal
+  ? String(volunteerApplyModal.getAttribute('data-profile-missing') || '').trim()
+  : '';
+
+function getVolunteerProfileIncompleteMessage() {
+  return 'Please complete your profile first before applying as volunteer. Missing: ' + (volunteerApplyMissing || 'required details') + '.';
+}
+
+if (volunteerApplyModal && volunteerApplyModal.parentElement !== document.body) {
+  // Keep modal at document root to avoid sidebar stacking-context issues.
+  document.body.appendChild(volunteerApplyModal);
+}
 
 function openVolunteerApplyModal() {
   if (!volunteerApplyModal) return;
+  if (!volunteerApplyReady) {
+    alert(getVolunteerProfileIncompleteMessage());
+    window.location.href = '../Html/User_Edit_profile.php';
+    return;
+  }
+  document.body.classList.add('volunteer-apply-open');
   volunteerApplyModal.style.display = 'flex';
   volunteerApplyModal.setAttribute('aria-hidden', 'false');
 }
 
 function closeVolunteerApplyModal() {
   if (!volunteerApplyModal) return;
+  document.body.classList.remove('volunteer-apply-open');
   volunteerApplyModal.style.display = 'none';
   volunteerApplyModal.setAttribute('aria-hidden', 'true');
 }
 
 async function submitVolunteerApplication() {
+  if (!volunteerApplyReady) {
+    alert(getVolunteerProfileIncompleteMessage());
+    window.location.href = '../Html/User_Edit_profile.php';
+    return;
+  }
+
   const note = String(volunteerApplyNoteInput?.value || '').trim();
   const submitBtn = document.querySelector('.volunteer-apply-submit');
   if (submitBtn) {
@@ -1079,6 +1107,7 @@ if (allNotificationsList) {
 
 document.addEventListener('keydown', function (event) {
   if (event.key === 'Escape') {
+    closeVolunteerApplyModal();
     closeDonationPopup();
     closeNotificationsDrawer();
     closeMessengerDrawer();

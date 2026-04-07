@@ -114,6 +114,24 @@ if (!$user) {
   $isProfileIncomplete = !isUserProfileComplete($user);
   $profileMissingLabel = implode(', ', $missingProfileParts);
 
+  $volunteerProfileMissingParts = [];
+  if (trim((string)($user['full_name'] ?? '')) === '') $volunteerProfileMissingParts[] = 'full name';
+  if (trim((string)($user['email'] ?? '')) === '') $volunteerProfileMissingParts[] = 'email';
+  if (trim((string)($user['mobile'] ?? '')) === '') $volunteerProfileMissingParts[] = 'mobile';
+  if (trim((string)($user['nid_number'] ?? '')) === '') $volunteerProfileMissingParts[] = 'NID number';
+  if (trim((string)($user['date_of_birth'] ?? '')) === '') $volunteerProfileMissingParts[] = 'date of birth';
+  if (trim((string)($user['gender'] ?? '')) === '') $volunteerProfileMissingParts[] = 'gender';
+  if (trim((string)($user['street'] ?? '')) === '' && (trim((string)($user['latitude'] ?? '')) === '' || trim((string)($user['longitude'] ?? '')) === '')) $volunteerProfileMissingParts[] = 'street address or map location';
+  if (trim((string)($user['city'] ?? '')) === '') $volunteerProfileMissingParts[] = 'city';
+  if (trim((string)($user['country'] ?? '')) === '') $volunteerProfileMissingParts[] = 'country';
+
+  $isVolunteerProfileReady = count($volunteerProfileMissingParts) === 0;
+  $volunteerProfileMissingLabel = implode(', ', $volunteerProfileMissingParts);
+  $volunteerMobileDisplay = trim((string)($user['mobile'] ?? ''));
+  if ($volunteerMobileDisplay === '') {
+    $volunteerMobileDisplay = 'Not added yet. Complete profile first.';
+  }
+
   try {
     ensureNotificationsTable($pdo);
 
@@ -434,7 +452,7 @@ try {
   <link rel="stylesheet" href="../css/User_Home.css?v=20260406e">
 
 </head>
-<body data-current-user-name="<?= e($user['full_name'] ?? 'User') ?>" data-profile-incomplete="<?= $isProfileIncomplete ? '1' : '0' ?>" data-profile-missing="<?= e($profileMissingLabel) ?>">
+<body data-current-user-name="<?= e($user['full_name'] ?? 'User') ?>" data-profile-incomplete="<?= $isProfileIncomplete ? '1' : '0' ?>" data-profile-missing="<?= e($profileMissingLabel) ?>" data-volunteer-ready="<?= $isVolunteerProfileReady ? '1' : '0' ?>" data-volunteer-missing="<?= e($volunteerProfileMissingLabel) ?>">
 <header class="navbar" style="display:flex; align-items:center; justify-content:space-between; padding:10px; position:sticky; top:0; z-index:2000; background:#fff;">
   <!-- Left: Logo -->
   <div class="navbar-logo">
@@ -548,6 +566,9 @@ try {
     <p class="volunteer-note">No need to switch mode. You will receive volunteer mission notifications and tasks here.</p>
   <?php elseif ($volunteerApplyStatus === 'pending'): ?>
     <button class="volunteer-btn" type="button" disabled>Pending Approval</button>
+  <?php elseif (!$isVolunteerProfileReady): ?>
+    <button class="volunteer-btn" type="button" onclick="window.location.href='../Html/User_Edit_profile.php'">Complete Profile First</button>
+    <p class="volunteer-note">To apply as volunteer, first complete: <?= e($volunteerProfileMissingLabel ?: 'your profile details') ?>.</p>
   <?php else: ?>
     <button class="volunteer-btn" type="button" onclick="openVolunteerApplyModal()">Apply as Volunteer</button>
   <?php endif; ?>
@@ -588,7 +609,7 @@ try {
   <?php endif; ?>
 </div>
 
-<div id="volunteerApplyModal" class="volunteer-apply-modal" style="display:none;" aria-hidden="true">
+<div id="volunteerApplyModal" class="volunteer-apply-modal" style="display:none;" aria-hidden="true" data-profile-ready="<?= $isVolunteerProfileReady ? '1' : '0' ?>" data-profile-missing="<?= e($volunteerProfileMissingLabel) ?>">
   <div class="volunteer-apply-modal-content">
     <button type="button" class="volunteer-apply-close" onclick="closeVolunteerApplyModal()">&times;</button>
     <h3>Volunteer Application</h3>
@@ -597,15 +618,19 @@ try {
     <div class="volunteer-apply-user-info">
       <p><strong>Name:</strong> <?= e($user['full_name'] ?? '') ?></p>
       <p><strong>Email:</strong> <?= e($user['email'] ?? '') ?></p>
-      <p><strong>Mobile:</strong> <?= e($user['mobile'] ?? '') ?></p>
+      <p><strong>Mobile:</strong> <?= e($volunteerMobileDisplay) ?></p>
     </div>
+
+    <?php if (!$isVolunteerProfileReady): ?>
+      <p class="volunteer-review-note">Complete profile first: <?= e($volunteerProfileMissingLabel ?: 'required details') ?>.</p>
+    <?php endif; ?>
 
     <label for="volunteerApplyNote">Why do you want to volunteer? (optional)</label>
     <textarea id="volunteerApplyNote" rows="4" placeholder="Write a short note for admin review"></textarea>
 
     <div class="volunteer-apply-actions">
       <button type="button" class="volunteer-apply-cancel" onclick="closeVolunteerApplyModal()">Cancel</button>
-      <button type="button" class="volunteer-apply-submit" onclick="submitVolunteerApplication()">Submit Application</button>
+      <button type="button" class="volunteer-apply-submit" onclick="submitVolunteerApplication()" <?= $isVolunteerProfileReady ? '' : 'disabled' ?>>Submit Application</button>
     </div>
   </div>
 </div>

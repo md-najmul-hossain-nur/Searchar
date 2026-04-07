@@ -1309,6 +1309,7 @@ function openAddVolunteerModal() {
           <td>${escapeHtml(row.reporter_name || '—')}</td>
           <td>${escapeHtml(formatDate(row.created_at))}</td>
           <td>
+            <button type="button" class="view-profile-btn" data-missing-view="${reportId}">View</button>
             <button type="button" class="danger-btn" data-missing-reject="${reportId}" ${actionable ? '' : 'disabled'}>${actionable ? 'Reject' : 'Locked'}</button>
             <button type="button" data-send-to-crime="${reportId}" ${actionable ? '' : 'disabled'}>${actionable ? 'Make Report' : 'Reported'}</button>
           </td>
@@ -1421,6 +1422,42 @@ function openAddVolunteerModal() {
   loadMissingReports();
 
   document.addEventListener('click', (event) => {
+    const viewBtn = event.target.closest('[data-missing-view]');
+    if (viewBtn) {
+      const reportId = Number(viewBtn.getAttribute('data-missing-view') || 0);
+      if (!reportId) return;
+
+      const rowData = missingRows.find(r => Number(r.report_id || 0) === reportId);
+      if (!rowData) return;
+
+      const payload = {
+        __title: `Missing Person Report MP${String(reportId).padStart(4, '0')}`,
+        report_id: `MP${String(reportId).padStart(4, '0')}`,
+        full_name: rowData.full_name || '',
+        nickname: rowData.nickname || '',
+        age: rowData.age || '',
+        gender: rowData.gender || '',
+        status: prettyStatus(rowData.status || ''),
+        last_seen_date: rowData.last_seen_date || '',
+        last_seen_location: rowData.last_seen_location || '',
+        last_seen_time: rowData.last_seen_time || '',
+        physical_description: rowData.physical_description || '',
+        mental_condition: rowData.mental_condition || '',
+        medical_notes: rowData.medical_notes || '',
+        reporter_name: rowData.reporter_name || '',
+        reporter_mobile: rowData.reporter_mobile || '',
+        relationship: rowData.relationship || '',
+        consent: Number(rowData.consent || 0) === 1 ? 'Yes' : 'No',
+        submitted_at: rowData.created_at || '',
+        media_path: rowData.photo_filename ? `../uploads/missing_person/${rowData.photo_filename}` : ''
+      };
+
+      if (typeof window.openProfileModal === 'function') {
+        window.openProfileModal(payload, false);
+      }
+      return;
+    }
+
     const rejectBtn = event.target.closest('[data-missing-reject]');
     if (rejectBtn) {
       const reportId = Number(rejectBtn.getAttribute('data-missing-reject') || 0);
@@ -1448,41 +1485,26 @@ function openAddVolunteerModal() {
     if (sendBtn) {
       const reportId = Number(sendBtn.getAttribute('data-send-to-crime') || 0);
       if (!reportId) return;
-      const caseId = `MP${String(reportId).padStart(4, '0')}`;
-      const row = sendBtn.closest('tr');
-      const landmark = row ? row.children[4]?.innerText || '' : '';
-      const reporter = row ? row.children[6]?.innerText || '' : 'Anonymous';
-      if (typeof window.pushCrimeFromExternal === 'function') {
-        window.pushCrimeFromExternal({
-          id: caseId,
-          type: 'missing_person',
-          severity: 'high',
-          status: 'new',
-          landmark,
-          reporter,
-          description: 'Escalated from Missing Persons'
+
+      updateMissingReportStatus(reportId, 'make_report')
+        .then((json) => {
+          const nextStatus = String(json?.status || 'under_review').toLowerCase();
+          const idx = missingRows.findIndex(r => Number(r.report_id || 0) === reportId);
+          if (idx >= 0) {
+            missingRows[idx] = { ...missingRows[idx], status: nextStatus };
+          }
+          loadMissingReports();
+
+          const crimeNav = document.querySelector('.sidebar li[data-section="crime"]');
+          if (crimeNav) {
+            crimeNav.click();
+          }
+        })
+        .catch((error) => {
+          console.error('missing make_report failed', error);
+          alert(error?.message || 'Could not mark report as processed. It may already be processed.');
+          loadMissingReports();
         });
-
-        updateMissingReportStatus(reportId, 'make_report')
-          .then((json) => {
-            const nextStatus = String(json?.status || 'under_review').toLowerCase();
-            const idx = missingRows.findIndex(r => Number(r.report_id || 0) === reportId);
-            if (idx >= 0) {
-              missingRows[idx] = { ...missingRows[idx], status: nextStatus };
-            }
-            loadMissingReports();
-
-            const crimeNav = document.querySelector('.sidebar li[data-section="crime"]');
-            if (crimeNav) {
-              crimeNav.click();
-            }
-          })
-          .catch((error) => {
-            console.error('missing make_report failed', error);
-            alert(error?.message || 'Could not mark report as processed. It may already be processed.');
-            loadMissingReports();
-          });
-      }
     }
   });
 })();
@@ -1640,85 +1662,32 @@ function openAddVolunteerModal() {
   }
 
   function loadCrimeReports() {
-    try {
-      const raw = localStorage.getItem(CRIME_STORAGE_KEY);
-      if (!raw) {
-        return defaultDemoCrimes.map(normalizeCrimeRow);
-      }
-      const parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed) || parsed.length === 0) {
-        return defaultDemoCrimes.map(normalizeCrimeRow);
-      }
-      return parsed.map(normalizeCrimeRow);
-    } catch (_) {
-      return defaultDemoCrimes.map(normalizeCrimeRow);
-    }
+    return [];
   }
 
   function saveCrimeReports(rows) {
-    try {
-      localStorage.setItem(CRIME_STORAGE_KEY, JSON.stringify(rows));
-    } catch (_) {
-    }
+    // Crime rows are DB-backed. Keep this as a no-op for compatibility.
   }
 
   async function syncCrimesFromMissingReports() {
     try {
-      const res = await fetch('../Php/fetch_missing_reports_admin.php', {
+      const res = await fetch('../Php/fetch_crime_reports_admin.php', {
         credentials: 'same-origin',
         cache: 'no-store'
       });
       const json = await res.json();
-      if (!json?.success || !Array.isArray(json.rows)) return;
-
-      const reportableRows = json.rows.filter(row => {
-        const st = String(row?.status || '').toLowerCase();
-        return st === 'under_review';
-      });
-
-      let changed = false;
-      reportableRows.forEach((row) => {
-        const reportId = Number(row?.report_id || 0);
-        if (!reportId) return;
-
-        const caseId = `MP${String(reportId).padStart(4, '0')}`;
-        const idx = demoCrimes.findIndex(c => String(c.id) === caseId);
-
-        const mapped = normalizeCrimeRow({
-          id: caseId,
-          type: 'missing_person',
-          severity: 'high',
-          status: 'new',
-          landmark: row?.last_seen_location || '—',
-          reporter: row?.reporter_name || 'Unknown',
-          submitted: row?.created_at || new Date().toISOString(),
-          updated_at: row?.created_at || new Date().toISOString(),
-          media: [],
-          anonymous: false,
-          token: '',
-          description: 'Escalated from Missing Persons'
-        });
-
-        if (idx === -1) {
-          demoCrimes.push(mapped);
-          changed = true;
-        } else if (String(demoCrimes[idx]?.type || '').toLowerCase() === 'missing_person') {
-          demoCrimes[idx] = {
-            ...demoCrimes[idx],
-            landmark: mapped.landmark,
-            reporter: mapped.reporter,
-            status: mapped.status
-          };
-          changed = true;
-        }
-      });
-
-      if (changed) {
-        saveCrimeReports(demoCrimes);
+      if (!json?.success || !Array.isArray(json.rows)) {
+        demoCrimes = [];
         applyFilters();
+        return;
       }
+
+      demoCrimes = json.rows.map(normalizeCrimeRow);
+      applyFilters();
     } catch (error) {
       console.error('missing->crime sync failed', error);
+      demoCrimes = [];
+      applyFilters();
     }
   }
 
@@ -2562,6 +2531,13 @@ function openAddVolunteerModal() {
         }
       });
     }
+
+    document.addEventListener('admin:section-activated', (event) => {
+      const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
+      if (sectionId === 'crime') {
+        syncCrimesFromMissingReports();
+      }
+    });
   }
 
   initMap();
@@ -2570,6 +2546,7 @@ function openAddVolunteerModal() {
   generateAnonToken();
   applyFilters();
   syncCrimesFromMissingReports();
+  setInterval(syncCrimesFromMissingReports, 15000);
 })();
 
 // Load Donations, Broadcast, Volunteer Missions, Withdraw sections
@@ -3083,7 +3060,7 @@ function openAddVolunteerModal() {
       const itemLabel = String(row?.item_label || '—').trim() || '—';
       const section = String(row?.section || '').trim().toLowerCase();
       const searchKey = String(row?.search_key || '').trim();
-      const actionHtml = `<button type="button" class="ghost" data-queue-open="1" data-queue-section="${esc(section)}" data-queue-search="${esc(searchKey)}" data-queue-ref="${esc(itemRef)}">Open</button>`;
+      const actionHtml = `<button type="button" class="ghost" data-queue-open="1" data-queue-type="${esc(type)}" data-queue-section="${esc(section)}" data-queue-search="${esc(searchKey)}" data-queue-ref="${esc(itemRef)}">Open</button>`;
 
       return `
         <tr>
@@ -3107,8 +3084,14 @@ function openAddVolunteerModal() {
     }, 2200);
   }
 
-  function openQueueTarget(section, searchKey, itemRef) {
-    const targetSection = String(section || '').trim().toLowerCase();
+  function openQueueTarget(section, searchKey, itemRef, queueType) {
+    let targetSection = String(section || '').trim().toLowerCase();
+    const normalizedType = String(queueType || '').trim().toLowerCase();
+
+    if (normalizedType === 'volunteer application' && targetSection === 'volunteer') {
+      targetSection = 'volunteer-approver';
+    }
+
     if (!targetSection) return;
 
     if (typeof activateSection === 'function') {
@@ -3219,7 +3202,8 @@ function openAddVolunteerModal() {
     openQueueTarget(
       btn.getAttribute('data-queue-section') || '',
       btn.getAttribute('data-queue-search') || '',
-      btn.getAttribute('data-queue-ref') || ''
+      btn.getAttribute('data-queue-ref') || '',
+      btn.getAttribute('data-queue-type') || ''
     );
   });
 

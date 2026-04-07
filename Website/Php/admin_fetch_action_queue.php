@@ -259,7 +259,7 @@ try {
                 'item_label' => $contactLabel,
                 'status' => 'Pending',
                 'submitted_at' => normalizeDate((string)($row['created_at'] ?? '')),
-                'section' => 'volunteer',
+                'section' => 'volunteer-approver',
                 'search_key' => $contactLabel,
                 'application_id' => $applicationId,
             ];

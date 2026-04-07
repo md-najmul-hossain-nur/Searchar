@@ -391,22 +391,79 @@ body::after {
   transform: translateY(1px) scale(0.98);
 }
 .map-modal {
-  position: fixed; left: 0; top: 0; width: 100vw; height: 100vh;
-  background: rgba(0,0,0,0.7); z-index: 2000; display: flex; align-items: center; justify-content: center;
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.62);
+  backdrop-filter: blur(3px);
+  z-index: 2600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
 }
 .map-modal-content {
-  background: #fff; padding: 2em; border-radius: 8px; position: relative; width: 95%; max-width: 500px;
+  background: linear-gradient(180deg, #ffffff 0%, #fff8f6 100%);
+  padding: 56px 20px 18px;
+  border-radius: 16px;
+  border: 1px solid #ffd6cc;
+  position: relative;
+  width: min(640px, 96vw);
+  max-width: 640px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.28);
+  animation: modalFadeIn 0.24s ease;
 }
 .map-close {
-  position: absolute; right: 18px; top: 12px; font-size: 2em; cursor: pointer;
+  position: absolute;
+  right: 12px;
+  top: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 1.75em;
+  font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8b1f1f;
+  background: #ffffff;
+  border: 1px solid #ffd3cc;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.16);
+  z-index: 5;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+.map-close:hover {
+  background: #ffd5cd;
+  transform: scale(1.04);
+}
+#map {
+  width: 100% !important;
+  min-height: 300px;
+  border-radius: 12px;
+  border: 1px solid #ffd8cf;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 #currentLocationBtn, #saveLocationBtn {
-  margin-top: 1em; margin-right: 1em;
-  background: #f05454; color: #fff; border: none; border-radius: 2px; padding: 8px 20px; font-weight: 500;
-  cursor: pointer; transition: background 0.2s;
+  margin-top: 12px;
+  margin-right: 8px;
+  background: linear-gradient(135deg, #f05454, #da3e2f);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: transform 0.2s, filter 0.2s;
 }
 #currentLocationBtn:hover, #saveLocationBtn:hover {
-  background: #e3471c;
+  filter: brightness(1.05);
+  transform: translateY(-1px);
 }
 
 .back-button-container {
