@@ -1,6 +1,4 @@
-﻿<?php
-
-
+<?php
 declare(strict_types=1);
 session_start();
 header('Content-Type: text/html; charset=UTF-8');
@@ -448,6 +446,7 @@ try {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="icon" type="image/png" href="../Images/logo.png">
   <!-- Main CSS -->
   <link rel="stylesheet" href="../css/User_Home.css?v=20260406e">
 

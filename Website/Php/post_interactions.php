@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 declare(strict_types=1);
 
 // Keep endpoint output JSON-only even when PHP warnings/notices exist.

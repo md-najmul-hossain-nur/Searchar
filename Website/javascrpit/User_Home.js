@@ -1796,9 +1796,19 @@ function openMessengerDrawer() {
 
 function closeMessengerDrawer() {
   if (!messengerDrawer || !messengerBackdrop) return;
+
+  const active = document.activeElement;
+  if (active && messengerDrawer.contains(active) && typeof active.blur === 'function') {
+    active.blur();
+  }
+
   messengerDrawer.classList.remove('open');
   messengerBackdrop.classList.remove('open');
   messengerDrawer.setAttribute('aria-hidden', 'true');
+
+  if (messengerFab && typeof messengerFab.focus === 'function') {
+    messengerFab.focus();
+  }
 }
 
 if (notificationsSeeMoreBtn) {
