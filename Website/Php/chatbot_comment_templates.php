@@ -47,7 +47,7 @@ function ensureTable(PDO $pdo): void {
     );
     $migrateStmt->execute([
         ':new_text' => 'In an emergency, please call 999 immediately.',
-        ':old_text' => 'Emergency হলে সাথে সাথে 999 এ call করুন।',
+        ':old_text' => 'Emergency à¦¹à¦²à§‡ à¦¸à¦¾à¦¥à§‡ à¦¸à¦¾à¦¥à§‡ 999 à¦ call à¦•à¦°à§à¦¨à¥¤',
     ]);
 }
 

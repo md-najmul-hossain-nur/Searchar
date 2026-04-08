@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require_once __DIR__ . '/../Php/db.php';
 session_start();
 

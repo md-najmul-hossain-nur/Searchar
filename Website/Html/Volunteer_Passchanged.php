@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h2>Change Your Password</h2>
 
         <div class="back-button-container">
-          <a href="../Html/Volunteer_profile.php" class="back-btn">← Back</a>
+          <a href="../Html/Volunteer_profile.php" class="back-btn">â† Back</a>
         </div>
 
         <form action="" method="POST">

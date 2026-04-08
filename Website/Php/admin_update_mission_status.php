@@ -134,7 +134,7 @@ try {
         $notify->execute([
             ':entity' => 'volunteer',
             ':rid' => (int)($mission['volunteer_id'] ?? 0),
-            ':title' => '🎉 Mission Completed & XP Added',
+            ':title' => 'Mission Completed & XP Added',
             ':message' => 'Thanks for your service! Admin reviewed and marked your mission as complete. You earned +20 XP for "' . (string)($mission['mission_title'] ?? 'Mission') . '".',
             ':level' => 'success',
             ':meta_json' => json_encode([

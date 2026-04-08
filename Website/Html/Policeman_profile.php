@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 declare(strict_types=1);
 session_start();
 require_once __DIR__ . '/../Php/db.php';
@@ -115,37 +115,37 @@ try {
         <ul class="info-list">
     <!-- Badge ID -->
     <li>
-        <span class="icon">ðŸ·ï¸</span>
+        <span class="icon">🏷️</span>
         <?= !empty($user['badge_id']) ? e($user['badge_id']) : 'Badge not set' ?>
     </li>
 
     <!-- Designation -->
     <li>
-        <span class="icon">ðŸ’¼</span>
+        <span class="icon">💼</span>
         <?= !empty($user['designation']) ? e($user['designation']) : 'Designation not set' ?>
     </li>
 
     <!-- Station -->
     <li>
-        <span class="icon">ðŸ¢</span>
+        <span class="icon">🏢</span>
         <?= !empty($user['station']) ? e($user['station']) : 'Station not set' ?>
     </li>
 
     <!-- Email -->
     <li>
-        <span class="icon">âœ‰ï¸</span>
+        <span class="icon">✉️</span>
         <?= !empty($user['email']) ? e($user['email']) : 'No email provided' ?>
     </li>
 
     <!-- Street / Address -->
     <li>
-        <span class="icon">ðŸ </span>
+        <span class="icon">🏠</span>
         <?= !empty($user['street']) ? e($user['street']) : 'No street provided' ?>
     </li>
 
     <!-- City / Country -->
     <li>
-        <span class="icon">ðŸŒ</span>
+        <span class="icon">🌍</span>
         <?= !empty($user['city']) ? e($user['city']) : 'No city provided' ?>,
         <?= !empty($user['country']) ? e($user['country']) : 'No country provided' ?>
     </li>
@@ -301,11 +301,11 @@ try {
     <div class="post-media-options">
       <label>
         <input type="file" id="imageUpload" accept="image/*" multiple hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">ðŸ“· Photo</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
       </label>
       <label>
         <input type="file" id="videoUpload" accept="video/*" hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">ðŸŽ¥ Video</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
       </label>
     </div>
 
@@ -340,7 +340,7 @@ try {
   cursor: pointer;
   display: flex;
   align-items: center;
-  padding: 6px 18px; /* â†“ reduced height */
+  padding: 6px 18px; /* ↓ reduced height */
   border: 2px solid #1a73e8;
   border-radius: 16px; /* slightly smaller for balance */
   font-weight: 450;
@@ -354,7 +354,7 @@ try {
 }
 
 .category-icon {
-  width: 24px; /* â†“ smaller icons */
+  width: 24px; /* ↓ smaller icons */
   height: 24px;
   object-fit: contain;
 }

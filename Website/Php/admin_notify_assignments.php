@@ -46,7 +46,7 @@ foreach ($media as $m) {
     ];
 }
 
-$title = 'New Crime Assignment • ' . $missionLabel;
+$title = 'New Crime Assignment | ' . $missionLabel;
 $messageBase = 'You have been assigned to a crime case';
 if ($caseId !== '') {
     $messageBase .= ' (' . $caseId . ')';

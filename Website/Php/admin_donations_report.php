@@ -9,7 +9,7 @@ header('Content-Type: text/csv; charset=utf-8');
 $filename = 'donations_report_' . date('Ymd_His') . '.csv';
 header('Content-Disposition: attachment; filename=' . $filename);
 
-// Emit BOM so Excel opens UTF-8 correctly (৳, Bangla)
+// Emit BOM so Excel opens UTF-8 correctly (à§³, Bangla)
 echo "\xEF\xBB\xBF";
 
 $out = fopen('php://output', 'w');
@@ -33,7 +33,7 @@ try {
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $found = true;
         $amountRaw = $row['amount'] ?? '';
-        $amountFormatted = is_numeric($amountRaw) ? '৳' . number_format((float)$amountRaw, 0) : (string)$amountRaw;
+        $amountFormatted = is_numeric($amountRaw) ? 'à§³' . number_format((float)$amountRaw, 0) : (string)$amountRaw;
 
         $rawDate = (string)($row['date'] ?? '');
         $formattedDate = $rawDate;

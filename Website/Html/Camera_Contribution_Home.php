@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 declare(strict_types=1);
 session_start();
 require_once __DIR__ . '/../Php/db.php';
@@ -142,6 +142,7 @@ try {
   <!-- Main CSS -->
   <link rel="stylesheet" href="../css/Camera_Contribution_Home.css?v=20260406e">
   <link rel="stylesheet" href="../css/notifications_shared.css">
+  <link rel="stylesheet" href="../css/messenger_shared.css">
    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
 </head>
@@ -170,7 +171,7 @@ try {
         <img src="<?= isset($user['profile_photo']) ? '../uploads/camera/' . e($user['profile_photo']) : '../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg' ?>" class="profile-pic">
         <button class="edit-btn" title="Profile Setting" onclick="location.href='../Html/Camera_Contribution_profile.php'">Profile</button>
 
-        <h3><?= e($user['full_name'] ?? 'â€”') ?></h3>
+        <h3><?= e($user['full_name'] ?? '—') ?></h3>
         <p class="user-bio">
           <?= !empty($user['bio']) ? e($user['bio']) : 'Any one can join with us.' ?></p>
       </div>
@@ -179,7 +180,7 @@ try {
      <!-- Streamer Info Section -->
 <div class="money-withdrawal">
   <h2>Withdraw Your Stream Earnings</h2>
-  <p>Youâ€™ve earned money by helping the community through live CCTV streaming. You can withdraw your balance anytime using your preferred method.</p>
+  <p>You’ve earned money by helping the community through live CCTV streaming. You can withdraw your balance anytime using your preferred method.</p>
 
   <ul class="streamer-info">
     <li><strong>Name:</strong> Erik Jhonson</li>
@@ -262,9 +263,9 @@ try {
 <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
 
 <!-- Buttons -->
-<button id="find-hospitals" class="emergency-btn hospital">ðŸ¥ Show Nearby Hospitals</button>
-<button id="find-fire" class="emergency-btn fire">ðŸš’ Show Fire Stations</button>
-<button id="find-police" class="emergency-btn police">ðŸ‘® Show Police Stations</button>
+<button id="find-hospitals" class="emergency-btn hospital">🏥 Show Nearby Hospitals</button>
+<button id="find-fire" class="emergency-btn fire">🚒 Show Fire Stations</button>
+<button id="find-police" class="emergency-btn police">👮 Show Police Stations</button>
 
 <!-- Map Container -->
 <div id="emergency-map" style="height: 400px; border-radius: 8px; border: 2px solid #000; width: 100%; max-width: 100%; overflow: hidden; box-sizing: border-box; position: relative; z-index: 0;"></div>
@@ -284,7 +285,7 @@ try {
         <input type="text" placeholder="What's on your mind?" readonly>
       </div>
 
-<!-- âœ… Popup Modal -->
+<!-- ✅ Popup Modal -->
 <div id="postModal" class="post-modal">
   <div class="post-modal-content">
     
@@ -297,7 +298,7 @@ try {
       <p class="post-modal-subtitle">Upload photos or a video and post instantly</p>
     </div>
 
-    <!-- âœ… Facebook Toggle -->
+    <!-- ✅ Facebook Toggle -->
     <div class="facebook-toggle">
       <label class="facebook-toggle-switch">
         <input type="checkbox" id="facebookShareToggle">
@@ -332,10 +333,10 @@ try {
   </label>
 </div>
 
-    <!-- âœ… Textarea -->
+    <!-- ✅ Textarea -->
     <textarea id="postText" class="post-modal-textarea" placeholder="Say Something..."></textarea>
 
-    <!-- âœ… Post Preview (Auto-filled from clicked post) -->
+    <!-- ✅ Post Preview (Auto-filled from clicked post) -->
     <div class="post-modal-preview">
       <div id="sharedPostMeta" class="preview-meta">
         <img id="sharedPostAuthorImage" class="preview-meta-avatar" src="" alt="Author" />
@@ -349,25 +350,25 @@ try {
       <video id="sharedPostVideo" class="preview-video" src="" controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture oncontextmenu="return false;"></video>
     </div>
 
-    <!-- âœ… Media Upload Buttons -->
+    <!-- ✅ Media Upload Buttons -->
     <div class="post-media-options">
       <label>
         <input type="file" id="imageUpload" accept="image/*" multiple hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">ðŸ“· Photo</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
       </label>
       <label>
         <input type="file" id="videoUpload" accept="video/*" hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">ðŸŽ¥ Video</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
       </label>
     </div>
 
     <p class="post-media-hint">You can select up to 5 photos in one post.</p>
 
 
-    <!-- âœ… Media Preview (optional preview for uploaded file) -->
+    <!-- ✅ Media Preview (optional preview for uploaded file) -->
     <div id="mediaPreview" class="post-media-preview"></div>
 
-    <!-- âœ… Action Buttons -->
+    <!-- ✅ Action Buttons -->
     <div class="post-modal-actions">
       <button class="post-cancel-btn" onclick="closeModal()">Cancel</button>
       <button class="post-submit-btn" onclick="createPost()">Post</button>
@@ -582,10 +583,10 @@ try {
   <h4>Camera Contributor Panel</h4>
   
   <button id="startFeedBtn" class="camera-btn">
-    ðŸ“· Start Live / Upload Recorded Feed
+    📷 Start Live / Upload Recorded Feed
   </button>
   <button class="camera-btn" onclick="window.location.href='../Html/Camera_Contribution_Feed.php';">
-  ðŸ‘€ View Feed
+  👀 View Feed
 </button>
 
 </div>
@@ -671,8 +672,8 @@ try {
 
     <div class="cam-pricing-rules">
       <h4>Feed Payment Rule</h4>
-      <p><strong>Recorded Feed:</strong> à§³60 per hour</p>
-      <p><strong>Live Feed:</strong> à§³100 per hour</p>
+      <p><strong>Recorded Feed:</strong> ৳60 per hour</p>
+      <p><strong>Live Feed:</strong> ৳100 per hour</p>
       <small>Live feed pays more because real-time monitoring demand is higher.</small>
     </div>
   </div>
@@ -693,10 +694,58 @@ try {
   <div class="notifications-drawer-footer"></div>
 </aside>
 
+<button type="button" id="messengerFab" class="messenger-fab" aria-label="Open Messenger" title="Messenger">
+  <i class="fa fa-comments" aria-hidden="true"></i>
+</button>
+<div id="messengerBackdrop" class="messenger-backdrop" aria-hidden="true"></div>
+<aside id="messengerDrawer" class="messenger-drawer" aria-hidden="true">
+  <div class="messenger-drawer-header">
+    <h3>Messenger</h3>
+    <button type="button" id="messengerClose" class="messenger-close" aria-label="Close">&times;</button>
+  </div>
+  <div class="messenger-layout">
+    <aside class="messenger-list">
+      <div class="messenger-list-title">All</div>
+      <input type="text" class="messenger-search" placeholder="Search" aria-label="Search chats">
+      <div class="messenger-contact">
+        <div class="avatar">
+          <img src="../Images/businessman.gif" alt="Admin Logo" class="admin-avatar-img" onerror="this.onerror=null;this.src='../Images/demo_pic/profile.jpg';">
+        </div>
+        <div>
+          <strong>Admin Desk</strong>
+          <small>Announcements and updates</small>
+        </div>
+      </div>
+    </aside>
+
+    <section class="messenger-chat">
+      <div class="messenger-chat-top">
+        <div class="avatar online">
+          <img src="../Images/businessman.gif" alt="Admin Logo" class="admin-avatar-img" onerror="this.onerror=null;this.src='../Images/demo_pic/profile.jpg';">
+        </div>
+        <div>
+          <strong>Admin Desk</strong>
+          <small>Active now</small>
+        </div>
+      </div>
+      <div class="messenger-chat-feed">
+        <p class="messenger-bubble support">Hi, this is Admin Desk. How can we help you today?</p>
+      </div>
+      <div class="messenger-composer">
+        <input id="messengerInput" class="messenger-input" type="text" placeholder="Type a message..." autocomplete="off">
+        <button type="button" class="messenger-send" aria-label="Send">
+          <i class="fa fa-paper-plane" aria-hidden="true"></i>
+        </button>
+      </div>
+    </section>
+  </div>
+</aside>
+
 
     </body>
        <script src="../javascrpit/Camera_Contribution_Home.js"></script>
       <script src="../javascrpit/post_interactions_shared.js?v=20260406d"></script>
        <script src="../javascrpit/notifications_shared.js"></script>
+      <script src="../javascrpit/messenger_shared.js"></script>
 
 </html>

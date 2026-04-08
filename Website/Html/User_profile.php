@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 session_start();
 require_once __DIR__ . '/../Php/db.php';
 
@@ -133,31 +133,31 @@ try {
         <ul class="info-list">
     <!-- Birthday -->
     <li>
-        <span class="icon">&#127874;</span> <!-- ðŸŽ‚ cake icon -->
+        <span class="icon">&#127874;</span> <!-- 🎂 cake icon -->
         <?= !empty($user['date_of_birth']) ? e($user['date_of_birth']) : 'No birthday provided' ?>
     </li>
 
     <!-- Gender -->
     <li>
-        <span class="icon">&#9794;&#9792;</span> <!-- âš¥ gender icon -->
+        <span class="icon">&#9794;&#9792;</span> <!-- ⚥ gender icon -->
         <?= !empty($user['gender']) ? ucfirst(e($user['gender'])) : 'Gender not specified' ?>
     </li>
 
     <!-- Email -->
     <li>
-        <span class="icon">&#9993;</span> <!-- âœ‰ï¸ envelope icon -->
+        <span class="icon">&#9993;</span> <!-- ✉️ envelope icon -->
         <?= !empty($user['email']) ? e($user['email']) : 'No email provided' ?>
     </li>
 
     <!-- Street / Address -->
     <li>
-        <span class="icon">&#127968;</span> <!-- ðŸ  house icon -->
+        <span class="icon">&#127968;</span> <!-- 🏠 house icon -->
         <?= !empty($user['street']) ? e($user['street']) : 'No street provided' ?>
     </li>
 
     <!-- City / Country -->
     <li>
-        <span class="icon">&#127758;</span> <!-- ðŸŒŽ globe icon -->
+        <span class="icon">&#127758;</span> <!-- 🌎 globe icon -->
         <?= !empty($user['city']) ? e($user['city']) : 'No city provided' ?>, 
         <?= !empty($user['country']) ? e($user['country']) : 'No country provided' ?>
     </li>
@@ -330,11 +330,11 @@ try {
     <div class="post-media-options">
       <label>
         <input type="file" id="imageUpload" accept="image/*" multiple hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">ðŸ“· Photo</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
       </label>
       <label>
         <input type="file" id="videoUpload" accept="video/*" hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">ðŸŽ¥ Video</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
       </label>
     </div>
 
@@ -373,7 +373,7 @@ try {
   cursor: pointer;
   display: flex;
   align-items: center;
-  padding: 6px 18px; /* â†“ reduced height */
+  padding: 6px 18px; /* ↓ reduced height */
   border: 2px solid #1a73e8;
   border-radius: 16px; /* slightly smaller for balance */
   font-weight: 450;
@@ -387,7 +387,7 @@ try {
 }
 
 .category-icon {
-  width: 24px; /* â†“ smaller icons */
+  width: 24px; /* ↓ smaller icons */
   height: 24px;
   object-fit: contain;
 }

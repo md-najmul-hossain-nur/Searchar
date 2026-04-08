@@ -80,7 +80,7 @@ if ($role === 'admin') {
 }
 
 try {
-    // Simple login flow: role অনুযায়ী table থেকে email/phone match
+    // Simple login flow: role à¦…à¦¨à§à¦¯à¦¾à§Ÿà§€ table à¦¥à§‡à¦•à§‡ email/phone match
     $phoneCandidates = buildPhoneCandidates($login_input);
     $sql = "SELECT * FROM `{$table}` WHERE LOWER(email) = LOWER(?)";
     $params = [$login_input];

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 declare(strict_types=1);
 session_start();
 require_once __DIR__ . '/../Php/db.php';
@@ -295,21 +295,21 @@ try {
       <img id="sharedPostImage" class="preview-img" src="" alt="" />
       <video id="sharedPostVideo" class="preview-video" src="" controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture oncontextmenu="return false;"></video>
     </div>
-    <!-- âœ… Media Upload Buttons -->
+    <!-- ✅ Media Upload Buttons -->
     <div class="post-media-options">
       <label>
         <input type="file" id="imageUpload" accept="image/*" multiple hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">ðŸ“· Photo</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
       </label>
       <label>
         <input type="file" id="videoUpload" accept="video/*" hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">ðŸŽ¥ Video</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
       </label>
     </div>
 
     <p class="post-media-hint">You can select up to 5 photos in one post.</p>
 
-    <!-- âœ… Media Preview -->
+    <!-- ✅ Media Preview -->
     <div id="mediaPreview" class="post-media-preview"></div>
     <div class="post-modal-actions">
       <button class="post-cancel-btn" onclick="closeModal()">Cancel</button>
@@ -339,7 +339,7 @@ try {
   cursor: pointer;
   display: flex;
   align-items: center;
-  padding: 6px 18px; /* â†“ reduced height */
+  padding: 6px 18px; /* ↓ reduced height */
   border: 2px solid #1a73e8;
   border-radius: 16px; /* slightly smaller for balance */
   font-weight: 450;
@@ -353,7 +353,7 @@ try {
 }
 
 .category-icon {
-  width: 24px; /* â†“ smaller icons */
+  width: 24px; /* ↓ smaller icons */
   height: 24px;
   object-fit: contain;
 }

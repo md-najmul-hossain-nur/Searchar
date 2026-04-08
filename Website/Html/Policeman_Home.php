@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 declare(strict_types=1);
 session_start();
 require_once __DIR__ . '/../Php/db.php';
@@ -50,7 +50,7 @@ function timeAgo(?string $datetime): string {
 }
 
 function formatDateTimeDisplay(?string $datetime): string {
-  if (!$datetime) return 'â€”';
+  if (!$datetime) return '—';
   try {
     $dt = new DateTime($datetime);
     return $dt->format('Y-m-d H:i');
@@ -161,14 +161,14 @@ try {
       $allCases[] = [
         'case_no' => 'MP-' . str_pad((string)((int)($row['report_id'] ?? 0)), 4, '0', STR_PAD_LEFT),
         'type' => 'Missing Person',
-        'details' => (string)($row['full_name'] ?? 'Unknown') . ' â€¢ Last seen: ' . (string)($row['last_seen_location'] ?? 'Unknown'),
+        'details' => (string)($row['full_name'] ?? 'Unknown') . ' • Last seen: ' . (string)($row['last_seen_location'] ?? 'Unknown'),
         'status' => (string)($row['status'] ?? 'open'),
         'source' => 'Missing Desk',
         'source_key' => 'missing',
         'image_url' => $imageUrl,
         'contact_mobile' => (string)($row['reporter_mobile'] ?? ''),
         'missing_name' => (string)($row['full_name'] ?? ''),
-        'extra_details' => trim((string)($row['gender'] ?? '') . ' â€¢ Age: ' . (string)($row['age'] ?? '') . ' â€¢ Mental: ' . (string)($row['mental_condition'] ?? '') . ' â€¢ Medical: ' . (string)($row['medical_notes'] ?? '')),
+        'extra_details' => trim((string)($row['gender'] ?? '') . ' • Age: ' . (string)($row['age'] ?? '') . ' • Mental: ' . (string)($row['mental_condition'] ?? '') . ' • Medical: ' . (string)($row['medical_notes'] ?? '')),
         'created_at' => (string)($row['created_at'] ?? ''),
       ];
       $caseCounts['missing'] += 1;
@@ -266,6 +266,7 @@ try {
   <!-- Main CSS -->
   <link rel="stylesheet" href="../css/Policman_Home.css?v=20260406e">
   <link rel="stylesheet" href="../css/notifications_shared.css">
+  <link rel="stylesheet" href="../css/messenger_shared.css">
   <style>
     .all-cases-table-wrap {
       border: 1px solid #e6ebf4;
@@ -492,7 +493,7 @@ try {
         <img src="<?= isset($user['profile_photo']) ? '../uploads/police/' . e($user['profile_photo']) : '../Images/demo_pic/profile.jpg' ?>" class="profile-pic">
         <button class="edit-btn" title="Profile Setting" onclick="location.href='../Html/Policeman_profile.php'">Profile</button>
 
-        <h3><?= e($user['full_name'] ?? 'â€”') ?></h3>
+        <h3><?= e($user['full_name'] ?? '—') ?></h3>
         <p class="user-bio"><?= !empty($user['bio']) ? e($user['bio']) : 'Any one can join with us.' ?></p>
       </div>
 
@@ -530,9 +531,9 @@ try {
 <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
 
 <!-- Buttons -->
-<button id="find-hospitals" style="padding:8px 15px;background:#f05454;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">ðŸ¥ Show Nearby Hospitals</button>
-<button id="find-fire" style="padding:8px 15px;background:#ff7f11;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">ðŸš’ Show Fire Stations</button>
-<button id="find-police" style="padding:8px 15px;background:#0077b6;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:10px;">ðŸ‘® Show Police Stations</button>
+<button id="find-hospitals" style="padding:8px 15px;background:#f05454;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">🏥 Show Nearby Hospitals</button>
+<button id="find-fire" style="padding:8px 15px;background:#ff7f11;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">🚒 Show Fire Stations</button>
+<button id="find-police" style="padding:8px 15px;background:#0077b6;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:10px;">👮 Show Police Stations</button>
 
 <!-- Map Container -->
 <div id="emergency-map" style="height: 400px; border-radius: 8px; border: 2px solid #000; width: 100%; max-width: 100%; overflow: hidden; box-sizing: border-box; position: relative; z-index: 0;"></div>
@@ -547,8 +548,8 @@ try {
   <h2 class="case-section-title">Investigation Cases</h2>
   <p class="case-section-desc">Track investigation cases in one place. Open all current cases or view solved case history.</p>
   <div class="case-section-actions">
-    <button id="openAllCasesBtn" type="button" onclick="document.getElementById('allCasesModal').style.display='flex'" class="case-section-btn view">ðŸ“‚ View All Cases</button>
-    <button id="openSolvedCasesBtn" type="button" class="case-section-btn history">âœ… Solved Case History</button>
+    <button id="openAllCasesBtn" type="button" onclick="document.getElementById('allCasesModal').style.display='flex'" class="case-section-btn view">📂 View All Cases</button>
+    <button id="openSolvedCasesBtn" type="button" class="case-section-btn history">✅ Solved Case History</button>
   </div>
 </div>
 
@@ -598,13 +599,13 @@ try {
                 $displaySource = $sourceKey === 'missing' ? 'Missing Person' : 'Post';
               ?>
               <tr data-case-source-key="<?= e($sourceKey) ?>">
-                <td><span class="all-cases-case-id"><?= e((string)($caseRow['case_no'] ?? 'â€”')) ?></span></td>
+                <td><span class="all-cases-case-id"><?= e((string)($caseRow['case_no'] ?? '—')) ?></span></td>
                 <td><span class="all-cases-type-chip"><?= e($displayType) ?></span></td>
                 <td class="all-cases-details-cell">
                   <?php if (!empty($caseRow['image_url'])): ?>
                     <img src="<?= e((string)$caseRow['image_url']) ?>" alt="Case image" class="all-cases-thumb">
                   <?php endif; ?>
-                  <?= e((string)($caseRow['details'] ?? 'â€”')) ?>
+                  <?= e((string)($caseRow['details'] ?? '—')) ?>
                 </td>
                 <td>
                   <span class="all-cases-type-chip">
@@ -615,9 +616,9 @@ try {
                 <td class="all-cases-actions">
                   <button type="button" class="all-cases-action-btn preview js-case-preview-btn"
                           onclick="openCasePreviewFromRow(this)"
-                          data-case-no="<?= e((string)($caseRow['case_no'] ?? 'â€”')) ?>"
+                          data-case-no="<?= e((string)($caseRow['case_no'] ?? '—')) ?>"
                           data-case-type="<?= e($displayType) ?>"
-                          data-case-details="<?= e((string)($caseRow['details'] ?? 'â€”')) ?>"
+                          data-case-details="<?= e((string)($caseRow['details'] ?? '—')) ?>"
                           data-case-status="<?= e((string)($caseRow['status'] ?? 'open')) ?>"
                           data-case-source="<?= e($displaySource) ?>"
                           data-case-created="<?= e((string)($caseRow['created_at'] ?? '')) ?>"
@@ -628,9 +629,9 @@ try {
                     >Preview</button>
                   <button type="button" class="all-cases-action-btn publish js-case-publish-btn"
                       onclick="publishCaseFromRow(this)"
-                          data-case-no="<?= e((string)($caseRow['case_no'] ?? 'â€”')) ?>"
+                          data-case-no="<?= e((string)($caseRow['case_no'] ?? '—')) ?>"
                         data-case-type="<?= e($displayType) ?>"
-                          data-case-details="<?= e((string)($caseRow['details'] ?? 'â€”')) ?>"
+                          data-case-details="<?= e((string)($caseRow['details'] ?? '—')) ?>"
                           data-case-status="<?= e((string)($caseRow['status'] ?? 'open')) ?>"
                           data-case-source="<?= e($displaySource) ?>"
                           data-case-created="<?= e((string)($caseRow['created_at'] ?? '')) ?>"
@@ -687,7 +688,7 @@ try {
 <div id="casePreviewModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:4100; align-items:center; justify-content:center; padding:16px;" onclick="if(event.target===this){this.style.display='none';}">
   <div style="width:min(650px,95vw); background:#fff; border-radius:12px; box-shadow:0 12px 28px rgba(0,0,0,.24); overflow:hidden;">
     <div style="background:linear-gradient(90deg,#dc2626,#ef4444); color:#fff; padding:12px 14px; display:flex; justify-content:space-between; align-items:center;">
-      <strong style="font-size:17px;">ðŸ“¢ Case Billboard Preview</strong>
+      <strong style="font-size:17px;">📢 Case Billboard Preview</strong>
       <button type="button" id="casePreviewClose" style="border:none; background:rgba(255,255,255,.2); color:#fff; width:32px; height:32px; border-radius:7px; cursor:pointer; font-size:18px;">&times;</button>
     </div>
     <div style="padding:14px;">
@@ -721,7 +722,7 @@ try {
         <input type="text" placeholder="What's on your mind?" readonly>
       </div>
 
-<!-- âœ… Popup Modal -->
+<!-- ✅ Popup Modal -->
 <div id="postModal" class="post-modal">
   <div class="post-modal-content">
     
@@ -734,7 +735,7 @@ try {
       <p class="post-modal-subtitle">Upload photos or a video and post instantly</p>
     </div>
 
-    <!-- âœ… Facebook Toggle -->
+    <!-- ✅ Facebook Toggle -->
     <div class="facebook-toggle">
       <label class="facebook-toggle-switch">
         <input type="checkbox" id="facebookShareToggle">
@@ -771,10 +772,10 @@ try {
   </label>
 </div>
 
-    <!-- âœ… Textarea -->
+    <!-- ✅ Textarea -->
     <textarea id="postText" class="post-modal-textarea" placeholder="Say Something..."></textarea>
 
-    <!-- âœ… Post Preview (Auto-filled from clicked post) -->
+    <!-- ✅ Post Preview (Auto-filled from clicked post) -->
     <div class="post-modal-preview">
       <div id="sharedPostMeta" class="preview-meta">
         <img id="sharedPostAuthorImage" class="preview-meta-avatar" src="" alt="Author" />
@@ -788,25 +789,25 @@ try {
       <video id="sharedPostVideo" class="preview-video" src="" controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture oncontextmenu="return false;"></video>
     </div>
 
-    <!-- âœ… Media Upload Buttons -->
+    <!-- ✅ Media Upload Buttons -->
     <div class="post-media-options">
       <label>
         <input type="file" id="imageUpload" accept="image/*" multiple hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">ðŸ“· Photo</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
       </label>
       <label>
         <input type="file" id="videoUpload" accept="video/*" hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">ðŸŽ¥ Video</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
       </label>
     </div>
 
     <p class="post-media-hint">You can select up to 5 photos in one post.</p>
 
 
-    <!-- âœ… Media Preview (optional preview for uploaded file) -->
+    <!-- ✅ Media Preview (optional preview for uploaded file) -->
     <div id="mediaPreview" class="post-media-preview"></div>
 
-    <!-- âœ… Action Buttons -->
+    <!-- ✅ Action Buttons -->
     <div class="post-modal-actions">
       <button class="post-cancel-btn" onclick="closeModal()">Cancel</button>
       <button class="post-submit-btn" onclick="createPost()">Post</button>
@@ -1388,9 +1389,57 @@ try {
   <div class="notifications-drawer-footer"></div>
 </aside>
 
+<button type="button" id="messengerFab" class="messenger-fab" aria-label="Open Messenger" title="Messenger">
+  <i class="fa fa-comments" aria-hidden="true"></i>
+</button>
+<div id="messengerBackdrop" class="messenger-backdrop" aria-hidden="true"></div>
+<aside id="messengerDrawer" class="messenger-drawer" aria-hidden="true">
+  <div class="messenger-drawer-header">
+    <h3>Messenger</h3>
+    <button type="button" id="messengerClose" class="messenger-close" aria-label="Close">&times;</button>
+  </div>
+  <div class="messenger-layout">
+    <aside class="messenger-list">
+      <div class="messenger-list-title">All</div>
+      <input type="text" class="messenger-search" placeholder="Search" aria-label="Search chats">
+      <div class="messenger-contact">
+        <div class="avatar">
+          <img src="../Images/businessman.gif" alt="Admin Logo" class="admin-avatar-img" onerror="this.onerror=null;this.src='../Images/demo_pic/profile.jpg';">
+        </div>
+        <div>
+          <strong>Admin Desk</strong>
+          <small>Announcements and updates</small>
+        </div>
+      </div>
+    </aside>
+
+    <section class="messenger-chat">
+      <div class="messenger-chat-top">
+        <div class="avatar online">
+          <img src="../Images/businessman.gif" alt="Admin Logo" class="admin-avatar-img" onerror="this.onerror=null;this.src='../Images/demo_pic/profile.jpg';">
+        </div>
+        <div>
+          <strong>Admin Desk</strong>
+          <small>Active now</small>
+        </div>
+      </div>
+      <div class="messenger-chat-feed">
+        <p class="messenger-bubble support">Hi, this is Admin Desk. How can we help you today?</p>
+      </div>
+      <div class="messenger-composer">
+        <input id="messengerInput" class="messenger-input" type="text" placeholder="Type a message..." autocomplete="off">
+        <button type="button" class="messenger-send" aria-label="Send">
+          <i class="fa fa-paper-plane" aria-hidden="true"></i>
+        </button>
+      </div>
+    </section>
+  </div>
+</aside>
+
     </body>
       <script src="../javascrpit/Policeman_Home.js?v=callbtn1"></script>
       <script src="../javascrpit/post_interactions_shared.js?v=20260406d"></script>
       <script src="../javascrpit/notifications_shared.js"></script>
+      <script src="../javascrpit/messenger_shared.js"></script>
 
 </html>

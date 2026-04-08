@@ -386,7 +386,7 @@
       <div class="post-report-card" role="dialog" aria-modal="true" aria-labelledby="postReportTitle">
         <div class="post-report-head">
           <h3 id="postReportTitle">Report Post</h3>
-          <button type="button" class="post-report-close" data-post-report-close="1">Ã—</button>
+          <button type="button" class="post-report-close" data-post-report-close="1">&times;</button>
         </div>
         <p class="post-report-subtitle">Help keep the community safe by reporting harmful content.</p>
         <form id="postReportForm">
@@ -395,14 +395,14 @@
               <img id="postReportReporterPhoto" class="post-report-avatar" src="../Images/demo_pic/profile.jpg" alt="Reporter Photo">
               <div class="post-report-user-meta">
                 <div class="post-report-user-label">Reporter</div>
-                <div class="post-report-user-name" id="postReportReporterName">â€”</div>
+                <div class="post-report-user-name" id="postReportReporterName">-</div>
               </div>
             </div>
             <div class="post-report-user">
               <img id="postReportReportedPhoto" class="post-report-avatar" src="../Images/demo_pic/profile.jpg" alt="Reported User Photo">
               <div class="post-report-user-meta">
                 <div class="post-report-user-label">Reported User</div>
-                <div class="post-report-user-name" id="postReportReportedName">â€”</div>
+                <div class="post-report-user-name" id="postReportReportedName">-</div>
               </div>
             </div>
           </div>

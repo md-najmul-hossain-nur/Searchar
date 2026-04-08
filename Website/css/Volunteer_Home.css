@@ -916,69 +916,6 @@ background: linear-gradient(80deg, #d1b75a);
 
 
 
-.group-chat-section {
-  background: #fff;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  max-width: 400px;
-  margin: 20px auto;
-  display: flex;
-  flex-direction: column;
-}
-
-.group-chat-section h4 {
-  margin-bottom: 12px;
-  color: #1a232a;
-  font-size: 1.2rem;
-}
-
-.chat-window {
-  background: #f7f7f7;
-  height: 250px;
-  border-radius: 8px;
-  padding: 10px;
-  overflow-y: auto;
-  margin-bottom: 12px;
-  font-size: 0.95rem;
-  color: #333;
-  box-sizing: border-box;
-}
-
-.message {
-  margin-bottom: 8px;
-  padding: 6px 10px;
-  border-radius: 12px;
-  max-width: 80%;
-  clear: both;
-}
-
-.message.received {
-  background-color: #e0e0e0;
-  float: left;
-}
-
-.message.sent {
-  background-color: #f05454;
-  color: white;
-  float: right;
-}
-
-.chat-input-area {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.chat-input-area input {
-  flex-grow: 1;
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 25px;
-  font-size: 1rem;
-  outline: none;
-  transition: border-color 0.2s ease-in-out;
-}
 
 .chat-input-area input:focus {
   border-color: #f05454;
