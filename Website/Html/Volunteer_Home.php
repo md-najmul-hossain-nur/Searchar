@@ -142,9 +142,9 @@ try {
   <!-- Main CSS -->
   <link rel="stylesheet" href="../css/Volunteer_Home.css?v=20260409b">
   <link rel="stylesheet" href="../css/post_modal_shared.css?v=20260409a">
-  <link rel="stylesheet" href="../css/profile_button_shared.css?v=20260409a">
+  <link rel="stylesheet" href="../css/profile_button_shared.css?v=20260410a">
   <link rel="stylesheet" href="../css/notifications_shared.css">
-  <link rel="stylesheet" href="../css/messenger_shared.css">
+  <link rel="stylesheet" href="../css/messenger_shared.css?v=20260410c">
 </head>
 <body data-current-user-name="<?= e($volunteer['full_name'] ?? 'Volunteer') ?>">
 <header class="navbar navbar-home">

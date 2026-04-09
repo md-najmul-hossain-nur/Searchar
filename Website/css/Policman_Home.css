@@ -594,6 +594,35 @@ body {
   pointer-events: none; /* so clicks pass through image */
 }
 
+.find-love-simple .investigation-open-btn {
+  min-height: 38px;
+  padding: 9px 16px;
+  border-radius: 10px;
+  border: 1px solid #f5ccb8;
+  background: linear-gradient(135deg, #ff6a4d 0%, #f05454 100%);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+  box-shadow: 0 8px 18px rgba(214, 108, 68, 0.22);
+}
+
+.find-love-simple .investigation-open-btn:hover {
+  transform: translateY(-1px) scale(1.03);
+  box-shadow: 0 12px 24px rgba(214, 108, 68, 0.3);
+  filter: brightness(0.98);
+}
+
+.find-love-simple .investigation-open-btn:focus-visible {
+  outline: 2px solid rgba(240, 84, 84, 0.42);
+  outline-offset: 2px;
+}
+
 .find-love-simple .helpdesk-subtitle {
   font-size: 0.9rem;
   color: #5b667a;
@@ -2419,7 +2448,8 @@ body {
 }
 
 .advert .ad-thumb-small {
-  object-fit: cover;
+  object-fit: contain;
+  background: #ffffff;
   max-height: 74px;
 }
 
@@ -3609,29 +3639,29 @@ body {
   border-radius: 6px !important;
 }
 
-.edit-btn {
-  position: relative;
-  top: auto;
+.profile-card .edit-btn {
+  position: absolute;
+  top: 126px;
+  left: 102px;
   right: auto;
-  z-index: auto;
+  z-index: 5;
   width: auto;
   height: auto;
   min-height: 34px;
   padding: 8px 14px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   background: #f75c3c;
   color: #ffffff;
   font-size: 12px;
   font-weight: 700;
   line-height: 1.1;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
   white-space: nowrap;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(247, 92, 60, 0.3);
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-  margin-top: -14px;
-  margin-bottom: 6px;
+  margin: 0;
 }
 
 .edit-btn:hover {
@@ -3658,6 +3688,30 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Final override: keep profile button compact beside avatar (as requested). */
+.sidebar-left .profile-card > .edit-btn {
+  position: absolute !important;
+  top: 126px !important;
+  left: 96px !important;
+  right: auto !important;
+  width: auto !important;
+  min-width: 70px !important;
+  max-width: max-content !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 8px 14px !important;
+  min-height: 34px !important;
+  margin: 0 !important;
+  border-radius: 10px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  line-height: 1.1 !important;
+  letter-spacing: 0.2px !important;
+  white-space: nowrap !important;
+  z-index: 6 !important;
 }
 
 /* Desktop sticky sidebar layout */
@@ -3691,4 +3745,37 @@ body {
     overflow: visible;
     padding-right: 0;
   }
+}
+
+/* Final investigation CTA override (prevents old duplicate button hover rules). */
+.sidebar-right .find-love-simple .investigation-open-btn {
+  background: linear-gradient(135deg, #ff6a4d 0%, #f05454 100%) !important;
+  color: #fff !important;
+  border: 1px solid #f26a55 !important;
+  border-radius: 12px !important;
+  min-height: 40px !important;
+  padding: 10px 16px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.2px !important;
+  line-height: 1 !important;
+  box-shadow: 0 8px 18px rgba(214, 108, 68, 0.22) !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+.sidebar-right .find-love-simple .investigation-open-btn:hover {
+  opacity: 1 !important;
+  transform: translateY(-1px) !important;
+  filter: brightness(0.97) !important;
+  box-shadow: 0 12px 24px rgba(214, 108, 68, 0.3) !important;
+}
+
+.sidebar-right .find-love-simple .investigation-open-btn:active {
+  transform: translateY(0) !important;
+}
+
+.sidebar-right .find-love-simple .investigation-open-btn:focus-visible {
+  outline: 2px solid rgba(240, 84, 84, 0.42) !important;
+  outline-offset: 2px !important;
 }

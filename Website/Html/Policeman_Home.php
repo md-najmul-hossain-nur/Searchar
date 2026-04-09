@@ -59,6 +59,35 @@ function formatDateTimeDisplay(?string $datetime): string {
   }
 }
 
+function normalizeCaseRef(string $value): string {
+  return strtoupper(preg_replace('/[^A-Z0-9]/i', '', trim($value)) ?? '');
+}
+
+function isLikelyDummyText(string $text): bool {
+  $clean = strtolower(trim($text));
+  if ($clean === '') return true;
+
+  $dummyPatterns = [
+    'lorem ipsum',
+    'test post',
+    'dummy',
+    'sample',
+    'asdf',
+    'dfdsf',
+    'qwerty',
+    'demo data',
+    'case details pending',
+  ];
+
+  foreach ($dummyPatterns as $pattern) {
+    if (str_contains($clean, $pattern)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function getAuthorPhoto(PDO $pdo, string $authorRole, int $authorId): string {
   if (strtolower(trim($authorRole)) === 'admin') {
     return '../Images/businessman.gif';
@@ -152,16 +181,43 @@ try {
 $allCases = [];
 $caseCounts = ['post' => 0, 'missing' => 0];
 try {
+  $volunteerSolvedCaseRefs = [];
+  if (tableExists($pdo, 'volunteer_missions') && columnExists($pdo, 'volunteer_missions', 'case_ref')) {
+    $hasResponseStatus = columnExists($pdo, 'volunteer_missions', 'response_status');
+    $statusExpr = $hasResponseStatus
+      ? "(LOWER(COALESCE(status, 'assigned')) = 'completed' OR LOWER(COALESCE(response_status, 'pending')) = 'completed')"
+      : "LOWER(COALESCE(status, 'assigned')) = 'completed'";
+
+    $vmStmt = $pdo->query("SELECT case_ref FROM volunteer_missions WHERE {$statusExpr} AND TRIM(COALESCE(case_ref,'')) <> ''");
+    $vmRows = $vmStmt ? $vmStmt->fetchAll(PDO::FETCH_ASSOC) : [];
+    foreach ($vmRows as $vmRow) {
+      $ref = normalizeCaseRef((string)($vmRow['case_ref'] ?? ''));
+      if ($ref !== '') {
+        $volunteerSolvedCaseRefs[$ref] = true;
+      }
+    }
+  }
+
   if (tableExists($pdo, 'missing_person_reports')) {
     $missingStmt = $pdo->query("SELECT report_id, full_name, gender, age, last_seen_location, status, created_at, photo_filename, reporter_mobile, mental_condition, medical_notes FROM missing_person_reports WHERE LOWER(COALESCE(status, 'open')) = 'under_review' ORDER BY report_id DESC LIMIT 100");
     $missingRows = $missingStmt ? $missingStmt->fetchAll(PDO::FETCH_ASSOC) : [];
     foreach ($missingRows as $row) {
+      $caseNo = 'MP-' . str_pad((string)((int)($row['report_id'] ?? 0)), 4, '0', STR_PAD_LEFT);
+      if (isset($volunteerSolvedCaseRefs[normalizeCaseRef($caseNo)])) {
+        continue;
+      }
+
+      $missingLabel = (string)($row['full_name'] ?? 'Unknown') . ' • Last seen: ' . (string)($row['last_seen_location'] ?? 'Unknown');
+      if (isLikelyDummyText($missingLabel)) {
+        continue;
+      }
+
       $photoFile = trim((string)($row['photo_filename'] ?? ''));
       $imageUrl = $photoFile !== '' ? ('../uploads/missing_person/' . $photoFile) : '';
       $allCases[] = [
-        'case_no' => 'MP-' . str_pad((string)((int)($row['report_id'] ?? 0)), 4, '0', STR_PAD_LEFT),
+        'case_no' => $caseNo,
         'type' => 'Missing Person',
-        'details' => (string)($row['full_name'] ?? 'Unknown') . ' • Last seen: ' . (string)($row['last_seen_location'] ?? 'Unknown'),
+        'details' => $missingLabel,
         'status' => (string)($row['status'] ?? 'open'),
         'source' => 'Missing Desk',
         'source_key' => 'missing',
@@ -186,9 +242,18 @@ try {
       ? "WHERE LOWER(COALESCE(report_status,'not_reported')) = 'reported'"
       : 'WHERE 1 = 0';
 
-    $postStmt = $pdo->query("SELECT id, case_id, category, text, media_path, media_json, media_type, created_at{$statusSelect}{$reportSelect} FROM posts {$where} ORDER BY id DESC LIMIT 120");
+    if ($hasStatus) {
+      $where .= " AND LOWER(COALESCE(status,'approved')) = 'approved'";
+    }
+
+    $postStmt = $pdo->query("SELECT id, case_id, category, text, media_path, media_json, media_type, created_at{$statusSelect}{$reportSelect} FROM posts {$where} ORDER BY id DESC LIMIT 80");
     $postRows = $postStmt ? $postStmt->fetchAll(PDO::FETCH_ASSOC) : [];
     foreach ($postRows as $row) {
+      $caseNo = 'PT-' . str_pad((string)((int)($row['id'] ?? 0)), 4, '0', STR_PAD_LEFT);
+      if (isset($volunteerSolvedCaseRefs[normalizeCaseRef($caseNo)])) {
+        continue;
+      }
+
       $categoryRaw = strtolower((string)($row['category'] ?? 'case'));
       $type = match ($categoryRaw) {
         'missing_person' => 'Missing Person',
@@ -226,10 +291,15 @@ try {
         $imageUrl = '../' . ltrim($mediaPath, '/');
       }
 
+      $detailsText = trim((string)($row['text'] ?? 'Case details pending'));
+      if (isLikelyDummyText($detailsText)) {
+        continue;
+      }
+
       $allCases[] = [
-        'case_no' => 'PT-' . str_pad((string)((int)($row['id'] ?? 0)), 4, '0', STR_PAD_LEFT),
+        'case_no' => $caseNo,
         'type' => $type,
-        'details' => trim((string)($row['text'] ?? 'Case details pending')),
+        'details' => $detailsText,
         'status' => $statusText,
         'source' => 'Crime Reporting',
         'source_key' => 'post',
@@ -247,8 +317,8 @@ try {
     return strcmp((string)($b['created_at'] ?? ''), (string)($a['created_at'] ?? ''));
   });
 
-  if (count($allCases) > 200) {
-    $allCases = array_slice($allCases, 0, 200);
+  if (count($allCases) > 120) {
+    $allCases = array_slice($allCases, 0, 120);
   }
 } catch (Exception $e) {
   $allCases = [];
@@ -264,11 +334,11 @@ try {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <!-- Main CSS -->
-  <link rel="stylesheet" href="../css/Policman_Home.css?v=20260406e">
+  <link rel="stylesheet" href="../css/Policman_Home.css?v=20260410g">
   <link rel="stylesheet" href="../css/post_modal_shared.css?v=20260409a">
-  <link rel="stylesheet" href="../css/profile_button_shared.css?v=20260409a">
+  <link rel="stylesheet" href="../css/profile_button_shared.css?v=20260410a">
   <link rel="stylesheet" href="../css/notifications_shared.css">
-  <link rel="stylesheet" href="../css/messenger_shared.css">
+  <link rel="stylesheet" href="../css/messenger_shared.css?v=20260410c">
   <style>
     .all-cases-table-wrap {
       border: 1px solid #e6ebf4;
@@ -550,16 +620,16 @@ try {
   <h2 class="case-section-title">Investigation Cases</h2>
   <p class="case-section-desc">Track investigation cases in one place. Open all current cases or view solved case history.</p>
   <div class="case-section-actions">
-    <button id="openAllCasesBtn" type="button" onclick="document.getElementById('allCasesModal').style.display='flex'" class="case-section-btn view">📂 View All Cases</button>
+    <button id="openAllCasesBtn" type="button" class="case-section-btn view">📂 View All Cases</button>
     <button id="openSolvedCasesBtn" type="button" class="case-section-btn history">✅ Solved Case History</button>
   </div>
 </div>
 
-<div id="allCasesModal" onclick="if(event.target===this){this.style.display='none';}" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.52); z-index:4000; align-items:center; justify-content:center; padding:16px;">
+<div id="allCasesModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.52); z-index:4000; align-items:center; justify-content:center; padding:16px;">
   <div style="width:min(1020px,96vw); max-height:88vh; overflow:auto; background:#fff; border-radius:12px; box-shadow:0 14px 32px rgba(0,0,0,.25); padding:14px;">
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid #e5e7eb; padding-bottom:8px;">
       <h3 style="margin:0; color:#1f2937;">All Cases</h3>
-      <button type="button" id="closeAllCasesBtn" onclick="document.getElementById('allCasesModal').style.display='none'" style="border:none; background:#f3f4f6; width:32px; height:32px; border-radius:7px; cursor:pointer; font-size:18px;">&times;</button>
+      <button type="button" id="closeAllCasesBtn" style="border:none; background:#f3f4f6; width:32px; height:32px; border-radius:7px; cursor:pointer; font-size:18px;">&times;</button>
     </div>
 
     <div style="overflow:auto;">
@@ -660,7 +730,7 @@ try {
   </div>
 </div>
 
-<div id="solvedCasesModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.52); z-index:4200; align-items:center; justify-content:center; padding:16px;" onclick="if(event.target===this){this.style.display='none';}">
+<div id="solvedCasesModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.52); z-index:4200; align-items:center; justify-content:center; padding:16px;">
   <div style="width:min(980px,96vw); max-height:88vh; overflow:auto; background:#fff; border-radius:12px; box-shadow:0 14px 32px rgba(0,0,0,.25); padding:14px;">
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid #e5e7eb; padding-bottom:8px;">
       <h3 style="margin:0; color:#1f2937;">Solved Case History</h3>
@@ -687,7 +757,7 @@ try {
   </div>
 </div>
 
-<div id="casePreviewModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:4100; align-items:center; justify-content:center; padding:16px;" onclick="if(event.target===this){this.style.display='none';}">
+<div id="casePreviewModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:4100; align-items:center; justify-content:center; padding:16px;">
   <div style="width:min(650px,95vw); background:#fff; border-radius:12px; box-shadow:0 12px 28px rgba(0,0,0,.24); overflow:hidden;">
     <div style="background:linear-gradient(90deg,#dc2626,#ef4444); color:#fff; padding:12px 14px; display:flex; justify-content:space-between; align-items:center;">
       <strong style="font-size:17px;">📢 Case Billboard Preview</strong>
@@ -696,7 +766,7 @@ try {
     <div style="padding:14px;">
       <div style="border:1px solid #fca5a5; border-radius:10px; padding:12px; background:#fff5f5;">
         <div id="casePreviewAutoThumb" style="display:none; width:100%; height:170px; border-radius:8px; border:1px solid #fecaca; margin-bottom:8px; background:linear-gradient(135deg,#fee2e2,#fecaca); align-items:center; justify-content:center; color:#991b1b; font-weight:800; text-align:center; padding:10px;"></div>
-        <img id="casePreviewImage" src="" alt="Case preview" style="display:none; width:100%; max-height:240px; object-fit:cover; border-radius:8px; border:1px solid #fecaca; margin-bottom:8px;">
+        <img id="casePreviewImage" src="" alt="Case preview" style="display:none; width:100%; max-height:240px; object-fit:contain; background:#fff; border-radius:8px; border:1px solid #fecaca; margin-bottom:8px;">
         <h3 id="casePreviewTitle" style="margin:0 0 8px; color:#991b1b;">Case</h3>
         <p id="casePreviewDetail" style="margin:0 0 8px; color:#1f2937; font-weight:600;"></p>
         <div style="display:flex; gap:10px; flex-wrap:wrap; font-size:12px; color:#374151;">
@@ -1145,9 +1215,7 @@ try {
       <div class="find-love-simple">
         <h4>Missing Person Investigation Desk</h4>
         <p class="helpdesk-subtitle">Collect verified clues quickly and report suspected sightings for fast police action.</p>
-        <button type="button" onclick="openMissingForm()">
-          <img src="../Images/search.gif" alt="Investigation Icon" class="love-image" />
-        </button>
+        <button type="button" class="investigation-open-btn" onclick="openMissingForm()" aria-label="Open investigation form" title="Open investigation form">Open Investigation Form</button>
         <p class="helpdesk-cta">Tap to open investigation form</p>
       </div>
 
@@ -1438,7 +1506,7 @@ try {
 </aside>
 
     </body>
-      <script src="../javascrpit/Policeman_Home.js?v=20260410a"></script>
+      <script src="../javascrpit/Policeman_Home.js?v=20260410e"></script>
       <script src="../javascrpit/post_interactions_shared.js?v=20260406d"></script>
       <script src="../javascrpit/notifications_shared.js"></script>
       <script src="../javascrpit/messenger_shared.js"></script>

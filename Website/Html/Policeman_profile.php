@@ -96,12 +96,12 @@ try {
       </a>
     </div>
   </header>
-
   <div class="cover-photo">
     <img src="<?= !empty($user['cover_photo']) ? '../uploads/police/' . e($user['cover_photo']) : '../Images/default-cover.gif' ?>" alt="Cover" class="cover-img">
     <div class="profile-pic-container">
       <img class="profile-pic" src="<?= !empty($user['profile_photo']) ? '../uploads/police/' . e($user['profile_photo']) : '../Images/demo_pic/profile.jpg' ?>" alt="Profile">
     </div>
+  </div>
   <div class="main-content">
     <div class="left-panel">
   <div class="card user-info" style="position: relative;">
@@ -438,11 +438,11 @@ try {
   </div>
   <div class="notifications-drawer-footer"></div>
 </aside>
-  
-</body>
+
 <script src="../javascrpit/Policeman_profile.js?v=20260410a"></script>
 <script src="../javascrpit/post_interactions_shared.js?v=20260409e"></script>
 <script src="../javascrpit/notifications_shared.js"></script>
+</body>
 </html>
 
 

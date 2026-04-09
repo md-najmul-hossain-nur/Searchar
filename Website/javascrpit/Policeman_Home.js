@@ -239,11 +239,6 @@ window.addEventListener('click', function(event) {
   if (event.target === missingModal) {
     missingModal.style.display = "none";
   }
-
-  const allCasesModal = document.getElementById('allCasesModal');
-  if (event.target === allCasesModal) {
-    allCasesModal.style.display = 'none';
-  }
 });
 
 const openAllCasesBtn = document.getElementById('openAllCasesBtn');
@@ -271,16 +266,125 @@ const solvedCasesModal = document.getElementById('solvedCasesModal');
 const closeSolvedCasesBtn = document.getElementById('closeSolvedCasesBtn');
 const solvedCasesTableBody = document.getElementById('solvedCasesTableBody');
 
+[allCasesModal, solvedCasesModal, casePreviewModal].forEach((modalEl) => {
+  if (modalEl && modalEl.parentElement !== document.body) {
+    document.body.appendChild(modalEl);
+  }
+});
+
+function syncCaseModalScrollLock() {
+  const hasOpenCaseModal = [allCasesModal, solvedCasesModal, casePreviewModal].some(
+    (modalEl) => modalEl && modalEl.style.display === 'flex'
+  );
+  document.body.style.overflow = hasOpenCaseModal ? 'hidden' : '';
+}
+
+function showCaseModal(modalEl) {
+  if (!modalEl) return;
+  modalEl.style.display = 'flex';
+  syncCaseModalScrollLock();
+}
+
+function hideCaseModal(modalEl) {
+  if (!modalEl) return;
+  modalEl.style.display = 'none';
+  syncCaseModalScrollLock();
+}
+
 const LIVE_BOARD_KEY = 'searchar_police_live_cases_v1';
 const SOLVED_CASES_KEY = 'searchar_police_solved_cases_v1';
 let previewCasePayload = null;
+
+function normalizeCaseNo(value) {
+  return String(value || '').trim().toUpperCase();
+}
+
+function looksLikeDummyText(value) {
+  const text = String(value || '').trim();
+  if (!text) return true;
+
+  const lower = text.toLowerCase();
+  const dummyPatterns = [
+    'lorem ipsum',
+    'dummy',
+    'sample',
+    'test post',
+    'case details pending',
+    'asdf',
+    'qwerty',
+    'dfdsf',
+  ];
+
+  if (dummyPatterns.some((p) => lower.includes(p))) {
+    return true;
+  }
+
+  // Catch keyboard-smash style content such as "rfdgfdgdsf".
+  if (/^[a-z]{8,}$/i.test(text)) {
+    const vowels = (text.match(/[aeiou]/gi) || []).length;
+    if (vowels <= 1) return true;
+  }
+
+  return false;
+}
+
+function sanitizeCaseRows(rows) {
+  const list = Array.isArray(rows) ? rows : [];
+  const out = [];
+  const seen = new Set();
+
+  list.forEach((item) => {
+    if (!item || typeof item !== 'object') return;
+
+    const caseNo = normalizeCaseNo(item.case_no);
+    if (!/^(PT|MP)-\d{1,6}$/.test(caseNo)) return;
+    if (seen.has(caseNo)) return;
+
+    const details = String(item.details || '').trim();
+    if (looksLikeDummyText(details)) return;
+
+    const next = {
+      ...item,
+      case_no: caseNo,
+      type: String(item.type || '').trim() || 'Case',
+      details,
+      source: String(item.source || '').trim() || 'Case Section',
+    };
+
+    out.push(next);
+    seen.add(caseNo);
+  });
+
+  return out;
+}
+
+function purgeStoredDummyCases() {
+  try {
+    const rawLive = JSON.parse(localStorage.getItem(LIVE_BOARD_KEY) || '[]');
+    const rawSolved = JSON.parse(localStorage.getItem(SOLVED_CASES_KEY) || '[]');
+
+    const cleanLive = sanitizeCaseRows(rawLive);
+    const cleanSolved = sanitizeCaseRows(rawSolved);
+
+    localStorage.setItem(LIVE_BOARD_KEY, JSON.stringify(cleanLive));
+    localStorage.setItem(SOLVED_CASES_KEY, JSON.stringify(cleanSolved));
+  } catch (_err) {
+    // If malformed storage data exists, reset to safe defaults.
+    localStorage.setItem(LIVE_BOARD_KEY, JSON.stringify([]));
+    localStorage.setItem(SOLVED_CASES_KEY, JSON.stringify([]));
+  }
+}
 
 function readLiveCases() {
   try {
     const raw = localStorage.getItem(LIVE_BOARD_KEY);
     if (!raw) return [];
     const data = JSON.parse(raw);
-    return Array.isArray(data) ? data : [];
+    const sanitized = sanitizeCaseRows(data);
+    if (JSON.stringify(sanitized) !== JSON.stringify(Array.isArray(data) ? data : [])) {
+      writeLiveCases(sanitized);
+    }
+    return sanitized;
   } catch (_err) {
     return [];
   }
@@ -297,7 +401,11 @@ function readSolvedCases() {
     const raw = localStorage.getItem(SOLVED_CASES_KEY);
     if (!raw) return [];
     const data = JSON.parse(raw);
-    return Array.isArray(data) ? data : [];
+    const sanitized = sanitizeCaseRows(data);
+    if (JSON.stringify(sanitized) !== JSON.stringify(Array.isArray(data) ? data : [])) {
+      writeSolvedCases(sanitized);
+    }
+    return sanitized;
   } catch (_err) {
     return [];
   }
@@ -381,6 +489,31 @@ async function syncClosedCasesFromServer() {
   }
 }
 
+async function pruneSolvedCasesAgainstServer() {
+  const solvedRows = readSolvedCases();
+  if (!solvedRows.length) return;
+
+  const payloadCases = solvedRows
+    .map((row) => ({ case_no: String(row?.case_no || '').trim() }))
+    .filter((row) => row.case_no);
+
+  if (!payloadCases.length) return;
+
+  try {
+    const json = await callCaseResolutionApi('sync_published', { cases: payloadCases });
+    const closedSet = new Set((Array.isArray(json?.closed_case_nos) ? json.closed_case_nos : []).map((v) => String(v || '').trim().toUpperCase()));
+
+    const filteredSolved = solvedRows.filter((row) => closedSet.has(String(row?.case_no || '').trim().toUpperCase()));
+    if (filteredSolved.length !== solvedRows.length) {
+      writeSolvedCases(filteredSolved);
+      renderSolvedCasesTable();
+      syncPublishedCaseButtons();
+    }
+  } catch (error) {
+    console.error('prune solved cases failed', error);
+  }
+}
+
 function renderSolvedCasesTable() {
   if (!solvedCasesTableBody) return;
   const rows = readSolvedCases();
@@ -456,7 +589,7 @@ function renderLivePublishedBoard() {
     const source = item.source || 'Case Section';
     const publishedAt = item.published_at || '';
     const imageHtml = item.image_url
-      ? `<img src="${item.image_url}" alt="Published case image" style="width:100%; max-height:190px; object-fit:cover; border-radius:8px; border:1px solid #fecaca; margin:6px 0 8px;">`
+      ? `<img src="${item.image_url}" alt="Published case image" style="width:100%; max-height:190px; object-fit:contain; background:#fff; border-radius:8px; border:1px solid #fecaca; margin:6px 0 8px;">`
       : `<div style="width:100%; height:140px; border-radius:8px; border:1px solid #fecaca; margin:6px 0 8px; background:linear-gradient(135deg,#fee2e2,#fecaca); display:flex; align-items:center; justify-content:center; color:#991b1b; font-weight:800; text-align:center; padding:10px;">${item.case_no || 'Case'}<br>${item.type || 'Alert'}</div>`;
     return `
       <article style="border-left:5px solid #ef4444; border-radius:10px; background:linear-gradient(135deg,#fff7f7,#fff); padding:10px 12px; box-shadow:0 2px 8px rgba(0,0,0,.08);">
@@ -578,12 +711,12 @@ function openCasePreview(payload) {
       if (casePreviewAutoThumb) casePreviewAutoThumb.style.display = 'flex';
     }
   }
-  casePreviewModal.style.display = 'flex';
+  showCaseModal(casePreviewModal);
 }
 
 function closeCasePreview() {
   if (!casePreviewModal) return;
-  casePreviewModal.style.display = 'none';
+  hideCaseModal(casePreviewModal);
 }
 
 function publishCase(payload) {
@@ -637,7 +770,7 @@ window.publishCaseFromRow = function (buttonEl) {
 
 if (openAllCasesBtn && allCasesModal) {
   openAllCasesBtn.addEventListener('click', function () {
-    allCasesModal.style.display = 'flex';
+    showCaseModal(allCasesModal);
     renderLivePublishedBoard();
     renderSolvedCasesTable();
     syncPublishedCaseButtons();
@@ -647,38 +780,44 @@ if (openAllCasesBtn && allCasesModal) {
 }
 
 if (openSolvedCasesBtn && solvedCasesModal) {
-  openSolvedCasesBtn.addEventListener('click', function () {
-    solvedCasesModal.style.display = 'flex';
+  openSolvedCasesBtn.addEventListener('click', async function () {
+    showCaseModal(solvedCasesModal);
+    await pruneSolvedCasesAgainstServer();
     renderSolvedCasesTable();
   });
 }
 
 if (closeSolvedCasesBtn && solvedCasesModal) {
   closeSolvedCasesBtn.addEventListener('click', function () {
-    solvedCasesModal.style.display = 'none';
+    hideCaseModal(solvedCasesModal);
   });
 }
 
 if (closeAllCasesBtn && allCasesModal) {
   closeAllCasesBtn.addEventListener('click', function () {
-    allCasesModal.style.display = 'none';
+    hideCaseModal(allCasesModal);
   });
 }
 
 document.addEventListener('keydown', function (event) {
   if (event.key === 'Escape' && allCasesModal && allCasesModal.style.display === 'flex') {
-    allCasesModal.style.display = 'none';
+    hideCaseModal(allCasesModal);
   }
   if (event.key === 'Escape' && casePreviewModal && casePreviewModal.style.display === 'flex') {
     closeCasePreview();
   }
   if (event.key === 'Escape' && solvedCasesModal && solvedCasesModal.style.display === 'flex') {
-    solvedCasesModal.style.display = 'none';
+    hideCaseModal(solvedCasesModal);
   }
 });
 
 if (allCasesModal) {
   allCasesModal.addEventListener('click', function (event) {
+    if (event.target === allCasesModal) {
+      hideCaseModal(allCasesModal);
+      return;
+    }
+
     const solvedBtn = event.target.closest('.js-mark-solved-btn');
     if (solvedBtn) {
       const caseNo = String(solvedBtn.getAttribute('data-case-no') || '');
@@ -706,6 +845,22 @@ if (allCasesModal) {
   });
 }
 
+if (solvedCasesModal) {
+  solvedCasesModal.addEventListener('click', function (event) {
+    if (event.target === solvedCasesModal) {
+      hideCaseModal(solvedCasesModal);
+    }
+  });
+}
+
+if (casePreviewModal) {
+  casePreviewModal.addEventListener('click', function (event) {
+    if (event.target === casePreviewModal) {
+      closeCasePreview();
+    }
+  });
+}
+
 if (casePreviewClose) {
   casePreviewClose.addEventListener('click', closeCasePreview);
 }
@@ -724,7 +879,12 @@ if (casePreviewPublish) {
 renderLivePublishedBoard();
 renderSolvedCasesTable();
 syncPublishedCaseButtons();
+purgeStoredDummyCases();
+renderLivePublishedBoard();
+renderSolvedCasesTable();
+syncPublishedCaseButtons();
 syncClosedCasesFromServer();
+pruneSolvedCasesAgainstServer();
 setInterval(syncClosedCasesFromServer, 30000);
 if (caseFilterPost) caseFilterPost.addEventListener('change', applyCaseSourceFilters);
 if (caseFilterMissing) caseFilterMissing.addEventListener('change', applyCaseSourceFilters);
