@@ -1,51 +1,62 @@
 ﻿
-const modal = document.getElementById("postModal");
+const modal = document.querySelector(".post-modal");
 const feed = document.getElementById("post-feed");
 const mediaPreview = document.getElementById("mediaPreview");
+const postTextInput = document.getElementById("postText");
+const imageUploadInput = document.getElementById("imageUpload");
+const videoUploadInput = document.getElementById("videoUpload");
 let selectedImage = null;
 let selectedVideo = null;
 
 function openModal() {
+  if (!modal) return;
   modal.style.display = "flex";
 }
 
 function closeModal() {
+  if (!modal) return;
   modal.style.display = "none";
-  document.getElementById("postText").value = "";
-  document.getElementById("imageUpload").value = "";
-  document.getElementById("videoUpload").value = "";
+  if (postTextInput) postTextInput.value = "";
+  if (imageUploadInput) imageUploadInput.value = "";
+  if (videoUploadInput) videoUploadInput.value = "";
   const anonymousToggle = document.getElementById('anonymousShareToggle');
   if (anonymousToggle) anonymousToggle.checked = false;
-  mediaPreview.innerHTML = "";
+  if (mediaPreview) mediaPreview.innerHTML = "";
   selectedImage = null;
   selectedVideo = null;
 }
 
 // Handle image upload preview
-document.getElementById("imageUpload").addEventListener("change", function() {
-  const file = this.files[0];
-  if (file) {
-    selectedImage = file;
-    mediaPreview.innerHTML = `<img src="${URL.createObjectURL(file)}">`;
-    selectedVideo = null;
-    document.getElementById("videoUpload").value = "";
-  }
-});
+if (imageUploadInput) {
+  imageUploadInput.addEventListener("change", function() {
+    const file = this.files[0];
+    if (file) {
+      selectedImage = file;
+      if (mediaPreview) mediaPreview.innerHTML = `<img src="${URL.createObjectURL(file)}">`;
+      selectedVideo = null;
+      if (videoUploadInput) videoUploadInput.value = "";
+    }
+  });
+}
 
 // Handle video upload preview
-document.getElementById("videoUpload").addEventListener("change", function() {
-  const file = this.files[0];
-  if (file) {
-    selectedVideo = file;
-    mediaPreview.innerHTML = `<video src="${URL.createObjectURL(file)}" controls></video>`;
-    selectedImage = null;
-    document.getElementById("imageUpload").value = "";
-  }
-});
+if (videoUploadInput) {
+  videoUploadInput.addEventListener("change", function() {
+    const file = this.files[0];
+    if (file) {
+      selectedVideo = file;
+      if (mediaPreview) mediaPreview.innerHTML = `<video src="${URL.createObjectURL(file)}" controls></video>`;
+      selectedImage = null;
+      if (imageUploadInput) imageUploadInput.value = "";
+    }
+  });
+}
 
 // Create post
 function createPost() {
-  const text = document.getElementById("postText").value.trim();
+  if (!postTextInput || !imageUploadInput || !videoUploadInput) return;
+
+  const text = postTextInput.value.trim();
   if (text === "" && !selectedImage && !selectedVideo) {
     alert("Please add text or media to post!");
     return;
@@ -247,14 +258,6 @@ var policeIcon = L.icon({
         locateAndShow("police station", policeIcon);
     });
 });
-
-function closeModal() {
-  document.getElementById('postModal').style.display = 'none';
-  document.getElementById('postText').value = '';
-  document.getElementById('sharedPostText').innerText = '';  // ❌ এই লাইন
-  document.getElementById('sharedPostImage').src = '';       // ❌ এই লাইন
-  document.getElementById('facebookShareToggle').checked = false;
-}
 
 // Get modal element
 const volunteerMissionModal = document.getElementById('volunteerMissionModal');
@@ -673,17 +676,44 @@ function isValidMissionHistoryEntry(entry) {
   const completedAt = String(entry.completed_at || '').trim();
   const verified = entry.verified === true;
 
-  const hasValidCase = caseId !== '' && caseId !== 'N/A' && !/^demo/i.test(caseId);
-  const hasRealArea = area !== '' && area !== 'N/A';
-  const hasRealLabel = label !== '' && label !== 'Mission';
-  const hasValidTime = Number.isFinite(Date.parse(completedAt));
-
-  if (verified) {
-    return hasValidCase && hasValidTime;
+  if (isKnownDummyMissionHistory(caseId, area)) {
+    return false;
   }
 
-  // Backward compatibility for old real rows that were saved before "verified" flag.
-  return hasValidCase && hasRealArea && hasRealLabel && hasValidTime;
+  const hasValidCase = caseId !== '' && caseId !== 'N/A' && !/^demo/i.test(caseId);
+  const hasValidTime = Number.isFinite(Date.parse(completedAt));
+
+  // Keep only mission rows that are explicitly verified by completion flow.
+  return verified && hasValidCase && hasValidTime && label !== '';
+}
+
+function isKnownDummyMissionHistory(caseId, area) {
+  const normalizedCaseId = String(caseId || '').trim().toUpperCase();
+  const normalizedArea = String(area || '').trim().toLowerCase();
+
+  const dummyCaseIds = new Set([
+    'MP0001',
+    'MP0002',
+    'MP0005',
+    'MP0006',
+    'CR-2026-001',
+    'CR-2026-002'
+  ]);
+
+  if (dummyCaseIds.has(normalizedCaseId)) {
+    return true;
+  }
+
+  const dummyAreas = new Set([
+    'dhanmodi 27',
+    'dhanmondi 27',
+    'mirpur 10 bus stand',
+    'banani rail crossing',
+    'banani lake bridge',
+    'kawran bazar crossing'
+  ]);
+
+  return dummyAreas.has(normalizedArea);
 }
 
 function writeMissionHistory(rows) {
