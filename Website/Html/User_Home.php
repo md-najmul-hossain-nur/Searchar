@@ -469,10 +469,6 @@ try {
     </button>
   </div>
 </header>
-
-
-
-
     <div class="container">
     <!-- Left Sidebar -->
     <div class="sidebar-left">

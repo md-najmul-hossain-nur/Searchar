@@ -429,3 +429,43 @@
     width: fit-content;
   }
 }
+
+/* Keep RedZone profile button identical to other home pages */
+#rzProfileBtn {
+  position: relative;
+  top: auto;
+  right: auto;
+  z-index: auto;
+  width: auto;
+  height: auto;
+  min-height: 34px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px !important;
+  background: #f75c3c;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(247, 92, 60, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  margin-top: -14px;
+  margin-bottom: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#rzProfileBtn:hover {
+  background: #e3471c;
+  box-shadow: 0 6px 14px rgba(227, 71, 28, 0.35);
+  transform: translateY(-1px);
+}
+
+#rzProfileBtn:focus-visible {
+  outline: 2px solid rgba(247, 92, 60, 0.45);
+  outline-offset: 2px;
+}

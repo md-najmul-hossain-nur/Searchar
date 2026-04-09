@@ -1980,18 +1980,20 @@ legend {
   }
 }
 .user-bio {
-    font-style: normal;            /* normal text instead of italic */
-    font-size: 0.95rem;            /* readable size */
-    color: #666;                   /* subtle gray */
-    background-color: #f9f9f9;     /* light background for bio */
-    padding: 8px 12px;             /* spacing inside box */
-    border-radius: 12px;           /* rounded corners */
-    border: 1px solid #e0e0e0;    /* soft border */
-    max-width: 100%;               /* responsive */
-    word-wrap: break-word;         /* prevent overflow */
-    line-height: 1.4;              /* better readability */
-    margin-top: 8px;
-    display: inline-block;         /* fit content width */
+  font-style: normal;
+  font-size: 0.95rem;
+  color: #4b5563;
+  background: linear-gradient(180deg, #f8fafc, #f3f4f6);
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid #d8dee6;
+  max-width: 100%;
+  word-wrap: break-word;
+  line-height: 1.45;
+  margin: 10px 0 0;
+  display: block;
+  width: 100%;
+  text-align: left;
 }
 
 /* Optional: hover effect */
@@ -2452,10 +2454,10 @@ legend {
 }
 
 .edit-btn {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  z-index: 2;
+  position: relative;
+  top: auto;
+  right: auto;
+  z-index: auto;
   width: auto;
   height: auto;
   min-height: 34px;
@@ -2472,6 +2474,8 @@ legend {
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(247, 92, 60, 0.3);
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  margin-top: -14px;
+  margin-bottom: 6px;
 }
 
 .edit-btn:hover {
