@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../Php/db.php';
 session_start();
 
-if (empty($_SESSION['user_id'])) {
+if (empty($_SESSION['role']) || $_SESSION['role'] !== 'contributor' || empty($_SESSION['user_id'])) {
     header('Location: ../Html/login.html');
     exit;
 }
@@ -71,7 +71,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Fetch existing data
 $stmt = $pdo->prepare('SELECT * FROM camera_contributors WHERE camera_id = ?');
 $stmt->execute([$user_id]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$user) {
+  session_unset();
+  session_destroy();
+  header('Location: ../Html/login.html?error=no_user');
+  exit;
+}
 ?>
 
 <!DOCTYPE html>
@@ -82,7 +89,7 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <link rel="stylesheet" href="../css/Camera_Contribution_Edit_profile.css">
+  <link rel="stylesheet" href="../css/Camera_Contribution_Edit_profile.css?v=20260405bg">
 </head>
 <body>
   <header class="navbar">
@@ -90,8 +97,6 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
       <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo">
     </div>
   </header>
-  <div class="bubble-background"></div>
-
   <main class="edit-profile-container">
     <div class="edit-profile-header-vertical">
       <img src="../Images/edit-profile.gif" alt="Edit Icon" class="edit-profile-icon-vertical">
@@ -99,7 +104,7 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
     </div>
 
     <div class="back-button-container">
-      <a href="../Html/Camera_Contribution_profile.php" class="back-btn">← Back</a>
+      <a href="../Html/Camera_Contribution_profile.php" class="back-btn">â† Back</a>
     </div>
 
     <form class="edit-profile-form" method="POST" enctype="multipart/form-data">
@@ -120,7 +125,7 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
       <div class="profile-photo-section">
         <label for="profilePhoto" class="profile-label">Profile Picture</label>
         <div class="profile-preview">
-          <img id="profilePreview" src="<?= !empty($user['profile_photo']) ? '../uploads/camera/' . e($user['profile_photo']) : '../Images/default-profile.gif' ?>" alt="Profile Picture Preview">
+          <img id="profilePreview" src="<?= !empty($user['profile_photo']) ? '../uploads/camera/' . e($user['profile_photo']) : '../Images/demo_pic/profile.jpg' ?>" alt="Profile Picture Preview">
         </div>
         <input type="file" id="profilePhoto" name="profilePhoto" accept="image/*" onchange="previewImage(event, 'profilePreview')">
       </div>
@@ -185,7 +190,7 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
     </form>
   </main>
 
-  <script src="../javascrpit/Camera_Contribution_Edit_profile.js"></script>
+  <script src="../javascrpit/Camera_Contribution_Edit_profile.js?v=20260405bg"></script>
 
   <script>
   // small preview helper
@@ -341,3 +346,4 @@ function saveMapLocation() {
 </style>
 </body>
 </html>
+

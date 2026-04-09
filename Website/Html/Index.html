@@ -77,27 +77,27 @@ Search, report, and earn rewards — including ranks and digital certificates</p
     <section class="stats-section">
       <div class="stats-container">
         <div class="stat">
-          <span class="stat-number gold">468</span>
+          <span class="stat-number gold" id="stat-cases-solved">0</span>
           <span class="stat-label">Successful Projects</span>
           <p>
-           Lives reunited with loved ones through AI + people power.
+           Cases closed and families helped through AI + people power.
           </p>
         </div>
         <div class="stat">
-          <span class="stat-number gold">1534</span>
+          <span class="stat-number gold" id="stat-people-impacted">0</span>
           <span class="stat-label">People Impacted</span>
           <p>
 From families to volunteers — we’re building a stronger, safer society.          </p>
         </div>
         <div class="stat">
-          <span class="stat-number gold">$14432</span>
+          <span class="stat-number gold" id="stat-money-donated">$0</span>
           <span class="stat-label">Money Donated</span>
           <p>
 100% of donations go toward tech upgrades, volunteer support & CCTV partnerships.
           </p>
         </div>
         <div class="stat">
-          <span class="stat-number gold">189</span>
+          <span class="stat-number gold" id="stat-total-volunteers">0</span>
           <span class="stat-label">Total Volunteers</span>
           <p>
 Brave individuals stepping up to help when it matters most.
@@ -112,21 +112,21 @@ Brave individuals stepping up to help when it matters most.
       <img src="../Images/demo.jpg" alt="Syrian Refugee Crisis" style="width:100%;height:100%;object-fit:cover;">
     </div>
     <div class="donation-info">
-  <div class="donation-caption">$7,220 To Go</div>
-  <div class="donation-title">Support Safer Communities</div>
+      <div class="donation-caption">URBAN SAFETY RESPONSE FUND</div>
+      <div class="donation-title">Your Support Saves Time, Evidence, and Lives</div>
   <div class="donation-desc">
-    Together, we can build a brighter future for our children and create healthier, safer neighborhoods for everyone. Your contribution helps provide critical resources, health services, and educational support where it’s needed most. Join us in making a real difference!
+        Every donation helps us run AI surveillance checks, dispatch verified alerts, and support volunteers in the field. When response time drops, survival chances rise for real families.
   </div>
-  <div class="donation-cta">Donate Now!</div>
+      <a class="donation-cta" href="../Html/Donated.Html">Contribute Now</a>
 </div>
 <div class="donation-progress-outer">
   <div class="donation-progress-circle">
     <svg>
       <circle cx="60" cy="60" r="54" stroke="#fff" stroke-width="7" fill="none" style="opacity:.25"/>
-      <circle cx="60" cy="60" r="54" stroke="#f75c3c" stroke-width="7" fill="none"
+      <circle id="donation-progress-ring" cx="60" cy="60" r="54" stroke="#f75c3c" stroke-width="7" fill="none"
         stroke-dasharray="339.292" stroke-dashoffset="101.7876" style="transition:stroke-dashoffset .6s;"/>
     </svg>
-    <div class="progress-text">70<span style="font-size:.6em;vertical-align:super;">%</span>
+    <div class="progress-text"><span id="donation-progress-value">70</span><span style="font-size:.6em;vertical-align:super;">%</span>
       <span class="progress-label">Donated</span>
     </div>
   </div>
@@ -136,9 +136,10 @@ Brave individuals stepping up to help when it matters most.
 </div>
 <div class="our-causes-section" id="our-causes">
   <div class="causes-label">STORY ABOUT US</div>
-  <div class="our-causes-title">OUR CAUSES</div>
-  
-  <div class="causes-list">
+  <div class="our-causes-title">SUCCESS STORIES / ACHIEVEMENTS</div>
+
+  <div class="causes-viewport">
+  <div class="causes-list" id="achievementsTrack">
     <!-- Cause 1 -->
     <div class="cause-card">
       <img class="cause-card-img" src="../Images/demo.jpg" alt="CCTV Network Expansion">
@@ -215,11 +216,12 @@ Brave individuals stepping up to help when it matters most.
       </div>
     </div>
   </div>
+  </div>
 
   <!-- Navigation Arrows -->
   <div class="cause-news-nav">
-    <button class="cause-news-arrow" aria-label="Previous">&#8592;</button>
-    <button class="cause-news-arrow" aria-label="Next">&#8594;</button>
+    <button class="cause-news-arrow" id="achievementsPrevBtn" aria-label="Previous">&#8592;</button>
+    <button class="cause-news-arrow" id="achievementsNextBtn" aria-label="Next">&#8594;</button>
   </div>
 </div>
 
@@ -234,10 +236,11 @@ Be the reason someone reunites with their loved one — become a volunteer and b
 </button>
   </div>
 </div>
-<section class="latest-news-section">
+<section class="latest-news-section" id="latest-news">
   <div class="latest-news-label">BE FIRST TO READ</div>
   <h2 class="latest-news-title">LATEST NEWS</h2>
-  <div class="latest-news-cards">
+  <div class="latest-news-viewport">
+  <div class="latest-news-cards" id="latestNewsTrack">
     <!-- Card 1 -->
     <div class="news-card">
       <div class="news-card-img">
@@ -282,17 +285,18 @@ A user-uploaded anonymous crime video helped police catch a suspect within 24 ho
       </div>
     </div>
   </div>
+  </div>
   <div class="latest-news-nav">
-    <button class="latest-news-arrow" aria-label="Previous">&#8592;</button>
-    <button class="latest-news-arrow" aria-label="Next">&#8594;</button>
+    <button class="latest-news-arrow" id="latestNewsPrevBtn" aria-label="Previous">&#8592;</button>
+    <button class="latest-news-arrow" id="latestNewsNextBtn" aria-label="Next">&#8594;</button>
   </div>
 </section>
 <div class="rescue-stories-section">
   <div class="rescue-stories-content">
     <div class="rescue-stories-label">STORY ABOUT US</div>
     <div class="rescue-stories-title">RESCUE STORIES</div>
-    <div class="rescue-stories-avatar">
-      <img src="../Images/pexels-omaralnahi-18495.jpg" alt="Simon Sims" style="width:100%;height:100%;object-fit:cover;">
+    <div class="rescue-stories-avatar" id="rescueStoriesAvatarWrap">
+      <img id="rescueStoriesAvatar" src="../Images/pexels-omaralnahi-18495.jpg" alt="Simon Sims" style="width:100%;height:100%;object-fit:cover;">
     </div>
     <div class="rescue-stories-dots">
       <span class="rescue-stories-dot active"></span>
@@ -301,11 +305,11 @@ A user-uploaded anonymous crime video helped police catch a suspect within 24 ho
       <span class="rescue-stories-dot"></span>
       <span class="rescue-stories-dot"></span>
     </div>
-    <div class="rescue-stories-quote">
+    <div class="rescue-stories-quote" id="rescueStoriesQuote">
 “I thought I’d never see my daughter again. But thanks to this app and the amazing volunteers, she was found in just two days. I’ll never forget what this community did for us.”
   </div>
-    <div class="rescue-stories-name">— Fatima Rahman</div>
-    <div class="rescue-stories-role">Mother of a Rescued Child</div>
+    <div class="rescue-stories-name" id="rescueStoriesName">— Fatima Rahman</div>
+    <div class="rescue-stories-role" id="rescueStoriesRole">Mother of a Rescued Child</div>
   </div>
   <div class="rescue-stories-bottom">
     <div class="rescue-stories-bottom-content">
@@ -314,6 +318,34 @@ A user-uploaded anonymous crime video helped police catch a suspect within 24 ho
       </span>
 <button class="rescue-stories-donate-btn" onclick="window.location.href='../Html/Donated.html'">MAKE A DONATION TODAY</button>
     </div>
+  </div>
+</div>
+<div class="chatbot-widget" id="chatbotWidget">
+  <button class="chatbot-fab" id="chatbotToggle" aria-label="Open chat support" title="Open chat support"><i class="fa fa-comments" aria-hidden="true"></i></button>
+  <div class="chatbot-panel" id="chatbotPanel" aria-hidden="true">
+    <div class="chatbot-header">
+      <div>
+        <strong>Searchar Assistant</strong>
+        <div class="chatbot-subtitle">Ask anything about this site</div>
+      </div>
+      <button class="chatbot-close" id="chatbotClose" aria-label="Close chat">x</button>
+    </div>
+    <div class="chatbot-help" id="chatbotHelpText">
+      You can ask about: Donation, Volunteer Join, Login, Report Clue, Latest News.
+    </div>
+    <div class="chatbot-quick" id="chatbotQuick">
+      <button type="button" class="chatbot-chip" data-q="How can I donate?">Donate</button>
+      <button type="button" class="chatbot-chip" data-q="How do I join as volunteer?">Volunteer</button>
+      <button type="button" class="chatbot-chip" data-q="How to report a clue?">Report Clue</button>
+      <button type="button" class="chatbot-chip" data-q="Where is latest news?">Latest News</button>
+    </div>
+    <div class="chatbot-messages" id="chatbotMessages">
+      <div class="chatbot-msg bot">Hi! Need help with donation, joining as volunteer, or reporting clues?</div>
+    </div>
+    <form class="chatbot-input-row" id="chatbotForm">
+      <input id="chatbotInput" type="text" placeholder="Type your message..." autocomplete="off">
+      <button type="submit">Send</button>
+    </form>
   </div>
 </div>
   <footer class="site-footer">
@@ -361,6 +393,7 @@ A user-uploaded anonymous crime video helped police catch a suspect within 24 ho
 </table>
 
 </body>
+    <script src="../javascrpit/news_data.js"></script>
     <script src="../javascrpit/Index.js"></script>
 
 </html>

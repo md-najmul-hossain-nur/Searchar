@@ -14,6 +14,26 @@ if (empty($_SESSION['user_id']) || empty($_SESSION['role'])) {
 $userId = (int)$_SESSION['user_id'];
 $role = strtolower(trim((string)$_SESSION['role']));
 
+function fetchComboVolunteerIds(PDO $pdo, int $userId): array {
+        $stmt = $pdo->prepare("SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'volunteer_applications' LIMIT 1");
+        $stmt->execute();
+        if (!(bool)$stmt->fetchColumn()) {
+                return [];
+        }
+
+        $q = $pdo->prepare("SELECT volunteer_id
+                                                FROM volunteer_applications
+                                                WHERE user_id = :uid
+                                                    AND LOWER(COALESCE(status, 'pending')) = 'approved'
+                                                    AND volunteer_id IS NOT NULL
+                                                    AND volunteer_id > 0
+                                                ORDER BY application_id DESC
+                                                LIMIT 3");
+        $q->execute([':uid' => $userId]);
+        $ids = $q->fetchAll(PDO::FETCH_COLUMN) ?: [];
+        return array_values(array_unique(array_map('intval', $ids)));
+}
+
 function recipientEntitiesForRole(string $role): array {
     return match ($role) {
         'user' => ['user', 'users'],
@@ -76,7 +96,29 @@ try {
     $notifications = [];
     $seenNotificationKeys = [];
     $entities = recipientEntitiesForRole($role);
-    $entityPlaceholders = implode(', ', array_fill(0, count($entities), '?'));
+
+    $recipientIds = [$userId, 0];
+    $allEntities = $entities;
+
+    // Combo mode: user account can also receive volunteer mission notifications.
+    if ($role === 'user') {
+        $comboVolunteerIds = fetchComboVolunteerIds($pdo, $userId);
+        foreach ($comboVolunteerIds as $vid) {
+            if ($vid > 0) {
+                $recipientIds[] = $vid;
+            }
+        }
+
+        if (!empty($comboVolunteerIds)) {
+            $allEntities = array_values(array_unique(array_merge($allEntities, ['volunteer', 'volunteers'])));
+        }
+    }
+
+    $allEntities = array_values(array_unique(array_filter($allEntities)));
+    $recipientIds = array_values(array_unique(array_filter(array_map('intval', $recipientIds), static fn($x) => $x >= 0)));
+
+    $entityPlaceholders = implode(', ', array_fill(0, count($allEntities), '?'));
+    $idPlaceholders = implode(', ', array_fill(0, count($recipientIds), '?'));
 
     if (tableExists($pdo, 'user_notifications')) {
         $hasTargetPost = columnExists($pdo, 'user_notifications', 'target_post_id');
@@ -91,13 +133,13 @@ try {
 
         $sql = "SELECT {$selectCols}
             FROM user_notifications
-            WHERE ((recipient_entity IN ({$entityPlaceholders}) AND recipient_id IN (?, 0))
+            WHERE ((recipient_entity IN ({$entityPlaceholders}) AND recipient_id IN ({$idPlaceholders}))
                    OR (recipient_entity IN ('all', 'broadcast') AND recipient_id IN (0, ?)))
             ORDER BY created_at DESC
             LIMIT 250";
 
         $stmt = $pdo->prepare($sql);
-        $params = array_merge($entities, [$userId, $userId]);
+        $params = array_merge($allEntities, $recipientIds, [$userId]);
         $stmt->execute($params);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

@@ -5,6 +5,10 @@
   <title>Searchar</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+  >
   <link rel="stylesheet" href="../css/JoinUs.css">
 </head>
 <body>
@@ -15,145 +19,156 @@
   </header>
 
   <main class="joinus-main">
-    <section class="hero-section">
-      <div class="hero-text">
-        <h1>
-          <i class="fas fa-video hero-icon"></i>
-          Become a Camera Contributor
-        </h1>
-        <p class="hero-subtitle">
-          <span class="highlight">Make your neighborhood safer—one camera at a time.</span>
+    <section class="join-hero">
+      <div class="join-hero-overlay"></div>
+      <div class="join-hero-content">
+        <span class="hero-chip reveal-text" data-delay="0">Community Safety Initiative</span>
+        <h1 class="reveal-text" data-delay="0.08">Share Your Camera. Help Save Lives.</h1>
+        <p class="reveal-text" data-delay="0.16">
+          Become a trusted camera contributor and support missing-person investigations with responsible live CCTV coverage.
         </p>
-        <a href="javascript:void(0);" class="cta-button" id="showRulesBtn">Join Now</a>
+        <div class="hero-actions reveal-text" data-delay="0.24">
+          <button class="cta-button" id="showRulesBtn">Join Now</button>
+          <a href="#join-flow" class="cta-secondary">How It Works</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="join-flow" id="join-flow">
+      <h2 class="reveal-text" data-delay="0">How Joining Works</h2>
+      <div class="flow-grid">
+        <article class="flow-card reveal-text" data-delay="0.08">
+          <span>01</span>
+          <h3>Submit Request</h3>
+          <p>Review the rules and submit your contributor interest form in minutes.</p>
+        </article>
+        <article class="flow-card reveal-text" data-delay="0.14">
+          <span>02</span>
+          <h3>Verification</h3>
+          <p>Our team checks your camera details and confirms safe participation standards.</p>
+        </article>
+        <article class="flow-card reveal-text" data-delay="0.2">
+          <span>03</span>
+          <h3>Go Live</h3>
+          <p>Once approved, you can support real-time monitoring and community alerts.</p>
+        </article>
       </div>
     </section>
 
     <section class="benefits-section">
-      <h2>
-        <i class="fas fa-gift"></i> Benefits of Joining
-      </h2>
+      <h2 class="reveal-text" data-delay="0"><i class="fas fa-gift"></i> Benefits of Joining</h2>
       <ul class="benefits-list">
-        <li>
-          <span class="benefit-icon"><i class="fas fa-hand-holding-usd"></i></span>
-          <span class="benefit-title">Monthly Honorarium</span>
-          <span class="benefit-desc">We value your support—get paid every month for your contribution.</span>
+        <li class="reveal-text" data-delay="0.06">
+          <i class="fas fa-hand-holding-usd"></i>
+          <div>
+            <h3>Monthly Honorarium</h3>
+            <p>Receive regular rewards for your verified contribution.</p>
+          </div>
         </li>
-        <li>
-          <span class="benefit-icon"><i class="fas fa-certificate"></i></span>
-          <span class="benefit-title">Official Digital Certificates</span>
-          <span class="benefit-desc">Receive digital recognition and badges you can share.</span>
+        <li class="reveal-text" data-delay="0.1">
+          <i class="fas fa-certificate"></i>
+          <div>
+            <h3>Digital Recognition</h3>
+            <p>Earn badges and certificates as a recognized contributor.</p>
+          </div>
         </li>
-        <li>
-          <span class="benefit-icon"><i class="fas fa-heart"></i></span>
-          <span class="benefit-title">Life-Saving Impact</span>
-          <span class="benefit-desc">Your camera could help find missing persons or prevent crimes.</span>
+        <li class="reveal-text" data-delay="0.14">
+          <i class="fas fa-shield-heart"></i>
+          <div>
+            <h3>Real Community Impact</h3>
+            <p>Your stream can directly help rescue operations and investigations.</p>
+          </div>
         </li>
-        <li>
-          <span class="benefit-icon"><i class="fas fa-users"></i></span>
-          <span class="benefit-title">Community Respect</span>
-          <span class="benefit-desc">Be recognized and appreciated by your neighbors.</span>
-        </li>
-        <li>
-          <span class="benefit-icon"><i class="fas fa-trophy"></i></span>
-          <span class="benefit-title">Exclusive Rewards</span>
-          <span class="benefit-desc">Get special event invites and top contributor perks.</span>
-        </li>
-        <li>
-          <span class="benefit-icon"><i class="fas fa-shield-alt"></i></span>
-          <span class="benefit-title">Safer Society</span>
-          <span class="benefit-desc">Help create a watchful, secure community for all.</span>
+        <li class="reveal-text" data-delay="0.18">
+          <i class="fas fa-users"></i>
+          <div>
+            <h3>Trusted Network</h3>
+            <p>Be part of a responsible public-safety contributor ecosystem.</p>
+          </div>
         </li>
       </ul>
     </section>
 
-    <section class="why-help-section">
-      <h2>
-        <i class="fas fa-question-circle"></i> Why Your Help Matters
-      </h2>
-      <p class="why-help-desc">
-        <strong>No government or police force can be everywhere, but together—every street becomes safer.</strong>
-        <br>
-        As a camera contributor, you bridge the gap between authorities and the community. Today, you help someone else; tomorrow, someone might help your loved ones.
+    <section class="why-help-section reveal-text" data-delay="0.05">
+      <h2>Why Your Help Matters</h2>
+      <p>
+        Authorities cannot be everywhere at once. Contributor cameras expand the visibility of critical areas and enable faster, smarter response.
       </p>
-      <blockquote class="impact-quote">
-        <i class="fas fa-star"></i>
-        <strong>Your small step creates a big difference!</strong>
-      </blockquote>
+      <blockquote>“Your one camera can become someone’s second chance.”</blockquote>
     </section>
   </main>
-  
+
   <div id="rulesModal" class="modal" style="display:none;">
-  <div class="modal-content enhanced-modal">
-    <!-- Illustration on left (desktop), hidden on mobile -->
-    <div class="modal-illustration" aria-hidden="true">
-      <img src="../Images/guidelines.gif" alt="Rules Icon" style="width:72px; height:72px; display:block; margin:auto;" />
-    </div>
-    <div class="modal-main">
-     
-     
-          <span class="guidelines-modal-close" id="closeRulesModal" tabindex="0" aria-label="Close">&times;</span>
-          <h2 class="guidelines-modal-title">
-            <img src="../Images/clipboard-gear.gif" alt="Rules Icon" style="width:32px; height:32px; vertical-align:middle; margin-right:10px;" />
-            Community Rules
-          </h2>
-          <ul class="guidelines-list">
-            <li>
-              <span class="guidelines-list-icon" aria-hidden="true">🤝</span>
-              <div>
-                <strong>Respect Everyone</strong>
-                <div>Treat all members with kindness and patience.</div>
-              </div>
-            </li>
-            <li>
-              <span class="guidelines-list-icon" aria-hidden="true">🛡️</span>
-              <div>
-                <strong>Community Safety</strong>
-                <div>Follow our platform’s safety and conduct policies.</div>
-              </div>
-            </li>
-            <li>
-              <span class="guidelines-list-icon" aria-hidden="true">🔒</span>
-              <div>
-                <strong>Protect Privacy</strong>
-                <div>Never post or share anyone’s personal details without permission.</div>
-              </div>
-            </li>
-            <li>
-              <span class="guidelines-list-icon" aria-hidden="true">💡</span>
-              <div>
-                <strong>Be Helpful & Active</strong>
-                <div>Participate, share alerts, and help improve safety.</div>
-              </div>
-            </li>
-            <li>
-              <span class="guidelines-list-icon" aria-hidden="true">🚩</span>
-              <div>
-                <strong>Report Concerns</strong>
-                <div>Immediately report suspicious or harmful activity to moderators.</div>
-              </div>
-            </li>
-            <li>
-              <span class="guidelines-list-icon" aria-hidden="true">🌟</span>
-              <div>
-                <strong>Support the Mission</strong>
-                <div>Help make neighborhoods safer for all.</div>
-              </div>
-            </li>
-          </ul>
-          <div class="guidelines-agree-row">
-            <label class="guidelines-checkbox-label">
-              <input type="checkbox" id="rulesAgreeCheckbox" />
-              I have read and agree to the rules above.
-            </label>
-          </div>
-          <button id="joinNowBtn" class="guidelines-cta-button" disabled>
-            Join Now
-          </button>
-        </div>
+    <div class="modal-content enhanced-modal">
+      <div class="modal-header">
+        <h2><i class="fas fa-clipboard-check"></i> Community Rules</h2>
+        <span class="guidelines-modal-close" id="closeRulesModal" tabindex="0" aria-label="Close">&times;</span>
       </div>
+
+      <ul class="guidelines-list">
+        <li><i class="fas fa-user-shield"></i><div><strong>Respect Privacy</strong><p>Never share personal footage or identity details publicly.</p></div></li>
+        <li><i class="fas fa-circle-check"></i><div><strong>Authentic Streams Only</strong><p>Use real and permitted camera sources with owner consent.</p></div></li>
+        <li><i class="fas fa-triangle-exclamation"></i><div><strong>Report Suspicious Activity</strong><p>Flag unusual activity through official reporting channels.</p></div></li>
+        <li><i class="fas fa-handshake"></i><div><strong>Professional Conduct</strong><p>Maintain respectful behavior with users and moderators.</p></div></li>
+      </ul>
+
+      <div class="guidelines-agree-row">
+        <label class="guidelines-checkbox-label">
+          <input type="checkbox" id="rulesAgreeCheckbox" />
+          I have read and agree to the community rules.
+        </label>
+      </div>
+
+      <button id="joinNowBtn" class="guidelines-cta-button" disabled>Continue to Join</button>
     </div>
   </div>
-</div>
+
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-col">
+        <div class="footer-title">ABOUT US</div>
+        <div class="footer-about">
+          This website is developed by <strong>Light Seekers</strong>, a group of students from the <strong>Department of CSE</strong>, <em>United International University</em>.
+        </div>
+        <div class="footer-contact">
+          <span><i class="fa fa-map-marker"></i> United City, Madani Avenue, Badda</span>
+          <span><i class="fa fa-envelope"></i> mnajmulhossainnur@gmail.com</span>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <div class="footer-title">WHAT WE DO</div>
+        <p style="margin-top: 10px; color: #ccc; font-size: 14px;">
+          We are Light Seekers, a CSE team from UIU, building impactful projects in gaming, robotics, and micro-eCommerce to solve real-life problems.
+          Want to know more?
+        </p>
+        <div class="footer-social">
+          <a href="https://www.youtube.com/@najmu-lhossain-nur" target="_blank" title="Visit our YouTube Channel">
+            <i class="fa fa-youtube-play" style="font-size: 24px; color: #FF0000;"></i>
+          </a>
+          <a href="https://www.facebook.com/profile.php?id=61578891052858" target="_blank" title="Visit our Facebook">
+            <i class="fa fa-facebook-official" style="font-size: 24px; color: #4267B2;"></i>
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-calendar">
+        <div class="footer-calendar-title">CALENDAR</div>
+        <table class="footer-calendar-table" id="calendar">
+          <thead>
+            <tr>
+              <th colspan="7" id="calendarHeader" style="background: #1a232a; color: #fff;"></th>
+            </tr>
+            <tr>
+              <th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th><th>S</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </footer>
+
   <script src="../javascrpit/JoinUs.js"></script>
 </body>
 </html>

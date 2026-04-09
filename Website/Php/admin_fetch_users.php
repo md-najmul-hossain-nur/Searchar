@@ -47,7 +47,27 @@ function fetchWarnedIdMap(PDO $pdo, string $role, array $ids): array {
 $data = [];
 
 try {
-    $stmt = $pdo->query('SELECT * FROM users LIMIT 300');
+    $hasVolunteerApplications = false;
+    $tableCheck = $pdo->query("SHOW TABLES LIKE 'volunteer_applications'");
+    if ($tableCheck && $tableCheck->fetch(PDO::FETCH_NUM)) {
+        $hasVolunteerApplications = true;
+    }
+
+    if ($hasVolunteerApplications) {
+        $sql = "SELECT u.*,
+                       EXISTS(
+                           SELECT 1
+                           FROM volunteer_applications va
+                           WHERE va.user_id = u.user_id
+                             AND LOWER(COALESCE(va.status, 'pending')) = 'approved'
+                       ) AS is_combo
+                FROM users u
+                LIMIT 300";
+    } else {
+        $sql = 'SELECT u.*, 0 AS is_combo FROM users u LIMIT 300';
+    }
+
+    $stmt = $pdo->query($sql);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $ids = array_map(static fn(array $row): int => (int)pickField($row, ['user_id', 'id'], '0'), $rows);
     $warnedMap = fetchWarnedIdMap($pdo, 'user', $ids);
@@ -77,7 +97,8 @@ try {
             'lat'           => $coords['lat'],
             'lon'           => $coords['lon'],
             'created_at'    => pickField($row, ['created_at'], ''),
-            'role'          => 'User',
+            'is_combo'      => (int)($row['is_combo'] ?? 0) === 1,
+            'role'          => (int)($row['is_combo'] ?? 0) === 1 ? 'User + Volunteer' : 'User',
             'warned_by_admin' => isset($warnedMap[$recordId]),
         ];
     }

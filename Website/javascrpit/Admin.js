@@ -265,9 +265,11 @@ setInterval(loadCameraSeries, 30000);
         { terms: ['missing', 'missing persons'], id: 'missing' },
         { terms: ['ai', 'ai detection logs'], id: 'ai' },
         { terms: ['crime', 'crime reporting'], id: 'crime' },
+        { terms: ['admin post', 'admin update'], id: 'admin-post' },
         { terms: ['post', 'post control'], id: 'post-control' },
         { terms: ['donation', 'donations control'], id: 'donations' },
         { terms: ['broadcast', 'notifications'], id: 'broadcast' },
+        { terms: ['volunteer approver', 'approver', 'approval'], id: 'volunteer-approver' },
         { terms: ['volunteer', 'volunteer missions'], id: 'volunteer' },
         { terms: ['withdraw', 'withdraw control'], id: 'withdraw' },
         { terms: ['review'], id: 'review' },
@@ -391,6 +393,7 @@ setInterval(loadCameraSeries, 30000);
 
 // Post control actions (Approve / Reject)
 let applyPostControlFilters = null;
+let postControlActionInFlight = 0;
 
 document.addEventListener('click', function (event) {
   const groupToggleButton = event.target.closest('[data-post-group-toggle]');
@@ -459,6 +462,41 @@ document.addEventListener('click', function (event) {
     const reporter = row?.dataset?.authorName || 'Unknown';
     const text = row?.dataset?.text || '';
     const landmark = row?.dataset?.category || '';
+    const mediaPathRaw = String(row?.dataset?.mediaPath || '').trim();
+    const mediaJsonRaw = String(row?.dataset?.mediaJson || '').trim();
+
+    const toAbsoluteLike = (v) => {
+      const s = String(v || '').trim();
+      if (!s) return '';
+      if (/^https?:\/\//i.test(s) || s.startsWith('../')) return s;
+      return `../${s.replace(/^\/+/, '')}`;
+    };
+
+    const mediaUrls = [];
+    if (mediaJsonRaw) {
+      try {
+        const parsed = JSON.parse(mediaJsonRaw);
+        if (Array.isArray(parsed)) {
+          parsed.forEach((item) => {
+            let raw = '';
+            if (typeof item === 'string') {
+              raw = item;
+            } else if (item && typeof item === 'object') {
+              raw = String(item.url || item.path || item.media_path || item.file || item.src || '');
+            }
+            const normalized = toAbsoluteLike(raw);
+            if (normalized) mediaUrls.push(normalized);
+          });
+        }
+      } catch (_err) {}
+    }
+
+    const normalizedMediaPath = toAbsoluteLike(mediaPathRaw);
+    if (!mediaUrls.length && normalizedMediaPath) {
+      mediaUrls.push(normalizedMediaPath);
+    }
+
+    const mediaPayload = mediaUrls.map((url) => ({ type: 'media', url, hash: '' }));
 
     sendCrimeBtn.disabled = true;
     const prevLabel = sendCrimeBtn.textContent;
@@ -484,7 +522,8 @@ document.addEventListener('click', function (event) {
             status: 'new',
             landmark,
             reporter,
-            description: text
+            description: text,
+            media: mediaPayload
           });
         }
 
@@ -524,6 +563,7 @@ document.addEventListener('click', function (event) {
   if (rejectButton && rejectButton !== actionButton) rejectButton.disabled = true;
 
   const targetStatus = action === 'approve' ? 'approved' : 'rejected';
+  postControlActionInFlight += 1;
 
   function setStatusUI(statusText) {
     statusElement.textContent = statusText;
@@ -574,6 +614,9 @@ document.addEventListener('click', function (event) {
       if (approveButton && approveButton !== actionButton) approveButton.disabled = false;
       if (rejectButton && rejectButton !== actionButton) rejectButton.disabled = false;
       alert('Could not update status. This post may already be decided or a network error occurred.');
+    })
+    .finally(() => {
+      postControlActionInFlight = Math.max(0, postControlActionInFlight - 1);
     });
 });
 
@@ -929,11 +972,207 @@ document.addEventListener('click', function (event) {
   applyPostControlFilters = applyPostControlFiltersWithOrder;
   document.addEventListener('admin:section-activated', function (event) {
     const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
-    if (sectionId === 'post-control') {
+    if (sectionId === 'post-control' && postControlActionInFlight === 0) {
+      loadPostRows();
+    }
+  });
+
+  document.addEventListener('admin:refresh-section', function (event) {
+    const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
+    if (sectionId === 'post-control' && postControlActionInFlight === 0) {
       loadPostRows();
     }
   });
   loadPostRows();
+})();
+
+// Admin direct post publish
+(function () {
+  const textInput = document.getElementById('admin-post-text');
+  const categoryInput = document.getElementById('admin-post-category');
+  const mediaInput = document.getElementById('admin-post-media');
+  const mediaName = document.getElementById('admin-post-media-name');
+  const shareFacebookInput = document.getElementById('admin-post-share-facebook');
+  const mediaPreview = document.getElementById('admin-post-media-preview');
+  const submitBtn = document.getElementById('admin-post-submit');
+  if (!textInput || !categoryInput || !submitBtn) return;
+
+  if (mediaInput && mediaPreview) {
+    mediaInput.addEventListener('change', () => {
+      const file = mediaInput.files && mediaInput.files[0] ? mediaInput.files[0] : null;
+      if (!file) {
+        if (mediaName) mediaName.textContent = 'No file chosen';
+        mediaPreview.innerHTML = 'Media preview will appear here';
+        return;
+      }
+
+      if (mediaName) {
+        mediaName.textContent = file.name;
+      }
+
+      const url = URL.createObjectURL(file);
+      if (file.type.startsWith('video/')) {
+        mediaPreview.innerHTML = `<video src="${url}" controls></video>`;
+      } else {
+        mediaPreview.innerHTML = `<img src="${url}" alt="Admin post media preview">`;
+      }
+    });
+  }
+
+  submitBtn.addEventListener('click', async () => {
+    const text = String(textInput.value || '').trim();
+    const category = String(categoryInput.value || 'general').trim().toLowerCase();
+    const mediaFile = mediaInput && mediaInput.files && mediaInput.files[0] ? mediaInput.files[0] : null;
+    const shareFacebook = shareFacebookInput && shareFacebookInput.checked ? '1' : '0';
+
+    if (!text && !mediaFile) {
+      alert('Please write post text or add image/video.');
+      return;
+    }
+
+    if (mediaFile && mediaFile.size > 20 * 1024 * 1024) {
+      alert('Media file is too large. Max 20MB allowed.');
+      return;
+    }
+
+    const prevLabel = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Publishing…';
+
+    try {
+      const body = new FormData();
+      body.append('text', text);
+      body.append('category', category);
+      body.append('share_facebook', shareFacebook);
+      if (mediaFile) {
+        body.append('media_file', mediaFile, mediaFile.name);
+      }
+
+      const res = await fetch('../Php/admin_publish_feed_post.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        body
+      });
+      const json = await res.json();
+      if (!json?.success) {
+        throw new Error(json?.error || 'Failed to publish post');
+      }
+
+      textInput.value = '';
+      if (mediaInput) mediaInput.value = '';
+      if (mediaName) mediaName.textContent = 'No file chosen';
+      if (shareFacebookInput) shareFacebookInput.checked = true;
+      if (mediaPreview) {
+        mediaPreview.innerHTML = 'Media preview will appear here';
+      }
+      alert('Admin post published successfully.');
+
+      document.dispatchEvent(new CustomEvent('admin:section-activated', {
+        detail: { sectionId: 'post-control' }
+      }));
+      if (typeof window.loadAdminPostActivity === 'function') {
+        window.loadAdminPostActivity();
+      }
+    } catch (error) {
+      console.error('Admin post publish failed', error);
+      alert(error?.message || 'Could not publish admin post right now.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = prevLabel;
+    }
+  });
+})();
+
+// Admin post activity (likes/comments/share + latest comments)
+(function () {
+  const tableBody = document.getElementById('admin-post-activity-body');
+  if (!tableBody) return;
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function formatDateTime(value) {
+    const date = new Date(value || '');
+    if (Number.isNaN(date.getTime())) return '—';
+    return date.toLocaleString();
+  }
+
+  function renderRows(rows) {
+    if (!Array.isArray(rows) || rows.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="8">No published admin posts found.</td></tr>';
+      return;
+    }
+
+    tableBody.innerHTML = rows.map((row) => {
+      const comments = Array.isArray(row.comments) ? row.comments : [];
+      const commentsHtml = comments.length
+        ? `<ul class="admin-post-activity-comments">${comments.map((commentRow) => {
+            const actor = escapeHtml(commentRow.actor_name || 'Someone');
+            const text = escapeHtml(commentRow.comment_text || '');
+            return `<li><strong>${actor}:</strong> ${text}</li>`;
+          }).join('')}</ul>`
+        : '<span class="admin-post-activity-empty">No comments yet</span>';
+
+      const shareHtml = Number(row.share_facebook || 0) === 1
+        ? '<span class="status active">Facebook On</span>'
+        : '<span class="status inactive">Facebook Off</span>';
+
+      return `
+        <tr>
+          <td>#${Number(row.id || 0)}</td>
+          <td class="admin-post-message-cell">${escapeHtml(row.text || '')}</td>
+          <td>${escapeHtml(row.category || 'general')}</td>
+          <td>${Number(row.likes_count || 0)}</td>
+          <td>${Number(row.comments_count || 0)}</td>
+          <td>${shareHtml}</td>
+          <td>${commentsHtml}</td>
+          <td>${escapeHtml(formatDateTime(row.created_at))}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function loadAdminPostActivity() {
+    tableBody.innerHTML = '<tr><td colspan="8">Loading admin post activity...</td></tr>';
+    try {
+      const res = await fetch('../Php/admin_fetch_admin_posts_activity.php', {
+        credentials: 'same-origin',
+        cache: 'no-store'
+      });
+      const json = await res.json();
+      if (!json?.success) {
+        throw new Error(json?.error || 'Failed to load admin post activity');
+      }
+      renderRows(Array.isArray(json.rows) ? json.rows : []);
+    } catch (error) {
+      console.error('admin post activity load failed', error);
+      tableBody.innerHTML = '<tr><td colspan="8">Failed to load admin post activity.</td></tr>';
+    }
+  }
+
+  window.loadAdminPostActivity = loadAdminPostActivity;
+
+  document.addEventListener('admin:section-activated', function (event) {
+    const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
+    if (sectionId === 'admin-post') {
+      loadAdminPostActivity();
+    }
+  });
+
+  document.addEventListener('admin:refresh-section', function (event) {
+    const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
+    if (sectionId === 'admin-post') {
+      loadAdminPostActivity();
+    }
+  });
+
+  loadAdminPostActivity();
 })();
 
 // Initialize the map
@@ -1125,6 +1364,7 @@ function openAddVolunteerModal() {
           <td>${escapeHtml(row.reporter_name || '—')}</td>
           <td>${escapeHtml(formatDate(row.created_at))}</td>
           <td>
+            <button type="button" class="view-profile-btn" data-missing-view="${reportId}">View</button>
             <button type="button" class="danger-btn" data-missing-reject="${reportId}" ${actionable ? '' : 'disabled'}>${actionable ? 'Reject' : 'Locked'}</button>
             <button type="button" data-send-to-crime="${reportId}" ${actionable ? '' : 'disabled'}>${actionable ? 'Make Report' : 'Reported'}</button>
           </td>
@@ -1237,6 +1477,42 @@ function openAddVolunteerModal() {
   loadMissingReports();
 
   document.addEventListener('click', (event) => {
+    const viewBtn = event.target.closest('[data-missing-view]');
+    if (viewBtn) {
+      const reportId = Number(viewBtn.getAttribute('data-missing-view') || 0);
+      if (!reportId) return;
+
+      const rowData = missingRows.find(r => Number(r.report_id || 0) === reportId);
+      if (!rowData) return;
+
+      const payload = {
+        __title: `Missing Person Report MP${String(reportId).padStart(4, '0')}`,
+        report_id: `MP${String(reportId).padStart(4, '0')}`,
+        full_name: rowData.full_name || '',
+        nickname: rowData.nickname || '',
+        age: rowData.age || '',
+        gender: rowData.gender || '',
+        status: prettyStatus(rowData.status || ''),
+        last_seen_date: rowData.last_seen_date || '',
+        last_seen_location: rowData.last_seen_location || '',
+        last_seen_time: rowData.last_seen_time || '',
+        physical_description: rowData.physical_description || '',
+        mental_condition: rowData.mental_condition || '',
+        medical_notes: rowData.medical_notes || '',
+        reporter_name: rowData.reporter_name || '',
+        reporter_mobile: rowData.reporter_mobile || '',
+        relationship: rowData.relationship || '',
+        consent: Number(rowData.consent || 0) === 1 ? 'Yes' : 'No',
+        submitted_at: rowData.created_at || '',
+        media_path: rowData.photo_filename ? `../uploads/missing_person/${rowData.photo_filename}` : ''
+      };
+
+      if (typeof window.openProfileModal === 'function') {
+        window.openProfileModal(payload, false);
+      }
+      return;
+    }
+
     const rejectBtn = event.target.closest('[data-missing-reject]');
     if (rejectBtn) {
       const reportId = Number(rejectBtn.getAttribute('data-missing-reject') || 0);
@@ -1250,7 +1526,7 @@ function openAddVolunteerModal() {
           if (idx >= 0) {
             missingRows[idx] = { ...missingRows[idx], status: nextStatus };
           }
-          applyFilters();
+          loadMissingReports();
         })
         .catch((error) => {
           console.error('missing reject failed', error);
@@ -1264,41 +1540,26 @@ function openAddVolunteerModal() {
     if (sendBtn) {
       const reportId = Number(sendBtn.getAttribute('data-send-to-crime') || 0);
       if (!reportId) return;
-      const caseId = `MP${String(reportId).padStart(4, '0')}`;
-      const row = sendBtn.closest('tr');
-      const landmark = row ? row.children[4]?.innerText || '' : '';
-      const reporter = row ? row.children[6]?.innerText || '' : 'Anonymous';
-      if (typeof window.pushCrimeFromExternal === 'function') {
-        window.pushCrimeFromExternal({
-          id: caseId,
-          type: 'missing_person',
-          severity: 'high',
-          status: 'new',
-          landmark,
-          reporter,
-          description: 'Escalated from Missing Persons'
+
+      updateMissingReportStatus(reportId, 'make_report')
+        .then((json) => {
+          const nextStatus = String(json?.status || 'under_review').toLowerCase();
+          const idx = missingRows.findIndex(r => Number(r.report_id || 0) === reportId);
+          if (idx >= 0) {
+            missingRows[idx] = { ...missingRows[idx], status: nextStatus };
+          }
+          loadMissingReports();
+
+          const crimeNav = document.querySelector('.sidebar li[data-section="crime"]');
+          if (crimeNav) {
+            crimeNav.click();
+          }
+        })
+        .catch((error) => {
+          console.error('missing make_report failed', error);
+          alert(error?.message || 'Could not mark report as processed. It may already be processed.');
+          loadMissingReports();
         });
-
-        updateMissingReportStatus(reportId, 'make_report')
-          .then((json) => {
-            const nextStatus = String(json?.status || 'under_review').toLowerCase();
-            const idx = missingRows.findIndex(r => Number(r.report_id || 0) === reportId);
-            if (idx >= 0) {
-              missingRows[idx] = { ...missingRows[idx], status: nextStatus };
-            }
-            applyFilters();
-
-            const crimeNav = document.querySelector('.sidebar li[data-section="crime"]');
-            if (crimeNav) {
-              crimeNav.click();
-            }
-          })
-          .catch((error) => {
-            console.error('missing make_report failed', error);
-            alert(error?.message || 'Could not mark report as processed. It may already be processed.');
-            loadMissingReports();
-          });
-      }
     }
   });
 })();
@@ -1456,85 +1717,32 @@ function openAddVolunteerModal() {
   }
 
   function loadCrimeReports() {
-    try {
-      const raw = localStorage.getItem(CRIME_STORAGE_KEY);
-      if (!raw) {
-        return defaultDemoCrimes.map(normalizeCrimeRow);
-      }
-      const parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed) || parsed.length === 0) {
-        return defaultDemoCrimes.map(normalizeCrimeRow);
-      }
-      return parsed.map(normalizeCrimeRow);
-    } catch (_) {
-      return defaultDemoCrimes.map(normalizeCrimeRow);
-    }
+    return [];
   }
 
   function saveCrimeReports(rows) {
-    try {
-      localStorage.setItem(CRIME_STORAGE_KEY, JSON.stringify(rows));
-    } catch (_) {
-    }
+    // Crime rows are DB-backed. Keep this as a no-op for compatibility.
   }
 
   async function syncCrimesFromMissingReports() {
     try {
-      const res = await fetch('../Php/fetch_missing_reports_admin.php', {
+      const res = await fetch('../Php/fetch_crime_reports_admin.php', {
         credentials: 'same-origin',
         cache: 'no-store'
       });
       const json = await res.json();
-      if (!json?.success || !Array.isArray(json.rows)) return;
-
-      const reportableRows = json.rows.filter(row => {
-        const st = String(row?.status || '').toLowerCase();
-        return st === 'under_review';
-      });
-
-      let changed = false;
-      reportableRows.forEach((row) => {
-        const reportId = Number(row?.report_id || 0);
-        if (!reportId) return;
-
-        const caseId = `MP${String(reportId).padStart(4, '0')}`;
-        const idx = demoCrimes.findIndex(c => String(c.id) === caseId);
-
-        const mapped = normalizeCrimeRow({
-          id: caseId,
-          type: 'missing_person',
-          severity: 'high',
-          status: 'new',
-          landmark: row?.last_seen_location || '—',
-          reporter: row?.reporter_name || 'Unknown',
-          submitted: row?.created_at || new Date().toISOString(),
-          updated_at: row?.created_at || new Date().toISOString(),
-          media: [],
-          anonymous: false,
-          token: '',
-          description: 'Escalated from Missing Persons'
-        });
-
-        if (idx === -1) {
-          demoCrimes.push(mapped);
-          changed = true;
-        } else if (String(demoCrimes[idx]?.type || '').toLowerCase() === 'missing_person') {
-          demoCrimes[idx] = {
-            ...demoCrimes[idx],
-            landmark: mapped.landmark,
-            reporter: mapped.reporter,
-            status: mapped.status
-          };
-          changed = true;
-        }
-      });
-
-      if (changed) {
-        saveCrimeReports(demoCrimes);
+      if (!json?.success || !Array.isArray(json.rows)) {
+        demoCrimes = [];
         applyFilters();
+        return;
       }
+
+      demoCrimes = json.rows.map(normalizeCrimeRow);
+      applyFilters();
     } catch (error) {
       console.error('missing->crime sync failed', error);
+      demoCrimes = [];
+      applyFilters();
     }
   }
 
@@ -1572,7 +1780,9 @@ function openAddVolunteerModal() {
   const crimeActionState = new Map();
   let currentAssignCaseId = null;
   let currentAssignMedia = [];
+  let currentAssignCoords = null;
   let assignCandidates = [];
+  const ASSIGN_RANGE_KM = 2;
 
   function getCrimeActionState(caseId) {
     const key = String(caseId || '');
@@ -1703,7 +1913,9 @@ function openAddVolunteerModal() {
             status: String(v.status || '').toLowerCase() === 'busy' ? 'busy' : 'available',
             role: 'volunteer',
             recipient_entity: 'volunteer',
-            recipient_id: Number(v.volunteer_id || 0)
+            recipient_id: Number(v.volunteer_id || 0),
+            lat: Number(v.lat ?? v.latitude),
+            lng: Number(v.lng ?? v.lon ?? v.longitude)
           }))
         : [];
 
@@ -1717,8 +1929,19 @@ function openAddVolunteerModal() {
   function closeCrimeAssignModal() {
     if (assignModal) assignModal.classList.remove('open');
     currentAssignCaseId = null;
+    currentAssignCoords = null;
   }
   window.closeCrimeAssignModal = closeCrimeAssignModal;
+
+  function haversineDistanceKm(lat1, lng1, lat2, lng2) {
+    const toRad = (deg) => (deg * Math.PI) / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+      + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return 6371 * c;
+  }
 
   function renderAssignList(landmark) {
     if (!assignList) return;
@@ -1736,68 +1959,35 @@ function openAddVolunteerModal() {
       return true;
     });
 
-    const term = String(landmark || '').trim().toLowerCase();
+    const caseLat = Number(currentAssignCoords?.lat);
+    const caseLng = Number(currentAssignCoords?.lng);
 
-    const nearbyAreas = {
-      banani: ['gulshan', 'kawran bazar', 'dhanmondi', 'farmgate'],
-      gulshan: ['banani', 'badda', 'bashundhara'],
-      dhanmondi: ['farmgate', 'mohammadpur', 'kawran bazar', 'banani'],
-      farmgate: ['dhanmondi', 'kawran bazar', 'mohammadpur', 'banani'],
-      uttara: ['mirpur', 'banani'],
-      mirpur: ['uttara', 'mohammadpur', 'farmgate'],
-      jatrabari: ['badda', 'kawran bazar'],
-      mohammadpur: ['dhanmondi', 'farmgate', 'mirpur'],
-      badda: ['gulshan', 'bashundhara', 'jatrabari'],
-      bashundhara: ['badda', 'gulshan', 'banani'],
-      'kawran bazar': ['farmgate', 'banani', 'dhanmondi']
-    };
-
-    const normalized = term
-      .replace('crossing', '')
-      .replace('intersection', '')
-      .replace('bus stand', '')
-      .replace(/\s+/g, ' ')
-      .trim();
-
-    const allAreas = Object.keys(nearbyAreas);
-    const baseArea = allAreas.find(area => normalized.includes(area)) || '';
-
+    const hasCaseCoords = Number.isFinite(caseLat) && Number.isFinite(caseLng);
     let filtered = [];
-    let matchType = 'All areas';
+    let matchType = `Within ${ASSIGN_RANGE_KM} KM`;
 
-    if (baseArea) {
-      filtered = eligibleSource.filter(v => String(v.location || '').toLowerCase().includes(baseArea));
-      if (filtered.length) matchType = 'Exact match';
-
-      if (!filtered.length) {
-        const nearSet = new Set([baseArea, ...(nearbyAreas[baseArea] || [])]);
-        filtered = eligibleSource.filter(v => {
-          const loc = String(v.location || '').toLowerCase();
-          return Array.from(nearSet).some(area => loc.includes(area));
-        });
-        if (filtered.length) matchType = 'Nearby match';
-      }
-    } else if (normalized) {
-      filtered = eligibleSource.filter(v => String(v.location || '').toLowerCase().includes(normalized));
-      if (filtered.length) matchType = 'Exact match';
-      if (!filtered.length) {
-        filtered = eligibleSource.filter(v => {
-          const loc = String(v.location || '').toLowerCase();
-          return normalized.split(' ').some(token => token && loc.includes(token));
-        });
-        if (filtered.length) matchType = 'Nearby match';
-      }
-    }
-
-    if (!filtered.length) {
-      filtered = eligibleSource;
-      matchType = 'All areas';
+    if (hasCaseCoords) {
+      filtered = eligibleSource
+        .map(v => {
+          const vLat = Number(v.lat);
+          const vLng = Number(v.lng);
+          if (!Number.isFinite(vLat) || !Number.isFinite(vLng)) {
+            return null;
+          }
+          const distanceKm = haversineDistanceKm(caseLat, caseLng, vLat, vLng);
+          return { ...v, distanceKm };
+        })
+        .filter(v => v && v.distanceKm <= ASSIGN_RANGE_KM)
+        .sort((a, b) => a.distanceKm - b.distanceKm);
+    } else {
+      matchType = 'Case coordinates unavailable';
+      filtered = [];
     }
 
     const header = `<div class="assign-vol-meta" style="padding:4px 8px 10px; font-weight:700;">Showing: ${matchType}</div>`;
 
     if (!filtered.length) {
-      assignList.innerHTML = `${header}<div class="assign-vol-meta" style="padding:8px;">No available volunteers for this case.</div>`;
+      assignList.innerHTML = `${header}<div class="assign-vol-meta" style="padding:8px;">No available volunteers within ${ASSIGN_RANGE_KM} KM for this case.</div>`;
       return;
     }
 
@@ -1807,7 +1997,7 @@ function openAddVolunteerModal() {
           <span>
             <input type="checkbox" value="${v.id}" data-recipient-entity="${v.recipient_entity || ''}" data-recipient-id="${v.recipient_id || ''}" data-recipient-name="${v.name || ''}">
             <strong>${v.name}</strong>
-            <div class="assign-vol-meta">${v.location || 'Location unavailable'} • ${v.status}</div>
+            <div class="assign-vol-meta">${v.location || 'Location unavailable'} • ${v.status} • ${Number(v.distanceKm).toFixed(2)} KM</div>
           </span>
         </label>
       `;
@@ -1852,9 +2042,12 @@ function openAddVolunteerModal() {
     }
   }
 
-  function openAssignModal(caseId, landmark, media = []) {
+  function openAssignModal(caseId, landmark, media = [], coords = null) {
     currentAssignCaseId = caseId;
     currentAssignMedia = Array.isArray(media) ? media : [];
+    currentAssignCoords = coords && Number.isFinite(Number(coords.lat)) && Number.isFinite(Number(coords.lng))
+      ? { lat: Number(coords.lat), lng: Number(coords.lng) }
+      : null;
     if (assignCaseIdEl) assignCaseIdEl.textContent = caseId;
     if (assignCaseLandmarkEl) assignCaseLandmarkEl.textContent = landmark || '—';
     renderAssignList(landmark || '');
@@ -1990,7 +2183,14 @@ function openAddVolunteerModal() {
       fillOpacity: 0.6
     });
 
-    const mediaList = (crime.media || []).map(m => `<li>${m.type || 'media'} — hash ${m.hash || '—'}</li>`).join('');
+    const mediaList = (crime.media || []).map((m, idx) => {
+      const mediaUrl = String(m?.url || m?.path || '').trim();
+      const mediaType = String(m?.type || 'media').trim() || 'media';
+      if (!mediaUrl) {
+        return `<li>${mediaType}</li>`;
+      }
+      return `<li><a href="${mediaUrl}" target="_blank" rel="noopener">${mediaType} ${idx + 1}</a></li>`;
+    }).join('');
     const popup = `
       <div style="min-width:220px;">
         <div style="font-weight:800; margin-bottom:4px;">${crime.id} • ${statusLabel(crime.status)}</div>
@@ -1999,7 +2199,6 @@ function openAddVolunteerModal() {
         <div><strong>Landmark:</strong> ${crime.landmark || '—'}</div>
         <div><strong>Submitted:</strong> ${formatDateLocal(crime.submitted)}</div>
         <div><strong>Reporter:</strong> ${crime.anonymous ? 'Anonymous' : (crime.reporter || '—')}</div>
-        ${crime.anonymous && crime.token ? `<div><strong>Token:</strong> ${crime.token}</div>` : ''}
         <div><strong>Evidence:</strong><ul style="padding-left:18px; margin:6px 0 0;">${mediaList || '<li>None</li>'}</ul></div>
       </div>`;
 
@@ -2128,7 +2327,7 @@ function openAddVolunteerModal() {
       }
 
       if (q) {
-        const haystack = `${r.id} ${r.type} ${r.landmark || ''} ${r.token || ''} ${statusVal}`.toLowerCase();
+        const haystack = `${r.id} ${r.type} ${r.landmark || ''} ${statusVal}`.toLowerCase();
         if (!haystack.includes(q)) return false;
       }
 
@@ -2246,6 +2445,10 @@ function openAddVolunteerModal() {
     const crime = demoCrimes.find(c => c.id === id);
     if (!crime) return;
 
+    const mediaFiles = (Array.isArray(crime.media) ? crime.media : [])
+      .map((item) => String(item?.url || item?.path || '').trim())
+      .filter(Boolean);
+
     const payload = {
       __title: `Case ${crime.id}`,
       case_id: crime.id,
@@ -2257,10 +2460,9 @@ function openAddVolunteerModal() {
       updated_at: formatDateLocal(crime.updated_at),
       coordinates: `${crime.lat.toFixed(5)}, ${crime.lng.toFixed(5)}`,
       reporter: crime.anonymous ? 'Anonymous' : (crime.reporter || '—'),
-      token: crime.anonymous ? (crime.token || '—') : '',
-      reward_paid: crime.reward_paid ? 'Yes' : 'No',
       description: crime.description || '',
-      media_json: JSON.stringify(crime.media || [])
+      media_path: mediaFiles[0] || '',
+      media_json: JSON.stringify(mediaFiles)
     };
 
     if (typeof window.openProfileModal === 'function') {
@@ -2342,7 +2544,7 @@ function openAddVolunteerModal() {
         if (state.assigned || state.rejected) return;
         const crime = demoCrimes.find(c => c.id === id);
         if (String(crime?.status || '').toLowerCase() === 'closed') return;
-        openAssignModal(id, crime?.landmark || '', crime?.media || []);
+        openAssignModal(id, crime?.landmark || '', crime?.media || [], { lat: crime?.lat, lng: crime?.lng });
         return;
       }
 
@@ -2378,6 +2580,13 @@ function openAddVolunteerModal() {
         }
       });
     }
+
+    document.addEventListener('admin:section-activated', (event) => {
+      const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
+      if (sectionId === 'crime') {
+        syncCrimesFromMissingReports();
+      }
+    });
   }
 
   initMap();
@@ -2386,6 +2595,7 @@ function openAddVolunteerModal() {
   generateAnonToken();
   applyFilters();
   syncCrimesFromMissingReports();
+  setInterval(syncCrimesFromMissingReports, 15000);
 })();
 
 // Load Donations, Broadcast, Volunteer Missions, Withdraw sections
@@ -2400,8 +2610,14 @@ function openAddVolunteerModal() {
   const donationsTopDonor = document.getElementById('donations-top-donor');
   const withdrawTotalAmount = document.getElementById('withdraw-total-amount');
   const withdrawPendingCount = document.getElementById('withdraw-pending-count');
+  const miscSectionIds = ['donations', 'broadcast', 'volunteer', 'withdraw'];
+  let isLoadingMiscSections = false;
 
   if (!donationsBody && !broadcastBody && !missionsBody && !withdrawBody) return;
+
+  function shouldAutoRefreshMiscSections() {
+    return !document.hidden;
+  }
 
   function esc(v) {
     return String(v ?? '')
@@ -2465,6 +2681,11 @@ function openAddVolunteerModal() {
   }
 
   async function loadMiscSections() {
+    if (isLoadingMiscSections) {
+      return;
+    }
+
+    isLoadingMiscSections = true;
     try {
       const res = await fetch('../Php/admin_fetch_misc_sections.php', {
         credentials: 'same-origin',
@@ -2506,22 +2727,26 @@ function openAddVolunteerModal() {
 
       if (donationsBody) {
         if (!donations.length) {
-          setNoData(donationsBody, 6, 'No donations found.');
+          setNoData(donationsBody, 8, 'No donations found.');
         } else {
           donationsBody.innerHTML = donations.map(d => `
             <tr>
               <td>${esc(d.donor_name || 'Anonymous')}</td>
+              <td>${esc(d.sender_mobile || '—')}</td>
+              <td>${esc(d.tx_id || '—')}</td>
               <td>৳${esc(Number(d.amount || 0).toFixed(2))}</td>
               <td>${esc(fmtDate(d.date))}</td>
               <td>${Number(d.anonymous || 0) === 1 ? 'Yes' : 'No'}</td>
               <td>${esc(d.message || '—')}</td>
-              <td><button type="button" data-donation-report="1" data-donor-name="${esc(d.donor_name || 'Anonymous')}" data-donation-amount="${esc(Number(d.amount || 0).toFixed(2))}" data-donation-date="${esc(d.date || '')}" data-donation-anon="${esc(Number(d.anonymous || 0))}" data-donation-message="${esc(d.message || '')}">Report</button></td>
+              <td><button type="button" data-donation-report="1" data-donor-name="${esc(d.donor_name || 'Anonymous')}" data-donation-mobile="${esc(d.sender_mobile || '')}" data-donation-txid="${esc(d.tx_id || '')}" data-donation-amount="${esc(Number(d.amount || 0).toFixed(2))}" data-donation-date="${esc(d.date || '')}" data-donation-anon="${esc(Number(d.anonymous || 0))}" data-donation-message="${esc(d.message || '')}">Report</button></td>
             </tr>
           `).join('');
 
           donationsBody.querySelectorAll('[data-donation-report]').forEach(btn => {
             btn.addEventListener('click', () => {
               const donorName = String(btn.getAttribute('data-donor-name') || 'Anonymous');
+              const donorMobile = String(btn.getAttribute('data-donation-mobile') || '').trim() || '—';
+              const donationTxId = String(btn.getAttribute('data-donation-txid') || '').trim() || '—';
               const amount = String(btn.getAttribute('data-donation-amount') || '0.00');
               const dateText = String(btn.getAttribute('data-donation-date') || '');
               const anonymous = String(btn.getAttribute('data-donation-anon') || '0') === '1' ? 'Yes' : 'No';
@@ -2540,7 +2765,7 @@ function openAddVolunteerModal() {
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#39;');
 
-              popup.document.write(`<!doctype html><html><head><title>Donation Report</title><style>body{font-family:Arial,sans-serif;padding:20px;color:#1f2937}h2{margin-top:0}table{border-collapse:collapse;width:100%;margin-top:12px}th,td{border:1px solid #d1d5db;padding:10px;text-align:left}th{background:#f3f4f6}</style></head><body><h2>Donation Report</h2><table><tr><th>Donor</th><td>${safe(donorName)}</td></tr><tr><th>Amount</th><td>৳${safe(amount)}</td></tr><tr><th>Date</th><td>${safe(fmtDate(dateText))}</td></tr><tr><th>Anonymous</th><td>${safe(anonymous)}</td></tr><tr><th>Message</th><td>${safe(message)}</td></tr></table><p style="margin-top:16px;color:#6b7280">Generated from SEARCHAR Admin Panel</p></body></html>`);
+              popup.document.write(`<!doctype html><html><head><title>Donation Report</title><style>body{font-family:Arial,sans-serif;padding:20px;color:#1f2937}h2{margin-top:0}table{border-collapse:collapse;width:100%;margin-top:12px}th,td{border:1px solid #d1d5db;padding:10px;text-align:left}th{background:#f3f4f6}</style></head><body><h2>Donation Report</h2><table><tr><th>Donor</th><td>${safe(donorName)}</td></tr><tr><th>Mobile</th><td>${safe(donorMobile)}</td></tr><tr><th>TxID</th><td>${safe(donationTxId)}</td></tr><tr><th>Amount</th><td>৳${safe(amount)}</td></tr><tr><th>Date</th><td>${safe(fmtDate(dateText))}</td></tr><tr><th>Anonymous</th><td>${safe(anonymous)}</td></tr><tr><th>Message</th><td>${safe(message)}</td></tr></table><p style="margin-top:16px;color:#6b7280">Generated from SEARCHAR Admin Panel</p></body></html>`);
               popup.document.close();
             });
           });
@@ -2589,6 +2814,7 @@ function openAddVolunteerModal() {
               groupsMap.set(key, {
                 volunteer_name: m?.volunteer_name || 'Volunteer',
                 profile_photo: m?.profile_photo || '',
+                profile_photo_entity: m?.profile_photo_entity || '',
                 volunteer_rank: m?.volunteer_rank || 'Junior',
                 volunteer_points: Number(m?.volunteer_points || 0),
                 missions: []
@@ -2598,6 +2824,7 @@ function openAddVolunteerModal() {
             g.volunteer_points = Math.max(Number(g.volunteer_points || 0), Number(m?.volunteer_points || 0));
             g.volunteer_rank = m?.volunteer_rank || g.volunteer_rank;
             g.profile_photo = g.profile_photo || (m?.profile_photo || '');
+            g.profile_photo_entity = g.profile_photo_entity || (m?.profile_photo_entity || '');
             g.missions.push(m);
           });
 
@@ -2618,6 +2845,27 @@ function openAddVolunteerModal() {
             const pending = Math.max(0, missionCount - done - busy);
             const proofDone = g.missions.filter(m => String(m.proof_file || '').trim() !== '').length;
             const latest = g.missions[0] || {};
+            const volunteerProfilePayload = encodeURIComponent(JSON.stringify({
+              __title: 'Volunteer Mission Profile',
+              __readOnly: true,
+              __entity: 'volunteers',
+              __id: latest?.volunteer_id || '',
+              volunteer_id: latest?.volunteer_id || '',
+              full_name: g?.volunteer_name || 'Volunteer',
+              volunteer_name: g?.volunteer_name || 'Volunteer',
+              profile_photo: g?.profile_photo || '',
+              profile_photo_entity: g?.profile_photo_entity || '',
+              volunteer_rank: g?.volunteer_rank || 'Junior',
+              volunteer_points: Number(g?.volunteer_points || 0),
+              total_missions: missionCount,
+              pending_missions: pending,
+              completed_missions: done,
+              busy_missions: busy,
+              proofs_submitted: `${proofDone}/${missionCount}`,
+              latest_mission_title: latest?.mission_title || '—',
+              latest_mission_location: latest?.mission_location || '—',
+              last_assigned_at: latest?.assigned_at || ''
+            }));
 
             const detailsHtml = g.missions.map((m, idx) => {
               const state = normalizeMissionState(m.status, m.response_status).lifeState;
@@ -2652,7 +2900,7 @@ function openAddVolunteerModal() {
               <tr>
                 <td>
                   ${esc(g.volunteer_name || 'Volunteer')} <small>(${missionCount} missions)</small>
-                  ${g.profile_photo ? ` • <a href="${esc(volunteerProfileUrl(g.profile_photo))}" target="_blank" rel="noopener">View Profile</a>` : ''}
+                  • <button type="button" class="view-profile-btn" data-volunteer-profile="${esc(volunteerProfilePayload)}">View Profile</button>
                 </td>
                 <td><strong>${esc(latest.mission_title || 'Mission')}</strong></td>
                 <td>${esc(fmtDate(latest.assigned_at))}</td>
@@ -2693,6 +2941,19 @@ function openAddVolunteerModal() {
                 detailRow.style.display = 'table-row';
                 btn.setAttribute('data-expanded', '1');
                 btn.textContent = 'Hide Missions';
+              }
+            });
+          });
+
+          missionsBody.querySelectorAll('[data-volunteer-profile]').forEach((btn) => {
+            btn.addEventListener('click', () => {
+              try {
+                const payload = JSON.parse(decodeURIComponent(String(btn.getAttribute('data-volunteer-profile') || '')));
+                if (typeof window.openProfileModal === 'function') {
+                  window.openProfileModal(payload, false);
+                }
+              } catch (error) {
+                console.error('volunteer profile parse failed', error);
               }
             });
           });
@@ -2785,7 +3046,7 @@ function openAddVolunteerModal() {
         }
       }
     } catch (error) {
-      if (donationsBody) setNoData(donationsBody, 6, 'Failed to load donations.');
+      if (donationsBody) setNoData(donationsBody, 8, 'Failed to load donations.');
       if (broadcastBody) setNoData(broadcastBody, 6, 'Failed to load broadcast notifications.');
       if (missionsBody) setNoData(missionsBody, 9, 'Failed to load volunteer missions.');
       if (withdrawBody) setNoData(withdrawBody, 5, 'Failed to load withdrawals.');
@@ -2796,6 +3057,8 @@ function openAddVolunteerModal() {
       if (volunteerTotalMissions) volunteerTotalMissions.textContent = '0';
       if (volunteerThisMonth) volunteerThisMonth.textContent = '0';
       console.error('misc section load failed', error);
+    } finally {
+      isLoadingMiscSections = false;
     }
   }
 
@@ -2804,10 +3067,23 @@ function openAddVolunteerModal() {
   document.addEventListener('admin:refresh-section', (event) => {
     const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
     if (!sectionId) return;
-    if (['donations', 'broadcast', 'volunteer', 'withdraw'].includes(sectionId)) {
+    if (miscSectionIds.includes(sectionId)) {
       loadMiscSections();
     }
   });
+
+  document.addEventListener('admin:section-activated', (event) => {
+    const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
+    if (miscSectionIds.includes(sectionId)) {
+      loadMiscSections();
+    }
+  });
+
+  setInterval(() => {
+    if (shouldAutoRefreshMiscSections()) {
+      loadMiscSections();
+    }
+  }, 10000);
 })();
 
 // Dashboard pending action queue
@@ -2838,7 +3114,10 @@ function openAddVolunteerModal() {
     const missingPending = Number(summary?.missing_pending || 0);
     const withdrawPending = Number(summary?.withdraw_pending || 0);
     const missionPending = Number(summary?.mission_proof_pending || 0);
-    summaryEl.textContent = `Post ${postPending} • Missing ${missingPending} • Withdraw ${withdrawPending} • Proof ${missionPending}`;
+    const volunteerPending = Number(summary?.volunteer_pending || 0);
+    const reportPending = Number(summary?.report_pending || 0);
+    const chatLogTotal = Number(summary?.chat_log_total || 0);
+    summaryEl.textContent = `Post ${postPending} • Volunteer ${volunteerPending} • Report ${reportPending} • Missing ${missingPending} • Withdraw ${withdrawPending} • Proof ${missionPending} • Chat Log ${chatLogTotal}`;
   }
 
   function statusChip(statusText) {
@@ -2863,6 +3142,7 @@ function openAddVolunteerModal() {
       const itemLabel = String(row?.item_label || '—').trim() || '—';
       const section = String(row?.section || '').trim().toLowerCase();
       const searchKey = String(row?.search_key || '').trim();
+      const actionHtml = `<button type="button" class="ghost" data-queue-open="1" data-queue-type="${esc(type)}" data-queue-section="${esc(section)}" data-queue-search="${esc(searchKey)}" data-queue-ref="${esc(itemRef)}">Open</button>`;
 
       return `
         <tr>
@@ -2871,7 +3151,7 @@ function openAddVolunteerModal() {
           <td><strong>${esc(itemRef)}</strong><br><small>${esc(itemLabel)}</small></td>
           <td>${statusChip(String(row?.status || 'Pending'))}</td>
           <td>${esc(fmtDate(row?.submitted_at || ''))}</td>
-          <td><button type="button" class="ghost" data-queue-open="1" data-queue-section="${esc(section)}" data-queue-search="${esc(searchKey)}" data-queue-ref="${esc(itemRef)}">Open</button></td>
+          <td>${actionHtml}</td>
         </tr>
       `;
     }).join('');
@@ -2886,8 +3166,14 @@ function openAddVolunteerModal() {
     }, 2200);
   }
 
-  function openQueueTarget(section, searchKey, itemRef) {
-    const targetSection = String(section || '').trim().toLowerCase();
+  function openQueueTarget(section, searchKey, itemRef, queueType) {
+    let targetSection = String(section || '').trim().toLowerCase();
+    const normalizedType = String(queueType || '').trim().toLowerCase();
+
+    if (normalizedType === 'volunteer application' && targetSection === 'volunteer') {
+      targetSection = 'volunteer-approver';
+    }
+
     if (!targetSection) return;
 
     if (typeof activateSection === 'function') {
@@ -2955,24 +3241,54 @@ function openAddVolunteerModal() {
         const row = Array.from(document.querySelectorAll('#volunteer-mission-body tr'))
           .find(tr => (tr.textContent || '').toLowerCase().includes(String(searchKey || '').toLowerCase()));
         if (row) jumpHighlight(row);
+        return;
+      }
+
+      if (targetSection === 'reports') {
+        const input = document.getElementById('reports-filter-text');
+        if (input && searchKey) {
+          input.value = searchKey;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        const row = Array.from(document.querySelectorAll('#reports-table-body tr'))
+          .find(tr => {
+            const first = tr.querySelector('td:first-child');
+            if (first && (first.textContent || '').trim() === String(itemRef || '').trim()) return true;
+            return (tr.textContent || '').toLowerCase().includes(String(searchKey || '').toLowerCase());
+          });
+        if (row) jumpHighlight(row);
       }
     }, 350);
   }
 
+  let actionQueueBroken = false;
+
   async function loadActionQueue() {
+    if (actionQueueBroken) return;
     try {
       const res = await fetch('../Php/admin_fetch_action_queue.php', {
         credentials: 'same-origin',
         cache: 'no-store'
       });
-      const json = await res.json();
+      const raw = await res.text();
+      const trimmed = String(raw || '').trim();
+      if (trimmed.startsWith('<?php')) {
+        actionQueueBroken = true;
+        throw new Error('PHP source returned instead of JSON.');
+      }
+
+      const json = JSON.parse(trimmed || '{}');
       if (!json?.success) throw new Error(json?.error || 'Failed to load action queue');
       setSummary(json.summary || {});
       renderRows(Array.isArray(json.rows) ? json.rows : []);
     } catch (error) {
       console.error('action queue load failed', error);
       if (summaryEl) summaryEl.textContent = 'Load failed';
-      queueBody.innerHTML = '<tr><td colspan="6">Failed to load pending actions.</td></tr>';
+      if (actionQueueBroken) {
+        queueBody.innerHTML = '<tr><td colspan="6">PHP endpoint is not executing. Run project through XAMPP/Apache localhost.</td></tr>';
+      } else {
+        queueBody.innerHTML = '<tr><td colspan="6">Failed to load pending actions.</td></tr>';
+      }
     }
   }
 
@@ -2982,7 +3298,8 @@ function openAddVolunteerModal() {
     openQueueTarget(
       btn.getAttribute('data-queue-section') || '',
       btn.getAttribute('data-queue-search') || '',
-      btn.getAttribute('data-queue-ref') || ''
+      btn.getAttribute('data-queue-ref') || '',
+      btn.getAttribute('data-queue-type') || ''
     );
   });
 
@@ -2995,7 +3312,7 @@ function openAddVolunteerModal() {
 
   document.addEventListener('admin:refresh-section', (event) => {
     const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
-    if (['post-control', 'missing', 'volunteer', 'withdraw', 'dashboard'].includes(sectionId)) {
+    if (['post-control', 'missing', 'volunteer', 'volunteer-approver', 'withdraw', 'reports', 'dashboard'].includes(sectionId)) {
       loadActionQueue();
     }
   });
@@ -3099,6 +3416,236 @@ function openAddVolunteerModal() {
 
 // Remove redundant crime assign modal block (logic moved inside crime module)
 
+(function () {
+  const section = document.getElementById('reports');
+  if (!section) return;
+
+  const tableBody = document.getElementById('reports-table-body');
+  if (!tableBody) return;
+  let reportsLoadInFlight = false;
+
+  function esc(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function titleCase(value) {
+    const txt = String(value || '').trim();
+    if (!txt) return '—';
+    return txt.charAt(0).toUpperCase() + txt.slice(1);
+  }
+
+  function formatDate(value) {
+    if (!value) return '—';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return esc(String(value));
+    return date.toISOString().slice(0, 10);
+  }
+
+  function mediaBadge(row) {
+    const source = String(row?.report_source || 'post').toLowerCase();
+    if (source === 'comment') return 'Comment/Reply';
+
+    const type = String(row?.media_type || row?.post_media_type || '').toLowerCase();
+    const mediaJson = String(row?.media_json || '').trim();
+    const mediaPath = String(row?.media_path || '').trim();
+
+    if (mediaJson) {
+      try {
+        const arr = JSON.parse(mediaJson);
+        if (Array.isArray(arr) && arr.length > 0) {
+          return `${arr.length} image${arr.length > 1 ? 's' : ''}`;
+        }
+      } catch (_e) {}
+    }
+
+    if (type === 'video' && mediaPath) return 'Video';
+    if (type === 'image' && mediaPath) return 'Image';
+    if (mediaPath) return 'Media';
+    return 'No media';
+  }
+
+  function statusBadge(statusRaw) {
+    const status = String(statusRaw || 'pending').toLowerCase();
+    if (status === 'resolved') return '<span class="status-approved">Resolved</span>';
+    if (status === 'under_review') return '<span class="status-pending">Under Review</span>';
+    if (status === 'dismissed') return '<span class="status-rejected">Dismissed</span>';
+    return '<span class="status-pending">Pending</span>';
+  }
+
+  function toProfilePayload(row) {
+    const mediaPathRaw = String(row?.media_path || '').trim();
+    const mediaPath = mediaPathRaw && !/^https?:\/\//i.test(mediaPathRaw) && !mediaPathRaw.startsWith('../')
+      ? `../${mediaPathRaw.replace(/^\/+/, '')}`
+      : mediaPathRaw;
+
+    return {
+      __title: 'Post Report Details',
+      report_source: row?.report_source || 'post',
+      report_category: row?.report_category || '',
+      report_details: row?.report_details || '',
+      report_submitted_at: row?.report_created_at || '',
+      reporter_name: row?.reporter_name || '',
+      reporter_role: row?.reporter_role || '',
+      reported_user_name: row?.reported_name || row?.post_author_name || '',
+      reported_user_role: row?.reported_role || row?.post_author_role || '',
+      target_preview_text: row?.target_preview_text || '',
+      post_category: row?.post_category || '',
+      post_text: row?.post_text || '',
+      media_path: mediaPath,
+      media_json: row?.media_json || '',
+      media_type: row?.media_type || '',
+      admin_action_note: row?.admin_action_note || ''
+    };
+  }
+
+  function renderRows(rows) {
+    if (!Array.isArray(rows) || rows.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="7">No post reports found.</td></tr>';
+      return;
+    }
+
+    tableBody.innerHTML = rows.map(row => {
+      const status = String(row?.status || 'pending').toLowerCase();
+      const source = String(row?.report_source || 'post').toLowerCase();
+      const reportId = Number(row?.report_id || 0);
+      const postId = Number(row?.post_id || 0);
+      const reportCode = reportId > 0 ? `PR-${String(reportId).padStart(4, '0')}` : '—';
+      const postCode = postId > 0 ? `PT-${String(postId).padStart(4, '0')}` : '—';
+      const profilePayload = encodeURIComponent(JSON.stringify(toProfilePayload(row)));
+      const canReview = status === 'pending';
+      const canResolve = status === 'pending' || status === 'under_review';
+
+      return `
+        <tr data-report-id="${esc(reportId)}" data-report-source="${esc(source)}" data-report-status="${esc(status)}" data-report-payload="${profilePayload}">
+          <td>${esc(reportCode)}</td>
+          <td>${esc(source === 'comment' ? (postCode + ' • Comment') : (postCode + ' • ' + mediaBadge(row)))}</td>
+          <td>${esc(row?.reporter_name || 'Unknown')}</td>
+          <td>${esc(row?.reported_name || row?.post_author_name || 'Unknown')}</td>
+          <td>${esc(row?.report_category || 'Other')}</td>
+          <td>${statusBadge(status)}</td>
+          <td>${esc(formatDate(row?.report_created_at || ''))}</td>
+          <td>
+            <button type="button" class="view-profile-btn" data-report-view="1">View Details</button>
+            <button type="button" class="ghost" data-report-action="mark_reviewed" ${canReview ? '' : 'disabled'}>Review</button>
+            <button type="button" data-report-action="resolve" ${canResolve ? '' : 'disabled'}>Resolve</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function applyReportsFilterIfNeeded() {
+    const input = document.getElementById('reports-filter-text');
+    if (!input) return;
+    const activeQuery = String(input.value || '').trim();
+    if (!activeQuery) return;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  async function loadReports(options = {}) {
+    const silent = Boolean(options?.silent);
+    if (reportsLoadInFlight) return;
+    reportsLoadInFlight = true;
+
+    if (!silent) {
+      tableBody.innerHTML = '<tr><td colspan="7">Loading post reports...</td></tr>';
+    }
+
+    try {
+      const res = await fetch('../Php/admin_fetch_post_reports.php', {
+        credentials: 'same-origin',
+        cache: 'no-store'
+      });
+      const json = await res.json();
+      if (!json?.success) throw new Error(json?.error || 'Failed to load reports');
+      renderRows(Array.isArray(json.rows) ? json.rows : []);
+      applyReportsFilterIfNeeded();
+    } catch (error) {
+      console.error('admin post reports load failed', error);
+      if (!silent) {
+        tableBody.innerHTML = '<tr><td colspan="7">Failed to load post reports.</td></tr>';
+      }
+    } finally {
+      reportsLoadInFlight = false;
+    }
+  }
+
+  async function updateReportStatus(reportId, reportSource, action, button) {
+    const prevText = button?.textContent || '';
+    if (button) {
+      button.disabled = true;
+      button.textContent = action === 'resolve' ? 'Resolving…' : 'Updating…';
+    }
+
+    try {
+      const res = await fetch('../Php/admin_update_post_report_status.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ report_id: reportId, report_source: reportSource, action })
+      });
+      const json = await res.json();
+      if (!res.ok || !json?.success) throw new Error(json?.error || 'Update failed');
+      await loadReports();
+    } catch (error) {
+      console.error('update post report status failed', error);
+      alert(error?.message || 'Could not update report status.');
+      if (button) {
+        button.disabled = false;
+        button.textContent = prevText;
+      }
+    }
+  }
+
+  section.addEventListener('click', function (event) {
+    const viewBtn = event.target.closest('[data-report-view]');
+    if (viewBtn) {
+      const row = viewBtn.closest('tr[data-report-payload]');
+      if (!row) return;
+
+      try {
+        const payload = JSON.parse(decodeURIComponent(String(row.dataset.reportPayload || '')));
+        if (typeof window.openProfileModal === 'function') {
+          window.openProfileModal(payload, false);
+        }
+      } catch (error) {
+        console.error('invalid report payload', error);
+      }
+      return;
+    }
+
+    const actionBtn = event.target.closest('[data-report-action]');
+    if (!actionBtn) return;
+
+    const row = actionBtn.closest('tr[data-report-id]');
+    if (!row) return;
+
+    const reportId = Number(row.dataset.reportId || 0);
+    const reportSource = String(row.dataset.reportSource || 'post').toLowerCase();
+    const action = String(actionBtn.getAttribute('data-report-action') || '');
+    if (!reportId || !action) return;
+
+    updateReportStatus(reportId, reportSource, action, actionBtn);
+  });
+
+  document.addEventListener('admin:refresh-section', function (event) {
+    const sectionId = String(event?.detail?.sectionId || '');
+    if (sectionId === 'reports') {
+      loadReports();
+    }
+  });
+
+  loadReports();
+  setInterval(() => {
+    loadReports({ silent: true });
+  }, 12000);
+})();
+
 // Donations export: download current table as CSV
 (function () {
   const section = document.getElementById('donations');
@@ -3130,7 +3677,56 @@ function openAddVolunteerModal() {
     URL.revokeObjectURL(url);
   }
 
-  exportBtn.addEventListener('click', exportTable);
+  function inferFileNameFromHeader(contentDisposition) {
+    const raw = String(contentDisposition || '');
+    const match = raw.match(/filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i);
+    const encoded = match?.[1] || match?.[2] || '';
+    if (!encoded) return '';
+    try {
+      return decodeURIComponent(encoded);
+    } catch (_) {
+      return encoded;
+    }
+  }
+
+  async function exportDonationsReport() {
+    const originalText = exportBtn.innerHTML;
+    exportBtn.disabled = true;
+    exportBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Exporting...';
+
+    try {
+      const res = await fetch('../Php/admin_donations_report.php', {
+        method: 'GET',
+        credentials: 'same-origin',
+        cache: 'no-store'
+      });
+
+      if (!res.ok) {
+        throw new Error('Export endpoint failed');
+      }
+
+      const blob = await res.blob();
+      const fileName = inferFileNameFromHeader(res.headers.get('content-disposition'))
+        || `donations_report_${new Date().toISOString().slice(0,10)}.csv`;
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.warn('Backend donation export failed, falling back to table export.', error);
+      exportTable();
+    } finally {
+      exportBtn.disabled = false;
+      exportBtn.innerHTML = originalText;
+    }
+  }
+
+  exportBtn.addEventListener('click', exportDonationsReport);
 })();
 
 // Withdraw export: download current table as CSV
@@ -3166,4 +3762,445 @@ function openAddVolunteerModal() {
   }
 
   exportBtn.addEventListener('click', exportTable);
+})();
+
+// Chatbot logs monitor for admin (backend-first with local fallback)
+(function () {
+  const CHATBOT_LOG_KEY = 'searchar_chatbot_logs_v1';
+  const DEFAULT_QUICK_ADMIN_COMMENTS = [
+    'Thanks for your message. Our team is checking now.',
+    'Your report has been received and forwarded to the support team.',
+    'Please share location and time details for faster action.',
+    'We could not verify this yet. Please provide a clear photo or reference.',
+    'This issue has been noted and marked for follow-up.',
+    'In an emergency, please call 999 immediately.'
+  ];
+  const section = document.getElementById('chatbot-logs');
+  const body = document.getElementById('chatbot-logs-body');
+  const filterInput = document.getElementById('chatbot-log-filter');
+  const refreshBtn = document.getElementById('chatbot-log-refresh');
+  const clearBtn = document.getElementById('chatbot-log-clear');
+  const templateInput = document.getElementById('chatbot-template-input');
+  const templateAddBtn = document.getElementById('chatbot-template-add');
+  const templateList = document.getElementById('chatbot-template-list');
+  if (!section || !body) return;
+
+  let cachedRows = [];
+  let pauseAutoRefreshUntil = 0;
+  let isAddingTemplate = false;
+  let quickCommentTemplates = DEFAULT_QUICK_ADMIN_COMMENTS.map((text, index) => ({
+    id: `default-${index + 1}`,
+    comment_text: text
+  }));
+
+  function esc(v) {
+    return String(v ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function readLocalLogs() {
+    try {
+      const raw = localStorage.getItem(CHATBOT_LOG_KEY) || '[]';
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr : [];
+    } catch (_e) {
+      return [];
+    }
+  }
+
+  function formatTime(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return esc(iso);
+    return d.toLocaleString();
+  }
+
+  function normalizeTemplateRows(rows) {
+    if (!Array.isArray(rows)) return [];
+    return rows
+      .map((item) => {
+        const id = String(item?.id ?? '').trim();
+        const comment = String(item?.comment_text ?? '').trim();
+        if (!comment) return null;
+        return { id, comment_text: comment };
+      })
+      .filter(Boolean);
+  }
+
+  function renderTemplateList() {
+    if (!templateList) return;
+    if (!quickCommentTemplates.length) {
+      templateList.innerHTML = '<span class="chatbot-template-pill">No comments available</span>';
+      return;
+    }
+
+    templateList.innerHTML = quickCommentTemplates.map((item) => {
+      const isDbRow = /^\d+$/.test(String(item.id));
+      const deleteBtn = isDbRow
+        ? `<button type="button" class="chatbot-template-delete" data-template-delete="${esc(item.id)}" title="Delete">x</button>`
+        : '';
+      return `<span class="chatbot-template-pill">${esc(item.comment_text)} ${deleteBtn}</span>`;
+    }).join('');
+  }
+
+  function renderQuickCommentOptions() {
+    const placeholder = '<option value="">Select a quick comment</option>';
+    const options = quickCommentTemplates
+      .map((item) => `<option value="${esc(item.comment_text)}">${esc(item.comment_text)}</option>`)
+      .join('');
+    return `${placeholder}${options}`;
+  }
+
+  async function fetchTemplateRowsFromServer() {
+    const res = await fetch('../Php/chatbot_comment_templates.php', {
+      credentials: 'same-origin',
+      cache: 'no-store'
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || !json || json.success !== true || !Array.isArray(json.data)) {
+      throw new Error(json?.error || 'template read failed');
+    }
+    return json.data;
+  }
+
+  async function refreshCommentTemplates() {
+    try {
+      const rows = await fetchTemplateRowsFromServer();
+      const normalized = normalizeTemplateRows(rows);
+      if (normalized.length) {
+        quickCommentTemplates = normalized;
+      } else {
+        quickCommentTemplates = DEFAULT_QUICK_ADMIN_COMMENTS.map((text, index) => ({
+          id: `default-${index + 1}`,
+          comment_text: text
+        }));
+      }
+    } catch (_e) {
+      quickCommentTemplates = DEFAULT_QUICK_ADMIN_COMMENTS.map((text, index) => ({
+        id: `default-${index + 1}`,
+        comment_text: text
+      }));
+    }
+
+    renderTemplateList();
+    renderRows(cachedRows);
+  }
+
+  async function addTemplateToServer(commentText) {
+    const res = await fetch('../Php/chatbot_comment_templates.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ action: 'add', comment_text: commentText })
+    });
+    const json = await res.json().catch(() => null);
+    if (!res.ok || !json || json.success !== true) {
+      throw new Error(json?.error || `template add failed (HTTP ${res.status})`);
+    }
+    return json;
+  }
+
+  async function deleteTemplateFromServer(templateId) {
+    const res = await fetch('../Php/chatbot_comment_templates.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ action: 'delete', id: templateId })
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || !json || json.success !== true) {
+      throw new Error(json?.error || 'template delete failed');
+    }
+  }
+
+  function renderRows(rows) {
+    const q = String(filterInput?.value || '').trim().toLowerCase();
+    const filtered = rows.filter((row) => {
+      if (!q) return true;
+      const hay = `${row?.question || ''} ${row?.reply || ''}`.toLowerCase();
+      return hay.includes(q);
+    });
+
+    if (!filtered.length) {
+      body.innerHTML = '<tr><td colspan="4">No chatbot logs found.</td></tr>';
+      return;
+    }
+
+    body.innerHTML = filtered.map((row) => `
+      ${(() => {
+        const token = String(row.session_token || '').trim();
+        const disabled = token ? '' : 'disabled';
+        const btnLabel = token ? 'Send' : 'Unavailable';
+        return `
+      <tr>
+        <td>${esc(formatTime(row.time))}</td>
+        <td>${esc(row.question || '')}</td>
+        <td>${esc(row.reply || '')}</td>
+        <td>
+          <div class="chatbot-admin-reply-wrap">
+            <select class="chatbot-admin-reply-select" data-chatbot-reply-select="${esc(token)}" ${disabled}>
+              ${renderQuickCommentOptions()}
+            </select>
+            <button type="button" class="chatbot-admin-reply-send" data-chatbot-reply-send="${esc(token)}" ${disabled}>${btnLabel}</button>
+          </div>
+        </td>
+      </tr>
+      `;
+      })()}
+    `).join('');
+  }
+
+  async function fetchServerLogs() {
+    const res = await fetch('../Php/chatbot_log_read.php', {
+      credentials: 'same-origin',
+      cache: 'no-store'
+    });
+    const json = await res.json();
+    if (!json || json.success !== true || !Array.isArray(json.data)) {
+      throw new Error('Invalid chatbot log response');
+    }
+    return json.data;
+  }
+
+  async function refreshLogs() {
+    try {
+      const rows = await fetchServerLogs();
+      cachedRows = rows.slice().reverse();
+      renderRows(cachedRows);
+    } catch (_e) {
+      // Fallback for environments where backend endpoint is unavailable.
+      cachedRows = readLocalLogs().slice().reverse();
+      renderRows(cachedRows);
+    }
+  }
+
+  function isSectionActive() {
+    return section.classList.contains('active');
+  }
+
+  function isAutoRefreshPaused() {
+    return Date.now() < pauseAutoRefreshUntil;
+  }
+
+  function pauseAutoRefresh(ms = 10000) {
+    pauseAutoRefreshUntil = Date.now() + ms;
+  }
+
+  if (filterInput) {
+    filterInput.addEventListener('input', function () {
+      renderRows(cachedRows);
+    });
+  }
+
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', function () {
+      refreshLogs();
+      refreshCommentTemplates();
+    });
+  }
+
+  if (templateAddBtn) {
+    templateAddBtn.addEventListener('click', async function () {
+      if (isAddingTemplate) return;
+      pauseAutoRefresh(10000);
+      const text = String(templateInput?.value || '').trim();
+      if (!text) {
+        alert('Please type a comment first.');
+        return;
+      }
+
+      isAddingTemplate = true;
+      templateAddBtn.disabled = true;
+      const prevLabel = templateAddBtn.textContent;
+      templateAddBtn.textContent = 'Adding...';
+
+      try {
+        const result = await addTemplateToServer(text);
+        if (templateInput) templateInput.value = '';
+        await refreshCommentTemplates();
+        if (result && result.message === 'duplicate') {
+          alert('This comment already exists in dropdown.');
+        }
+      } catch (_e) {
+        alert(`Could not add comment: ${_e?.message || 'unknown error'}`);
+      } finally {
+        isAddingTemplate = false;
+        templateAddBtn.disabled = false;
+        templateAddBtn.textContent = prevLabel;
+      }
+    });
+  }
+
+  if (templateInput) {
+    templateInput.addEventListener('focus', function () {
+      pauseAutoRefresh(15000);
+    });
+    templateInput.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        templateAddBtn?.click();
+      }
+    });
+  }
+
+  if (templateList) {
+    templateList.addEventListener('click', async function (event) {
+      const deleteBtn = event.target.closest('[data-template-delete]');
+      if (!deleteBtn) return;
+
+      const templateId = String(deleteBtn.getAttribute('data-template-delete') || '').trim();
+      if (!templateId) return;
+      const ok = window.confirm('Delete this dropdown comment?');
+      if (!ok) return;
+
+      try {
+        await deleteTemplateFromServer(templateId);
+        await refreshCommentTemplates();
+      } catch (_e) {
+        alert(`Could not delete comment: ${_e?.message || 'unknown error'}`);
+      }
+    });
+  }
+
+  body.addEventListener('click', async function (event) {
+    const sendBtn = event.target.closest('[data-chatbot-reply-send]');
+    if (!sendBtn) return;
+
+    pauseAutoRefresh(15000);
+
+    const token = String(sendBtn.getAttribute('data-chatbot-reply-send') || '').trim();
+    if (!token) {
+      alert('Missing user session token for this row.');
+      return;
+    }
+
+    const rowEl = sendBtn.closest('tr');
+    const selectEl = rowEl ? rowEl.querySelector('.chatbot-admin-reply-select') : null;
+    const text = String(selectEl?.value || '').trim();
+    if (!text) {
+      alert('Please select a comment from dropdown first.');
+      return;
+    }
+
+    sendBtn.disabled = true;
+    const prevLabel = sendBtn.textContent;
+    sendBtn.textContent = 'Sending...';
+
+    try {
+      const res = await fetch('../Php/chatbot_admin_reply_write.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+          session_token: token,
+          reply_text: text
+        })
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json || json.success !== true) {
+        throw new Error(json?.error || 'Reply send failed');
+      }
+
+      if (selectEl) selectEl.value = '';
+      sendBtn.textContent = 'Sent';
+      setTimeout(() => {
+        sendBtn.textContent = prevLabel;
+        sendBtn.disabled = false;
+      }, 800);
+    } catch (_e) {
+      sendBtn.textContent = prevLabel;
+      sendBtn.disabled = false;
+      alert(`Could not send admin reply: ${_e?.message || 'unknown error'}`);
+    }
+  });
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', async function () {
+      const ok = window.confirm('Clear all chatbot logs?');
+      if (!ok) return;
+
+      try {
+        await fetch('../Php/chatbot_log_write.php?clear=1', {
+          method: 'POST',
+          credentials: 'same-origin'
+        });
+      } catch (_e) {
+        // Ignore and continue with local clear.
+      }
+
+      localStorage.removeItem(CHATBOT_LOG_KEY);
+      cachedRows = [];
+      renderRows(cachedRows);
+    });
+  }
+
+  document.addEventListener('admin:refresh-section', function (event) {
+    if (String(event?.detail?.sectionId || '') === 'chatbot-logs') {
+      refreshLogs();
+      refreshCommentTemplates();
+    }
+  });
+
+  // If logs change in another tab (Index page), refresh instantly.
+  window.addEventListener('storage', function (event) {
+    if (event.key === CHATBOT_LOG_KEY && isSectionActive()) {
+      refreshLogs();
+    }
+  });
+
+  // Keep logs fresh without manual refresh while section is open.
+  setInterval(function () {
+    if (isSectionActive() && !isAutoRefreshPaused()) {
+      refreshLogs();
+    }
+  }, 5000);
+
+  body.addEventListener('focusin', function (event) {
+    if (event.target.closest('.chatbot-admin-reply-wrap')) {
+      pauseAutoRefresh(15000);
+    }
+  });
+
+  body.addEventListener('change', function (event) {
+    if (event.target.matches('.chatbot-admin-reply-select')) {
+      pauseAutoRefresh(15000);
+    }
+  });
+
+  refreshCommentTemplates();
+  refreshLogs();
+})();
+
+// Global auto refresh heartbeat for all major admin sections.
+(function () {
+  const refreshSections = [
+    'dashboard',
+    'post-control',
+    'admin-post',
+    'crime',
+    'missing',
+    'donations',
+    'broadcast',
+    'volunteer',
+    'volunteer-approver',
+    'withdraw',
+    'reports',
+    'chatbot-logs'
+  ];
+
+  function triggerAllSectionRefreshes() {
+    if (document.hidden) return;
+    refreshSections.forEach((sectionId) => {
+      document.dispatchEvent(new CustomEvent('admin:refresh-section', {
+        detail: { sectionId }
+      }));
+    });
+  }
+
+  triggerAllSectionRefreshes();
+  setInterval(triggerAllSectionRefreshes, 30000);
 })();

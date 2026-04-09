@@ -1,4 +1,4 @@
-document.getElementById('requestBroadcastBtn').addEventListener('click', function() {
+﻿document.getElementById('requestBroadcastBtn').addEventListener('click', function() {
   const status = document.getElementById('broadcastStatus');
   status.innerText = "Request sent to admin. Please wait for approval...";
   status.style.color = "orange";
@@ -34,6 +34,8 @@ function closeModal() {
   document.getElementById("postText").value = "";
   document.getElementById("imageUpload").value = "";
   document.getElementById("videoUpload").value = "";
+  const anonymousToggle = document.getElementById('anonymousShareToggle');
+  if (anonymousToggle) anonymousToggle.checked = false;
   mediaPreview.innerHTML = "";
   selectedImage = null;
   selectedVideo = null;
@@ -74,7 +76,7 @@ function createPost() {
   fd.append('category', category);
   fd.append('case_id', '1');
   fd.append('share_facebook', document.getElementById('facebookShareToggle')?.checked ? '1' : '0');
-  fd.append('share_anonymous', '0');
+  fd.append('share_anonymous', document.getElementById('anonymousShareToggle')?.checked ? '1' : '0');
 
   if (selectedImage) {
     fd.append('media_images[]', selectedImage, selectedImage.name);
@@ -134,28 +136,502 @@ if (personPhotoInput && personPhotoPreviewWrap && personPhotoPreview) {
   });
 }
 
-// Close when clicking outside the form
-window.onclick = function(event) {
-  const modal = document.getElementById("missingFormModal");
-  if (event.target === modal) {
-    modal.style.display = "none";
+// Close when clicking outside modals
+window.addEventListener('click', function(event) {
+  const missingModal = document.getElementById("missingFormModal");
+  if (event.target === missingModal) {
+    missingModal.style.display = "none";
+  }
+
+  const allCasesModal = document.getElementById('allCasesModal');
+  if (event.target === allCasesModal) {
+    allCasesModal.style.display = 'none';
+  }
+});
+
+const openAllCasesBtn = document.getElementById('openAllCasesBtn');
+const closeAllCasesBtn = document.getElementById('closeAllCasesBtn');
+const allCasesModal = document.getElementById('allCasesModal');
+const livePublishedBoard = document.getElementById('livePublishedBoard');
+const caseFilterPost = document.getElementById('caseFilterPost');
+const caseFilterMissing = document.getElementById('caseFilterMissing');
+const allCasesTableBody = document.getElementById('allCasesTableBody');
+const allCasesFilterEmpty = document.getElementById('allCasesFilterEmpty');
+
+const casePreviewModal = document.getElementById('casePreviewModal');
+const casePreviewClose = document.getElementById('casePreviewClose');
+const casePreviewCancel = document.getElementById('casePreviewCancel');
+const casePreviewPublish = document.getElementById('casePreviewPublish');
+const casePreviewTitle = document.getElementById('casePreviewTitle');
+const casePreviewDetail = document.getElementById('casePreviewDetail');
+const casePreviewContact = document.getElementById('casePreviewContact');
+const casePreviewSource = document.getElementById('casePreviewSource');
+const casePreviewImage = document.getElementById('casePreviewImage');
+const casePreviewAutoThumb = document.getElementById('casePreviewAutoThumb');
+const casePreviewExtra = document.getElementById('casePreviewExtra');
+const openSolvedCasesBtn = document.getElementById('openSolvedCasesBtn');
+const solvedCasesModal = document.getElementById('solvedCasesModal');
+const closeSolvedCasesBtn = document.getElementById('closeSolvedCasesBtn');
+const solvedCasesTableBody = document.getElementById('solvedCasesTableBody');
+
+const LIVE_BOARD_KEY = 'searchar_police_live_cases_v1';
+const SOLVED_CASES_KEY = 'searchar_police_solved_cases_v1';
+let previewCasePayload = null;
+
+function readLiveCases() {
+  try {
+    const raw = localStorage.getItem(LIVE_BOARD_KEY);
+    if (!raw) return [];
+    const data = JSON.parse(raw);
+    return Array.isArray(data) ? data : [];
+  } catch (_err) {
+    return [];
+  }
+}
+
+function writeLiveCases(list) {
+  try {
+    localStorage.setItem(LIVE_BOARD_KEY, JSON.stringify(Array.isArray(list) ? list : []));
+  } catch (_err) {}
+}
+
+function readSolvedCases() {
+  try {
+    const raw = localStorage.getItem(SOLVED_CASES_KEY);
+    if (!raw) return [];
+    const data = JSON.parse(raw);
+    return Array.isArray(data) ? data : [];
+  } catch (_err) {
+    return [];
+  }
+}
+
+function writeSolvedCases(list) {
+  try {
+    localStorage.setItem(SOLVED_CASES_KEY, JSON.stringify(Array.isArray(list) ? list : []));
+  } catch (_err) {}
+}
+
+async function callCaseResolutionApi(action, extraPayload = {}) {
+  const response = await fetch('../Php/police_case_resolution.php', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, ...extraPayload })
+  });
+
+  const json = await response.json();
+  if (!json?.success) {
+    throw new Error(json?.error || 'Case resolution request failed');
+  }
+  return json;
+}
+
+function moveLiveCasesToSolved(caseNos, solvedAtLabel) {
+  const targets = new Set((Array.isArray(caseNos) ? caseNos : []).map(v => String(v || '').trim()).filter(Boolean));
+  if (!targets.size) return 0;
+
+  const liveRows = readLiveCases();
+  const solvedRows = readSolvedCases();
+  let moved = 0;
+
+  const keepLive = [];
+  liveRows.forEach((row) => {
+    const caseNo = String(row?.case_no || '').trim();
+    if (!targets.has(caseNo)) {
+      keepLive.push(row);
+      return;
+    }
+
+    const solvedItem = {
+      ...row,
+      solved_at: solvedAtLabel || new Date().toLocaleString(),
+    };
+
+    const solvedIndex = solvedRows.findIndex(item => String(item.case_no || '') === caseNo);
+    if (solvedIndex >= 0) {
+      solvedRows[solvedIndex] = solvedItem;
+    } else {
+      solvedRows.unshift(solvedItem);
+    }
+    moved += 1;
+  });
+
+  if (moved > 0) {
+    writeLiveCases(keepLive);
+    writeSolvedCases(solvedRows);
+    renderLivePublishedBoard();
+    renderSolvedCasesTable();
+    syncPublishedCaseButtons();
+  }
+
+  return moved;
+}
+
+async function syncClosedCasesFromServer() {
+  const liveRows = readLiveCases();
+  if (!liveRows.length) return;
+
+  const payloadCases = liveRows.map(row => ({ case_no: row.case_no || '' })).filter(row => row.case_no);
+  if (!payloadCases.length) return;
+
+  try {
+    const json = await callCaseResolutionApi('sync_published', { cases: payloadCases });
+    const closedCaseNos = Array.isArray(json?.closed_case_nos) ? json.closed_case_nos : [];
+    moveLiveCasesToSolved(closedCaseNos, new Date().toLocaleString());
+  } catch (error) {
+    console.error('sync closed cases failed', error);
+  }
+}
+
+function renderSolvedCasesTable() {
+  if (!solvedCasesTableBody) return;
+  const rows = readSolvedCases();
+  if (!rows.length) {
+    solvedCasesTableBody.innerHTML = '<tr><td colspan="6">No solved cases yet.</td></tr>';
+    return;
+  }
+
+  solvedCasesTableBody.innerHTML = rows.slice(0, 200).map((item) => {
+    const caseNo = item.case_no || 'Case';
+    const type = item.type || 'Case';
+    const details = item.details || 'No details';
+    const source = item.source || 'Case Section';
+    const publishedAt = item.published_at || '—';
+    const solvedAt = item.solved_at || '—';
+    const safeDetails = String(details)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+    return `
+      <tr>
+        <td><span class="all-cases-case-id">${caseNo}</span></td>
+        <td><span class="all-cases-type-chip">${type}</span></td>
+        <td class="all-cases-details-cell">${safeDetails}</td>
+        <td><span class="all-cases-type-chip">${source}</span></td>
+        <td class="all-cases-created">${publishedAt}</td>
+        <td class="all-cases-created">${solvedAt}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+async function markCaseAsSolved(caseNo) {
+  const targetCaseNo = String(caseNo || '').trim();
+  if (!targetCaseNo) return;
+
+  const liveRows = readLiveCases();
+  const idx = liveRows.findIndex(item => String(item.case_no || '') === targetCaseNo);
+  if (idx < 0) {
+    alert('Case not found in live board.');
+    return;
+  }
+
+  try {
+    const json = await callCaseResolutionApi('close_case', { case_no: targetCaseNo });
+    moveLiveCasesToSolved([targetCaseNo], new Date().toLocaleString());
+
+    const smsCount = Number(json?.sms_notifications_sent || 0);
+    if (smsCount > 0) {
+      alert(`Case closed successfully. Mission completed SMS sent: ${smsCount}`);
+    } else {
+      alert('Case closed successfully and moved to Solved History.');
+    }
+  } catch (error) {
+    console.error('close case failed', error);
+    alert(error?.message || 'Could not close case right now. Please try again.');
+  }
+}
+
+function renderLivePublishedBoard() {
+  if (!livePublishedBoard) return;
+  const rows = readLiveCases();
+  if (!rows.length) {
+    livePublishedBoard.innerHTML = '<div style="padding:10px; border:1px dashed #d1d5db; border-radius:10px; color:#6b7280;">No published cases yet.</div>';
+    return;
+  }
+
+  livePublishedBoard.innerHTML = rows.slice(0, 20).map((item) => {
+    const title = `${item.case_no || 'Case'} • ${item.type || 'Alert'}`;
+    const details = item.details || 'No details';
+    const source = item.source || 'Case Section';
+    const publishedAt = item.published_at || '';
+    const imageHtml = item.image_url
+      ? `<img src="${item.image_url}" alt="Published case image" style="width:100%; max-height:190px; object-fit:cover; border-radius:8px; border:1px solid #fecaca; margin:6px 0 8px;">`
+      : `<div style="width:100%; height:140px; border-radius:8px; border:1px solid #fecaca; margin:6px 0 8px; background:linear-gradient(135deg,#fee2e2,#fecaca); display:flex; align-items:center; justify-content:center; color:#991b1b; font-weight:800; text-align:center; padding:10px;">${item.case_no || 'Case'}<br>${item.type || 'Alert'}</div>`;
+    return `
+      <article style="border-left:5px solid #ef4444; border-radius:10px; background:linear-gradient(135deg,#fff7f7,#fff); padding:10px 12px; box-shadow:0 2px 8px rgba(0,0,0,.08);">
+        <div style="display:flex; justify-content:space-between; gap:10px;">
+          <strong style="color:#991b1b;">${title}</strong>
+          <span style="font-size:12px; color:#166534; font-weight:700;">Published</span>
+        </div>
+        ${imageHtml}
+        <p style="margin:6px 0 8px; color:#111827;">${details}</p>
+        <small style="color:#4b5563;">Source: ${source} • ${publishedAt || 'Just now'}</small>
+        <div style="margin-top:8px; display:flex; justify-content:flex-end;">
+          <button type="button" class="all-cases-action-btn publish js-mark-solved-btn" data-case-no="${item.case_no || ''}" style="background:#166534;">Mark Solved</button>
+        </div>
+      </article>
+    `;
+  }).join('');
+}
+
+function syncPublishedCaseButtons() {
+  if (!allCasesModal) return;
+  const publishedSet = new Set(readLiveCases().map(item => String(item.case_no || '')));
+  const solvedSet = new Set(readSolvedCases().map(item => String(item.case_no || '')));
+  allCasesModal.querySelectorAll('tr[data-case-source-key]').forEach((row) => {
+    const publishBtn = row.querySelector('.js-case-publish-btn');
+    const previewBtn = row.querySelector('.js-case-preview-btn');
+    const caseNo = String(publishBtn?.getAttribute('data-case-no') || previewBtn?.getAttribute('data-case-no') || '');
+    if (solvedSet.has(caseNo)) {
+      if (publishBtn) {
+        publishBtn.disabled = true;
+        publishBtn.textContent = 'Solved';
+        publishBtn.style.background = '#166534';
+        publishBtn.style.cursor = 'not-allowed';
+      }
+      if (previewBtn) {
+        previewBtn.disabled = true;
+        previewBtn.textContent = 'Preview Off';
+        previewBtn.style.background = '#e5e7eb';
+        previewBtn.style.color = '#6b7280';
+        previewBtn.style.cursor = 'not-allowed';
+      }
+      return;
+    }
+    if (publishedSet.has(caseNo)) {
+      if (publishBtn) {
+        publishBtn.disabled = true;
+        publishBtn.textContent = 'Published';
+        publishBtn.style.background = '#16a34a';
+        publishBtn.style.cursor = 'not-allowed';
+      }
+      if (previewBtn) {
+        previewBtn.disabled = true;
+        previewBtn.textContent = 'Preview Off';
+        previewBtn.style.background = '#e5e7eb';
+        previewBtn.style.color = '#6b7280';
+        previewBtn.style.cursor = 'not-allowed';
+      }
+    }
+  });
+}
+
+function applyCaseSourceFilters() {
+  if (!allCasesTableBody) return;
+  const showPost = !!(caseFilterPost && caseFilterPost.checked);
+  const showMissing = !!(caseFilterMissing && caseFilterMissing.checked);
+
+  let visible = 0;
+  allCasesTableBody.querySelectorAll('tr[data-case-source-key]').forEach((row) => {
+    const sourceKey = String(row.getAttribute('data-case-source-key') || 'post');
+    const isPost = sourceKey === 'post';
+    const isMissing = sourceKey === 'missing';
+
+    const shouldShow = (isPost && showPost) || (isMissing && showMissing) || (!isPost && !isMissing);
+    row.style.display = shouldShow ? '' : 'none';
+    if (shouldShow) visible += 1;
+  });
+
+  if (allCasesFilterEmpty) {
+    allCasesFilterEmpty.style.display = visible === 0 ? '' : 'none';
+  }
+}
+
+function getCasePayloadFromButton(btn) {
+  if (!btn) return null;
+  return {
+    case_no: btn.getAttribute('data-case-no') || 'Case',
+    type: btn.getAttribute('data-case-type') || 'Case',
+    details: btn.getAttribute('data-case-details') || 'No details',
+    status: btn.getAttribute('data-case-status') || 'open',
+    source: btn.getAttribute('data-case-source') || 'Case Section',
+    created_at: btn.getAttribute('data-case-created') || '',
+    image_url: btn.getAttribute('data-case-image') || '',
+    contact_mobile: btn.getAttribute('data-case-contact') || '',
+    missing_name: btn.getAttribute('data-case-missing-name') || '',
+    extra_details: btn.getAttribute('data-case-extra') || '',
+  };
+}
+
+function openCasePreview(payload) {
+  if (!casePreviewModal || !payload) return;
+  previewCasePayload = payload;
+  if (casePreviewTitle) casePreviewTitle.textContent = `${payload.case_no} • ${payload.type}`;
+  if (casePreviewDetail) casePreviewDetail.textContent = payload.details;
+  if (casePreviewContact) casePreviewContact.textContent = payload.contact_mobile ? `Contact: ${payload.contact_mobile}` : 'Contact: N/A';
+  if (casePreviewSource) casePreviewSource.textContent = `Source: ${payload.source}`;
+  if (casePreviewExtra) casePreviewExtra.textContent = payload.extra_details || '';
+
+  if (casePreviewAutoThumb) {
+    casePreviewAutoThumb.innerHTML = `${payload.case_no || 'Case'}<br>${payload.type || 'Alert'}`;
+  }
+
+  if (casePreviewImage) {
+    if (payload.image_url) {
+      casePreviewImage.src = payload.image_url;
+      casePreviewImage.style.display = 'block';
+      if (casePreviewAutoThumb) casePreviewAutoThumb.style.display = 'none';
+    } else {
+      casePreviewImage.removeAttribute('src');
+      casePreviewImage.style.display = 'none';
+      if (casePreviewAutoThumb) casePreviewAutoThumb.style.display = 'flex';
+    }
+  }
+  casePreviewModal.style.display = 'flex';
+}
+
+function closeCasePreview() {
+  if (!casePreviewModal) return;
+  casePreviewModal.style.display = 'none';
+}
+
+function publishCase(payload) {
+  if (!payload) return false;
+  const prev = readLiveCases();
+  const exists = prev.find(item => String(item.case_no || '') === String(payload.case_no || ''));
+  if (exists) {
+    alert('This case is already published.');
+    return false;
+  }
+
+  const next = [{
+    ...payload,
+    published_at: new Date().toLocaleString(),
+  }, ...prev];
+  writeLiveCases(next);
+  renderLivePublishedBoard();
+
+  if (allCasesModal) {
+    syncPublishedCaseButtons();
+  }
+
+  alert('Case published to Live Board (simulation).');
+  return true;
+}
+
+window.openCasePreviewFromRow = function (buttonEl) {
+  const payload = getCasePayloadFromButton(buttonEl);
+  openCasePreview(payload);
+};
+
+window.publishCaseFromRow = function (buttonEl) {
+  const payload = getCasePayloadFromButton(buttonEl);
+  const publishedNow = publishCase(payload);
+  if (!publishedNow) return;
+  if (buttonEl) {
+    buttonEl.disabled = true;
+    buttonEl.textContent = 'Published';
+    buttonEl.style.background = '#16a34a';
+    buttonEl.style.cursor = 'not-allowed';
+    const previewBtn = buttonEl.parentElement?.querySelector('.js-case-preview-btn');
+    if (previewBtn) {
+      previewBtn.disabled = true;
+      previewBtn.textContent = 'Preview Off';
+      previewBtn.style.background = '#e5e7eb';
+      previewBtn.style.color = '#6b7280';
+      previewBtn.style.cursor = 'not-allowed';
+    }
   }
 };
-// Open Modal and Set Preview
-document.querySelectorAll('.share-btn').forEach(btn => {
-  btn.addEventListener('click', function () {
-    const post = this.closest('.post');
-    const text = post.querySelector('p')?.innerText || '';
-    const img = post.querySelector('.post-img')?.getAttribute('src') || '';
 
-    // Fill preview
-    document.getElementById('sharedPostText').innerText = text;
-    document.getElementById('sharedPostImage').src = img;
-
-    // Show modal in center
-    document.getElementById('postModal').style.display = 'flex';
+if (openAllCasesBtn && allCasesModal) {
+  openAllCasesBtn.addEventListener('click', function () {
+    allCasesModal.style.display = 'flex';
+    renderLivePublishedBoard();
+    renderSolvedCasesTable();
+    syncPublishedCaseButtons();
+    applyCaseSourceFilters();
+    syncClosedCasesFromServer();
   });
+}
+
+if (openSolvedCasesBtn && solvedCasesModal) {
+  openSolvedCasesBtn.addEventListener('click', function () {
+    solvedCasesModal.style.display = 'flex';
+    renderSolvedCasesTable();
+  });
+}
+
+if (closeSolvedCasesBtn && solvedCasesModal) {
+  closeSolvedCasesBtn.addEventListener('click', function () {
+    solvedCasesModal.style.display = 'none';
+  });
+}
+
+if (closeAllCasesBtn && allCasesModal) {
+  closeAllCasesBtn.addEventListener('click', function () {
+    allCasesModal.style.display = 'none';
+  });
+}
+
+document.addEventListener('keydown', function (event) {
+  if (event.key === 'Escape' && allCasesModal && allCasesModal.style.display === 'flex') {
+    allCasesModal.style.display = 'none';
+  }
+  if (event.key === 'Escape' && casePreviewModal && casePreviewModal.style.display === 'flex') {
+    closeCasePreview();
+  }
+  if (event.key === 'Escape' && solvedCasesModal && solvedCasesModal.style.display === 'flex') {
+    solvedCasesModal.style.display = 'none';
+  }
 });
+
+if (allCasesModal) {
+  allCasesModal.addEventListener('click', function (event) {
+    const solvedBtn = event.target.closest('.js-mark-solved-btn');
+    if (solvedBtn) {
+      const caseNo = String(solvedBtn.getAttribute('data-case-no') || '');
+      markCaseAsSolved(caseNo);
+      return;
+    }
+
+    const previewBtn = event.target.closest('.js-case-preview-btn');
+    if (previewBtn) {
+      if (previewBtn.hasAttribute('onclick')) return;
+      const payload = getCasePayloadFromButton(previewBtn);
+      openCasePreview(payload);
+      return;
+    }
+
+    const publishBtn = event.target.closest('.js-case-publish-btn');
+    if (publishBtn) {
+      if (publishBtn.hasAttribute('onclick')) return;
+      const payload = getCasePayloadFromButton(publishBtn);
+      const publishedNow = publishCase(payload);
+      if (!publishedNow) return;
+      publishBtn.disabled = true;
+      publishBtn.textContent = 'Published';
+    }
+  });
+}
+
+if (casePreviewClose) {
+  casePreviewClose.addEventListener('click', closeCasePreview);
+}
+if (casePreviewCancel) {
+  casePreviewCancel.addEventListener('click', closeCasePreview);
+}
+if (casePreviewPublish) {
+  casePreviewPublish.addEventListener('click', function () {
+    if (!previewCasePayload) return;
+    const publishedNow = publishCase(previewCasePayload);
+    if (!publishedNow) return;
+    closeCasePreview();
+  });
+}
+
+renderLivePublishedBoard();
+renderSolvedCasesTable();
+syncPublishedCaseButtons();
+syncClosedCasesFromServer();
+setInterval(syncClosedCasesFromServer, 30000);
+if (caseFilterPost) caseFilterPost.addEventListener('change', applyCaseSourceFilters);
+if (caseFilterMissing) caseFilterMissing.addEventListener('change', applyCaseSourceFilters);
+applyCaseSourceFilters();
 function closeModal() {
   document.getElementById('postModal').style.display = 'none';
   document.getElementById('postText').value = '';

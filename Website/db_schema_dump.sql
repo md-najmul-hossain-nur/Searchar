@@ -1,5 +1,4 @@
--- Searchar full schema
--- Generated from project code usage
+
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
@@ -11,14 +10,24 @@ CREATE DATABASE IF NOT EXISTS `searchar`
 USE `searchar`;
 
 DROP TABLE IF EXISTS `traffic_logs`;
+DROP TABLE IF EXISTS `chatbot_comment_templates`;
+DROP TABLE IF EXISTS `chatbot_admin_replies`;
+DROP TABLE IF EXISTS `chatbot_logs`;
 DROP TABLE IF EXISTS `camera_cctv_feeds`;
 DROP TABLE IF EXISTS `withdraw_requests`;
 DROP TABLE IF EXISTS `donations`;
 DROP TABLE IF EXISTS `auth_users`;
 DROP TABLE IF EXISTS `signup_blacklist`;
 DROP TABLE IF EXISTS `volunteer_missions`;
+DROP TABLE IF EXISTS `user_combo_roles`;
+DROP TABLE IF EXISTS `volunteer_applications`;
 DROP TABLE IF EXISTS `user_notifications`;
+DROP TABLE IF EXISTS `crime_reports`;
 DROP TABLE IF EXISTS `missing_person_reports`;
+DROP TABLE IF EXISTS `comment_reports`;
+DROP TABLE IF EXISTS `post_reports`;
+DROP TABLE IF EXISTS `post_comments`;
+DROP TABLE IF EXISTS `post_likes`;
 DROP TABLE IF EXISTS `posts`;
 DROP TABLE IF EXISTS `camera_contributors`;
 DROP TABLE IF EXISTS `volunteers`;
@@ -28,8 +37,8 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
 	`user_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
 	`full_name` VARCHAR(150) NOT NULL,
-	`email` VARCHAR(255) NOT NULL,
-	`mobile` VARCHAR(30) NOT NULL,
+	`email` VARCHAR(255) DEFAULT NULL,
+	`mobile` VARCHAR(30) DEFAULT NULL,
 	`nid_number` VARCHAR(100) NOT NULL,
 	`nid_photo` VARCHAR(255) DEFAULT NULL,
 	`profile_photo` VARCHAR(255) DEFAULT NULL,
@@ -74,7 +83,6 @@ CREATE TABLE `policemen` (
 	`badge_id` VARCHAR(100) NOT NULL,
 	`designation` VARCHAR(120) NOT NULL,
 	`station` VARCHAR(120) NOT NULL,
-	`official_id` VARCHAR(255) NOT NULL,
 	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (`police_id`),
 	UNIQUE KEY `uq_policemen_email` (`email`),
@@ -105,8 +113,6 @@ CREATE TABLE `volunteers` (
 	`password_hash` VARCHAR(255) NOT NULL,
 	`occupation` VARCHAR(120) DEFAULT NULL,
 	`availability` VARCHAR(120) DEFAULT NULL,
-	`police_clearance` VARCHAR(255) DEFAULT NULL,
-	`geo_permission` TINYINT(1) NOT NULL DEFAULT 0,
 	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (`volunteer_id`),
 	UNIQUE KEY `uq_volunteers_email` (`email`),
@@ -134,12 +140,8 @@ CREATE TABLE `camera_contributors` (
 	`latitude` DECIMAL(10,7) DEFAULT NULL,
 	`longitude` DECIMAL(10,7) DEFAULT NULL,
 	`password_hash` VARCHAR(255) NOT NULL,
-	`camera_location` VARCHAR(255) NOT NULL,
 	`camera_type` VARCHAR(120) NOT NULL,
-	`stream_type` VARCHAR(120) NOT NULL,
-	`bandwidth` VARCHAR(120) NOT NULL,
 	`payment_number` VARCHAR(40) NOT NULL,
-	`agreement` VARCHAR(255) NOT NULL,
 	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (`camera_id`),
 	UNIQUE KEY `uq_camera_email` (`email`),
@@ -164,6 +166,7 @@ CREATE TABLE `posts` (
 	`status` VARCHAR(20) DEFAULT 'pending',
 	`report_status` VARCHAR(20) DEFAULT 'not_reported',
 	`reported_at` DATETIME DEFAULT NULL,
+	`report_closed_at` DATETIME DEFAULT NULL,
 	`is_share` TINYINT(1) NOT NULL DEFAULT 0,
 	`shared_post_id` INT UNSIGNED DEFAULT NULL,
 	`shared_payload` LONGTEXT DEFAULT NULL,
@@ -174,6 +177,7 @@ CREATE TABLE `posts` (
 	KEY `idx_posts_category` (`category`),
 	KEY `idx_posts_status` (`status`),
 	KEY `idx_posts_report_status` (`report_status`),
+	KEY `idx_posts_report_closed_at` (`report_closed_at`),
 	KEY `idx_posts_created` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -195,12 +199,59 @@ CREATE TABLE `post_comments` (
 	`parent_comment_id` BIGINT UNSIGNED DEFAULT NULL,
 	`actor_role` VARCHAR(50) NOT NULL,
 	`actor_id` INT UNSIGNED NOT NULL,
+	`is_anonymous` TINYINT(1) NOT NULL DEFAULT 0,
 	`comment_text` TEXT NOT NULL,
 	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (`comment_id`),
 	KEY `idx_post_comments_post` (`post_id`),
 	KEY `idx_post_comments_parent` (`parent_comment_id`),
 	KEY `idx_post_comments_actor` (`actor_role`, `actor_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `post_reports` (
+	`report_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+	`post_id` INT UNSIGNED NOT NULL,
+	`post_author_role` VARCHAR(50) DEFAULT NULL,
+	`post_author_id` INT UNSIGNED DEFAULT NULL,
+	`post_author_name` VARCHAR(255) DEFAULT NULL,
+	`reporter_role` VARCHAR(50) NOT NULL,
+	`reporter_id` INT UNSIGNED NOT NULL,
+	`reporter_name` VARCHAR(255) NOT NULL,
+	`report_category` VARCHAR(80) NOT NULL,
+	`report_details` TEXT DEFAULT NULL,
+	`status` VARCHAR(30) NOT NULL DEFAULT 'pending',
+	`admin_action_note` VARCHAR(255) DEFAULT NULL,
+	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`actioned_at` DATETIME DEFAULT NULL,
+	PRIMARY KEY (`report_id`),
+	KEY `idx_post_reports_post` (`post_id`),
+	KEY `idx_post_reports_reporter` (`reporter_role`, `reporter_id`),
+	KEY `idx_post_reports_status` (`status`),
+	KEY `idx_post_reports_created` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `comment_reports` (
+	`report_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+	`comment_id` BIGINT UNSIGNED NOT NULL,
+	`post_id` INT UNSIGNED NOT NULL,
+	`comment_author_role` VARCHAR(50) DEFAULT NULL,
+	`comment_author_id` INT UNSIGNED DEFAULT NULL,
+	`comment_author_name` VARCHAR(255) DEFAULT NULL,
+	`comment_text` TEXT DEFAULT NULL,
+	`reporter_role` VARCHAR(50) NOT NULL,
+	`reporter_id` INT UNSIGNED NOT NULL,
+	`reporter_name` VARCHAR(255) NOT NULL,
+	`report_category` VARCHAR(80) NOT NULL,
+	`report_details` TEXT DEFAULT NULL,
+	`status` VARCHAR(30) NOT NULL DEFAULT 'pending',
+	`admin_action_note` VARCHAR(255) DEFAULT NULL,
+	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`actioned_at` DATETIME DEFAULT NULL,
+	PRIMARY KEY (`report_id`),
+	KEY `idx_comment_reports_comment` (`comment_id`),
+	KEY `idx_comment_reports_post` (`post_id`),
+	KEY `idx_comment_reports_status` (`status`),
+	KEY `idx_comment_reports_created` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `camera_cctv_feeds` (
@@ -252,6 +303,34 @@ CREATE TABLE `missing_person_reports` (
 	KEY `idx_missing_created_at` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE `crime_reports` (
+	`crime_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+	`case_ref` VARCHAR(80) NOT NULL,
+	`source_type` VARCHAR(40) NOT NULL DEFAULT 'missing_person',
+	`source_ref_id` BIGINT UNSIGNED DEFAULT NULL,
+	`report_type` VARCHAR(60) NOT NULL DEFAULT 'missing_person',
+	`severity` VARCHAR(20) NOT NULL DEFAULT 'high',
+	`status` VARCHAR(30) NOT NULL DEFAULT 'new',
+	`landmark` VARCHAR(255) DEFAULT NULL,
+	`reporter_name` VARCHAR(150) DEFAULT NULL,
+	`anonymous` TINYINT(1) NOT NULL DEFAULT 0,
+	`anon_token` VARCHAR(80) DEFAULT NULL,
+	`description` TEXT DEFAULT NULL,
+	`media_path` VARCHAR(255) DEFAULT NULL,
+	`media_json` TEXT DEFAULT NULL,
+	`lat` DECIMAL(10,7) DEFAULT NULL,
+	`lng` DECIMAL(10,7) DEFAULT NULL,
+	`submitted_at` DATETIME NOT NULL,
+	`updated_at` DATETIME NOT NULL,
+	`closed_at` DATETIME DEFAULT NULL,
+	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY (`crime_id`),
+	UNIQUE KEY `uq_crime_reports_case_ref` (`case_ref`),
+	KEY `idx_crime_reports_status` (`status`),
+	KEY `idx_crime_reports_source` (`source_type`, `source_ref_id`),
+	KEY `idx_crime_reports_submitted` (`submitted_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE `user_notifications` (
 	`notification_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
 	`recipient_entity` VARCHAR(60) NOT NULL,
@@ -265,7 +344,46 @@ CREATE TABLE `user_notifications` (
 	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (`notification_id`),
 	KEY `idx_recipient` (`recipient_entity`, `recipient_id`),
+	KEY `idx_notification_target_post` (`target_post_id`),
 	KEY `idx_notification_created` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `volunteer_applications` (
+	`application_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+	`user_id` INT UNSIGNED NOT NULL,
+	`full_name` VARCHAR(150) NOT NULL,
+	`email` VARCHAR(255) DEFAULT NULL,
+	`mobile` VARCHAR(30) DEFAULT NULL,
+	`nid_number` VARCHAR(100) DEFAULT NULL,
+	`city` VARCHAR(120) DEFAULT NULL,
+	`country` VARCHAR(120) DEFAULT NULL,
+	`note` TEXT DEFAULT NULL,
+	`status` VARCHAR(30) NOT NULL DEFAULT 'pending',
+	`reviewed_by` VARCHAR(100) DEFAULT NULL,
+	`review_note` VARCHAR(255) DEFAULT NULL,
+	`volunteer_id` INT UNSIGNED DEFAULT NULL,
+	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	`reviewed_at` DATETIME DEFAULT NULL,
+	PRIMARY KEY (`application_id`),
+	UNIQUE KEY `uq_volunteer_application_user` (`user_id`),
+	KEY `idx_volunteer_application_status` (`status`),
+	KEY `idx_volunteer_application_created` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `user_combo_roles` (
+	`combo_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+	`user_id` INT UNSIGNED NOT NULL,
+	`volunteer_id` INT UNSIGNED NOT NULL,
+	`status` VARCHAR(30) NOT NULL DEFAULT 'approved',
+	`approved_by` VARCHAR(100) DEFAULT NULL,
+	`approved_at` DATETIME DEFAULT NULL,
+	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	PRIMARY KEY (`combo_id`),
+	UNIQUE KEY `uq_user_combo_user` (`user_id`),
+	UNIQUE KEY `uq_user_combo_volunteer` (`volunteer_id`),
+	KEY `idx_user_combo_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `volunteer_missions` (
@@ -341,6 +459,42 @@ CREATE TABLE `withdraw_requests` (
 	PRIMARY KEY (`withdraw_id`),
 	KEY `idx_withdraw_status` (`status`),
 	KEY `idx_withdraw_request_date` (`request_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `chatbot_logs` (
+	`id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+	`question` TEXT NOT NULL,
+	`reply` TEXT NOT NULL,
+	`source_page` VARCHAR(64) NOT NULL DEFAULT 'index',
+	`session_token` VARCHAR(128) DEFAULT NULL,
+	`ip_address` VARCHAR(64) DEFAULT NULL,
+	`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY (`id`),
+	KEY `idx_chatbot_logs_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `chatbot_admin_replies` (
+	`id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+	`session_token` VARCHAR(128) NOT NULL,
+	`reply_text` TEXT NOT NULL,
+	`is_delivered` TINYINT(1) NOT NULL DEFAULT 0,
+	`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`delivered_at` DATETIME DEFAULT NULL,
+	PRIMARY KEY (`id`),
+	KEY `idx_chatbot_admin_replies_session` (`session_token`),
+	KEY `idx_chatbot_admin_replies_delivered` (`is_delivered`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `chatbot_comment_templates` (
+	`id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+	`comment_text` VARCHAR(300) NOT NULL,
+	`is_active` TINYINT(1) NOT NULL DEFAULT 1,
+	`sort_order` INT NOT NULL DEFAULT 0,
+	`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY (`id`),
+	UNIQUE KEY `uq_chatbot_comment_templates_text` (`comment_text`),
+	KEY `idx_chatbot_comment_templates_active` (`is_active`),
+	KEY `idx_chatbot_comment_templates_sort` (`sort_order`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `traffic_logs` (

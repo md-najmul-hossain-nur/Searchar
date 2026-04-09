@@ -1,6 +1,9 @@
 <?php
 declare(strict_types=1);
 
+// Keep endpoint output JSON-only even when PHP warnings/notices exist.
+@ini_set('display_errors', '0');
+
 header('Content-Type: application/json; charset=utf-8');
 session_start();
 require_once __DIR__ . '/db.php';
@@ -17,19 +20,38 @@ function canonicalRole(string $role): string {
         'user', 'users' => 'user',
         'police', 'policeman', 'policemen' => 'police',
         'volunteer', 'volunteers' => 'volunteer',
-        'contributor', 'camera_contributor', 'camera_contributors' => 'contributor',
+        'contributor', 'camera_contributor', 'camera_contributors', 'camera', 'cameraman', 'camera_man' => 'contributor',
         default => 'user',
     };
 }
 
 function roleSqlMap(string $canonicalRole): array {
     return match ($canonicalRole) {
-        'user' => ['table' => 'users', 'id_col' => 'user_id'],
-        'police' => ['table' => 'policemen', 'id_col' => 'police_id'],
-        'volunteer' => ['table' => 'volunteers', 'id_col' => 'volunteer_id'],
-        'contributor' => ['table' => 'camera_contributors', 'id_col' => 'camera_id'],
-        default => ['table' => 'users', 'id_col' => 'user_id'],
+        'user' => ['table' => 'users', 'id_col' => 'user_id', 'upload_folder' => 'user'],
+        'police' => ['table' => 'policemen', 'id_col' => 'police_id', 'upload_folder' => 'police'],
+        'volunteer' => ['table' => 'volunteers', 'id_col' => 'volunteer_id', 'upload_folder' => 'volunteer'],
+        'contributor' => ['table' => 'camera_contributors', 'id_col' => 'camera_id', 'upload_folder' => 'camera'],
+        default => ['table' => 'users', 'id_col' => 'user_id', 'upload_folder' => 'user'],
     };
+}
+
+function isPostAnonymous(PDO $pdo, int $postId): bool {
+    if ($postId <= 0) {
+        return false;
+    }
+
+    static $hasShareAnonymous = null;
+    if ($hasShareAnonymous === null) {
+        $hasShareAnonymous = (bool)$pdo->query("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'posts' AND COLUMN_NAME = 'share_anonymous' LIMIT 1")->fetchColumn();
+    }
+
+    if (!$hasShareAnonymous) {
+        return false;
+    }
+
+    $stmt = $pdo->prepare('SELECT share_anonymous FROM posts WHERE id = :id LIMIT 1');
+    $stmt->execute([':id' => $postId]);
+    return (int)($stmt->fetchColumn() ?: 0) === 1;
 }
 
 function recipientEntityForRole(string $canonicalRole): string {
@@ -62,7 +84,8 @@ function timeAgo(?string $datetime): string {
 }
 
 function ensureInteractionTables(PDO $pdo): void {
-    $pdo->exec("CREATE TABLE IF NOT EXISTS post_likes (
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS post_likes (
         like_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         post_id INT UNSIGNED NOT NULL,
         actor_role VARCHAR(50) NOT NULL,
@@ -73,13 +96,18 @@ function ensureInteractionTables(PDO $pdo): void {
         KEY idx_post_likes_post (post_id),
         KEY idx_post_likes_actor (actor_role, actor_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    } catch (Throwable $e) {
+        // Keep interactions working even if schema migration is restricted.
+    }
 
-    $pdo->exec("CREATE TABLE IF NOT EXISTS post_comments (
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS post_comments (
         comment_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         post_id INT UNSIGNED NOT NULL,
         parent_comment_id BIGINT UNSIGNED DEFAULT NULL,
         actor_role VARCHAR(50) NOT NULL,
         actor_id INT UNSIGNED NOT NULL,
+        is_anonymous TINYINT(1) NOT NULL DEFAULT 0,
         comment_text TEXT NOT NULL,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (comment_id),
@@ -87,8 +115,12 @@ function ensureInteractionTables(PDO $pdo): void {
         KEY idx_post_comments_parent (parent_comment_id),
         KEY idx_post_comments_actor (actor_role, actor_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    } catch (Throwable $e) {
+        // Keep interactions working even if schema migration is restricted.
+    }
 
-    $pdo->exec("CREATE TABLE IF NOT EXISTS user_notifications (
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS user_notifications (
         notification_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
         recipient_entity VARCHAR(60) NOT NULL,
         recipient_id INT UNSIGNED NOT NULL,
@@ -102,21 +134,38 @@ function ensureInteractionTables(PDO $pdo): void {
         PRIMARY KEY (notification_id),
         KEY idx_recipient (recipient_entity, recipient_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-
-    $hasTarget = $pdo->query("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user_notifications' AND COLUMN_NAME = 'target_post_id' LIMIT 1")->fetchColumn();
-    if (!$hasTarget) {
-        $pdo->exec("ALTER TABLE user_notifications ADD COLUMN target_post_id INT UNSIGNED DEFAULT NULL AFTER is_read");
+    } catch (Throwable $e) {
+        // Notifications are optional for interaction success.
     }
 
-    $hasMeta = $pdo->query("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user_notifications' AND COLUMN_NAME = 'meta_json' LIMIT 1")->fetchColumn();
-    if (!$hasMeta) {
-        $pdo->exec("ALTER TABLE user_notifications ADD COLUMN meta_json TEXT NULL AFTER message");
+    try {
+        $hasTarget = $pdo->query("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user_notifications' AND COLUMN_NAME = 'target_post_id' LIMIT 1")->fetchColumn();
+        if (!$hasTarget) {
+            $pdo->exec("ALTER TABLE user_notifications ADD COLUMN target_post_id INT UNSIGNED DEFAULT NULL AFTER is_read");
+        }
+    } catch (Throwable $e) {
+    }
+
+    try {
+        $hasMeta = $pdo->query("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user_notifications' AND COLUMN_NAME = 'meta_json' LIMIT 1")->fetchColumn();
+        if (!$hasMeta) {
+            $pdo->exec("ALTER TABLE user_notifications ADD COLUMN meta_json TEXT NULL AFTER message");
+        }
+    } catch (Throwable $e) {
+    }
+
+    try {
+        $hasCommentAnonymous = $pdo->query("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'post_comments' AND COLUMN_NAME = 'is_anonymous' LIMIT 1")->fetchColumn();
+        if (!$hasCommentAnonymous) {
+            $pdo->exec("ALTER TABLE post_comments ADD COLUMN is_anonymous TINYINT(1) NOT NULL DEFAULT 0 AFTER actor_id");
+        }
+    } catch (Throwable $e) {
     }
 }
 
 function actorSnapshot(PDO $pdo, string $canonicalRole, int $actorId): array {
     if ($actorId <= 0) {
-        return ['name' => 'Someone', 'photo' => '../Images/default_profile.png'];
+        return ['name' => 'Someone', 'photo' => '../Images/demo_pic/profile.jpg'];
     }
 
     $map = roleSqlMap($canonicalRole);
@@ -125,59 +174,64 @@ function actorSnapshot(PDO $pdo, string $canonicalRole, int $actorId): array {
     $row = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
 
     $photoRaw = trim((string)($row['profile_photo'] ?? ''));
+    $uploadFolder = (string)($map['upload_folder'] ?? 'user');
     return [
         'name' => trim((string)($row['full_name'] ?? '')) ?: 'Someone',
-        'photo' => $photoRaw !== '' ? '../uploads/user/' . $photoRaw : '../Images/default_profile.png',
+        'photo' => $photoRaw !== '' ? ('../uploads/' . $uploadFolder . '/' . $photoRaw) : '../Images/demo_pic/profile.jpg',
     ];
 }
 
 function createInteractionNotification(PDO $pdo, int $postId, string $actionType, string $actorRole, int $actorId, string $actorName, string $commentText = '', int $commentId = 0): void {
-    $postStmt = $pdo->prepare('SELECT id, author_role, author_id FROM posts WHERE id = :id LIMIT 1');
-    $postStmt->execute([':id' => $postId]);
-    $post = $postStmt->fetch(PDO::FETCH_ASSOC);
-    if (!$post) {
-        return;
+    try {
+        $postStmt = $pdo->prepare('SELECT id, author_role, author_id FROM posts WHERE id = :id LIMIT 1');
+        $postStmt->execute([':id' => $postId]);
+        $post = $postStmt->fetch(PDO::FETCH_ASSOC);
+        if (!$post) {
+            return;
+        }
+
+        $authorRole = canonicalRole((string)($post['author_role'] ?? ''));
+        $authorId = (int)($post['author_id'] ?? 0);
+        if ($authorId <= 0) {
+            return;
+        }
+
+        if ($authorRole === $actorRole && $authorId === $actorId) {
+            return;
+        }
+
+        $title = $actionType === 'like' ? 'Someone liked your post' : 'New comment on your post';
+        $message = $actionType === 'like'
+            ? ($actorName . ' liked your post.')
+            : ($actorName . ' commented on your post: "' . mb_substr(trim($commentText), 0, 120) . '"');
+
+        $meta = [
+            'action_type' => $actionType,
+            'post_id' => $postId,
+            'actor_role' => $actorRole,
+            'actor_id' => $actorId,
+        ];
+        if ($commentId > 0) {
+            $meta['comment_id'] = $commentId;
+        }
+
+        $ins = $pdo->prepare('INSERT INTO user_notifications (recipient_entity, recipient_id, title, message, meta_json, level, is_read, target_post_id) VALUES (:entity, :rid, :title, :message, :meta_json, :level, 0, :post_id)');
+        $ins->execute([
+            ':entity' => recipientEntityForRole($authorRole),
+            ':rid' => $authorId,
+            ':title' => $title,
+            ':message' => $message,
+            ':meta_json' => json_encode($meta, JSON_UNESCAPED_UNICODE),
+            ':level' => 'info',
+            ':post_id' => $postId,
+        ]);
+    } catch (Throwable $e) {
+        error_log('post_interactions notification skipped: ' . $e->getMessage());
     }
-
-    $authorRole = canonicalRole((string)($post['author_role'] ?? ''));
-    $authorId = (int)($post['author_id'] ?? 0);
-    if ($authorId <= 0) {
-        return;
-    }
-
-    if ($authorRole === $actorRole && $authorId === $actorId) {
-        return;
-    }
-
-    $title = $actionType === 'like' ? 'Someone liked your post' : 'New comment on your post';
-    $message = $actionType === 'like'
-        ? ($actorName . ' liked your post.')
-        : ($actorName . ' commented on your post: "' . mb_substr(trim($commentText), 0, 120) . '"');
-
-    $meta = [
-        'action_type' => $actionType,
-        'post_id' => $postId,
-        'actor_role' => $actorRole,
-        'actor_id' => $actorId,
-    ];
-    if ($commentId > 0) {
-        $meta['comment_id'] = $commentId;
-    }
-
-    $ins = $pdo->prepare('INSERT INTO user_notifications (recipient_entity, recipient_id, title, message, meta_json, level, is_read, target_post_id) VALUES (:entity, :rid, :title, :message, :meta_json, :level, 0, :post_id)');
-    $ins->execute([
-        ':entity' => recipientEntityForRole($authorRole),
-        ':rid' => $authorId,
-        ':title' => $title,
-        ':message' => $message,
-        ':meta_json' => json_encode($meta, JSON_UNESCAPED_UNICODE),
-        ':level' => 'info',
-        ':post_id' => $postId,
-    ]);
 }
 
 function fetchComments(PDO $pdo, int $postId): array {
-    $stmt = $pdo->prepare('SELECT comment_id, post_id, parent_comment_id, actor_role, actor_id, comment_text, created_at FROM post_comments WHERE post_id = :post_id ORDER BY created_at ASC, comment_id ASC');
+    $stmt = $pdo->prepare('SELECT comment_id, post_id, parent_comment_id, actor_role, actor_id, is_anonymous, comment_text, created_at FROM post_comments WHERE post_id = :post_id ORDER BY created_at ASC, comment_id ASC');
     $stmt->execute([':post_id' => $postId]);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
@@ -211,18 +265,27 @@ function fetchComments(PDO $pdo, int $postId): array {
             $personId = (int)($p['person_id'] ?? 0);
             if ($personId <= 0) continue;
             $photoRaw = trim((string)($p['profile_photo'] ?? ''));
+            $uploadFolder = (string)($map['upload_folder'] ?? 'user');
             $profiles[$role . ':' . $personId] = [
                 'name' => trim((string)($p['full_name'] ?? '')) ?: 'Someone',
-                'photo' => $photoRaw !== '' ? '../uploads/user/' . $photoRaw : '../Images/default_profile.png',
+                'photo' => $photoRaw !== '' ? ('../uploads/' . $uploadFolder . '/' . $photoRaw) : '../Images/demo_pic/profile.jpg',
             ];
         }
     }
+
+    $anonymousName = 'Anonymous';
+    $anonymousPhoto = '../Images/anonymously.gif';
 
     $comments = [];
     foreach ($rows as $row) {
         $role = canonicalRole((string)($row['actor_role'] ?? ''));
         $actorId = (int)($row['actor_id'] ?? 0);
-        $profile = $profiles[$role . ':' . $actorId] ?? ['name' => 'Someone', 'photo' => '../Images/default_profile.png'];
+        $profile = $profiles[$role . ':' . $actorId] ?? ['name' => 'Someone', 'photo' => '../Images/demo_pic/profile.jpg'];
+        $commentAnonymous = (int)($row['is_anonymous'] ?? 0) === 1;
+        $shouldMask = $commentAnonymous;
+
+        $actorName = $shouldMask ? $anonymousName : (string)$profile['name'];
+        $actorPhoto = $shouldMask ? $anonymousPhoto : (string)$profile['photo'];
 
         $comments[] = [
             'comment_id' => (int)($row['comment_id'] ?? 0),
@@ -230,8 +293,9 @@ function fetchComments(PDO $pdo, int $postId): array {
             'parent_comment_id' => isset($row['parent_comment_id']) && is_numeric($row['parent_comment_id']) ? (int)$row['parent_comment_id'] : null,
             'actor_role' => $role,
             'actor_id' => $actorId,
-            'actor_name' => $profile['name'],
-            'actor_photo' => $profile['photo'],
+            'actor_name' => $actorName,
+            'actor_photo' => $actorPhoto,
+            'actor_is_anonymous' => $shouldMask,
             'comment_text' => (string)($row['comment_text'] ?? ''),
             'created_at' => (string)($row['created_at'] ?? ''),
             'time_ago' => timeAgo((string)($row['created_at'] ?? '')),
@@ -361,6 +425,8 @@ try {
     if ($action === 'add_comment') {
         $commentText = trim((string)($payload['comment_text'] ?? ''));
         $parentCommentId = (int)($payload['parent_comment_id'] ?? 0);
+        $commentVisibility = strtolower(trim((string)($payload['comment_visibility'] ?? 'normal')));
+        $commentAnonymous = $commentVisibility === 'anonymous';
 
         if ($commentText === '') {
             http_response_code(400);
@@ -390,7 +456,7 @@ try {
             $parentNullable = $validParent;
         }
 
-        $ins = $pdo->prepare('INSERT INTO post_comments (post_id, parent_comment_id, actor_role, actor_id, comment_text) VALUES (:post_id, :parent_comment_id, :actor_role, :actor_id, :comment_text)');
+        $ins = $pdo->prepare('INSERT INTO post_comments (post_id, parent_comment_id, actor_role, actor_id, is_anonymous, comment_text) VALUES (:post_id, :parent_comment_id, :actor_role, :actor_id, :is_anonymous, :comment_text)');
         $ins->bindValue(':post_id', $postId, PDO::PARAM_INT);
         if ($parentNullable === null) {
             $ins->bindValue(':parent_comment_id', null, PDO::PARAM_NULL);
@@ -399,12 +465,17 @@ try {
         }
         $ins->bindValue(':actor_role', $actorRole, PDO::PARAM_STR);
         $ins->bindValue(':actor_id', $actorId, PDO::PARAM_INT);
+        $ins->bindValue(':is_anonymous', $commentAnonymous ? 1 : 0, PDO::PARAM_INT);
         $ins->bindValue(':comment_text', $commentText, PDO::PARAM_STR);
         $ins->execute();
 
         $commentId = (int)$pdo->lastInsertId();
 
-        createInteractionNotification($pdo, $postId, 'comment', $actorRole, $actorId, (string)$actor['name'], $commentText, $commentId);
+        $effectiveAnonymous = $commentAnonymous;
+        $actorPublicName = $effectiveAnonymous ? 'Anonymous' : (string)$actor['name'];
+        $actorPublicPhoto = $effectiveAnonymous ? '../Images/anonymously.gif' : (string)$actor['photo'];
+
+        createInteractionNotification($pdo, $postId, 'comment', $actorRole, $actorId, $actorPublicName, $commentText, $commentId);
 
         $countStmt = $pdo->prepare('SELECT COUNT(*) FROM post_comments WHERE post_id = :post_id');
         $countStmt->execute([':post_id' => $postId]);
@@ -419,8 +490,9 @@ try {
                     'parent_comment_id' => $parentNullable,
                     'actor_role' => $actorRole,
                     'actor_id' => $actorId,
-                    'actor_name' => (string)$actor['name'],
-                    'actor_photo' => (string)$actor['photo'],
+                    'actor_name' => $actorPublicName,
+                    'actor_photo' => $actorPublicPhoto,
+                    'actor_is_anonymous' => $effectiveAnonymous,
                     'comment_text' => $commentText,
                     'created_at' => date('Y-m-d H:i:s'),
                     'time_ago' => 'Just now',
@@ -439,5 +511,6 @@ try {
     }
     error_log('post_interactions error: ' . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'Failed to process request']);
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
+

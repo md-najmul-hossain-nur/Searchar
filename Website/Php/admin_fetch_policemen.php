@@ -77,7 +77,6 @@ try {
             'badge_id'       => pickField($row, ['badge_id'], ''),
             'designation'    => pickField($row, ['designation'], 'Officer'),
             'station'        => pickField($row, ['station', 'city'], ''),
-            'official_id'    => pickField($row, ['official_id'], ''),
             'status'         => pickField($row, ['status'], 'Active'),
             'created_at'     => pickField($row, ['created_at'], ''),
             'warned_by_admin'=> isset($warnedMap[$recordId]),

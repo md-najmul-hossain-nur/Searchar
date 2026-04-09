@@ -1149,3 +1149,219 @@ body {
   color: #333 !important;
 }
 
+
+/* Unified Navbar Logo */
+.navbar {
+  width: 100% !important;
+  height: 104px !important;
+  min-height: 104px !important;
+  padding: 10px 32px !important;
+  box-sizing: border-box;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  min-width: 180px;
+}
+
+.navbar-logo-img,
+#logo {
+  width: 250px !important;
+  max-width: 250px !important;
+  height: auto !important;
+  display: block;
+  object-fit: contain;
+}
+
+.navbar > div:last-child {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin-right: 40px !important;
+}
+
+.navbar .navbar-donate {
+  height: 44px !important;
+  padding: 0 18px !important;
+  border-radius: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  font-size: 14px !important;
+  line-height: 1 !important;
+}
+
+.navbar .navbar-donate img {
+  height: 1.5em !important;
+  width: auto !important;
+  border-radius: 6px !important;
+}
+
+.edit-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  width: auto;
+  height: auto;
+  min-height: 34px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: #f75c3c;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(247, 92, 60, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.edit-btn:hover {
+  background: #e3471c;
+  box-shadow: 0 6px 14px rgba(227, 71, 28, 0.35);
+  transform: translateY(-1px);
+}
+
+.edit-btn:focus-visible {
+  outline: 2px solid rgba(247, 92, 60, 0.45);
+  outline-offset: 2px;
+}
+
+.edit-btn img {
+  display: none;
+}
+
+.profile-card,
+.card.user-info {
+  position: relative;
+}
+
+.edit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Desktop sticky sidebar layout */
+@media screen and (min-width: 993px) {
+  .main-content {
+    align-items: flex-start;
+  }
+
+  .left-panel,
+  .right-panel {
+    position: sticky;
+    top: 118px;
+    align-self: flex-start;
+    max-height: calc(100vh - 118px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+  }
+
+  .center-panel {
+    min-height: calc(100vh - 118px);
+  }
+}
+
+@media screen and (max-width: 992px) {
+  .left-panel,
+  .right-panel {
+    position: static;
+    top: auto;
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+  }
+}
+
+/* Small upward alignment tweaks (desktop) */
+.profile-pic-container {
+  margin-top: 236px;
+}
+
+@media screen and (min-width: 993px) {
+  .left-panel,
+  .center-panel,
+  .right-panel {
+    margin-top: -10px;
+  }
+
+  .card.user-info {
+    border: 1px solid #f3d9cf;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #ffffff 0%, #fff9f6 100%);
+    box-shadow: 0 12px 28px rgba(121, 35, 18, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  .card.user-info .divider {
+    width: 44px;
+    height: 3px;
+    background: linear-gradient(90deg, #f75c3c, #ff8e74);
+  }
+
+  .card.user-info .info-list li {
+    padding: 8px 0;
+    border-bottom: 1px dashed #f1dfd8;
+  }
+
+  .card.user-info .info-list li:last-child {
+    border-bottom: none;
+  }
+
+  #recentNotificationsList {
+    margin-top: -6px;
+  }
+}
+
+/* Notifications card refinement */
+.notifications.notifications-card {
+  border: 1px solid #f0ddd6;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #fff9f6 100%);
+  box-shadow: 0 12px 28px rgba(121, 35, 18, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 20px 18px;
+}
+
+.notifications.notifications-card .notifications-top {
+  margin-bottom: 6px;
+}
+
+.notifications.notifications-card h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #222;
+  margin: 0;
+}
+
+.notifications.notifications-card .divider {
+  width: 100%;
+  height: 1px;
+  margin: 8px 0 10px;
+  background: linear-gradient(90deg, rgba(247, 92, 60, 0), rgba(247, 92, 60, 0.55), rgba(247, 92, 60, 0));
+  border-radius: 0;
+}
+
+.notifications.notifications-card .notifications-list {
+  max-height: 305px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.notifications.notifications-card .notifications-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notifications.notifications-card .notifications-list::-webkit-scrollbar-thumb {
+  background: #efb8ab;
+  border-radius: 999px;
+}

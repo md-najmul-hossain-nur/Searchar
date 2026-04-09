@@ -1,51 +1,100 @@
-  document.getElementById('logo').onclick = function() {
-    window.location.href = '../Html/Index.html';
-  };
-  document.addEventListener("DOMContentLoaded", () => {
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("visible");
+document.addEventListener('DOMContentLoaded', () => {
+  function generateCalendar(year, month) {
+    const calendarHeader = document.getElementById('calendarHeader');
+    const calendarBody = document.querySelector('#calendar tbody');
+    if (!calendarHeader || !calendarBody) return;
+
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    calendarHeader.textContent = `${monthNames[month]} ${year}`;
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const startingDay = firstDay === 0 ? 6 : firstDay - 1;
+
+    calendarBody.innerHTML = '';
+    let date = 1;
+
+    for (let i = 0; i < 6; i++) {
+      const row = document.createElement('tr');
+
+      for (let j = 0; j < 7; j++) {
+        const cell = document.createElement('td');
+
+        if (i === 0 && j < startingDay) {
+          cell.textContent = '';
+        } else if (date <= daysInMonth) {
+          cell.textContent = date;
+
+          const today = new Date();
+          if (
+            date === today.getDate() &&
+            year === today.getFullYear() &&
+            month === today.getMonth()
+          ) {
+            cell.style.backgroundColor = 'white';
+            cell.style.color = 'black';
+            cell.style.fontWeight = 'bold';
+          }
+
+          date++;
+        } else {
+          cell.textContent = '';
         }
-      });
-    },
-    {
-      threshold: 0.3,
+
+        row.appendChild(cell);
+      }
+
+      calendarBody.appendChild(row);
+      if (date > daysInMonth) break;
     }
-  );
+  }
 
-  document.querySelectorAll(".donation-hero, .donation-title, .donation-desc, .donation-form-container").forEach((el) => {
-    observer.observe(el);
-  });
+  const today = new Date();
+  generateCalendar(today.getFullYear(), today.getMonth());
 
-  // Optional ripple effect for Donate button
-  document.querySelectorAll(".donate-btn").forEach((btn) => {
-    btn.addEventListener("click", function (e) {
-      const ripple = document.createElement("span");
-      ripple.classList.add("ripple");
-      this.appendChild(ripple);
-
-      const size = Math.max(this.offsetWidth, this.offsetHeight);
-      ripple.style.width = ripple.style.height = `${size}px`;
-      ripple.style.left = `${e.offsetX - size / 2}px`;
-      ripple.style.top = `${e.offsetY - size / 2}px`;
-
-      setTimeout(() => {
-        ripple.remove();
-      }, 600);
+  const logo = document.getElementById('logo');
+  if (logo) {
+    logo.addEventListener('click', () => {
+      window.location.href = '../Html/Index.html';
     });
+  }
+
+  const donationForm = document.getElementById('donationForm');
+
+  const animatedNodes = document.querySelectorAll('.animate-text');
+  if (animatedNodes.length) {
+    const revealObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        const delay = String(el.getAttribute('data-delay') || '0').trim();
+        el.style.setProperty('--delay', `${delay}s`);
+        el.classList.add('in-view');
+        observer.unobserve(el);
+      });
+    }, { threshold: 0.18 });
+
+    animatedNodes.forEach((el) => revealObserver.observe(el));
+  }
+
+  if (!donationForm) return;
+
+  donationForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    const txidInput = document.getElementById('txid');
+    const txid = String(txidInput?.value || '').trim();
+
+    if (txid.length < 6) {
+      alert('Please enter a valid TXID.');
+      txidInput?.focus();
+      return;
+    }
+
+    alert('Thank you! Your donation request has been received for verification.');
+    donationForm.reset();
   });
 });
-// Animate form fields on scroll
-  const formCard = document.querySelector('.donation-form-card');
-
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        formCard.style.animation = 'popUp 0.9s ease-out forwards';
-      }
-    });
-  });
-
-  observer.observe(formCard);

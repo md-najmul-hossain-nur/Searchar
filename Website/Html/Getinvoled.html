@@ -3,60 +3,136 @@
 <head>
   <meta charset="UTF-8">
   <title>Searchar</title>
-  <meta name="viewport" content="width=1644, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400|Roboto:400,700" rel="stylesheet">
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+  >
   <link rel="stylesheet" href="../css/Getinvoled.css">
 </head>
 <body>
   <header class="navbar">
-  <div class="navbar-logo">
-  <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
-</div>
-    <nav class="navbar-menu">     
-    </nav>
-    <div class="navbar-actions">
-    
+    <div class="navbar-logo">
+      <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
     </div>
+    <nav class="navbar-menu"></nav>
+    <div class="navbar-actions"></div>
   </header>
-<section class="hero">
-    <div class="hero-bg"></div>
-    <div class="hero-content">
-      <h1 class="fade-in">Be the Light in Someone’s Darkness</h1>
-      <p class="fade-in delay-1">
-        In Bangladesh, hundreds of people go missing every year.<br>
-        Many never return to their families. When accidents, fires, or crimes occur, immediate help can save lives — but only if someone is there to act.
-      </p>
-<button class="cta-btn scale-in" onclick="window.location.href='../Html/login.html'">Become a Volunteer</button>    </div>
-    <img src="person.jpg" alt="" class="hero-img slide-in-right"> <!-- Use your image path -->
-  </section>
-  <section class="info">
-    <h2 class="fade-in">Why We Need Volunteers</h2>
-    <div class="cards">
-      <div class="card zoom-in delay-1">
-        <div class="icon-bg"><img src="icon-report.svg" alt="Report"></div>
-        <h3>Report Cases</h3>
-        <p>Submit missing person data fast and accurately using our app.</p>
+
+  <main class="involved-main">
+    <section class="involved-hero">
+      <div class="involved-hero-overlay"></div>
+      <div class="involved-hero-content reveal-text" data-delay="0">
+        <span class="hero-chip">Volunteer Response Program</span>
+        <h1 class="reveal-text" data-delay="0.08">Be the First Person Who Steps In</h1>
+        <p class="reveal-text" data-delay="0.16">
+          Real-time volunteers help locate missing persons, verify alerts, and support emergency response when every second matters.
+        </p>
+        <div class="hero-actions reveal-text" data-delay="0.24">
+          <a class="cta-btn" href="../Html/login.html">Become a Volunteer</a>
+          <a class="ghost-btn" href="#why-volunteer">Why It Matters</a>
+        </div>
       </div>
-      <div class="card zoom-in delay-2">
-        <div class="icon-bg"><img src="icon-assist.svg" alt="Assist"></div>
-        <h3>Assist on Site</h3>
-        <p>Be part of emergency rescue and provide first-hand help.</p>
+    </section>
+
+    <section class="volunteer-steps" id="why-volunteer">
+      <h2 class="reveal-text" data-delay="0">How You Can Help</h2>
+      <div class="step-grid">
+        <article class="step-card reveal-text" data-delay="0.08">
+          <span>01</span>
+          <h3>Receive Alerts</h3>
+          <p>Get verified nearby incident alerts from the platform in real-time.</p>
+        </article>
+        <article class="step-card reveal-text" data-delay="0.14">
+          <span>02</span>
+          <h3>Verify & Report</h3>
+          <p>Observe safely, share accurate updates, and reduce false alarms quickly.</p>
+        </article>
+        <article class="step-card reveal-text" data-delay="0.2">
+          <span>03</span>
+          <h3>Support Response</h3>
+          <p>Coordinate with local responders and help affected families faster.</p>
+        </article>
       </div>
-      <div class="card zoom-in delay-3">
-        <div class="icon-bg"><img src="icon-share.svg" alt="Share"></div>
-        <h3>Share Info</h3>
-        <p>Broadcast vital alerts through your community and social media.</p>
+    </section>
+
+    <section class="benefit-section">
+      <h2 class="reveal-text" data-delay="0"><i>🤝</i> Volunteer Benefits</h2>
+      <div class="benefit-grid">
+        <article class="benefit-card reveal-text" data-delay="0.06">
+          <h3>Real Impact</h3>
+          <p>Your quick actions can directly contribute to successful rescue outcomes.</p>
+        </article>
+        <article class="benefit-card reveal-text" data-delay="0.12">
+          <h3>Recognition</h3>
+          <p>Earn contributor badges, certificates, and appreciation from the community.</p>
+        </article>
+        <article class="benefit-card reveal-text" data-delay="0.18">
+          <h3>Safer Neighborhoods</h3>
+          <p>Help create a culture of awareness, care, and collaborative safety.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="impact-strip reveal-text" data-delay="0.08">
+      <div class="impact-copy">
+        <h3>People Like You Are Changing Lives</h3>
+        <p>From quick sightings to urgent support, volunteers are the strongest link in community rescue.</p>
+      </div>
+      <div class="impact-stat">
+        <span class="count-up" data-count="1200">0</span>
+        <small>Volunteer Actions Logged</small>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-col">
+        <div class="footer-title">ABOUT US</div>
+        <div class="footer-about">
+          This website is developed by <strong>Light Seekers</strong>, a group of students from the <strong>Department of CSE</strong>, <em>United International University</em>.
+        </div>
+        <div class="footer-contact">
+          <span><i class="fa fa-map-marker"></i> United City, Madani Avenue, Badda</span>
+          <span><i class="fa fa-envelope"></i> mnajmulhossainnur@gmail.com</span>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <div class="footer-title">WHAT WE DO</div>
+        <p style="margin-top: 10px; color: #ccc; font-size: 14px;">
+          We are Light Seekers, a CSE team from UIU, building impactful projects in gaming, robotics, and micro-eCommerce to solve real-life problems.
+          Want to know more?
+        </p>
+        <div class="footer-social">
+          <a href="https://www.youtube.com/@najmu-lhossain-nur" target="_blank" title="Visit our YouTube Channel">
+            <i class="fa fa-youtube-play" style="font-size: 24px; color: #FF0000;"></i>
+          </a>
+          <a href="https://www.facebook.com/profile.php?id=61578891052858" target="_blank" title="Visit our Facebook">
+            <i class="fa fa-facebook-official" style="font-size: 24px; color: #4267B2;"></i>
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-calendar">
+        <div class="footer-calendar-title">CALENDAR</div>
+        <table class="footer-calendar-table" id="calendar">
+          <thead>
+            <tr>
+              <th colspan="7" id="calendarHeader" style="background: #1a232a; color: #fff;"></th>
+            </tr>
+            <tr>
+              <th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th><th>S</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
     </div>
-    <div class="impact-bar slide-in-up">
-      <img src="avatar.jpg" alt="" class="impact-avatar"> <!-- Use your image path -->
-      <span class="impact-text">Your efforts saved my life. Thank you.</span>
-      <span class="impact-numbers count-up" data-count="1200">0</span>+
-      <span class="impact-label">Lives Saved</span>
-    </div>
-  </section>
-      <script src="../javascrpit/Getinvolved.js"></script>
+  </footer>
 
-  </body>
-
+  <script src="../javascrpit/Getinvolved.js"></script>
+</body>
 </html>

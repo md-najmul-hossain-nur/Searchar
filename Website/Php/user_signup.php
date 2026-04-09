@@ -1,137 +1,164 @@
 <?php
 require_once "../Php/db.php";
 
-// ===============================
-// Helper to move files
-// ===============================
-function save_upload($file, $prefix = '') {
-    if (!isset($file) || $file['error'] !== UPLOAD_ERR_OK) {
-        throw new Exception(" File upload error! Error code: " . ($file['error'] ?? 'unknown'));
-    }
+function isValidEmail(string $value): bool {
+    return (bool)filter_var($value, FILTER_VALIDATE_EMAIL);
+}
 
-    // Upload folder path
-    $uploadDir = __DIR__ . '/../uploads/user/';
-    if (!is_dir($uploadDir)) {
-        if (!mkdir($uploadDir, 0777, true)) {
-            throw new Exception(" Upload folder তৈরি করা যায়নি: $uploadDir");
+function normalizePhone(string $value): string {
+    $digits = preg_replace('/\D+/', '', $value);
+    return $digits ?? '';
+}
+
+function generateUniqueValue(PDO $pdo, string $column, string $candidate, int $maxTries = 20): string {
+    for ($i = 0; $i < $maxTries; $i += 1) {
+        $value = $candidate . ($i > 0 ? ('_' . $i) : '');
+        $stmt = $pdo->prepare("SELECT 1 FROM users WHERE {$column} = ? LIMIT 1");
+        $stmt->execute([$value]);
+        if (!$stmt->fetchColumn()) {
+            return $value;
         }
     }
 
-    $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-    $filename = $prefix . uniqid('_', true) . '.' . $ext;
-    $dest = $uploadDir . $filename;
+    throw new Exception('Could not generate unique value for ' . $column);
+}
 
-    if (!move_uploaded_file($file['tmp_name'], $dest)) {
-        throw new Exception(" move_uploaded_file ব্যর্থ! Path: $dest");
+function ensureUsersContactColumnsAllowNull(PDO $pdo): void {
+    $stmt = $pdo->prepare("SELECT COLUMN_NAME, IS_NULLABLE
+        FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND TABLE_NAME = 'users'
+          AND COLUMN_NAME IN ('email', 'mobile')");
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $nullable = [];
+    foreach ($rows as $row) {
+        $nullable[$row['COLUMN_NAME']] = strtoupper((string)$row['IS_NULLABLE']) === 'YES';
     }
 
-    // শুধু filename DB তে রাখব
-    return $filename;
+    if (!($nullable['email'] ?? false)) {
+        $pdo->exec("ALTER TABLE users MODIFY email VARCHAR(255) NULL");
+    }
+
+    if (!($nullable['mobile'] ?? false)) {
+        $pdo->exec("ALTER TABLE users MODIFY mobile VARCHAR(30) NULL");
+    }
+}
+
+function ensureNotificationsTable(PDO $pdo): void {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS user_notifications (
+        notification_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        recipient_entity VARCHAR(60) NOT NULL,
+        recipient_id INT UNSIGNED NOT NULL,
+        title VARCHAR(190) NOT NULL,
+        message TEXT NOT NULL,
+        level VARCHAR(30) NOT NULL DEFAULT 'info',
+        is_read TINYINT(1) NOT NULL DEFAULT 0,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (notification_id),
+        INDEX idx_recipient (recipient_entity, recipient_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 }
 
 try {
-    // ===============================
-    // Required field check
-    // ===============================
-    $required = ['fullname', 'email', 'mobile', 'nid', 'dob', 'gender', 'password', 'confirm_password'];
-    foreach ($required as $k) {
-        if (empty($_POST[$k])) throw new Exception("Missing field: $k");
+    $fullName = trim((string)($_POST['fullname'] ?? ''));
+    $contactInput = trim((string)($_POST['emailOrPhone'] ?? ''));
+    $password = (string)($_POST['password'] ?? '');
+    $confirmPassword = (string)($_POST['confirm_password'] ?? '');
+
+    if ($fullName === '' || $contactInput === '' || $password === '' || $confirmPassword === '') {
+        throw new Exception('Please fill all required fields.');
     }
 
-    $email  = $_POST['email'];
-    $mobile = $_POST['mobile'];
-    $nid    = $_POST['nid'];
+    if ($password !== $confirmPassword) {
+        throw new Exception('Password and confirm password did not match.');
+    }
 
-    // Blocked account check (email/phone reuse prevention)
+    if (strlen($password) < 6) {
+        throw new Exception('Password must be at least 6 characters long.');
+    }
+
+    $email = '';
+    $mobile = '';
+
+    if (isValidEmail($contactInput)) {
+        $email = strtolower($contactInput);
+    } else {
+        $phone = normalizePhone($contactInput);
+        if ($phone === '') {
+            throw new Exception('Enter a valid email or phone number.');
+        }
+        $mobile = $phone;
+    }
+
+    ensureUsersContactColumnsAllowNull($pdo);
+
+    $emailValue = $email !== '' ? $email : null;
+    $mobileValue = $mobile !== '' ? $mobile : null;
+
     $blkExists = $pdo->prepare("SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'signup_blacklist' LIMIT 1");
     $blkExists->execute();
     if ($blkExists->fetchColumn()) {
-        $blk = $pdo->prepare("SELECT 1 FROM signup_blacklist WHERE email = ? OR mobile = ? LIMIT 1");
-        $blk->execute([$email, $mobile]);
+        if ($emailValue !== null) {
+            $blk = $pdo->prepare("SELECT 1 FROM signup_blacklist WHERE email = ? LIMIT 1");
+            $blk->execute([$emailValue]);
+        } else {
+            $blk = $pdo->prepare("SELECT 1 FROM signup_blacklist WHERE mobile = ? LIMIT 1");
+            $blk->execute([$mobileValue]);
+        }
         if ($blk->fetch()) {
-            throw new Exception("This Email/Mobile has been blocked by admin.");
+            throw new Exception('This Email/Mobile has been blocked by admin.');
         }
     }
 
-    // ===============================
-    // Uniqueness check
-    // ===============================
-    $exists = $pdo->prepare("SELECT 1 FROM users WHERE email=? OR mobile=? OR nid_number=?");
-    $exists->execute([$email, $mobile, $nid]);
+    if ($emailValue !== null) {
+        $exists = $pdo->prepare('SELECT 1 FROM users WHERE email = ? LIMIT 1');
+        $exists->execute([$emailValue]);
+    } else {
+        $exists = $pdo->prepare('SELECT 1 FROM users WHERE mobile = ? LIMIT 1');
+        $exists->execute([$mobileValue]);
+    }
     if ($exists->fetch()) {
-        throw new Exception("এই Email/Mobile/NID ইতিমধ্যেই রেজিস্টার করা আছে!");
+        throw new Exception('Email or mobile already registered. Please sign in.');
     }
 
-    // ===============================
-    // Password validation
-    // ===============================
-    if ($_POST['password'] !== $_POST['confirm_password']) {
-        throw new Exception("Password মেলেনি!");
-    }
-    if (strlen($_POST['password']) < 6) {
-        throw new Exception("Password অন্তত 6 অক্ষরের হতে হবে!");
-    }
-    $password_hash = password_hash($_POST['password'], PASSWORD_BCRYPT);
+    $nidSeed = 'AUTO_NID_' . date('YmdHis') . '_' . random_int(1000, 9999);
+    $nidNumber = generateUniqueValue($pdo, 'nid_number', $nidSeed);
+    $passwordHash = password_hash($password, PASSWORD_BCRYPT);
 
-    // ===============================
-    // File Uploads
-    // ===============================
-    $nid_photo = save_upload($_FILES['nid_photo'], 'nid_');
-    $cover_photo = (isset($_FILES['cover_photo']) && $_FILES['cover_photo']['error'] === UPLOAD_ERR_OK)
-    ? save_upload($_FILES['cover_photo'], 'cover_') : null;
-    $profile_photo = (isset($_FILES['profile_photo']) && $_FILES['profile_photo']['error'] === UPLOAD_ERR_OK)
-        ? save_upload($_FILES['profile_photo'], 'profile_') : null;
-
-    // ===============================
-    // Address fields
-    // ===============================
-    $fields = ['street', 'city', 'postal', 'country', 'latitude', 'longitude'];
-    $addr = [];
-    foreach ($fields as $f) {
-        $addr[$f] = !empty($_POST[$f]) ? $_POST[$f] : null;
-    }
-
-    // ===============================
-    // Insert Query (fixed: postal_code)
-    // ===============================
     $stmt = $pdo->prepare("INSERT INTO users
-    (full_name,email,mobile,nid_number,nid_photo,profile_photo,cover_photo,date_of_birth,gender,street,city,postal_code,country,latitude,longitude,password_hash)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+        (full_name, email, mobile, nid_number, nid_photo, profile_photo, cover_photo, date_of_birth, gender, street, city, postal_code, country, latitude, longitude, password_hash)
+        VALUES (?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, ?)");
 
-$stmt->execute([
-    $_POST['fullname'],
-    $email,
-    $mobile,
-    $nid,
-    $nid_photo,
-    $profile_photo,
-    $cover_photo,
-    $_POST['dob'],
-    $_POST['gender'],
-    $addr['street'],
-    $addr['city'],
-    $addr['postal'],
-    $addr['country'],
-    $addr['latitude'],
-    $addr['longitude'],
-    $password_hash
-]);
+    $stmt->execute([
+        $fullName,
+        $emailValue,
+        $mobileValue,
+        $nidNumber,
+        $passwordHash,
+    ]);
 
-    // ===============================
-    // Success
-    // ===============================
+    $newUserId = (int)$pdo->lastInsertId();
+
+    ensureNotificationsTable($pdo);
+    $notify = $pdo->prepare('INSERT INTO user_notifications (recipient_entity, recipient_id, title, message, level) VALUES (:entity, :recipient_id, :title, :message, :level)');
+    $notify->execute([
+        ':entity' => 'user',
+        ':recipient_id' => $newUserId,
+        ':title' => 'Admin Reminder',
+        ':message' => 'Welcome to SEARCHAR. Please complete your profile (photo, cover, date of birth, gender and address) from Edit Profile.',
+        ':level' => 'warning',
+    ]);
+
     echo "<script>
-        alert(' Signup Successful!');
+        alert('Signup successful. Please sign in now.');
         window.location.href = '../Html/login.html';
     </script>";
     exit;
-
 } catch (Exception $ex) {
-    // ===============================
-    // Error
-    // ===============================
     echo "<script>
-        alert(' " . addslashes($ex->getMessage()) . "');
+        alert('" . addslashes($ex->getMessage()) . "');
         window.history.back();
     </script>";
     exit;

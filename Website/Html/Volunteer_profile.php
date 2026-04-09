@@ -52,7 +52,7 @@ function profileTimeAgo(?string $dateTime): string {
 }
 
 // 6. Fallback images and bio
-$profile_pic = !empty($volunteer['profile_photo']) ? '../uploads/volunteer/' . e($volunteer['profile_photo']) : '../Images/default_profile.png';
+$profile_pic = !empty($volunteer['profile_photo']) ? '../uploads/volunteer/' . e($volunteer['profile_photo']) : '../Images/demo_pic/profile.jpg';
 $cover_pic   = !empty($volunteer['cover_photo'])   ? '../uploads/volunteer/' . e($volunteer['cover_photo'])   : '../Images/cover_default.jpg';
 $bio_text    = !empty($volunteer['bio']) ? e($volunteer['bio']) : "💬 Bio not added yet. Go to <a href='../Html/Volunteer_Edit_profile.html'>edit profile</a> to add your bio!";
 
@@ -60,6 +60,7 @@ $profilePosts = [];
 try {
   $hasStatus = false;
   $hasMediaJson = false;
+  $hasShareAnonymous = false;
 
   $statusCol = $pdo->query("SHOW COLUMNS FROM posts LIKE 'status'");
   if ($statusCol && $statusCol->fetch(PDO::FETCH_ASSOC)) {
@@ -71,9 +72,17 @@ try {
     $hasMediaJson = true;
   }
 
+  $shareAnonCol = $pdo->query("SHOW COLUMNS FROM posts LIKE 'share_anonymous'");
+  if ($shareAnonCol && $shareAnonCol->fetch(PDO::FETCH_ASSOC)) {
+    $hasShareAnonymous = true;
+  }
+
   $selectCols = "id, author_name, text, media_path, media_type, category, created_at";
   if ($hasMediaJson) {
     $selectCols .= ", media_json";
+  }
+  if ($hasShareAnonymous) {
+    $selectCols .= ", share_anonymous";
   }
   if ($hasStatus) {
     $selectCols .= ", status";
@@ -97,7 +106,8 @@ try {
  <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Main CSS -->
-  <link rel="stylesheet" href="../css/Volunteer_profile.css">
+  <link rel="stylesheet" href="../css/Volunteer_profile.css?v=20260406f">
+  <link rel="stylesheet" href="../css/post_modal_shared.css?v=20260409a">
     <link rel="stylesheet" href="../css/notifications_shared.css">
 
 </head>
@@ -115,24 +125,21 @@ try {
          alt="Cover" class="cover-img">
     <div class="profile-pic-container">
  <!-- Profile Photo -->
-    <img src="<?= !empty($volunteer['profile_photo']) ? '../uploads/volunteer/' . e($volunteer['profile_photo']) : '../Images/default_profile.png' ?>" 
+    <img src="<?= !empty($volunteer['profile_photo']) ? '../uploads/volunteer/' . e($volunteer['profile_photo']) : '../Images/demo_pic/profile.jpg' ?>" 
          class="profile-pic" 
          alt="Profile">    </div>
   <div class="main-content">
     <div class="left-panel">
   <div class="card user-info" style="position: relative;">
-        <!-- Edit button as image icon -->
-<button class="edit-btn" title="Edit Profile" 
-        onclick="location.href='../Html/Volunteer_Edit_profile.php?user_id=<?php echo $volunteer_id; ?>'">
-    <img src="../Images/pencil.gif" alt="Edit" />
-</button>
+      <button class="edit-btn" title="Profile Setting" 
+        onclick="location.href='../Html/Volunteer_Edit_profile.php?user_id=<?php echo $volunteer_id; ?>'"><img src="../Images/settings.gif" alt="" aria-hidden="true"> Profile Setting</button>
           <h2>
                 <?= e($volunteer['full_name'] ?? 'Volunteer Name') ?>
             </h2>
     <div class="divider"></div>
      <!-- Bio -->
     <p class="user-bio">
-        <?= !empty($volunteer['bio']) ? e($volunteer['bio']) : '💬 Add your bio in your profile so everyone knows a little about you' ?>
+      <?= !empty($volunteer['bio']) ? e($volunteer['bio']) : '&#128172; Tell people a little about yourself by adding a bio in your profile.' ?>
     </p>
   <ul class="info-list">
     <!-- Birthday -->
@@ -196,12 +203,17 @@ try {
               $postImageUrls[] = $postMediaUrl;
           }
           $postStatus = isset($post['status']) ? (string)$post['status'] : '';
+          $isAnonymous = (int)($post['share_anonymous'] ?? 0) === 1;
+          $displayAuthorName = $isAnonymous ? 'Anonymous' : $postAuthorName;
+          $displayAuthorPhoto = $isAnonymous
+            ? '../Images/anonymously.gif'
+            : (!empty($volunteer['profile_photo']) ? '../uploads/volunteer/' . e($volunteer['profile_photo']) : '../Images/demo_pic/profile.jpg');
         ?>
-        <div class="card post" data-post-id="<?= (int)($post['id'] ?? 0) ?>">
+        <div class="card post" data-post-id="<?= (int)($post['id'] ?? 0) ?>" data-share-anonymous="<?= $isAnonymous ? '1' : '0' ?>">
           <div class="post-header">
-            <img class="mini-profile" src="<?= !empty($volunteer['profile_photo']) ? '../uploads/volunteer/' . e($volunteer['profile_photo']) : '../Images/default_profile.png' ?>" alt="Profile">
+            <img class="mini-profile" src="<?= e($displayAuthorPhoto) ?>" alt="Profile">
             <div>
-              <div class="username"><?= e($postAuthorName) ?></div>
+              <div class="username"><?= e($displayAuthorName) ?></div>
               <div class="post-time"><?= e(profileTimeAgo((string)($post['created_at'] ?? ''))) ?></div>
               <?php if ($postStatus !== ''): ?>
                 <div class="post-time">Status: <?= e(ucfirst($postStatus)) ?></div>
@@ -251,7 +263,10 @@ try {
 <div id="postModal" class="post-modal">
   <div class="post-modal-content">
     <span class="post-modal-close" onclick="closeModal()">&times;</span>
-    <h2 class="post-modal-title">Share Your Mood</h2>
+    <div class="post-modal-head">
+      <h2 class="post-modal-title">Share Your Mood</h2>
+      <p class="post-modal-subtitle">Upload photos or a video and post instantly</p>
+    </div>
     <div class="facebook-toggle">
       <label class="facebook-toggle-switch">
         <input type="checkbox" id="facebookShareToggle">
@@ -259,26 +274,47 @@ try {
       </label>
       <span class="facebook-toggle-label">Share to Facebook</span>
     </div>
-    <!-- ✅ Anonymous Mode Toggle -->
     <div class="facebook-toggle">
       <label class="facebook-toggle-switch">
-        <input type="checkbox" id="anonToggle">
+        <input type="checkbox" id="anonymousShareToggle">
         <span class="facebook-toggle-slider">
-          <i class="fas fa-user-secret"></i>
+          <i class="fa-solid fa-user-secret"></i>
         </span>
       </label>
-      <span class="facebook-toggle-label">Post Anonymously</span>
+      <span class="facebook-toggle-label">Share Anonymously</span>
     </div>
-    <!-- ✅ Category Selection --> <p class="category-label">Select Category:</p> <div class="category-toggle"> <label class="category-option"> <input type="radio" name="category" value="mission" checked> <img src="../Images/mission-icon.gif" alt="Mission Icon" class="category-icon" /> Mission Person </label> <label class="category-option"> <input type="radio" name="category" value="disaster"> <img src="../Images/disaster-icon.gif" alt="Disaster Icon" class="category-icon" /> Disaster </label> </div>
+
+    <p class="category-label">Select Category:</p>
+    <div class="category-toggle">
+      <label class="category-option">
+        <input type="radio" name="category" value="mission" checked>
+        <img src="../Images/mission-icon.gif" alt="Mission Icon" class="category-icon" />
+        Mission Person
+      </label>
+      <label class="category-option">
+        <input type="radio" name="category" value="disaster">
+        <img src="../Images/disaster-icon.gif" alt="Disaster Icon" class="category-icon" />
+        Disaster
+      </label>
+    </div>
+
     <textarea id="postText" class="post-modal-textarea" placeholder="Say Something..."></textarea>
     <div class="post-modal-preview">
+      <div id="sharedPostMeta" class="preview-meta">
+        <img id="sharedPostAuthorImage" class="preview-meta-avatar" src="" alt="Author" />
+        <div class="preview-meta-text">
+          <h5 id="sharedPostAuthorName"></h5>
+          <small id="sharedPostTime"></small>
+        </div>
+      </div>
       <p id="sharedPostText" class="preview-text"></p>
       <img id="sharedPostImage" class="preview-img" src="" alt="" />
+      <video id="sharedPostVideo" class="preview-video" src="" controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture oncontextmenu="return false;"></video>
     </div>
     <!-- ✅ Media Upload Buttons -->
     <div class="post-media-options">
       <label>
-        <input type="file" id="imageUpload" accept="image/*" hidden>
+        <input type="file" id="imageUpload" accept="image/*" multiple hidden>
         <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
       </label>
       <label>
@@ -286,6 +322,8 @@ try {
         <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
       </label>
     </div>
+
+    <p class="post-media-hint">You can select up to 5 photos in one post.</p>
 
     <!-- ✅ Media Preview -->
     <div id="mediaPreview" class="post-media-preview"></div>
@@ -295,62 +333,7 @@ try {
     </div>
   </div>
 </div>
-<style>.category-label {
-  text-align: left;
-  font-weight: 600;
-  font-size: 16px;
-  color: #333;
-  margin-bottom: 12px;
-  font-family: 'Roboto', Arial, sans-serif;
-}
 
-.category-toggle {
-  display: flex;
-  justify-content: center;
-  gap: 18px;
-  margin-bottom: 18px;
-  user-select: none;
-  font-family: 'Roboto', Arial, sans-serif;
-}
-
-.category-option {
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  padding: 6px 18px; /* ↓ reduced height */
-  border: 2px solid #1a73e8;
-  border-radius: 16px; /* slightly smaller for balance */
-  font-weight: 450;
-  color: #f75c3c;
-  transition: all 0.3s ease;
-  user-select: none;
-  min-width: 90px;
-  justify-content: center;
-  gap: 6px;
-  background-color: white;
-}
-
-.category-icon {
-  width: 24px; /* ↓ smaller icons */
-  height: 24px;
-  object-fit: contain;
-}
-
-/* Highlight selected label */
-.category-option:has(input[type="radio"]:checked) {
-  background-color: #cdb468;
-  color: white;
-  box-shadow: 0 0 6px rgba(26, 115, 232, 0.5);
-  border-color: #f75c3c;
-}
-
-/* Hover effect */
-.category-option:hover {
-  background-color: rgba(26, 115, 232, 0.1);
-  border-color: #1a73e8;
-  color: #1a73e8;
-}
-</style>
     <div class="right-panel">
       <div class="card notifications notifications-card">
         <div class="notifications-top">
@@ -448,7 +431,8 @@ try {
 </aside>
 </body>
   <script src="../javascrpit/Volunteer_profile.js"></script>
-  <script src="../javascrpit/post_interactions_shared.js?v=20260301"></script>
+  <script src="../javascrpit/post_interactions_shared.js?v=20260406d"></script>
        <script src="../javascrpit/notifications_shared.js"></script>
 
 </html>
+

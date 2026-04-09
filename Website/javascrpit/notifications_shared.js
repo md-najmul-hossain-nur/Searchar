@@ -33,8 +33,27 @@
     return date.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
   }
 
+  function normalizeNotificationText(value) {
+    const text = String(value || '');
+    if (!text) return '';
+
+    // Decode common mojibake when UTF-8 bytes were interpreted as latin1 (e.g. "ðŸ›¡ï¸").
+    const looksBroken = /ðŸ|Ã.|â.|ï¸|Â./.test(text);
+    if (!looksBroken || typeof TextDecoder === 'undefined') {
+      return text;
+    }
+
+    try {
+      const bytes = new Uint8Array(Array.from(text, ch => ch.charCodeAt(0) & 0xff));
+      const decoded = new TextDecoder('utf-8', { fatal: false }).decode(bytes);
+      return decoded || text;
+    } catch (_) {
+      return text;
+    }
+  }
+
   function notificationIconBySource(source) {
-    if (source === 'admin') return '🛡️';
+    if (source === 'admin') return '<img src="../Images/businessman.gif" alt="Admin" style="width:22px;height:22px;border-radius:999px;object-fit:cover;">';
     if (source === 'police') return '👮';
     if (source === 'comment') return '💬';
     if (source === 'like') return '❤️';
@@ -70,8 +89,8 @@
           <li class="${levelClass} ${readClass}" data-notification-id="${item.id || 0}" data-target-post-id="${item.target_post_id || ''}" data-target-comment-id="${targetCommentId}">
             <div class="notification-icon">${notificationIconBySource(item.source)}</div>
             <div class="notification-body">
-              <div class="notification-title">${item.title || 'Notification'}</div>
-              <div class="notification-message">${item.message || ''}</div>
+                <div class="notification-title">${normalizeNotificationText(item.title || 'Notification')}</div>
+                <div class="notification-message">${normalizeNotificationText(item.message || '')}</div>
             </div>
             <span class="notification-time">${formatRelativeTime(item.created_at, item.time_ago)}</span>
           </li>
@@ -95,8 +114,8 @@
         <article class="${levelClass} ${readClass}" data-notification-id="${item.id || 0}" data-target-post-id="${item.target_post_id || ''}" data-target-comment-id="${targetCommentId}">
           <div class="drawer-notification-icon">${notificationIconBySource(item.source)}</div>
           <div class="drawer-notification-content">
-            <h4>${item.title || 'Notification'}</h4>
-            <p>${item.message || ''}</p>
+            <h4>${normalizeNotificationText(item.title || 'Notification')}</h4>
+            <p>${normalizeNotificationText(item.message || '')}</p>
             <small>${formatRelativeTime(item.created_at, item.time_ago)}</small>
           </div>
         </article>

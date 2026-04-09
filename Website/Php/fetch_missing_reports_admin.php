@@ -47,13 +47,13 @@ try {
     $hasResolvedAt = columnExists($pdo, 'missing_person_reports', 'resolved_at');
 
     $selectCols = $hasResolvedAt
-        ? 'report_id, full_name, age, gender, last_seen_location, last_seen_time, status, reporter_name, created_at, resolved_at'
-        : 'report_id, full_name, age, gender, last_seen_location, last_seen_time, status, reporter_name, created_at, NULL AS resolved_at';
+        ? 'report_id, full_name, nickname, age, gender, physical_description, photo_filename, last_seen_date, last_seen_location, last_seen_time, mental_condition, medical_notes, status, reporter_name, reporter_mobile, relationship, consent, created_at, resolved_at'
+        : 'report_id, full_name, nickname, age, gender, physical_description, photo_filename, last_seen_date, last_seen_location, last_seen_time, mental_condition, medical_notes, status, reporter_name, reporter_mobile, relationship, consent, created_at, NULL AS resolved_at';
 
     $stmt = $pdo->query("SELECT {$selectCols} FROM missing_person_reports ORDER BY created_at DESC LIMIT 1000");
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
-    $activeStatuses = ['open', 'active', 'pending', 'searching'];
+    $activeStatuses = ['open', 'active', 'pending', 'searching', 'under_review'];
     $resolvedStatuses = ['resolved', 'closed', 'found'];
 
     $totalActive = 0;
@@ -110,12 +110,21 @@ try {
         $payloadRows[] = [
             'report_id' => (int)($row['report_id'] ?? 0),
             'full_name' => (string)($row['full_name'] ?? ''),
+            'nickname' => (string)($row['nickname'] ?? ''),
             'age' => (int)($row['age'] ?? 0),
             'gender' => (string)($row['gender'] ?? ''),
+            'physical_description' => (string)($row['physical_description'] ?? ''),
+            'photo_filename' => (string)($row['photo_filename'] ?? ''),
+            'last_seen_date' => (string)($row['last_seen_date'] ?? ''),
             'last_seen_location' => (string)($row['last_seen_location'] ?? ''),
             'last_seen_time' => (string)($row['last_seen_time'] ?? ''),
+            'mental_condition' => (string)($row['mental_condition'] ?? ''),
+            'medical_notes' => (string)($row['medical_notes'] ?? ''),
             'status' => $status,
             'reporter_name' => (string)($row['reporter_name'] ?? ''),
+            'reporter_mobile' => (string)($row['reporter_mobile'] ?? ''),
+            'relationship' => (string)($row['relationship'] ?? ''),
+            'consent' => (int)($row['consent'] ?? 1),
             'created_at' => (string)($row['created_at'] ?? ''),
         ];
     }

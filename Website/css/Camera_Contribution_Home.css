@@ -338,6 +338,165 @@ margin-bottom: -100px;
   animation-play-state: paused;
 }
 
+.advert-text-marquee {
+  overflow: hidden;
+  border: 1px solid #fde68a;
+  background: #fffbeb;
+  border-radius: 999px;
+  margin: 8px 0 10px;
+  padding: 5px 0;
+}
+
+.advert-text-track {
+  white-space: nowrap;
+  display: inline-block;
+  padding-left: 100%;
+  font-size: 12px;
+  font-weight: 700;
+  color: #9a3412;
+  animation: advertTextScroll 13s linear infinite;
+}
+
+@keyframes advertTextScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+
+.advert .ad-ticker {
+  overflow: hidden;
+  border: 1px solid #fde68a;
+  background: #fffbeb;
+  border-radius: 999px;
+  margin: 8px 0 10px;
+  padding: 5px 0;
+}
+
+.advert .ad-ticker-track {
+  white-space: nowrap;
+  display: inline-block;
+  padding-left: 100%;
+  font-size: 12px;
+  font-weight: 700;
+  color: #9a3412;
+  animation: advertTextScroll 13s linear infinite;
+}
+
+.advert .ad-card {
+  border: 1px solid #e6edf5;
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 10px;
+  background: #f8fafc;
+  overflow: hidden;
+  position: relative;
+}
+
+.advert .ad-card:last-child {
+  margin-bottom: 0;
+}
+
+.advert .ad-card:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -40%;
+  width: 36%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  animation: adShine 3.4s ease-in-out infinite;
+}
+
+.advert .ad-card small {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+}
+
+.advert .ad-thumb {
+  display: block;
+  width: 100%;
+  max-height: 84px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid #dbe7f3;
+  background: #ffffff;
+  margin: 8px 0 9px;
+  animation: adImageFloat 2.8s ease-in-out infinite;
+}
+
+.advert .ad-thumb-small {
+  object-fit: cover;
+  max-height: 74px;
+}
+
+.advert .ad-title-animate {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 100%;
+  border-right: 2px solid #fb923c;
+  animation: adTyping 3s steps(30, end) infinite, adCaret 0.7s step-end infinite;
+}
+
+.advert .ad-title-animate.delay {
+  animation-delay: 0.9s, 0s;
+}
+
+.advert .ad-card p {
+  margin: 6px 0 9px;
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.4;
+  animation: adTextFade 2.2s ease-in-out infinite;
+}
+
+.advert .ad-card a {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  color: #7c2d12;
+  background: #ffedd5;
+  border: 1px solid #fdba74;
+  border-radius: 999px;
+  padding: 5px 10px;
+}
+
+.advert .ad-card-primary {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border-color: #fdba74;
+}
+
+@keyframes adImageFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes adTyping {
+  0% { width: 0; }
+  45% { width: 100%; }
+  70% { width: 100%; }
+  100% { width: 0; }
+}
+
+@keyframes adCaret {
+  0%, 49% { border-color: #fb923c; }
+  50%, 100% { border-color: transparent; }
+}
+
+@keyframes adTextFade {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.72; }
+}
+
+@keyframes adShine {
+  0% { left: -40%; }
+  100% { left: 140%; }
+}
+
 
 /* Post Box Styling */
 .post-box {
@@ -2511,4 +2670,138 @@ legend {
 
 .post .reply-input-area {
   margin-left: 0;
+}
+
+/* Unified Navbar Logo */
+.navbar {
+  width: 100% !important;
+  height: 104px !important;
+  min-height: 104px !important;
+  padding: 10px 32px !important;
+  box-sizing: border-box;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  min-width: 180px;
+}
+
+.navbar-logo-img,
+#logo {
+  width: 250px !important;
+  max-width: 250px !important;
+  height: auto !important;
+  display: block;
+  object-fit: contain;
+}
+
+.navbar > div:last-child {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin-right: 40px !important;
+}
+
+.navbar .navbar-donate {
+  height: 44px !important;
+  padding: 0 18px !important;
+  border-radius: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  font-size: 14px !important;
+  line-height: 1 !important;
+}
+
+.navbar .navbar-donate img {
+  height: 1.5em !important;
+  width: auto !important;
+  border-radius: 6px !important;
+}
+
+.edit-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  width: auto;
+  height: auto;
+  min-height: 34px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: #f75c3c;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(247, 92, 60, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.edit-btn:hover {
+  background: #e3471c;
+  box-shadow: 0 6px 14px rgba(227, 71, 28, 0.35);
+  transform: translateY(-1px);
+}
+
+.edit-btn:focus-visible {
+  outline: 2px solid rgba(247, 92, 60, 0.45);
+  outline-offset: 2px;
+}
+
+.edit-btn img {
+  display: none;
+}
+
+.profile-card,
+.card.user-info {
+  position: relative;
+}
+
+.edit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Desktop sticky sidebar layout */
+@media screen and (min-width: 993px) {
+  .container {
+    align-items: flex-start;
+  }
+
+  .sidebar-left,
+  .sidebar-right {
+    position: sticky;
+    top: 118px;
+    align-self: flex-start;
+    max-height: calc(100vh - 118px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+  }
+
+  .main-feed {
+    min-height: calc(100vh - 118px);
+  }
+}
+
+@media screen and (max-width: 992px) {
+  .sidebar-left,
+  .sidebar-right {
+    position: static;
+    top: auto;
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+  }
 }

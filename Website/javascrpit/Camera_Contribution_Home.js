@@ -1,4 +1,4 @@
-
+﻿
 const modal = document.getElementById("postModal");
 const feed = document.getElementById("post-feed");
 const mediaPreview = document.getElementById("mediaPreview");
@@ -54,7 +54,7 @@ function createPost() {
   fd.append('category', category);
   fd.append('case_id', '1');
   fd.append('share_facebook', document.getElementById('facebookShareToggle')?.checked ? '1' : '0');
-  fd.append('share_anonymous', document.getElementById('anonToggle')?.checked ? '1' : '0');
+  fd.append('share_anonymous', document.getElementById('anonymousShareToggle')?.checked ? '1' : '0');
 
   if (selectedImage) {
     fd.append('media_images[]', selectedImage, selectedImage.name);
@@ -245,21 +245,6 @@ var policeIcon = L.icon({
         locateAndShow("police station", policeIcon);
     });
 });
-// Open Modal and Set Preview
-document.querySelectorAll('.share-btn').forEach(btn => {
-  btn.addEventListener('click', function () {
-    const post = this.closest('.post');
-    const text = post.querySelector('p')?.innerText || '';
-    const img = post.querySelector('.post-img')?.getAttribute('src') || '';
-
-    // Fill preview
-    document.getElementById('sharedPostText').innerText = text;
-    document.getElementById('sharedPostImage').src = img;
-
-    // Show modal in center
-    document.getElementById('postModal').style.display = 'flex';
-  });
-});
 function closeModal() {
   document.getElementById('postModal').style.display = 'none';
   document.getElementById('postText').value = '';
@@ -267,7 +252,7 @@ function closeModal() {
   document.getElementById('sharedPostImage').src = '';       // ❌ এই লাইন
   document.getElementById('facebookShareToggle').checked = false;
 }
-document.getElementById('anonToggle').addEventListener('change', function () {
+document.getElementById('anonymousShareToggle').addEventListener('change', function () {
   if (this.checked) {
     console.log("Anonymous mode enabled");
     // Hide user's name or change UI if needed

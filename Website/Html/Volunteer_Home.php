@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 session_start();
-require_once "../Php/db.php";
+require_once __DIR__ . '/../Php/db.php';
 
 // Check if user is logged in as volunteer
 if (
@@ -16,8 +16,7 @@ if (
 $volunteer_id = (int)$_SESSION['user_id'];
 
 try {
-    // FIX: Removed trailing comma and added more columns if you need
-    $stmt = $pdo->prepare("SELECT volunteer_id, full_name,  profile_photo, cover_photo, bio                       
+    $stmt = $pdo->prepare("SELECT volunteer_id, full_name, email, profile_photo, cover_photo, bio
                            FROM volunteers WHERE volunteer_id = :id LIMIT 1");
     $stmt->execute(['id' => $volunteer_id]);
     $volunteer = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -54,6 +53,10 @@ function timeAgo(?string $datetime): string {
 }
 
 function getAuthorPhoto(PDO $pdo, string $authorRole, int $authorId): string {
+  if (strtolower(trim($authorRole)) === 'admin') {
+    return '../Images/businessman.gif';
+  }
+
   static $roleMap = [
     'user' => ['table' => 'users', 'id_col' => 'user_id', 'folder' => 'user'],
     'police' => ['table' => 'policemen', 'id_col' => 'police_id', 'folder' => 'police'],
@@ -68,7 +71,7 @@ function getAuthorPhoto(PDO $pdo, string $authorRole, int $authorId): string {
   }
 
   if (!isset($roleMap[$authorRole]) || $authorId <= 0) {
-    return $cache[$cacheKey] = '../Images/default_profile.png';
+    return $cache[$cacheKey] = '../Images/demo_pic/profile.jpg';
   }
 
   $table = $roleMap[$authorRole]['table'];
@@ -85,13 +88,14 @@ function getAuthorPhoto(PDO $pdo, string $authorRole, int $authorId): string {
   } catch (Exception $e) {
   }
 
-  return $cache[$cacheKey] = '../Images/default_profile.png';
+  return $cache[$cacheKey] = '../Images/demo_pic/profile.jpg';
 }
 
 $posts = [];
 try {
   $hasMediaJson = false;
   $hasStatus = false;
+  $hasShareAnonymous = false;
 
   $mediaJsonCol = $pdo->query("SHOW COLUMNS FROM posts LIKE 'media_json'");
   if ($mediaJsonCol && $mediaJsonCol->fetch(PDO::FETCH_ASSOC)) {
@@ -103,9 +107,17 @@ try {
     $hasStatus = true;
   }
 
+  $shareAnonCol = $pdo->query("SHOW COLUMNS FROM posts LIKE 'share_anonymous'");
+  if ($shareAnonCol && $shareAnonCol->fetch(PDO::FETCH_ASSOC)) {
+    $hasShareAnonymous = true;
+  }
+
   $selectCols = "id, author_role, author_id, author_name, category, text, media_path, media_type, created_at";
   if ($hasMediaJson) {
     $selectCols .= ", media_json";
+  }
+  if ($hasShareAnonymous) {
+    $selectCols .= ", share_anonymous";
   }
   if ($hasStatus) {
     $selectCols .= ", status";
@@ -128,14 +140,53 @@ try {
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Main CSS -->
-  <link rel="stylesheet" href="../css/Volunteer_Home.css">
+  <link rel="stylesheet" href="../css/Volunteer_Home.css?v=20260409b">
+  <link rel="stylesheet" href="../css/post_modal_shared.css?v=20260409a">
+  <link rel="stylesheet" href="../css/profile_button_shared.css?v=20260409a">
   <link rel="stylesheet" href="../css/notifications_shared.css">
+  <link rel="stylesheet" href="../css/messenger_shared.css">
   <style>
     .main-section { display:none; }
     .main-section.active { display:block; }
+
+    /* Guaranteed page-local profile button style */
+    #homeProfileBtn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 36px;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #ff6a4d 0%, #f05454 100%);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(240, 84, 84, 0.28);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    }
+
+    #homeProfileBtn:hover {
+      transform: translateY(-1px);
+      filter: brightness(0.96);
+      box-shadow: 0 8px 18px rgba(227, 71, 28, 0.34);
+    }
+
+    #homeProfileBtn:focus-visible {
+      outline: 2px solid rgba(240, 84, 84, 0.42);
+      outline-offset: 2px;
+    }
   </style>
 </head>
-<body>
+<body data-current-user-name="<?= e($volunteer['full_name'] ?? 'Volunteer') ?>">
 <header class="navbar" style="display:flex; align-items:center; justify-content:space-between; padding:10px;">
   <!-- Left: Logo -->
   <div class="navbar-logo">
@@ -160,15 +211,12 @@ try {
          alt="Cover" class="cover">
 
     <!-- Profile Photo -->
-    <img src="<?= !empty($volunteer['profile_photo']) ? '../uploads/volunteer/' . e($volunteer['profile_photo']) : '../Images/default_profile.png' ?>" 
+    <img src="<?= !empty($volunteer['profile_photo']) ? '../uploads/volunteer/' . e($volunteer['profile_photo']) : '../Images/demo_pic/profile.jpg' ?>" 
          class="profile-pic" 
          alt="Profile">
 
-    <!-- Edit button as image icon -->
-    <button class="edit-btn" title="Edit Profile" 
-        onclick="location.href='../Html/Volunteer_profile.php?user_id=<?= e($volunteer_id); ?>'">
-        <img src="../Images/pencil.gif" alt="Edit" />
-    </button>
+    <button id="homeProfileBtn" class="edit-btn" title="Profile Setting" 
+      onclick="location.href='../Html/Volunteer_profile.php?user_id=<?= e($volunteer_id); ?>'">Profile</button>
 
     <!-- Volunteer name and icon -->
     <h2>
@@ -178,7 +226,7 @@ try {
 
     <!-- Bio -->
     <p class="user-bio">
-        <?= !empty($volunteer['bio']) ? e($volunteer['bio']) : '💬 Add your bio in your profile so everyone knows a little about you' ?>
+      <?= !empty($volunteer['bio']) ? e($volunteer['bio']) : '&#128172; Tell people a little about yourself by adding a bio in your profile.' ?>
     </p>
 </div>
     
@@ -214,7 +262,7 @@ try {
       </div>
 
       <p id="rank-stats" class="rank-stats">Accepted 0 • Completed 0 • Busy 0</p>
-      <p id="rank-rules" class="rank-rules">+10 XP (Accept) • +20 XP (Complete)</p>
+      <p id="rank-rules" class="rank-rules">+10 XP (Accept) • +20 XP (Complete) • +2 XP (Auto-close by Police)</p>
     </div>
 
     <button class="view-missions-btn" onclick="openMissionModal()">📋 View Missions</button>
@@ -306,7 +354,10 @@ try {
     <span class="post-modal-close" onclick="closeModal()">&times;</span>
 
     <!-- Title -->
-    <h2 class="post-modal-title">Share Your Mood</h2>
+    <div class="post-modal-head">
+      <h2 class="post-modal-title">Share Your Mood</h2>
+      <p class="post-modal-subtitle">Upload photos or a video and post instantly</p>
+    </div>
 
     <!-- ✅ Facebook Toggle -->
     <div class="facebook-toggle">
@@ -317,6 +368,16 @@ try {
         </span>
       </label>
       <span class="facebook-toggle-label">Share to Facebook</span>
+    </div>
+
+    <div class="facebook-toggle">
+      <label class="facebook-toggle-switch">
+        <input type="checkbox" id="anonymousShareToggle">
+        <span class="facebook-toggle-slider">
+          <i class="fa-solid fa-user-secret"></i>
+        </span>
+      </label>
+      <span class="facebook-toggle-label">Share Anonymously</span>
     </div>
 
     <!-- Category Label -->
@@ -340,14 +401,22 @@ try {
 
     <!-- ✅ Post Preview (Auto-filled from clicked post) -->
     <div class="post-modal-preview">
+      <div id="sharedPostMeta" class="preview-meta">
+        <img id="sharedPostAuthorImage" class="preview-meta-avatar" src="" alt="Author" />
+        <div class="preview-meta-text">
+          <h5 id="sharedPostAuthorName"></h5>
+          <small id="sharedPostTime"></small>
+        </div>
+      </div>
       <p id="sharedPostText" class="preview-text"></p>
       <img id="sharedPostImage" class="preview-img" src="" alt="" />
+      <video id="sharedPostVideo" class="preview-video" src="" controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture oncontextmenu="return false;"></video>
     </div>
 
     <!-- ✅ Media Upload Buttons -->
     <div class="post-media-options">
       <label>
-        <input type="file" id="imageUpload" accept="image/*" hidden>
+        <input type="file" id="imageUpload" accept="image/*" multiple hidden>
         <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
       </label>
       <label>
@@ -355,6 +424,8 @@ try {
         <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
       </label>
     </div>
+
+    <p class="post-media-hint">You can select up to 5 photos in one post.</p>
 
 
     <!-- ✅ Media Preview (optional preview for uploaded file) -->
@@ -410,12 +481,15 @@ try {
       $authorRole = (string)($post['author_role'] ?? '');
       $authorId = (int)($post['author_id'] ?? 0);
       $authorPhoto = getAuthorPhoto($pdo, $authorRole, $authorId);
+      $isAnonymous = (int)($post['share_anonymous'] ?? 0) === 1;
+      $displayAuthorName = $isAnonymous ? 'Anonymous' : $postAuthorName;
+      $displayAuthorPhoto = $isAnonymous ? '../Images/anonymously.gif' : $authorPhoto;
     ?>
-    <div class="post" id="post-<?= $postId ?>" data-post-id="<?= $postId ?>" data-category="<?= e($postCategory) ?>" data-status="<?= e((string)($post['status'] ?? 'approved')) ?>">
+    <div class="post" id="post-<?= $postId ?>" data-post-id="<?= $postId ?>" data-category="<?= e($postCategory) ?>" data-status="<?= e((string)($post['status'] ?? 'approved')) ?>" data-share-anonymous="<?= $isAnonymous ? '1' : '0' ?>">
       <div class="post-header">
-        <img src="<?= $authorPhoto ?>" alt="Author Photo">
+        <img src="<?= e($displayAuthorPhoto) ?>" alt="Author Photo">
         <div>
-          <h5><?= e($postAuthorName) ?></h5>
+          <h5><?= e($displayAuthorName) ?></h5>
           <small class="post-time" data-created-at="<?= e((string)($post['created_at'] ?? '')) ?>"><?= e(timeAgo((string)($post['created_at'] ?? ''))) ?></small>
         </div>
       </div>
@@ -444,7 +518,6 @@ try {
       <div class="post-actions">
         <span class="like-btn"><i class="fa fa-heart"></i> Like</span>
         <span class="comment-btn"><i class="fa fa-comment"></i> Comment</span>
-        <span class="share-btn"><i class="fa fa-share"></i> Share</span>
       </div>
 
       <section class="comment-module" style="display:none;">
@@ -475,7 +548,6 @@ try {
   <div class="post-actions">
     <span class="like-btn"><i class="fa fa-heart"></i> 201 Likes</span>
     <span class="comment-btn"><i class="fa fa-comment"></i> 41</span>
-    <span class="share-btn"><i class="fa fa-share"></i> 7</span>
   </div>
 
 <section class="comment-module" style="display:none;">
@@ -692,7 +764,6 @@ try {
   <div class="post-actions">
     <span class="like-btn"><i class="fa fa-heart"></i> 201 Likes</span>
     <span class="comment-btn"><i class="fa fa-comment"></i> 41</span>
-    <span class="share-btn"><i class="fa fa-share"></i> 7</span>
   </div>
 
 <section class="comment-module" style="display:none;">
@@ -909,7 +980,6 @@ try {
   <div class="post-actions">
     <span class="like-btn"><i class="fa fa-heart"></i> 201 Likes</span>
     <span class="comment-btn"><i class="fa fa-comment"></i> 41</span>
-    <span class="share-btn"><i class="fa fa-share"></i> 7</span>
   </div>
 
 <section class="comment-module" style="display:none;">
@@ -1129,14 +1199,25 @@ try {
 
      <div class="advert">
   <h4>Advertisement</h4>
-  <div class="advert-slider">
-    <div class="advert-track">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.01_fac5108b.jpg">
-      <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg">
-    </div>
+  <div class="ad-ticker" aria-hidden="true">
+    <div class="ad-ticker-track">Special Offer | City CCTV Bundle | First Aid Bootcamp | Community Safety Partner</div>
   </div>
+
+  <article class="ad-card ad-card-primary">
+    <small>Sponsored</small>
+    <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg" alt="Camera plan" class="ad-thumb">
+    <h5 class="ad-title-animate">Secure Home Camera Plan</h5>
+    <p>Protect your area with live monitoring and instant alerts.</p>
+    <a href="#!">Learn More</a>
+  </article>
+
+  <article class="ad-card">
+    <small>Partner Offer</small>
+    <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg" alt="Training offer" class="ad-thumb ad-thumb-small">
+    <h5 class="ad-title-animate delay">Emergency First Aid Training</h5>
+    <p>Join the weekend session and earn a verified safety badge.</p>
+    <a href="#!">Book Seat</a>
+  </article>
 </div>
 
 
@@ -1210,19 +1291,6 @@ try {
 }
 </style>
 
-<div class="group-chat-section">
-  <h4>Group Chat</h4>
-  <div class="chat-window" id="chatWindow">
-    <!-- Messages will appear here -->
-    <div class="message received">Welcome to the group chat!</div>
-  </div>
- <div class="chat-input-area">
-  <input type="text" id="chatInput" placeholder="Type your message..." />
-  <img src="../Images/smile.png" alt="Emoji" class="chat-icon" />
-<button id="sendBtn">
-    <img src="../Images/send.png" alt="Send" class="send-icon" />
-  </button></div>
-
 <div id="notificationsDrawerBackdrop" class="notifications-drawer-backdrop"></div>
 <aside id="notificationsDrawer" class="notifications-drawer" aria-hidden="true">
   <div class="notifications-drawer-header">
@@ -1235,6 +1303,53 @@ try {
   <div class="notifications-drawer-footer"></div>
 </aside>
 
+<button type="button" id="messengerFab" class="messenger-fab" aria-label="Open Messenger" title="Messenger">
+  <i class="fa fa-comments" aria-hidden="true"></i>
+</button>
+<div id="messengerBackdrop" class="messenger-backdrop" aria-hidden="true"></div>
+<aside id="messengerDrawer" class="messenger-drawer" aria-hidden="true">
+  <div class="messenger-drawer-header">
+    <h3>Messenger</h3>
+    <button type="button" id="messengerClose" class="messenger-close" aria-label="Close">&times;</button>
+  </div>
+  <div class="messenger-layout">
+    <aside class="messenger-list">
+      <div class="messenger-list-title">All</div>
+      <input type="text" class="messenger-search" placeholder="Search" aria-label="Search chats">
+      <div class="messenger-contact">
+        <div class="avatar">
+          <img src="../Images/businessman.gif" alt="Admin Logo" class="admin-avatar-img" onerror="this.onerror=null;this.src='../Images/demo_pic/profile.jpg';">
+        </div>
+        <div>
+          <strong>Admin Desk</strong>
+          <small>Announcements and updates</small>
+        </div>
+      </div>
+    </aside>
+
+    <section class="messenger-chat">
+      <div class="messenger-chat-top">
+        <div class="avatar online">
+          <img src="../Images/businessman.gif" alt="Admin Logo" class="admin-avatar-img" onerror="this.onerror=null;this.src='../Images/demo_pic/profile.jpg';">
+        </div>
+        <div>
+          <strong>Admin Desk</strong>
+          <small>Active now</small>
+        </div>
+      </div>
+      <div class="messenger-chat-feed">
+        <p class="messenger-bubble support">Hi, this is Admin Desk. How can we help you today?</p>
+      </div>
+      <div class="messenger-composer">
+        <input id="messengerInput" class="messenger-input" type="text" placeholder="Type a message..." autocomplete="off">
+        <button type="button" class="messenger-send" aria-label="Send">
+          <i class="fa fa-paper-plane" aria-hidden="true"></i>
+        </button>
+      </div>
+    </section>
+  </div>
+</aside>
+
 
 
   
@@ -1243,7 +1358,9 @@ try {
      </body>
        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
        <script src="../javascrpit/Volunteer_Home.js"></script>
-      <script src="../javascrpit/post_interactions_shared.js"></script>
+      <script src="../javascrpit/post_interactions_shared.js?v=20260406d"></script>
        <script src="../javascrpit/notifications_shared.js"></script>
+      <script src="../javascrpit/messenger_shared.js"></script>
 
 </html>
+

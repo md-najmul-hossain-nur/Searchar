@@ -9,8 +9,23 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
+function getReturnPage(): string {
+    $allowed = [
+        'User_Home.php',
+        'Policeman_Home.php',
+    ];
+
+    $requested = trim((string)($_POST['return_to'] ?? ''));
+    if ($requested !== '' && in_array($requested, $allowed, true)) {
+        return $requested;
+    }
+
+    return 'User_Home.php';
+}
+
 function redirectWithStatus(string $status, string $message = ''): void {
-    $url = '../Html/User_Home.php?missing_report=' . urlencode($status);
+    $returnPage = getReturnPage();
+    $url = '../Html/' . $returnPage . '?missing_report=' . urlencode($status);
     if ($message !== '') {
         $url .= '&msg=' . urlencode($message);
     }

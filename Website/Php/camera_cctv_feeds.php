@@ -296,9 +296,14 @@ try {
     }
 
     if ($cameraLocation === '') {
-        $locStmt = $pdo->prepare('SELECT camera_location FROM camera_contributors WHERE camera_id = :camera_id LIMIT 1');
+        $locStmt = $pdo->prepare('SELECT city, street, country FROM camera_contributors WHERE camera_id = :camera_id LIMIT 1');
         $locStmt->execute(['camera_id' => $userId]);
-        $cameraLocation = trim((string)($locStmt->fetchColumn() ?: ''));
+        $locRow = $locStmt->fetch(PDO::FETCH_ASSOC) ?: [];
+        $cameraLocation = trim(implode(' ', array_filter([
+            (string)($locRow['city'] ?? ''),
+            (string)($locRow['street'] ?? ''),
+            (string)($locRow['country'] ?? ''),
+        ])));
     }
 
     $liveUrl = null;

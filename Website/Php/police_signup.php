@@ -88,8 +88,6 @@ try {
         $cover_photo = save_upload($_FILES['cover_photo'], 'cover_', ['jpg','jpeg','png']);
     }
 
-    $official_id = save_upload($_FILES['official_id'], 'official_', ['pdf']);
-
     // Address fields
     $fields = ['street', 'city', 'postal', 'country', 'latitude', 'longitude'];
     $addr = [];
@@ -99,8 +97,8 @@ try {
     $stmt = $pdo->prepare("INSERT INTO policemen
         (full_name,email,mobile,nid_number,nid_photo,profile_photo,cover_photo,
         date_of_birth,gender,street,city,postal_code,country,latitude,longitude,
-        password_hash,badge_id,designation,station,official_id)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+        password_hash,badge_id,designation,station)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
     $stmt->execute([
         $_POST['fullname'],
@@ -121,8 +119,7 @@ try {
         $password_hash,
         $_POST['badge_id'],
         $_POST['designation'],
-        $_POST['station'],
-        $official_id
+        $_POST['station']
     ]);
 
     echo "<script>

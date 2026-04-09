@@ -54,12 +54,73 @@ try {
                 'type' => 'Post Approval',
                 'submitted_by' => trim((string)($row['author_name'] ?? '')) ?: 'Unknown',
                 'actor_role' => normalizeRole((string)($row['author_role'] ?? 'user')),
-                'item_ref' => $postId > 0 ? ('PT-' . str_pad((string)$postId, 3, '0', STR_PAD_LEFT)) : '—',
+                'item_ref' => $postId > 0 ? ('PT-' . str_pad((string)$postId, 3, '0', STR_PAD_LEFT)) : '-',
                 'item_label' => trim((string)($row['category'] ?? 'General')) . ' post',
                 'status' => 'Pending',
                 'submitted_at' => normalizeDate((string)($row['created_at'] ?? '')),
                 'section' => 'post-control',
                 'search_key' => $postId > 0 ? ('PT-' . str_pad((string)$postId, 3, '0', STR_PAD_LEFT)) : ''
+            ];
+        }
+    }
+
+    if (tableExists($pdo, 'post_reports')) {
+        $sql = "SELECT report_id, report_category, reporter_name, reported_name, status, created_at
+                FROM (
+                    SELECT
+                        report_id,
+                        report_category,
+                        reporter_name,
+                        COALESCE(post_author_name, '') AS reported_name,
+                        status,
+                        created_at
+                    FROM post_reports
+                ) p
+                WHERE LOWER(COALESCE(status,'pending')) IN ('pending','under_review')
+                ORDER BY created_at DESC, report_id DESC
+                LIMIT 80";
+
+        $rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        foreach ($rows as $row) {
+            $reportId = (int)($row['report_id'] ?? 0);
+            $status = trim((string)($row['status'] ?? 'pending'));
+            $reportedName = trim((string)($row['reported_name'] ?? '')) ?: 'Unknown user';
+            $queue[] = [
+                'type' => 'Post Report',
+                'submitted_by' => trim((string)($row['reporter_name'] ?? '')) ?: 'Unknown',
+                'actor_role' => 'Reporter',
+                'item_ref' => $reportId > 0 ? ('PR-' . str_pad((string)$reportId, 4, '0', STR_PAD_LEFT)) : '-',
+                'item_label' => $reportedName . ' | ' . (trim((string)($row['report_category'] ?? 'Other')) ?: 'Other'),
+                'status' => ucfirst(strtolower($status)),
+                'submitted_at' => normalizeDate((string)($row['created_at'] ?? '')),
+                'section' => 'reports',
+                'search_key' => $reportId > 0 ? ('PR-' . str_pad((string)$reportId, 4, '0', STR_PAD_LEFT)) : $reportedName
+            ];
+        }
+    }
+
+    if (tableExists($pdo, 'comment_reports')) {
+        $sql = "SELECT report_id, report_category, reporter_name, comment_author_name, status, created_at
+                FROM comment_reports
+                WHERE LOWER(COALESCE(status,'pending')) IN ('pending','under_review')
+                ORDER BY created_at DESC, report_id DESC
+                LIMIT 80";
+
+        $rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        foreach ($rows as $row) {
+            $reportId = (int)($row['report_id'] ?? 0);
+            $status = trim((string)($row['status'] ?? 'pending'));
+            $reportedName = trim((string)($row['comment_author_name'] ?? '')) ?: 'Unknown user';
+            $queue[] = [
+                'type' => 'Comment Report',
+                'submitted_by' => trim((string)($row['reporter_name'] ?? '')) ?: 'Unknown',
+                'actor_role' => 'Reporter',
+                'item_ref' => $reportId > 0 ? ('PR-' . str_pad((string)$reportId, 4, '0', STR_PAD_LEFT)) : '-',
+                'item_label' => $reportedName . ' | ' . (trim((string)($row['report_category'] ?? 'Other')) ?: 'Other'),
+                'status' => ucfirst(strtolower($status)),
+                'submitted_at' => normalizeDate((string)($row['created_at'] ?? '')),
+                'section' => 'reports',
+                'search_key' => $reportId > 0 ? ('PR-' . str_pad((string)$reportId, 4, '0', STR_PAD_LEFT)) : $reportedName
             ];
         }
     }
@@ -81,7 +142,7 @@ try {
                 'type' => 'Missing Report',
                 'submitted_by' => trim((string)($row['reporter_name'] ?? '')) ?: 'Unknown',
                 'actor_role' => 'Reporter',
-                'item_ref' => $reportId > 0 ? ('MP' . str_pad((string)$reportId, 4, '0', STR_PAD_LEFT)) : '—',
+                'item_ref' => $reportId > 0 ? ('MP' . str_pad((string)$reportId, 4, '0', STR_PAD_LEFT)) : '-',
                 'item_label' => $missingName,
                 'status' => ucfirst(strtolower($status)),
                 'submitted_at' => normalizeDate((string)($row['created_at'] ?? '')),
@@ -119,8 +180,8 @@ try {
                     'type' => 'Withdraw Request',
                     'submitted_by' => trim((string)($row['requester_name'] ?? '')) ?: 'Volunteer',
                     'actor_role' => 'Volunteer',
-                    'item_ref' => $requestId > 0 ? ('WD-' . str_pad((string)$requestId, 3, '0', STR_PAD_LEFT)) : '—',
-                    'item_label' => '৳' . number_format($amount, 2),
+                    'item_ref' => $requestId > 0 ? ('WD-' . str_pad((string)$requestId, 3, '0', STR_PAD_LEFT)) : '-',
+                    'item_label' => 'à§³' . number_format($amount, 2),
                     'status' => 'Pending',
                     'submitted_at' => normalizeDate((string)($row['request_date'] ?? '')),
                     'section' => 'withdraw',
@@ -151,8 +212,8 @@ try {
                 LEFT JOIN volunteers v ON v.volunteer_id = vm.volunteer_id
                 WHERE vm.proof_file IS NOT NULL
                   AND vm.proof_file <> ''
-                  AND LOWER(COALESCE(vm.status,'assigned')) NOT IN ('completed','rejected_busy')
-                  AND {$responseExpr} NOT IN ('completed','rejected_busy')
+                                    AND LOWER(COALESCE(vm.status,'assigned')) NOT IN ('completed','rejected_busy','closed_by_police')
+                                    AND {$responseExpr} NOT IN ('completed','rejected_busy','closed_by_police')
                 ORDER BY {$timeExpr} DESC, vm.mission_id DESC
                 LIMIT 80";
 
@@ -165,12 +226,42 @@ try {
                 'type' => 'Mission Proof',
                 'submitted_by' => trim((string)($row['volunteer_name'] ?? '')) ?: 'Volunteer',
                 'actor_role' => 'Volunteer',
-                'item_ref' => $caseRef !== '' ? $caseRef : ($missionId > 0 ? ('MS-' . str_pad((string)$missionId, 3, '0', STR_PAD_LEFT)) : '—'),
+                'item_ref' => $caseRef !== '' ? $caseRef : ($missionId > 0 ? ('MS-' . str_pad((string)$missionId, 3, '0', STR_PAD_LEFT)) : '-'),
                 'item_label' => $title,
                 'status' => 'Needs verification',
                 'submitted_at' => normalizeDate((string)($row['submitted_at'] ?? '')),
                 'section' => 'volunteer',
                 'search_key' => $caseRef !== '' ? $caseRef : $title
+            ];
+        }
+    }
+
+    if (tableExists($pdo, 'volunteer_applications')) {
+        $sql = "SELECT application_id, full_name, email, mobile, status, created_at
+                FROM volunteer_applications
+                WHERE LOWER(COALESCE(status, 'pending')) = 'pending'
+                ORDER BY created_at DESC, application_id DESC
+                LIMIT 80";
+
+        $rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        foreach ($rows as $row) {
+            $applicationId = (int)($row['application_id'] ?? 0);
+            $fullName = trim((string)($row['full_name'] ?? '')) ?: 'Unknown user';
+            $email = trim((string)($row['email'] ?? ''));
+            $mobile = trim((string)($row['mobile'] ?? ''));
+            $contactLabel = $mobile !== '' ? $mobile : ($email !== '' ? $email : 'No contact');
+
+            $queue[] = [
+                'type' => 'Volunteer Application',
+                'submitted_by' => $fullName,
+                'actor_role' => 'User',
+                'item_ref' => $applicationId > 0 ? ('VA-' . str_pad((string)$applicationId, 3, '0', STR_PAD_LEFT)) : '-',
+                'item_label' => $contactLabel,
+                'status' => 'Pending',
+                'submitted_at' => normalizeDate((string)($row['created_at'] ?? '')),
+                'section' => 'volunteer-approver',
+                'search_key' => $contactLabel,
+                'application_id' => $applicationId,
             ];
         }
     }
@@ -188,8 +279,16 @@ try {
         'missing_pending' => 0,
         'withdraw_pending' => 0,
         'mission_proof_pending' => 0,
+        'volunteer_pending' => 0,
+        'report_pending' => 0,
+        'chat_log_total' => 0,
         'total' => count($queue),
     ];
+
+    if (tableExists($pdo, 'chatbot_logs')) {
+        $chatCount = (int)$pdo->query('SELECT COUNT(*) FROM chatbot_logs')->fetchColumn();
+        $summary['chat_log_total'] = $chatCount;
+    }
 
     foreach ($queue as $row) {
         $type = strtolower((string)($row['type'] ?? ''));
@@ -197,6 +296,8 @@ try {
         elseif ($type === 'missing report') $summary['missing_pending']++;
         elseif ($type === 'withdraw request') $summary['withdraw_pending']++;
         elseif ($type === 'mission proof') $summary['mission_proof_pending']++;
+        elseif ($type === 'volunteer application') $summary['volunteer_pending']++;
+        elseif ($type === 'post report' || $type === 'comment report') $summary['report_pending']++;
     }
 
     echo json_encode([

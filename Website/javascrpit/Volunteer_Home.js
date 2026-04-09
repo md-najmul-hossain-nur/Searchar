@@ -1,4 +1,4 @@
-
+﻿
 const modal = document.getElementById("postModal");
 const feed = document.getElementById("post-feed");
 const mediaPreview = document.getElementById("mediaPreview");
@@ -14,6 +14,8 @@ function closeModal() {
   document.getElementById("postText").value = "";
   document.getElementById("imageUpload").value = "";
   document.getElementById("videoUpload").value = "";
+  const anonymousToggle = document.getElementById('anonymousShareToggle');
+  if (anonymousToggle) anonymousToggle.checked = false;
   mediaPreview.innerHTML = "";
   selectedImage = null;
   selectedVideo = null;
@@ -54,7 +56,7 @@ function createPost() {
   fd.append('category', category);
   fd.append('case_id', '1');
   fd.append('share_facebook', document.getElementById('facebookShareToggle')?.checked ? '1' : '0');
-  fd.append('share_anonymous', '0');
+  fd.append('share_anonymous', document.getElementById('anonymousShareToggle')?.checked ? '1' : '0');
 
   if (selectedImage) {
     fd.append('media_images[]', selectedImage, selectedImage.name);
@@ -246,21 +248,6 @@ var policeIcon = L.icon({
     });
 });
 
-// Open Modal and Set Preview
-document.querySelectorAll('.share-btn').forEach(btn => {
-  btn.addEventListener('click', function () {
-    const post = this.closest('.post');
-    const text = post.querySelector('p')?.innerText || '';
-    const img = post.querySelector('.post-img')?.getAttribute('src') || '';
-
-    // Fill preview
-    document.getElementById('sharedPostText').innerText = text;
-    document.getElementById('sharedPostImage').src = img;
-
-    // Show modal in center
-    document.getElementById('postModal').style.display = 'flex';
-  });
-});
 function closeModal() {
   document.getElementById('postModal').style.display = 'none';
   document.getElementById('postText').value = '';
@@ -271,6 +258,9 @@ function closeModal() {
 
 // Get modal element
 const volunteerMissionModal = document.getElementById('volunteerMissionModal');
+if (volunteerMissionModal && volunteerMissionModal.parentElement !== document.body) {
+  document.body.appendChild(volunteerMissionModal);
+}
 const missionListEl = volunteerMissionModal?.querySelector('.mission-list');
 let missionLoadInFlight = false;
 let missionTimerInterval = null;
@@ -610,8 +600,9 @@ async function loadVolunteerRankStatus() {
 
     const acceptedXP = Number(json?.rules?.accepted_mission_xp || 10);
     const completedXP = Number(json?.rules?.completed_mission_xp || 20);
+    const autoClosedXP = Number(json?.rules?.auto_closed_by_police_xp || 2);
     if (rankRules) {
-      rankRules.textContent = `+${acceptedXP} XP (Accept) • +${completedXP} XP (Complete)`;
+      rankRules.textContent = `+${acceptedXP} XP (Accept) • +${completedXP} XP (Complete) • +${autoClosedXP} XP (Auto-close by Police)`;
     }
 
     if (certificateBox && certificateMessage) {
@@ -662,10 +653,37 @@ function readMissionHistory() {
   try {
     const raw = localStorage.getItem(MISSION_HISTORY_STORAGE_KEY);
     const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
+    const rows = Array.isArray(parsed) ? parsed : [];
+    const sanitized = rows.filter(isValidMissionHistoryEntry);
+    if (sanitized.length !== rows.length) {
+      writeMissionHistory(sanitized);
+    }
+    return sanitized;
   } catch (_e) {
     return [];
   }
+}
+
+function isValidMissionHistoryEntry(entry) {
+  if (!entry || typeof entry !== 'object') return false;
+
+  const caseId = String(entry.case_id || '').trim();
+  const area = String(entry.area || '').trim();
+  const label = String(entry.mission_label || '').trim();
+  const completedAt = String(entry.completed_at || '').trim();
+  const verified = entry.verified === true;
+
+  const hasValidCase = caseId !== '' && caseId !== 'N/A' && !/^demo/i.test(caseId);
+  const hasRealArea = area !== '' && area !== 'N/A';
+  const hasRealLabel = label !== '' && label !== 'Mission';
+  const hasValidTime = Number.isFinite(Date.parse(completedAt));
+
+  if (verified) {
+    return hasValidCase && hasValidTime;
+  }
+
+  // Backward compatibility for old real rows that were saved before "verified" flag.
+  return hasValidCase && hasRealArea && hasRealLabel && hasValidTime;
 }
 
 function writeMissionHistory(rows) {
@@ -714,10 +732,13 @@ function saveCompletedMissionHistory(entry) {
   const rows = readMissionHistory();
   const next = {
     case_id: caseId,
-    area: String(entry?.area || 'N/A').trim(),
-    mission_label: String(entry?.mission_label || 'Mission').trim(),
-    completed_at: String(entry?.completed_at || new Date().toISOString())
+    area: String(entry?.area || '').trim(),
+    mission_label: String(entry?.mission_label || '').trim(),
+    completed_at: String(entry?.completed_at || new Date().toISOString()),
+    verified: true
   };
+
+  if (!isValidMissionHistoryEntry(next)) return;
 
   const idx = rows.findIndex(r => String(r?.case_id || '').trim() === caseId);
   if (idx >= 0) {
@@ -816,11 +837,13 @@ function updateMissionProofLock(responseState) {
 const openMissionBtn = document.querySelector('.view-missions-btn');
 
 // Get all close buttons (modal close & any other)
-const closeButtons = volunteerMissionModal.querySelectorAll('.close');
+const closeButtons = volunteerMissionModal?.querySelectorAll('.close') || [];
 
 // Function to open the modal
 function openMissionModal() {
+  if (!volunteerMissionModal) return;
   volunteerMissionModal.classList.remove('hidden');
+  document.body.classList.add('mission-modal-open');
   volunteerMissionModal.focus(); // for accessibility, focus modal
   renderMissionHistory();
   loadAssignedMissionDetails();
@@ -828,7 +851,9 @@ function openMissionModal() {
 
 // Function to close the modal
 function closeMissionModal() {
+  if (!volunteerMissionModal) return;
   volunteerMissionModal.classList.add('hidden');
+  document.body.classList.remove('mission-modal-open');
   clearMissionTimer();
 }
 
@@ -1289,15 +1314,17 @@ closeButtons.forEach(btn => {
 });
 
 // Optional: close modal on clicking outside modal-content
-volunteerMissionModal.addEventListener('click', (e) => {
-  if (e.target === volunteerMissionModal) {
-    closeMissionModal();
-  }
-});
+if (volunteerMissionModal) {
+  volunteerMissionModal.addEventListener('click', (e) => {
+    if (e.target === volunteerMissionModal) {
+      closeMissionModal();
+    }
+  });
+}
 
 // Optional: close modal on pressing Escape key
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && !volunteerMissionModal.classList.contains('hidden')) {
+  if (e.key === 'Escape' && volunteerMissionModal && !volunteerMissionModal.classList.contains('hidden')) {
     closeMissionModal();
   }
 });

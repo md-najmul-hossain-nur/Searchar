@@ -1,5 +1,120 @@
 let container = document.getElementById('container');
 
+const SIGNUP_DRAFT_KEY = 'searcharSignupDraft';
+
+function shouldOpenSignupInitially() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('openSignup') === '1';
+}
+
+function openSignupPanel() {
+  if (!container) {
+    container = document.getElementById('container');
+  }
+  if (!container) return;
+  container.classList.add('sign-up');
+  container.classList.remove('sign-in');
+}
+
+function saveSignupDraft() {
+  const roleSelect = document.getElementById('role');
+  const dynamicForm = document.getElementById('dynamicForm');
+  if (!roleSelect || !dynamicForm || !roleSelect.value) return;
+
+  const values = {};
+  const fields = dynamicForm.querySelectorAll('input, select, textarea');
+
+  fields.forEach((field) => {
+    const key = field.name || field.id;
+    if (!key) return;
+    if (field.type === 'file' || field.type === 'password') return;
+
+    if (field.type === 'checkbox' || field.type === 'radio') {
+      values[key] = !!field.checked;
+      return;
+    }
+
+    values[key] = field.value;
+  });
+
+  const payload = {
+    role: roleSelect.value,
+    values,
+    timestamp: Date.now()
+  };
+
+  try {
+    sessionStorage.setItem(SIGNUP_DRAFT_KEY, JSON.stringify(payload));
+  } catch (error) {
+    console.warn('Failed to save signup draft', error);
+  }
+}
+
+function applySignupDraftValues(values) {
+  const dynamicForm = document.getElementById('dynamicForm');
+  if (!dynamicForm || !values) return;
+
+  const fields = dynamicForm.querySelectorAll('input, select, textarea');
+  fields.forEach((field) => {
+    const key = field.name || field.id;
+    if (!key || !(key in values)) return;
+    if (field.type === 'file' || field.type === 'password') return;
+
+    if (field.type === 'checkbox' || field.type === 'radio') {
+      field.checked = !!values[key];
+      return;
+    }
+
+    field.value = values[key];
+  });
+}
+
+function updateTermsLinksForCurrentRole() {
+  const dynamicForm = document.getElementById('dynamicForm');
+  if (!dynamicForm) return;
+
+  const termsLinks = dynamicForm.querySelectorAll('a[href*="Terms_&_Privacy.html"]');
+  termsLinks.forEach((link) => {
+    const targetUrl = new URL(link.getAttribute('href') || '', window.location.href);
+    targetUrl.search = '';
+    link.setAttribute('href', targetUrl.toString());
+    link.setAttribute('data-terms-modal', '1');
+  });
+}
+
+function restoreSignupStateIfAvailable() {
+  const roleSelect = document.getElementById('role');
+  if (!roleSelect) return;
+
+  const params = new URLSearchParams(window.location.search);
+  const shouldOpen = params.get('openSignup') === '1';
+  if (!shouldOpen) return;
+
+  const roleFromUrl = params.get('role') || '';
+
+  let storedDraft = null;
+  try {
+    const raw = sessionStorage.getItem(SIGNUP_DRAFT_KEY);
+    storedDraft = raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    storedDraft = null;
+  }
+
+  openSignupPanel();
+
+  const roleToUse = roleFromUrl || (storedDraft && storedDraft.role) || '';
+  if (!roleToUse) return;
+
+  roleSelect.value = roleToUse;
+  showForm();
+
+  if (storedDraft && storedDraft.role === roleToUse) {
+    applySignupDraftValues(storedDraft.values || {});
+  }
+
+  updateTermsLinksForCurrentRole();
+}
+
 // Expose toggle for inline onclick and guard if the container is missing
 window.toggle = function toggle() {
   if (!container) {
@@ -12,12 +127,16 @@ window.toggle = function toggle() {
 };
 
 setTimeout(() => {
-  container.classList.add('sign-in');
+  if (shouldOpenSignupInitially()) {
+    openSignupPanel();
+  } else if (container) {
+    container.classList.add('sign-in');
+  }
 }, 200);
 
 // Logo click redirects to home page
 document.getElementById('logo').onclick = function () {
-  window.location.href = '../Html/index.html';
+  window.location.href = '../Html/Index.html';
 };
 
 // Show role-based sign-up form with animation
@@ -29,15 +148,6 @@ function showForm() {
   if (role === 'user') {
     formHTML = `
       <h3>User Sign Up</h3>
-      <!-- Social Login Buttons -->
-      <div class="social-login-buttons">
-        <button type="button" class="social-btn fb-btn">
-          <img src="../Images/facebook.png" alt="Facebook" class="social-icon" /> Sign in with Facebook
-        </button>
-        <button type="button" class="social-btn google-btn">
-          <img src="../Images/google.png" alt="Google" class="social-icon" /> Sign in with Google
-        </button>
-      </div>
       <form id="userSignupForm" enctype="multipart/form-data" method="post" action="../Php/user_signup.php">
         <h5 class="form-section-title">🔐 General Information</h5>
         <div class="mb-3">
@@ -45,77 +155,8 @@ function showForm() {
           <input type="text" class="form-control" id="fullname" name="fullname" required>
         </div>
         <div class="mb-3">
-          <label for="email" class="form-label">Email Address </label>
-          <input type="email" class="form-control" id="email" name="email" required>
-        </div>
-        <div class="mb-3">
-          <label for="mobile" class="form-label">Mobile Number </label>
-          <input type="tel" class="form-control" id="mobile" name="mobile" maxlength="11" minlength="11" placeholder="e.g. 017xxxxxxxx" required>
-        </div>
-        <div class="mb-3">
-          <label for="nid" class="form-label">NID Number </label>
-          <input type="text" class="form-control" id="nid" name="nid" placeholder="10 or 17 digits" required>
-        </div>
-        <div class="mb-3">
-          <label for="nid_photo" class="form-label">Upload NID Photo </label>
-          <input type="file" class="form-control" id="nid_photo" name="nid_photo" accept=".jpg,.jpeg,.png" required>
-        </div>
-        <div class="mb-3">
-          <label for="profile_photo" class="form-label">Profile Photo </label>
-          <input type="file" class="form-control" id="profile_photo" name="profile_photo" accept=".jpg,.jpeg,.png">
-        </div>
-        <div class="mb-3">
-  <label for="cover_photo" class="form-label">Cover Photo</label>
-  <input type="file" class="form-control" id="cover_photo" name="cover_photo" accept=".jpg,.jpeg,.png">
-</div>
-
-        <div class="mb-3">
-          <label for="dob" class="form-label">Date of Birth </label>
-          <input type="date" class="form-control" id="dob" name="dob" required>
-        </div>
-        <div class="mb-3">
-          <label for="gender" class="form-label">Gender </label>
-          <select class="form-select" id="gender" name="gender" required>
-            <option value="">-- Select Gender --</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-        <p class="map-helper-text" style="margin:12px 0 8px 0; color:#425a78; font-size:1em;">
-          Please select your location by clicking the <b>Select location from map</b> button below.
-        </p>
-        <div class="mb-3">
-          <label for="street" class="form-label">Street Address</label>
-          <input type="text" id="street" name="street" class="form-control" placeholder="Enter street address" >
-        </div>
-        <div class="mb-3">
-          <label for="city" class="form-label">City</label>
-          <input type="text" id="city" name="city" class="form-control" placeholder="Enter city" >
-        </div>
-        <div class="mb-3">
-          <label for="postal" class="form-label">Postal Code</label>
-          <input type="text" id="postal" name="postal" class="form-control" placeholder="Enter postal code" >
-        </div>
-        <div class="mb-3">
-          <label for="country" class="form-label">Country</label>
-          <input type="text" id="country" name="country" class="form-control" placeholder="Enter country" >
-        </div>
-        <input type="hidden" id="latitude" name="latitude">
-        <input type="hidden" id="longitude" name="longitude">
-        <button type="button" class="btn btn-primary map-select-btn"
-                onclick="selectLocationFromMap()"
-                style="margin-bottom: 15px;">
-          Select location from map
-        </button>
-        <div id="mapModal" class="map-modal" style="display:none;">
-          <div class="map-modal-content" style="background:#fff; padding:15px; border-radius:8px; position:relative;">
-            <span class="map-close" onclick="closeMapModal()"
-                  style="position:absolute; top:8px; right:12px; cursor:pointer; font-size:20px;">&times;</span>
-            <div id="map" style="width:100%;height:320px; margin-bottom:10px;"></div>
-            <button id="currentLocationBtn" type="button" class="btn btn-secondary" onclick="getCurrentLocation()">Use Current Location</button>
-            <button id="saveLocationBtn" type="button" class="btn btn-success" onclick="saveMapLocation()">Save Location</button>
-          </div>
+          <label for="emailOrPhone" class="form-label">Email or Phone Number </label>
+          <input type="text" class="form-control" id="emailOrPhone" name="emailOrPhone" placeholder="example@mail.com or 017xxxxxxxx" required>
         </div>
         <div class="mb-3">
           <label for="password" class="form-label">Password </label>
@@ -137,14 +178,6 @@ function showForm() {
   } else if (role === 'police') {
     formHTML = `
       <h3 class="text-center mb-3">👮 Policeman / Authority Sign Up</h3>
-      <div class="social-login-buttons">
-        <button type="button" class="social-btn fb-btn">
-          <img src="../Images/facebook.png" alt="Facebook" class="social-icon" /> Sign in with Facebook
-        </button>
-        <button type="button" class="social-btn google-btn">
-          <img src="../Images/google.png" alt="Google" class="social-icon" /> Sign in with Google
-        </button>
-      </div>
       <form id="policeSignupForm" enctype="multipart/form-data" method="post" action="../Php/police_signup.php">
         <h5 class="form-section-title">🔐 General Information</h5>
         <div class="mb-3">
@@ -240,20 +273,13 @@ function showForm() {
           <label for="designation" class="form-label">Designation </label>
           <select class="form-select" id="designation" name="designation" required>
             <option value="">-- Select Designation --</option>
-            <option value="si">Sub Inspector (SI)</option>
-            <option value="asi">Assistant Sub Inspector (ASI)</option>
-            <option value="inspector">Inspector</option>
-            <option value="officer">Officer</option>
-            <option value="fire_service">Fire Service Official</option>
+            <option value="policeman">Policeman</option>
+            <option value="fire_service">Fire Service</option>
           </select>
         </div>
         <div class="mb-3">
           <label for="station" class="form-label">Station Name </label>
           <input type="text" class="form-control" id="station" name="station" placeholder="e.g. Dhanmondi Police Station" required>
-        </div>
-        <div class="mb-3">
-          <label for="official_id" class="form-label">Official Letter / Appointment ID (PDF) </label>
-          <input type="file" class="form-control" id="official_id" name="official_id" accept=".pdf" required>
         </div>
         <div class="form-check mb-3">
           <input class="form-check-input" type="checkbox" id="terms" required>
@@ -268,14 +294,6 @@ function showForm() {
     formHTML = `
       <div class="signup-container">
         <h3 class="text-center mb-3">🚨 Volunteer Sign Up</h3>
-        <div class="social-login-buttons">
-          <button type="button" class="social-btn fb-btn">
-            <img src="../Images/facebook.png" alt="Facebook" class="social-icon" /> Sign in with Facebook
-          </button>
-          <button type="button" class="social-btn google-btn">
-            <img src="../Images/google.png" alt="Google" class="social-icon" /> Sign in with Google
-          </button>
-        </div>
         <form id="volunteerSignupForm" enctype="multipart/form-data" method="post" action="../Php/volunteer_signup.php">
           <h5 class="form-section-title">🔐 General Information</h5>
           <div class="mb-3">
@@ -362,6 +380,7 @@ function showForm() {
             <label for="confirm_password" class="form-label">Confirm Password </label>
             <input type="password" class="form-control" id="confirm_password" name="confirm_password" minlength="6" required>
           </div>
+          <h5 class="form-section-title">🚨 Volunteer Details</h5>
           <div class="mb-3">
             <label for="occupation" class="form-label">Occupation </label>
             <select class="form-select" id="occupation" name="occupation" required>
@@ -381,14 +400,6 @@ function showForm() {
               <option value="on_call">On Call</option>
             </select>
           </div>
-          <div class="mb-3">
-            <label for="police_clearance" class="form-label">Police Clearance Certificate (Optional)</label>
-            <input type="file" class="form-control" id="police_clearance" name="police_clearance" accept=".jpg,.jpeg,.png,.pdf">
-          </div>
-          <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" id="geo_permission" name="geo_permission" value="yes" required>
-            <label class="form-check-label" for="geo_permission">I agree to share my geo-location during missions.</label>
-          </div>
           <div class="form-check mb-3">
             <input class="form-check-input" type="checkbox" id="terms" required>
             <label class="form-check-label" for="terms">
@@ -402,14 +413,6 @@ function showForm() {
   } else if (role === 'contributor') {
     formHTML = `
       <h3 class="text-center mb-3">🎥 Camera Contributor Sign Up</h3>
-      <div class="social-login-buttons">
-        <button type="button" class="social-btn fb-btn">
-          <img src="../Images/facebook.png" alt="Facebook" class="social-icon" /> Sign in with Facebook
-        </button>
-        <button type="button" class="social-btn google-btn">
-          <img src="../Images/google.png" alt="Google" class="social-icon" /> Sign in with Google
-        </button>
-      </div>
       <form id="cameraSignupForm" enctype="multipart/form-data" method="post" action="../Php/camera_signup.php">
         <h5 class="form-section-title">🔐 General Information</h5>
         <div class="mb-3">
@@ -498,10 +501,6 @@ function showForm() {
         </div>
         <h5 class="form-section-title">🎥 Camera Information</h5>
         <div class="mb-3">
-          <label for="camera_location" class="form-label">Camera Location (GPS Address) </label>
-          <input type="text" class="form-control" id="camera_location" name="camera_location" placeholder="Enter GPS or full address" required>
-        </div>
-        <div class="mb-3">
           <label for="camera_type" class="form-label">Camera Type </label>
           <select class="form-select" id="camera_type" name="camera_type" required>
             <option value="">-- Select Camera Type --</option>
@@ -510,25 +509,8 @@ function showForm() {
           </select>
         </div>
         <div class="mb-3">
-          <label for="stream_type" class="form-label">Camera Stream Type </label>
-          <select class="form-select" id="stream_type" name="stream_type" required>
-            <option value="">-- Select Stream Type --</option>
-            <option value="rtsp">RTSP Stream</option>
-            <option value="ip_camera">IP Camera</option>
-            <option value="recorded">Recorded Video Upload</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label for="bandwidth" class="form-label">Monthly Bandwidth Limit (GB) </label>
-          <input type="number" class="form-control" id="bandwidth" name="bandwidth" required>
-        </div>
-        <div class="mb-3">
           <label for="payment_number" class="form-label">Bkash/Nagad Number (Payment Receiving) </label>
           <input type="tel" class="form-control" id="payment_number" name="payment_number" maxlength="11" minlength="11" required>
-        </div>
-        <div class="mb-3">
-          <label for="agreement" class="form-label">Contract Agreement (PDF) </label>
-          <input type="file" class="form-control" id="agreement" name="agreement" accept=".pdf" required>
         </div>
         <div class="form-check mb-3">
           <input class="form-check-input" type="checkbox" id="terms" required>
@@ -553,23 +535,30 @@ function showForm() {
     formContainer.innerHTML = '';
     formContainer.classList.remove('show-role-form');
   }
+
+  updateTermsLinksForCurrentRole();
+  saveSignupDraft();
 }
 
-// Bubble animation script (larger bubbles)
 document.addEventListener('DOMContentLoaded', () => {
-  const bubbleContainer = document.querySelector('.bubble-background');
-  for (let i = 0; i < 18; i++) {
-    const bubble = document.createElement('div');
-    bubble.classList.add('bubble');
-    // Increase bubble size: min 80px, max 180px
-    const size = Math.random() * (180 - 80) + 80; // px
-    bubble.style.width = `${size}px`;
-    bubble.style.height = `${size}px`;
-    bubble.style.left = `${Math.random() * 100}vw`;
-    bubble.style.animationDuration = `${Math.random() * (19 - 9) + 9}s`;
-    bubble.style.animationDelay = `-${Math.random() * 19}s`;
-    bubbleContainer.appendChild(bubble);
+  const roleSelect = document.getElementById('role');
+  const dynamicForm = document.getElementById('dynamicForm');
+
+  ensureTermsModal();
+
+  if (roleSelect) {
+    roleSelect.addEventListener('change', () => {
+      saveSignupDraft();
+      updateTermsLinksForCurrentRole();
+    });
   }
+
+  if (dynamicForm) {
+    dynamicForm.addEventListener('input', saveSignupDraft);
+    dynamicForm.addEventListener('change', saveSignupDraft);
+  }
+
+  restoreSignupStateIfAvailable();
 }); 
 let map, marker;
 
@@ -646,133 +635,69 @@ function closeMapModal() {
   document.getElementById('mapModal').style.display = 'none';
 }
 
+function ensureTermsModal() {
+  if (document.getElementById('termsModal')) return;
 
-// Central handler for social button clicks. Keeps behavior the same whether triggered via
-// delegated document clicks or direct button listeners.
-function handleSocialClick(e) {
-  const target = e.target;
-  const fbBtn = target.closest('.fb-btn');
-  const googleBtn = target.closest('.google-btn');
-  if (!fbBtn && !googleBtn) return;
+  const modal = document.createElement('div');
+  modal.id = 'termsModal';
+  modal.className = 'map-modal terms-modal';
+  modal.style.display = 'none';
+  modal.innerHTML = `
+    <div class="map-modal-content terms-modal-content" role="dialog" aria-modal="true" aria-label="Terms and Privacy Policy">
+      <span class="map-close terms-close" id="termsModalClose" aria-label="Close">&times;</span>
+      <h4 class="terms-modal-title">Terms & Privacy Policy</h4>
+      <iframe id="termsPolicyFrame" class="terms-policy-frame" title="Terms and Privacy Policy"></iframe>
+    </div>
+  `;
 
-  console.debug('social click detected', { fbBtn: !!fbBtn, googleBtn: !!googleBtn });
+  document.body.appendChild(modal);
 
-  // Find the role select nearest to the clicked button (fixes duplicate id='role' in page)
-  function findSelectedRoleFromEvent(target) {
-    // 1) If the clicked button contains an explicit data-role, use it
-    const btnWithData = target.closest('[data-role]');
-    if (btnWithData && btnWithData.dataset && btnWithData.dataset.role) {
-      return btnWithData.dataset.role;
-    }
-
-    // 2) Look for a role select inside the nearest container (form, sign-in, sign-up)
-    const container = target.closest('form, .sign-in, .sign-up, .form-wrapper, .form');
-    if (container) {
-      const sel = container.querySelector('select[name="role"], select#role');
-      if (sel && sel.value) return sel.value;
-    }
-
-    // 3) Fallback: any visible/global role select on the page
-    const globalSel = document.querySelector('select[name="role"], select#role');
-    if (globalSel && globalSel.value) return globalSel.value;
-
-    // 4) Nothing found
-    return '';
+  const closeBtn = modal.querySelector('#termsModalClose');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeTermsModal);
   }
 
-  const selectedRole = findSelectedRoleFromEvent(target);
-  if (!selectedRole) {
-    alert('Please select your role first!');
-    return;
-  }
-
-  if (googleBtn) {
-    console.debug('starting google flow with role', selectedRole);
-    // If Google Identity Services is available, use it to get an ID token and post to our endpoint.
-    if (window.google && google.accounts && google.accounts.id) {
-      try {
-        google.accounts.id.initialize({
-          client_id: window.GOOGLE_CLIENT_ID || '368248658746-72i73ro0ec1jqcso9kaeo4653tdr6jop.apps.googleusercontent.com',
-          callback: function (resp) {
-            if (!resp || !resp.credential) {
-              alert('Google sign-in failed to provide credential.');
-              return;
-            }
-            fetch('../Php/google-signin.php', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ credential: resp.credential, role: selectedRole })
-            }).then(r => r.json()).then(json => {
-              if (json.success) {
-                // Prefer server-provided redirect (server returns { action, redirect })
-                if (json.redirect) {
-                  window.location.href = json.redirect;
-                  return;
-                }
-                // Fallback: map role -> home
-                const map = { user: '../Html/User_Home.php', policeman: '../Html/Policeman_Home.php', volunteer: '../Html/Volunteer_Home.php', camera_contributor: '../Html/Camera_Contribution_Home.php' };
-                window.location.href = json.redirect || map[json.role] || '../Html/Index.html';
-              } else {
-                alert('Google sign-in failed: ' + (json.error || 'unknown'));
-              }
-            });
-          }
-        });
-        google.accounts.id.prompt();
-        return;
-      } catch (ex) {
-        console.warn('Google IDS init failed', ex);
-      }
+  modal.addEventListener('click', (event) => {
+    if (event.target === modal) {
+      closeTermsModal();
     }
+  });
 
-    alert('Google SDK not available. Please include Google Identity Services or use server-side login.');
-    return;
-  }
-
-  if (fbBtn) {
-    console.debug('starting facebook flow with role', selectedRole);
-    if (window.FB) {
-      FB.login(function(response) {
-        if (response.authResponse) {
-          const accessToken = response.authResponse.accessToken;
-          fetch('../Php/facebook-signin.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ access_token: accessToken, role: selectedRole })
-          }).then(r => r.json()).then(json => {
-            if (json.success) {
-              // Prefer server-provided redirect (server returns { action, redirect })
-              if (json.redirect) {
-                window.location.href = json.redirect;
-                return;
-              }
-              const map = { user: '../Html/User_Home.php', policeman: '../Html/Policeman_Home.php', volunteer: '../Html/Volunteer_Home.php', camera_contributor: '../Html/Camera_Contribution_Home.php' };
-              window.location.href = json.redirect || map[json.role] || '../Html/Index.html';
-            } else {
-              alert('Facebook sign-in failed: ' + (json.error || 'unknown'));
-            }
-          });
-        } else {
-          alert('Facebook login cancelled or failed.');
-        }
-      }, { scope: 'public_profile,email' });
-      return;
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && modal.style.display === 'flex') {
+      closeTermsModal();
     }
-
-    alert('Facebook SDK not available. Please include the Facebook JS SDK or use server-side login.');
-    return;
-  }
+  });
 }
 
-// Delegated handler (keeps behavior for dynamically inserted buttons)
-document.addEventListener('click', handleSocialClick);
+function openTermsModal(url) {
+  ensureTermsModal();
 
-// Also attach direct listeners to buttons present on page load to be extra reliable
-document.addEventListener('DOMContentLoaded', function () {
-  const fbButtons = document.querySelectorAll('.fb-btn');
-  const gButtons = document.querySelectorAll('.google-btn');
-  fbButtons.forEach(b => b.addEventListener('click', handleSocialClick));
-  gButtons.forEach(b => b.addEventListener('click', handleSocialClick));
+  const modal = document.getElementById('termsModal');
+  const frame = document.getElementById('termsPolicyFrame');
+  if (!modal || !frame) return;
+
+  frame.src = new URL(url, window.location.href).toString();
+  modal.style.display = 'flex';
+}
+
+function closeTermsModal() {
+  const modal = document.getElementById('termsModal');
+  const frame = document.getElementById('termsPolicyFrame');
+  if (!modal || !frame) return;
+
+  modal.style.display = 'none';
+  frame.src = 'about:blank';
+}
+
+
+// Open all role-specific terms links as a popup modal instead of navigating away.
+document.addEventListener('click', function (event) {
+  const termsLink = event.target.closest('a[data-terms-modal="1"], a[href*="Terms_&_Privacy.html"]');
+  if (!termsLink) return;
+
+  event.preventDefault();
+  openTermsModal(termsLink.getAttribute('href') || '');
 });
 
 // Handle admin-only login on the client: known credentials go straight to Admin.html

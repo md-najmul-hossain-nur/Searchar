@@ -3,7 +3,7 @@ session_start();
 require_once __DIR__ . '/../Php/db.php'; // sets $pdo
 
 // Ensure user is logged in
-if (!isset($_SESSION['user_id'])) {
+if (empty($_SESSION['role']) || $_SESSION['role'] !== 'police' || empty($_SESSION['user_id'])) {
     header('Location: ../Html/login.html');
     exit;
 }
@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $update = $pdo->prepare("UPDATE policemen SET password_hash = ? WHERE police_id = ?");
         $update->execute([$hashed_password, $user_id]);
 
-        $js_alert = "alert('Password updated successfully!'); window.location.href = '../Html/Policeman_profile.html';";
+        $js_alert = "alert('Password updated successfully!'); window.location.href = '../Html/Policeman_profile.php';";
     }
 }
 ?>
@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="UTF-8">
   <title>Change Password - Policeman</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="../css/Policeman_Passchagned.css">
+  <link rel="stylesheet" href="../css/Policeman_Passchagned.css?v=20260405bg">
 </head>
 <body>
   <header class="navbar">
@@ -54,8 +54,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo">
     </div>
   </header>
-  <div class="bubble-background"></div>
-
   <main class="edit-passchanged-container">
     <div class="password-form-box">
       <div class="password-change-box">
@@ -63,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h2>Change Your Password</h2>
 
         <div class="back-button-container">
-          <a href="../Html/Policeman_profile.php" class="back-btn">← Back</a>
+          <a href="../Html/Policeman_profile.php" class="back-btn">â† Back</a>
         </div>
 
         <form action="" method="POST">
@@ -88,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
   </main>
 
-  <script src="../javascrpit/Policeman_Passchagned.js"></script>
+  <script src="../javascrpit/Policeman_Passchagned.js?v=20260405bg"></script>
   <?php if (!empty($js_alert)): ?>
   <script>
     <?= $js_alert ?>

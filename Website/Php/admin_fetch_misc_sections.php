@@ -166,7 +166,16 @@ try {
 
     $donations = [];
     if (tableExists($pdo, 'donations')) {
-        $stmt = $pdo->query("SELECT donor_name, amount, date, anonymous, message FROM donations ORDER BY date DESC LIMIT 100");
+        $hasSenderMobile = columnExists($pdo, 'donations', 'sender_mobile');
+        $hasTxId = columnExists($pdo, 'donations', 'tx_id');
+        $hasReceiverNumber = columnExists($pdo, 'donations', 'receiver_number');
+
+        $selectParts = ['donor_name', 'amount', 'date', 'anonymous', 'message'];
+        $selectParts[] = $hasSenderMobile ? 'sender_mobile' : 'NULL AS sender_mobile';
+        $selectParts[] = $hasTxId ? 'tx_id' : 'NULL AS tx_id';
+        $selectParts[] = $hasReceiverNumber ? 'receiver_number' : 'NULL AS receiver_number';
+
+        $stmt = $pdo->query('SELECT ' . implode(', ', $selectParts) . ' FROM donations ORDER BY date DESC LIMIT 100');
         $donations = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 
@@ -190,7 +199,18 @@ try {
         $proofAtExpr = $hasProofSubmittedAt ? 'vm.proof_submitted_at' : 'NULL';
         $completedExpr = $hasCompletedAt ? 'vm.completed_at' : 'NULL';
 
-        $stmt = $pdo->query("SELECT vm.mission_id, vm.volunteer_id, vm.mission_title, vm.mission_location, vm.status, {$responseExpr} AS response_status, {$caseExpr} AS case_ref, {$proofExpr} AS proof_file, {$proofAtExpr} AS proof_submitted_at, {$completedExpr} AS completed_at, vm.assigned_at, vm.mission_details, COALESCE(v.full_name, CONCAT('Volunteer #', vm.volunteer_id)) AS volunteer_name, v.profile_photo,
+        $stmt = $pdo->query("SELECT vm.mission_id, vm.volunteer_id, vm.mission_title, vm.mission_location, vm.status, {$responseExpr} AS response_status, {$caseExpr} AS case_ref, {$proofExpr} AS proof_file, {$proofAtExpr} AS proof_submitted_at, {$completedExpr} AS completed_at, vm.assigned_at, vm.mission_details,
+        COALESCE(v.full_name, vu.full_name, CONCAT('Volunteer #', vm.volunteer_id)) AS volunteer_name,
+        CASE
+            WHEN COALESCE(v.profile_photo, '') <> '' THEN v.profile_photo
+            WHEN COALESCE(vu.profile_photo, '') <> '' THEN vu.profile_photo
+            ELSE ''
+        END AS profile_photo,
+        CASE
+            WHEN COALESCE(v.profile_photo, '') <> '' THEN 'volunteers'
+            WHEN COALESCE(vu.profile_photo, '') <> '' THEN 'users'
+            ELSE ''
+        END AS profile_photo_entity,
         COALESCE(vmcount.total_points, 0) AS volunteer_points,
         CASE
             WHEN COALESCE(vmcount.total_points, 0) >= 1000 THEN 'Platinum Responder'
@@ -200,6 +220,14 @@ try {
         END AS volunteer_rank
         FROM volunteer_missions vm
         LEFT JOIN volunteers v ON v.volunteer_id = vm.volunteer_id
+        LEFT JOIN (
+            SELECT volunteer_id, MAX(application_id) AS latest_application_id
+            FROM volunteer_applications
+            WHERE LOWER(COALESCE(status, 'pending')) = 'approved'
+            GROUP BY volunteer_id
+        ) va_latest ON va_latest.volunteer_id = vm.volunteer_id
+        LEFT JOIN volunteer_applications va ON va.application_id = va_latest.latest_application_id
+        LEFT JOIN users vu ON vu.user_id = va.user_id
         LEFT JOIN (
             SELECT volunteer_id,
                    SUM(CASE

@@ -3,33 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Searchar</title>
-  <meta name="viewport" content="width=1644, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
- <!-- Google / Facebook SDK configuration -->
- <script>
-   // Provide your Google client id (safe to expose) so the Google IDS init in login.js can use it
-   window.GOOGLE_CLIENT_ID = '368248658746-72i73ro0ec1jqcso9kaeo4653tdr6jop.apps.googleusercontent.com';
-   // Provide your Facebook App ID and initialize FB when the SDK loads
-   window.FB_APP_ID = '694071223391461';
-   window.fbAsyncInit = function() {
-     try {
-       FB.init({
-         appId: window.FB_APP_ID,
-         cookie: true,
-         xfbml: true,
-         version: 'v16.0'
-       });
-       console.debug('FB SDK initialized');
-     } catch (e) {
-       console.warn('FB init error', e);
-     }
-   };
- </script>
- <!-- Facebook SDK -->
- <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
-    <link rel="stylesheet" href="../css/login.css">
+    <link rel="stylesheet" href="../css/login.css?v=20260405b">
 </head>
 <body>
   <header class="navbar">
@@ -44,8 +21,6 @@
     
     </div>
   </header>
-  <div class="bubble-background"></div>
-
  <!-- MAIN CONTAINER -->
   <div id="container" class="container">
 
@@ -54,8 +29,10 @@
 
       <!-- SIGN UP -->
       <div class="col align-items-center flex-col sign-up">
-        <div class="form-wrapper align-items-center" style="  max-width: 800px;">
+        <div class="form-wrapper align-items-center">
           <div class="form sign-up" >
+            <h3 class="auth-panel-title">Create Your Account</h3>
+            <p class="auth-helper">Create your account to report incidents, share updates, and stay connected with emergency response teams.</p>
 
             <!-- Role Selection -->
             <div class="input-group">
@@ -71,18 +48,11 @@
 
             <!-- Dynamic Forms Container -->
             <div id="dynamicForm"></div>
-<!-- Map Modal -->
-<div id="mapModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:9999;">
-  <div style="position:relative; width:90%; max-width:600px; height:400px; background:white; padding:10px; border-radius:10px;">
-    <div id="map" style="height:100%;"></div>
-    <button onclick="closeMap()" style="position:absolute; top:10px; right:10px;">Close</button>
-  </div>
-</div>
 
             <p>
-              <b onclick="toggle()" class="pointer">
-                <span style="display:inline-block;vertical-align:middle;">&#8592;</span>
-                Back
+              <b onclick="toggle()" class="pointer back-toggle-btn" role="button" tabindex="0">
+                <span class="back-arrow">&#8592;</span>
+                <span>Back</span>
               </b>
             </p>
           </div>
@@ -93,26 +63,16 @@
 			<!-- SIGN IN -->
 <!-- SIGN IN -->
 <div class="col align-items-center flex-col sign-in">
-<div class="form-wrapper align-items-center" style="margin-top: 130px;">
+<div class="form-wrapper align-items-center">
 
     <form class="form sign-in" action="../Php/login.php" method="POST">
-
-      <!-- Social Login Buttons -->
-      <div class="social-login-buttons" style="margin-bottom: 20px;">
-        <button type="button" class="social-btn fb-btn" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-          <img src="../Images/facebook.png" alt="Facebook" class="social-icon" style="width: 20px; height: 20px;" />
-          Sign in with Facebook
-        </button>
-        <button type="button" class="social-btn google-btn" style="display: flex; align-items: center; gap: 10px;">
-          <img src="../Images/google.png" alt="Google" class="social-icon" style="width: 20px; height: 20px;" />
-          Sign in with Google
-        </button>
-      </div>
+  <h3 class="auth-panel-title">Sign In Securely</h3>
+  <p class="auth-helper">Welcome back. Sign in with your role to access your dashboard, notifications, and safety tools.</p>
 
       <!-- Role Selection -->
       <div class="input-group">
-        <label for="role" style="margin-bottom: 6px;">Select Your Role:</label>
-        <select id="role" name="role" required>
+        <label for="signin-role" style="margin-bottom: 6px;">Select Your Role:</label>
+        <select id="signin-role" name="role" required>
           <option value="">-- Select Role --</option>
           <option value="admin">Admin</option>
           <option value="user">User</option>
@@ -150,12 +110,7 @@
 
   <div class="form-wrapper">
     <!-- Additional content (if needed) -->
-  </div>
-</div>
 
-
-			<!-- END SIGN IN -->
-		</div>
 		<!-- END FORM SECTION -->
 		<!-- CONTENT SECTION -->
 		<div class="row content-row">
@@ -165,6 +120,7 @@
 					<h2>
 						WELCOME
 					</h2>
+          <p class="welcome-subtext">Protect your area by reporting incidents and receiving trusted updates in real-time.</p>
 	
 				</div>
 				<div class="img sign-in">
@@ -181,6 +137,7 @@
 					<h2>
                       JOIN WITH US
 					</h2>
+          <p class="welcome-subtext">Join as a citizen, volunteer, police, or camera contributor to build a safer community together.</p>
 	
 				</div>
 				<div class="img sign-up">
@@ -192,7 +149,7 @@
 		<!-- END CONTENT SECTION -->
 	</div>
 
-    <script src="../javascrpit/login.js"></script>
+    <script src="../javascrpit/login.js?v=20260405b"></script>
 </body>
 
 <script>
@@ -209,6 +166,14 @@ if(urlParams.get('error') === 'empty') {
     alert("Password is incorrect!");
 } else if(urlParams.get('error') === 'db') {
     alert("Database error! Please try again later.");
+} else if(urlParams.get('error') === 'session') {
+  alert("Session expired or invalid. Please sign in again.");
+} else if(urlParams.get('error') === 'no_user') {
+  alert("Account record not found for this session. Please sign in again.");
+} else if(urlParams.get('error') === 'invalid_role') {
+  alert("Invalid role session detected. Please sign in again.");
+} else if(urlParams.get('error') === 'email_mismatch') {
+  alert("Session mismatch detected. Please sign in again.");
 }
 
 // Success message (for redirect after login)

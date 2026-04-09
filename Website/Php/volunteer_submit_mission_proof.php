@@ -11,6 +11,12 @@ function columnExists(PDO $pdo, string $tableName, string $columnName): bool {
     return (bool)$stmt->fetchColumn();
 }
 
+function tableExists(PDO $pdo, string $tableName): bool {
+    $stmt = $pdo->prepare("SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :t LIMIT 1");
+    $stmt->execute([':t' => $tableName]);
+    return (bool)$stmt->fetchColumn();
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['success' => false, 'error' => 'Method not allowed']);
@@ -24,10 +30,37 @@ if (empty($_SESSION['user_id']) || empty($_SESSION['role'])) {
 }
 
 $role = strtolower(trim((string)$_SESSION['role']));
-$volunteerId = (int)$_SESSION['user_id'];
-if ($role !== 'volunteer') {
+$userId = (int)$_SESSION['user_id'];
+$volunteerId = 0;
+
+if ($role === 'volunteer') {
+    $volunteerId = $userId;
+} elseif ($role === 'user') {
+    if (!tableExists($pdo, 'volunteer_applications')) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'error' => 'Volunteer profile not linked for this account']);
+        exit;
+    }
+
+    $map = $pdo->prepare("SELECT volunteer_id
+                          FROM volunteer_applications
+                          WHERE user_id = :uid
+                            AND LOWER(COALESCE(status, 'pending')) = 'approved'
+                            AND volunteer_id IS NOT NULL
+                            AND volunteer_id > 0
+                          ORDER BY application_id DESC
+                          LIMIT 1");
+    $map->execute([':uid' => $userId]);
+    $volunteerId = (int)($map->fetchColumn() ?: 0);
+
+    if ($volunteerId <= 0) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'error' => 'No approved volunteer profile found for this user account']);
+        exit;
+    }
+} else {
     http_response_code(403);
-    echo json_encode(['success' => false, 'error' => 'Only volunteers can submit mission proof']);
+    echo json_encode(['success' => false, 'error' => 'Only volunteer-enabled accounts can submit mission proof']);
     exit;
 }
 
@@ -156,11 +189,11 @@ try {
         proof_file = :proof_file,
         proof_submitted_at = NOW(),
         status = CASE
-            WHEN LOWER(COALESCE(status, "")) IN ("completed", "rejected_busy") THEN status
+            WHEN LOWER(COALESCE(status, "")) IN ("completed", "rejected_busy", "closed_by_police") THEN status
             ELSE :status
         END,
         response_status = CASE
-            WHEN LOWER(COALESCE(response_status, "")) IN ("completed", "rejected_busy") THEN response_status
+            WHEN LOWER(COALESCE(response_status, "")) IN ("completed", "rejected_busy", "closed_by_police") THEN response_status
             ELSE :response_status
         END
         WHERE mission_id = :mid AND volunteer_id = :vid LIMIT 1');
