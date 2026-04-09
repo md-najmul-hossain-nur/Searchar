@@ -515,6 +515,11 @@
     return document.querySelector('.main-feed') || document.getElementById('post-feed');
   }
 
+  function isProfilePage() {
+    const path = String(window.location.pathname || '').toLowerCase();
+    return path.includes('_profile.php') || path.includes('_profile.html');
+  }
+
   function buildPostCardHtml(row) {
     const postId = Number(row?.id || 0);
     if (!postId) return '';
@@ -630,6 +635,10 @@
   }
 
   function setupApprovedPostAutoSync() {
+    if (isProfilePage()) {
+      return;
+    }
+
     let pollInFlight = false;
     let knownMaxPostId = getMaxPostIdInDom();
 

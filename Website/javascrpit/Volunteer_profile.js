@@ -37,6 +37,10 @@ function resetSharedPreviewUi() {
 function openModal() {
 	if (!modal) return;
 	resetSharedPreviewUi();
+	if (mediaPreview) {
+		mediaPreview.innerHTML = "";
+		mediaPreview.style.display = 'none';
+	}
 	modal.style.display = "flex";
 }
 
@@ -48,7 +52,7 @@ function closeModal() {
 	if (videoUploadInput) videoUploadInput.value = "";
 	if (mediaPreview) {
 		mediaPreview.innerHTML = "";
-		mediaPreview.style.display = 'block';
+		mediaPreview.style.display = 'none';
 	}
 	const mediaOptions = document.querySelector('.post-media-options');
 	if (mediaOptions) mediaOptions.style.display = 'flex';
@@ -62,10 +66,20 @@ function closeModal() {
 if (imageUploadInput) {
 	imageUploadInput.addEventListener("change", function() {
 		const file = this.files[0];
-		if (!file) return;
+		if (!file) {
+			if (mediaPreview) {
+				mediaPreview.innerHTML = "";
+				mediaPreview.style.display = 'none';
+			}
+			return;
+		}
 		selectedImage = file;
 		selectedVideo = null;
-		if (mediaPreview) mediaPreview.innerHTML = `<img src="${URL.createObjectURL(file)}" style="width:100%; border-radius:8px;">`;
+		resetSharedPreviewUi();
+		if (mediaPreview) {
+			mediaPreview.innerHTML = `<img src="${URL.createObjectURL(file)}" style="width:100%; border-radius:8px;">`;
+			mediaPreview.style.display = 'block';
+		}
 		if (videoUploadInput) videoUploadInput.value = "";
 	});
 }
@@ -73,10 +87,20 @@ if (imageUploadInput) {
 if (videoUploadInput) {
 	videoUploadInput.addEventListener("change", function() {
 		const file = this.files[0];
-		if (!file) return;
+		if (!file) {
+			if (mediaPreview) {
+				mediaPreview.innerHTML = "";
+				mediaPreview.style.display = 'none';
+			}
+			return;
+		}
 		selectedVideo = file;
 		selectedImage = null;
-		if (mediaPreview) mediaPreview.innerHTML = `<video src="${URL.createObjectURL(file)}" controls style="width:100%; border-radius:8px;"></video>`;
+		resetSharedPreviewUi();
+		if (mediaPreview) {
+			mediaPreview.innerHTML = `<video src="${URL.createObjectURL(file)}" controls style="width:100%; border-radius:8px;"></video>`;
+			mediaPreview.style.display = 'block';
+		}
 		if (imageUploadInput) imageUploadInput.value = "";
 	});
 }
