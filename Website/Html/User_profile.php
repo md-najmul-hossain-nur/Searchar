@@ -96,6 +96,7 @@ try {
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Main CSS -->
   <link rel="stylesheet" href="../css/User_profile.css?v=20260406h">
+  <link rel="stylesheet" href="../css/post_modal_shared.css?v=20260409a">
   <link rel="stylesheet" href="../css/notifications_shared.css">
 
 </head>
@@ -351,62 +352,7 @@ try {
   </div>
 </div>
 
-<style>.category-label {
-  text-align: left;
-  font-weight: 600;
-  font-size: 16px;
-  color: #333;
-  margin-bottom: 12px;
-  font-family: 'Roboto', Arial, sans-serif;
-}
 
-.category-toggle {
-  display: flex;
-  justify-content: center;
-  gap: 18px;
-  margin-bottom: 18px;
-  user-select: none;
-  font-family: 'Roboto', Arial, sans-serif;
-}
-
-.category-option {
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  padding: 6px 18px; /* ↓ reduced height */
-  border: 2px solid #1a73e8;
-  border-radius: 16px; /* slightly smaller for balance */
-  font-weight: 450;
-  color: #f75c3c;
-  transition: all 0.3s ease;
-  user-select: none;
-  min-width: 90px;
-  justify-content: center;
-  gap: 6px;
-  background-color: white;
-}
-
-.category-icon {
-  width: 24px; /* ↓ smaller icons */
-  height: 24px;
-  object-fit: contain;
-}
-
-/* Highlight selected label */
-.category-option:has(input[type="radio"]:checked) {
-  background-color: #cdb468;
-  color: white;
-  box-shadow: 0 0 6px rgba(26, 115, 232, 0.5);
-  border-color: #f75c3c;
-}
-
-/* Hover effect */
-.category-option:hover {
-  background-color: rgba(26, 115, 232, 0.1);
-  border-color: #1a73e8;
-  color: #1a73e8;
-}
-</style>
     <div class="right-panel">
       <div class="card notifications notifications-card">
         <div class="notifications-top">
@@ -507,3 +453,4 @@ try {
        <script src="../javascrpit/notifications_shared.js"></script>
 
 </html>
+

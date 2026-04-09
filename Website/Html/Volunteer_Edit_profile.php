@@ -11,12 +11,34 @@ $user_id = (int) $_SESSION['user_id'];
 
 function e($str) { return htmlspecialchars((string)$str, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
 
+function normalizeDateForStorage(?string $value): ?string {
+  $raw = trim((string)($value ?? ''));
+  if ($raw === '') {
+    return null;
+  }
+
+  $formats = ['Y-m-d', 'd/m/Y', 'm/d/Y', 'd-m-Y', 'm-d-Y'];
+  foreach ($formats as $format) {
+    $dt = DateTime::createFromFormat($format, $raw);
+    if ($dt instanceof DateTime) {
+      return $dt->format('Y-m-d');
+    }
+  }
+
+  $fallback = strtotime($raw);
+  return $fallback ? date('Y-m-d', $fallback) : null;
+}
+
+function formatDateForInput(?string $value): string {
+  return normalizeDateForStorage($value) ?? '';
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $full_name = trim($_POST['name'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $mobile = trim($_POST['phone'] ?? '');
     $bio = trim($_POST['bio'] ?? '');
-    $date_of_birth = $_POST['date_of_birth'] ?? null;
+    $date_of_birth = normalizeDateForStorage($_POST['date_of_birth'] ?? null);
     $gender = $_POST['gender'] ?? null;
     $street = trim($_POST['street'] ?? '');
     $city = trim($_POST['city'] ?? '');
@@ -120,7 +142,7 @@ if (!$user) {
     </div>
 
     <div class="back-button-container">
-      <a href="../Html/Volunteer_profile.php" class="back-btn">â† Back</a>
+      <a href="../Html/Volunteer_profile.php" class="back-btn">&larr; Back</a>
     </div>
 
     <form class="edit-profile-form" method="POST" enctype="multipart/form-data">
@@ -155,16 +177,22 @@ if (!$user) {
       <label for="phone">Phone Number</label>
       <input type="tel" id="phone" name="phone" value="<?= e($user['mobile'] ?? '') ?>" pattern="[0-9]{10,15}" required>
 
-      <label for="date_of_birth">Date of Birth</label>
-      <input type="date" id="date_of_birth" name="date_of_birth" value="<?= e($user['date_of_birth'] ?? '') ?>">
+      <div class="dob-gender-row">
+        <div class="field-block">
+          <label for="date_of_birth">Date of Birth</label>
+          <input type="date" id="date_of_birth" name="date_of_birth" value="<?= e(formatDateForInput($user['date_of_birth'] ?? '')) ?>" max="<?= e(date('Y-m-d')) ?>">
+        </div>
 
-      <label for="gender">Gender</label>
-      <select id="gender" name="gender">
-        <option value="" <?= empty($user['gender']) ? 'selected' : '' ?>>Prefer not to say</option>
-        <option value="male" <?= (isset($user['gender']) && $user['gender'] === 'male') ? 'selected' : '' ?>>Male</option>
-        <option value="female" <?= (isset($user['gender']) && $user['gender'] === 'female') ? 'selected' : '' ?>>Female</option>
-        <option value="other" <?= (isset($user['gender']) && $user['gender'] === 'other') ? 'selected' : '' ?>>Other</option>
-      </select>
+        <div class="field-block">
+          <label for="gender">Gender</label>
+          <select id="gender" name="gender">
+            <option value="" <?= empty($user['gender']) ? 'selected' : '' ?>>Prefer not to say</option>
+            <option value="male" <?= (isset($user['gender']) && $user['gender'] === 'male') ? 'selected' : '' ?>>Male</option>
+            <option value="female" <?= (isset($user['gender']) && $user['gender'] === 'female') ? 'selected' : '' ?>>Female</option>
+            <option value="other" <?= (isset($user['gender']) && $user['gender'] === 'other') ? 'selected' : '' ?>>Other</option>
+          </select>
+        </div>
+      </div>
 
       <label for="occupation">Occupation</label>
       <input type="text" id="occupation" name="occupation" value="<?= e($user['occupation'] ?? '') ?>">

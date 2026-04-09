@@ -182,7 +182,9 @@ body::after {
 .edit-profile-form input[type="email"],
 .edit-profile-form input[type="password"],
 .edit-profile-form input[type="tel"],
+.edit-profile-form input[type="date"],
 .edit-profile-form input[type="file"],
+.edit-profile-form select,
 .edit-profile-form textarea {
   width: 100%;
   padding: 0.54em 1.05em;
@@ -204,6 +206,7 @@ body::after {
 }
 
 .edit-profile-form input:focus,
+.edit-profile-form select:focus,
 .edit-profile-form textarea:focus {
   border-color: #f05454;
   box-shadow: 0 0 0 2px #ffeaea;
@@ -213,8 +216,40 @@ body::after {
 .edit-profile-form input[type="email"]:hover,
 .edit-profile-form input[type="password"]:hover,
 .edit-profile-form input[type="tel"]:hover,
+.edit-profile-form input[type="date"]:hover,
+.edit-profile-form select:hover,
 .edit-profile-form textarea:hover {
   background: #fff0f0;
+}
+
+.edit-profile-form select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #f05454 50%), linear-gradient(135deg, #f05454 50%, transparent 50%);
+  background-position: calc(100% - 18px) calc(1em + 1px), calc(100% - 12px) calc(1em + 1px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 2.2em;
+}
+
+.dob-gender-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.dob-gender-row .field-block {
+  min-width: 0;
+}
+
+.dob-gender-row .field-block label {
+  margin-bottom: 0.5em;
+}
+
+@media (max-width: 740px) {
+  .dob-gender-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
 }
 
 .edit-profile-form input::placeholder,

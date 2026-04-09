@@ -140,12 +140,50 @@ try {
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Main CSS -->
-  <link rel="stylesheet" href="../css/Volunteer_Home.css?v=20260406e">
+  <link rel="stylesheet" href="../css/Volunteer_Home.css?v=20260409b">
+  <link rel="stylesheet" href="../css/post_modal_shared.css?v=20260409a">
+  <link rel="stylesheet" href="../css/profile_button_shared.css?v=20260409a">
   <link rel="stylesheet" href="../css/notifications_shared.css">
   <link rel="stylesheet" href="../css/messenger_shared.css">
   <style>
     .main-section { display:none; }
     .main-section.active { display:block; }
+
+    /* Guaranteed page-local profile button style */
+    #homeProfileBtn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 36px;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #ff6a4d 0%, #f05454 100%);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(240, 84, 84, 0.28);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    }
+
+    #homeProfileBtn:hover {
+      transform: translateY(-1px);
+      filter: brightness(0.96);
+      box-shadow: 0 8px 18px rgba(227, 71, 28, 0.34);
+    }
+
+    #homeProfileBtn:focus-visible {
+      outline: 2px solid rgba(240, 84, 84, 0.42);
+      outline-offset: 2px;
+    }
   </style>
 </head>
 <body data-current-user-name="<?= e($volunteer['full_name'] ?? 'Volunteer') ?>">
@@ -177,7 +215,7 @@ try {
          class="profile-pic" 
          alt="Profile">
 
-    <button class="edit-btn" title="Profile Setting" 
+    <button id="homeProfileBtn" class="edit-btn" title="Profile Setting" 
       onclick="location.href='../Html/Volunteer_profile.php?user_id=<?= e($volunteer_id); ?>'">Profile</button>
 
     <!-- Volunteer name and icon -->
@@ -1325,3 +1363,4 @@ try {
       <script src="../javascrpit/messenger_shared.js"></script>
 
 </html>
+

@@ -141,6 +141,8 @@ try {
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Main CSS -->
   <link rel="stylesheet" href="../css/Camera_Contribution_Home.css?v=20260406e">
+  <link rel="stylesheet" href="../css/post_modal_shared.css?v=20260409a">
+  <link rel="stylesheet" href="../css/profile_button_shared.css?v=20260409a">
   <link rel="stylesheet" href="../css/notifications_shared.css">
   <link rel="stylesheet" href="../css/messenger_shared.css">
    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
@@ -749,3 +751,4 @@ try {
       <script src="../javascrpit/messenger_shared.js"></script>
 
 </html>
+
