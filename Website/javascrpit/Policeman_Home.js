@@ -20,56 +20,97 @@
 
 
 const modal = document.getElementById("postModal");
-const feed = document.getElementById("post-feed");
 const mediaPreview = document.getElementById("mediaPreview");
+const postTextInput = document.getElementById("postText");
+const imageUploadInput = document.getElementById("imageUpload");
+const videoUploadInput = document.getElementById("videoUpload");
+const sharedPreview = document.querySelector('.post-modal-preview');
+const sharedPostMeta = document.getElementById('sharedPostMeta');
+const sharedPostAuthorImage = document.getElementById('sharedPostAuthorImage');
+const sharedPostAuthorName = document.getElementById('sharedPostAuthorName');
+const sharedPostTime = document.getElementById('sharedPostTime');
+const sharedPostText = document.getElementById('sharedPostText');
+const sharedPostImage = document.getElementById('sharedPostImage');
+const sharedPostVideo = document.getElementById('sharedPostVideo');
 let selectedImage = null;
 let selectedVideo = null;
 
+function resetSharedPreviewUi() {
+  if (sharedPreview) sharedPreview.style.display = 'none';
+  if (sharedPostMeta) sharedPostMeta.style.display = 'none';
+  if (sharedPostAuthorImage) sharedPostAuthorImage.removeAttribute('src');
+  if (sharedPostAuthorName) sharedPostAuthorName.innerText = '';
+  if (sharedPostTime) sharedPostTime.innerText = '';
+  if (sharedPostText) {
+    sharedPostText.innerText = '';
+    sharedPostText.style.display = 'none';
+  }
+  if (sharedPostImage) {
+    sharedPostImage.removeAttribute('src');
+    sharedPostImage.style.display = 'none';
+  }
+  if (sharedPostVideo) {
+    sharedPostVideo.removeAttribute('src');
+    sharedPostVideo.style.display = 'none';
+  }
+}
+
 function openModal() {
+  if (!modal) return;
+  resetSharedPreviewUi();
   modal.style.display = "flex";
 }
 
 function closeModal() {
+  if (!modal) return;
   modal.style.display = "none";
-  document.getElementById("postText").value = "";
-  document.getElementById("imageUpload").value = "";
-  document.getElementById("videoUpload").value = "";
+  if (postTextInput) postTextInput.value = "";
+  if (imageUploadInput) imageUploadInput.value = "";
+  if (videoUploadInput) videoUploadInput.value = "";
+  if (mediaPreview) {
+    mediaPreview.innerHTML = "";
+    mediaPreview.style.display = 'block';
+  }
+  const mediaOptions = document.querySelector('.post-media-options');
+  if (mediaOptions) mediaOptions.style.display = 'flex';
+  resetSharedPreviewUi();
   const anonymousToggle = document.getElementById('anonymousShareToggle');
   if (anonymousToggle) anonymousToggle.checked = false;
-  mediaPreview.innerHTML = "";
   selectedImage = null;
   selectedVideo = null;
 }
 
-// Handle image upload preview
-document.getElementById("imageUpload").addEventListener("change", function() {
-  const file = this.files[0];
-  if (file) {
+if (imageUploadInput) {
+  imageUploadInput.addEventListener("change", function() {
+    const file = this.files[0];
+    if (!file) return;
     selectedImage = file;
-    mediaPreview.innerHTML = `<img src="${URL.createObjectURL(file)}">`;
     selectedVideo = null;
-    document.getElementById("videoUpload").value = "";
-  }
-});
+    if (mediaPreview) mediaPreview.innerHTML = `<img src="${URL.createObjectURL(file)}">`;
+    if (videoUploadInput) videoUploadInput.value = "";
+  });
+}
 
-// Handle video upload preview
-document.getElementById("videoUpload").addEventListener("change", function() {
-  const file = this.files[0];
-  if (file) {
+if (videoUploadInput) {
+  videoUploadInput.addEventListener("change", function() {
+    const file = this.files[0];
+    if (!file) return;
     selectedVideo = file;
-    mediaPreview.innerHTML = `<video src="${URL.createObjectURL(file)}" controls></video>`;
     selectedImage = null;
-    document.getElementById("imageUpload").value = "";
-  }
-});
+    if (mediaPreview) mediaPreview.innerHTML = `<video src="${URL.createObjectURL(file)}" controls></video>`;
+    if (imageUploadInput) imageUploadInput.value = "";
+  });
+}
 
-// Create post
 function createPost() {
-  const text = document.getElementById("postText").value.trim();
+  if (!postTextInput) return;
+
+  const text = postTextInput.value.trim();
   if (text === "" && !selectedImage && !selectedVideo) {
     alert("Please add text or media to post!");
     return;
   }
+
   const category = document.querySelector('input[name="category"]:checked')?.value || 'general';
   const fd = new FormData();
   fd.append('text', text);
@@ -632,13 +673,7 @@ setInterval(syncClosedCasesFromServer, 30000);
 if (caseFilterPost) caseFilterPost.addEventListener('change', applyCaseSourceFilters);
 if (caseFilterMissing) caseFilterMissing.addEventListener('change', applyCaseSourceFilters);
 applyCaseSourceFilters();
-function closeModal() {
-  document.getElementById('postModal').style.display = 'none';
-  document.getElementById('postText').value = '';
-  document.getElementById('sharedPostText').innerText = '';  // ❌ এই লাইন
-  document.getElementById('sharedPostImage').src = '';       // ❌ এই লাইন
-  document.getElementById('facebookShareToggle').checked = false;
-}
+
 
 document.addEventListener("DOMContentLoaded", function () {
     var map = L.map('emergency-map').setView([23.8103, 90.4125], 13);

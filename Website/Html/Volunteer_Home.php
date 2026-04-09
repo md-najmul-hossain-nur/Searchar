@@ -141,6 +141,7 @@ try {
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Main CSS -->
   <link rel="stylesheet" href="../css/Volunteer_Home.css?v=20260409b">
+  <link rel="stylesheet" href="../css/post_modal_shared.css?v=20260409a">
   <link rel="stylesheet" href="../css/profile_button_shared.css?v=20260409a">
   <link rel="stylesheet" href="../css/notifications_shared.css">
   <link rel="stylesheet" href="../css/messenger_shared.css">
@@ -340,10 +341,103 @@ try {
         <!-- Main Feed -->
     <div class="main-feed">
       <!-- Post Box -->
-      <div class="post-box">
+      <div class="post-box" onclick="openModal()">
         <img src="../Images/post.gif" class="user">
         <input type="text" placeholder="What's on your mind?" readonly>
       </div>
+
+<!-- Popup Modal -->
+<div id="postModal" class="post-modal">
+  <div class="post-modal-content">
+    
+    <!-- Close Button -->
+    <span class="post-modal-close" onclick="closeModal()">&times;</span>
+
+    <!-- Title -->
+    <div class="post-modal-head">
+      <h2 class="post-modal-title">Share Your Mood</h2>
+      <p class="post-modal-subtitle">Upload photos or a video and post instantly</p>
+    </div>
+
+    <!-- Facebook Toggle -->
+    <div class="facebook-toggle">
+      <label class="facebook-toggle-switch">
+        <input type="checkbox" id="facebookShareToggle">
+        <span class="facebook-toggle-slider">
+          <i class="fab fa-facebook"></i>
+        </span>
+      </label>
+      <span class="facebook-toggle-label">Share to Facebook</span>
+    </div>
+
+    <div class="facebook-toggle">
+      <label class="facebook-toggle-switch">
+        <input type="checkbox" id="anonymousShareToggle">
+        <span class="facebook-toggle-slider">
+          <i class="fa-solid fa-user-secret"></i>
+        </span>
+      </label>
+      <span class="facebook-toggle-label">Share Anonymously</span>
+    </div>
+
+    <!-- Category Label -->
+<p class="category-label">Select Category:</p>
+
+<div class="category-toggle">
+  <label class="category-option">
+    <input type="radio" name="category" value="mission" checked>
+    <img src="../Images/mission-icon.gif" alt="Mission Icon" class="category-icon" />
+    Mission Person
+  </label>
+  <label class="category-option">
+    <input type="radio" name="category" value="disaster">
+    <img src="../Images/disaster-icon.gif" alt="Disaster Icon" class="category-icon" />
+    Disaster
+  </label>
+</div>
+
+    <!-- Textarea -->
+    <textarea id="postText" class="post-modal-textarea" placeholder="Say Something..."></textarea>
+
+    <!-- Post Preview (Auto-filled from clicked post) -->
+    <div class="post-modal-preview">
+      <div id="sharedPostMeta" class="preview-meta">
+        <img id="sharedPostAuthorImage" class="preview-meta-avatar" src="" alt="Author" />
+        <div class="preview-meta-text">
+          <h5 id="sharedPostAuthorName"></h5>
+          <small id="sharedPostTime"></small>
+        </div>
+      </div>
+      <p id="sharedPostText" class="preview-text"></p>
+      <img id="sharedPostImage" class="preview-img" src="" alt="" />
+      <video id="sharedPostVideo" class="preview-video" src="" controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture oncontextmenu="return false;"></video>
+    </div>
+
+    <!-- Media Upload Buttons -->
+    <div class="post-media-options">
+      <label>
+        <input type="file" id="imageUpload" accept="image/*" multiple hidden>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">Photo</button>
+      </label>
+      <label>
+        <input type="file" id="videoUpload" accept="video/*" hidden>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">Video</button>
+      </label>
+    </div>
+    <p class="post-media-hint">You can select up to 5 photos in one post.</p>
+
+
+    <!-- Media Preview (optional preview for uploaded file) -->
+    <div id="mediaPreview" class="post-media-preview"></div>
+
+    <!-- Action Buttons -->
+    <div class="post-modal-actions">
+      <button class="post-cancel-btn" onclick="closeModal()">Cancel</button>
+      <button class="post-submit-btn" onclick="createPost()">Post</button>
+    </div>
+    
+  </div>
+</div>
 
 <div class="filter-bar-section">
   <p class="filter-bar-title">Filter by Category:</p>

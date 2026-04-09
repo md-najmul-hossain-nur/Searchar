@@ -287,7 +287,7 @@ try {
         <input type="text" placeholder="What's on your mind?" readonly>
       </div>
 
-<!-- ✅ Popup Modal -->
+<!-- Popup Modal -->
 <div id="postModal" class="post-modal">
   <div class="post-modal-content">
     
@@ -300,7 +300,7 @@ try {
       <p class="post-modal-subtitle">Upload photos or a video and post instantly</p>
     </div>
 
-    <!-- ✅ Facebook Toggle -->
+    <!-- Facebook Toggle -->
     <div class="facebook-toggle">
       <label class="facebook-toggle-switch">
         <input type="checkbox" id="facebookShareToggle">
@@ -310,6 +310,7 @@ try {
       </label>
       <span class="facebook-toggle-label">Share to Facebook</span>
     </div>
+
     <div class="facebook-toggle">
       <label class="facebook-toggle-switch">
         <input type="checkbox" id="anonymousShareToggle">
@@ -319,6 +320,7 @@ try {
       </label>
       <span class="facebook-toggle-label">Share Anonymously</span>
     </div>
+
     <!-- Category Label -->
 <p class="category-label">Select Category:</p>
 
@@ -335,10 +337,10 @@ try {
   </label>
 </div>
 
-    <!-- ✅ Textarea -->
+    <!-- Textarea -->
     <textarea id="postText" class="post-modal-textarea" placeholder="Say Something..."></textarea>
 
-    <!-- ✅ Post Preview (Auto-filled from clicked post) -->
+    <!-- Post Preview (Auto-filled from clicked post) -->
     <div class="post-modal-preview">
       <div id="sharedPostMeta" class="preview-meta">
         <img id="sharedPostAuthorImage" class="preview-meta-avatar" src="" alt="Author" />
@@ -352,25 +354,24 @@ try {
       <video id="sharedPostVideo" class="preview-video" src="" controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture oncontextmenu="return false;"></video>
     </div>
 
-    <!-- ✅ Media Upload Buttons -->
+    <!-- Media Upload Buttons -->
     <div class="post-media-options">
       <label>
         <input type="file" id="imageUpload" accept="image/*" multiple hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">Photo</button>
       </label>
       <label>
         <input type="file" id="videoUpload" accept="video/*" hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">Video</button>
       </label>
     </div>
-
     <p class="post-media-hint">You can select up to 5 photos in one post.</p>
 
 
-    <!-- ✅ Media Preview (optional preview for uploaded file) -->
+    <!-- Media Preview (optional preview for uploaded file) -->
     <div id="mediaPreview" class="post-media-preview"></div>
 
-    <!-- ✅ Action Buttons -->
+    <!-- Action Buttons -->
     <div class="post-modal-actions">
       <button class="post-cancel-btn" onclick="closeModal()">Cancel</button>
       <button class="post-submit-btn" onclick="createPost()">Post</button>

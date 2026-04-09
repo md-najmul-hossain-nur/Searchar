@@ -1,15 +1,43 @@
 ﻿
-const modal = document.querySelector(".post-modal");
-const feed = document.getElementById("post-feed");
+const modal = document.getElementById("postModal");
 const mediaPreview = document.getElementById("mediaPreview");
 const postTextInput = document.getElementById("postText");
 const imageUploadInput = document.getElementById("imageUpload");
 const videoUploadInput = document.getElementById("videoUpload");
+const sharedPreview = document.querySelector('.post-modal-preview');
+const sharedPostMeta = document.getElementById('sharedPostMeta');
+const sharedPostAuthorImage = document.getElementById('sharedPostAuthorImage');
+const sharedPostAuthorName = document.getElementById('sharedPostAuthorName');
+const sharedPostTime = document.getElementById('sharedPostTime');
+const sharedPostText = document.getElementById('sharedPostText');
+const sharedPostImage = document.getElementById('sharedPostImage');
+const sharedPostVideo = document.getElementById('sharedPostVideo');
 let selectedImage = null;
 let selectedVideo = null;
 
+function resetSharedPreviewUi() {
+  if (sharedPreview) sharedPreview.style.display = 'none';
+  if (sharedPostMeta) sharedPostMeta.style.display = 'none';
+  if (sharedPostAuthorImage) sharedPostAuthorImage.removeAttribute('src');
+  if (sharedPostAuthorName) sharedPostAuthorName.innerText = '';
+  if (sharedPostTime) sharedPostTime.innerText = '';
+  if (sharedPostText) {
+    sharedPostText.innerText = '';
+    sharedPostText.style.display = 'none';
+  }
+  if (sharedPostImage) {
+    sharedPostImage.removeAttribute('src');
+    sharedPostImage.style.display = 'none';
+  }
+  if (sharedPostVideo) {
+    sharedPostVideo.removeAttribute('src');
+    sharedPostVideo.style.display = 'none';
+  }
+}
+
 function openModal() {
   if (!modal) return;
+  resetSharedPreviewUi();
   modal.style.display = "flex";
 }
 
@@ -21,46 +49,48 @@ function closeModal() {
   if (videoUploadInput) videoUploadInput.value = "";
   const anonymousToggle = document.getElementById('anonymousShareToggle');
   if (anonymousToggle) anonymousToggle.checked = false;
-  if (mediaPreview) mediaPreview.innerHTML = "";
+  if (mediaPreview) {
+    mediaPreview.innerHTML = "";
+    mediaPreview.style.display = 'block';
+  }
+  const mediaOptions = document.querySelector('.post-media-options');
+  if (mediaOptions) mediaOptions.style.display = 'flex';
+  resetSharedPreviewUi();
   selectedImage = null;
   selectedVideo = null;
 }
 
-// Handle image upload preview
 if (imageUploadInput) {
   imageUploadInput.addEventListener("change", function() {
     const file = this.files[0];
-    if (file) {
-      selectedImage = file;
-      if (mediaPreview) mediaPreview.innerHTML = `<img src="${URL.createObjectURL(file)}">`;
-      selectedVideo = null;
-      if (videoUploadInput) videoUploadInput.value = "";
-    }
+    if (!file) return;
+    selectedImage = file;
+    selectedVideo = null;
+    if (mediaPreview) mediaPreview.innerHTML = `<img src="${URL.createObjectURL(file)}">`;
+    if (videoUploadInput) videoUploadInput.value = "";
   });
 }
 
-// Handle video upload preview
 if (videoUploadInput) {
   videoUploadInput.addEventListener("change", function() {
     const file = this.files[0];
-    if (file) {
-      selectedVideo = file;
-      if (mediaPreview) mediaPreview.innerHTML = `<video src="${URL.createObjectURL(file)}" controls></video>`;
-      selectedImage = null;
-      if (imageUploadInput) imageUploadInput.value = "";
-    }
+    if (!file) return;
+    selectedVideo = file;
+    selectedImage = null;
+    if (mediaPreview) mediaPreview.innerHTML = `<video src="${URL.createObjectURL(file)}" controls></video>`;
+    if (imageUploadInput) imageUploadInput.value = "";
   });
 }
 
-// Create post
 function createPost() {
-  if (!postTextInput || !imageUploadInput || !videoUploadInput) return;
+  if (!postTextInput) return;
 
   const text = postTextInput.value.trim();
   if (text === "" && !selectedImage && !selectedVideo) {
     alert("Please add text or media to post!");
     return;
   }
+
   const category = document.querySelector('input[name="category"]:checked')?.value || 'general';
   const fd = new FormData();
   fd.append('text', text);
