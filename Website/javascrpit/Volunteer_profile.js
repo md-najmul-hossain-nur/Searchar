@@ -11,8 +11,45 @@ const sharedPostTime = document.getElementById('sharedPostTime');
 const sharedPostText = document.getElementById('sharedPostText');
 const sharedPostImage = document.getElementById('sharedPostImage');
 const sharedPostVideo = document.getElementById('sharedPostVideo');
-let selectedImage = null;
+	const MAX_IMAGE_COUNT = 5;
+	let selectedImages = [];
 let selectedVideo = null;
+
+	function renderSelectedImagesPreview() {
+		if (!mediaPreview) return;
+
+		if (!selectedImages.length) {
+			mediaPreview.innerHTML = '';
+			mediaPreview.style.display = 'none';
+			return;
+		}
+
+		const gridHtml = selectedImages.map((file, index) => {
+			const objectUrl = URL.createObjectURL(file);
+			return `
+				<div class="post-media-item">
+					<img src="${objectUrl}" alt="Selected image ${index + 1}">
+					<button type="button" class="post-media-remove-btn" data-remove-index="${index}" aria-label="Remove image">&times;</button>
+				</div>
+			`;
+		}).join('');
+
+		mediaPreview.innerHTML = `<div class="post-media-grid">${gridHtml}</div>`;
+		mediaPreview.style.display = 'block';
+
+		mediaPreview.querySelectorAll('.post-media-remove-btn').forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const removeIndex = Number(btn.getAttribute('data-remove-index'));
+				if (Number.isNaN(removeIndex)) return;
+
+				selectedImages = selectedImages.filter((_, idx) => idx !== removeIndex);
+				if (imageUploadInput && !selectedImages.length) {
+					imageUploadInput.value = '';
+				}
+				renderSelectedImagesPreview();
+			});
+		});
+	}
 
 function resetSharedPreviewUi() {
 	if (sharedPreview) sharedPreview.style.display = 'none';
@@ -59,27 +96,34 @@ function closeModal() {
 	resetSharedPreviewUi();
 	const anonymousToggle = document.getElementById('anonymousShareToggle');
 	if (anonymousToggle) anonymousToggle.checked = false;
-	selectedImage = null;
+	selectedImages = [];
 	selectedVideo = null;
 }
 
 if (imageUploadInput) {
 	imageUploadInput.addEventListener("change", function() {
-		const file = this.files[0];
-		if (!file) {
-			if (mediaPreview) {
-				mediaPreview.innerHTML = "";
-				mediaPreview.style.display = 'none';
-			}
+		const files = Array.from(this.files || []);
+		if (!files.length) {
+			renderSelectedImagesPreview();
 			return;
 		}
-		selectedImage = file;
-		selectedVideo = null;
-		resetSharedPreviewUi();
-		if (mediaPreview) {
-			mediaPreview.innerHTML = `<img src="${URL.createObjectURL(file)}" style="width:100%; border-radius:8px;">`;
-			mediaPreview.style.display = 'block';
+
+		if (files.length > MAX_IMAGE_COUNT) {
+			alert(`You can select up to ${MAX_IMAGE_COUNT} photos in one post.`);
+			this.value = '';
+			return;
 		}
+
+		const nonImage = files.find((file) => !String(file.type || '').startsWith('image/'));
+		if (nonImage) {
+			alert('Only image files are allowed in photo selection.');
+			this.value = '';
+			return;
+		}
+
+		selectedImages = files;
+		selectedVideo = null;
+		renderSelectedImagesPreview();
 		if (videoUploadInput) videoUploadInput.value = "";
 	});
 }
@@ -95,7 +139,7 @@ if (videoUploadInput) {
 			return;
 		}
 		selectedVideo = file;
-		selectedImage = null;
+		selectedImages = [];
 		resetSharedPreviewUi();
 		if (mediaPreview) {
 			mediaPreview.innerHTML = `<video src="${URL.createObjectURL(file)}" controls style="width:100%; border-radius:8px;"></video>`;
@@ -109,7 +153,7 @@ function createPost() {
 	if (!postTextInput) return;
 
 	const text = postTextInput.value.trim();
-	if (!text && !selectedImage && !selectedVideo) {
+	if (!text && !selectedImages.length && !selectedVideo) {
 		alert("Please write something or add media!");
 		return;
 	}
@@ -122,9 +166,9 @@ function createPost() {
 	fd.append("share_facebook", document.getElementById("facebookShareToggle")?.checked ? "1" : "0");
 	fd.append("share_anonymous", document.getElementById("anonymousShareToggle")?.checked ? "1" : "0");
 
-	if (selectedImage) {
-		fd.append("media_images[]", selectedImage, selectedImage.name);
-	}
+	selectedImages.forEach((imageFile) => {
+		fd.append("media_images[]", imageFile, imageFile.name);
+	});
 	if (selectedVideo) {
 		fd.append("media_video", selectedVideo, selectedVideo.name);
 	}
