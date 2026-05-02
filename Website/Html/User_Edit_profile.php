@@ -178,7 +178,7 @@ $country = trim((string)($_POST['country'] ?? ''));
       }
 
 
-      // ✅ Redirect to profile page after successful save
+      // âœ… Redirect to profile page after successful save
       header("Location: ../Html/User_profile.php");
       exit;
     }
@@ -207,6 +207,7 @@ if (!$user) {
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <link rel="stylesheet" href="../css/User_Edit_profile.css?v=20260405bg">
+  <link rel="stylesheet" href="../css/button_theme_shared.css?v=20260503a">
 </head>
 <body>
   <!-- Navbar -->
@@ -225,7 +226,7 @@ if (!$user) {
 
     <!-- Back Button -->
     <div class="back-button-container">
-      <a href="../Html/User_profile.php" class="back-btn">← Back</a>
+      <a href="../Html/User_profile.php" class="back-btn">â† Back</a>
     </div>
 
     <form class="edit-profile-form" method="POST" enctype="multipart/form-data">
@@ -464,4 +465,5 @@ function saveMapLocation() {
 
 </body>
 </html>
+
 
