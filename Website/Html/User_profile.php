@@ -99,6 +99,7 @@ try {
   <link rel="stylesheet" href="../css/post_modal_shared.css?v=20260409a">
   <link rel="stylesheet" href="../css/notifications_shared.css">
 
+  <link rel="stylesheet" href="../css/button_theme_shared.css?v=20260503a">
 </head>
 <body>
   <header class="navbar">
@@ -134,31 +135,31 @@ try {
         <ul class="info-list">
     <!-- Birthday -->
     <li>
-        <span class="icon">&#127874;</span> <!-- 🎂 cake icon -->
+        <span class="icon">&#127874;</span> <!-- ðŸŽ‚ cake icon -->
         <?= !empty($user['date_of_birth']) ? e($user['date_of_birth']) : 'No birthday provided' ?>
     </li>
 
     <!-- Gender -->
     <li>
-        <span class="icon">&#9794;&#9792;</span> <!-- ⚥ gender icon -->
+        <span class="icon">&#9794;&#9792;</span> <!-- âš¥ gender icon -->
         <?= !empty($user['gender']) ? ucfirst(e($user['gender'])) : 'Gender not specified' ?>
     </li>
 
     <!-- Email -->
     <li>
-        <span class="icon">&#9993;</span> <!-- ✉️ envelope icon -->
+        <span class="icon">&#9993;</span> <!-- âœ‰ï¸ envelope icon -->
         <?= !empty($user['email']) ? e($user['email']) : 'No email provided' ?>
     </li>
 
     <!-- Street / Address -->
     <li>
-        <span class="icon">&#127968;</span> <!-- 🏠 house icon -->
+        <span class="icon">&#127968;</span> <!-- ðŸ  house icon -->
         <?= !empty($user['street']) ? e($user['street']) : 'No street provided' ?>
     </li>
 
     <!-- City / Country -->
     <li>
-        <span class="icon">&#127758;</span> <!-- 🌎 globe icon -->
+        <span class="icon">&#127758;</span> <!-- ðŸŒŽ globe icon -->
         <?= !empty($user['city']) ? e($user['city']) : 'No city provided' ?>, 
         <?= !empty($user['country']) ? e($user['country']) : 'No country provided' ?>
     </li>
@@ -331,11 +332,11 @@ try {
     <div class="post-media-options">
       <label>
         <input type="file" id="imageUpload" accept="image/*" multiple hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">ðŸ“· Photo</button>
       </label>
       <label>
         <input type="file" id="videoUpload" accept="video/*" hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">ðŸŽ¥ Video</button>
       </label>
     </div>
 
@@ -453,4 +454,5 @@ try {
        <script src="../javascrpit/notifications_shared.js"></script>
 
 </html>
+
 

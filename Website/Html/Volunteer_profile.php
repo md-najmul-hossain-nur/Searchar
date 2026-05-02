@@ -54,7 +54,7 @@ function profileTimeAgo(?string $dateTime): string {
 // 6. Fallback images and bio
 $profile_pic = !empty($volunteer['profile_photo']) ? '../uploads/volunteer/' . e($volunteer['profile_photo']) : '../Images/demo_pic/profile.jpg';
 $cover_pic   = !empty($volunteer['cover_photo'])   ? '../uploads/volunteer/' . e($volunteer['cover_photo'])   : '../Images/cover_default.jpg';
-$bio_text    = !empty($volunteer['bio']) ? e($volunteer['bio']) : "💬 Bio not added yet. Go to <a href='../Html/Volunteer_Edit_profile.html'>edit profile</a> to add your bio!";
+$bio_text    = !empty($volunteer['bio']) ? e($volunteer['bio']) : "ðŸ’¬ Bio not added yet. Go to <a href='../Html/Volunteer_Edit_profile.html'>edit profile</a> to add your bio!";
 
 $profilePosts = [];
 try {
@@ -110,6 +110,7 @@ try {
   <link rel="stylesheet" href="../css/post_modal_shared.css?v=20260409a">
     <link rel="stylesheet" href="../css/notifications_shared.css">
 
+  <link rel="stylesheet" href="../css/button_theme_shared.css?v=20260503a">
 </head>
 <body>
   <header class="navbar">
@@ -144,13 +145,13 @@ try {
   <ul class="info-list">
     <!-- Birthday -->
     <li>
-        <span class="icon">&#127874;</span> <!-- 🎂 cake icon -->
+        <span class="icon">&#127874;</span> <!-- ðŸŽ‚ cake icon -->
         <?= !empty($volunteer['date_of_birth']) ? e($volunteer['date_of_birth']) : 'No birthday provided' ?>
     </li>
 
     <!-- Gender -->
     <li>
-        <span class="icon">&#9794;&#9792;</span> <!-- ⚥ gender icon -->
+        <span class="icon">&#9794;&#9792;</span> <!-- âš¥ gender icon -->
         <?= !empty($volunteer['gender']) ? ucfirst(e($volunteer['gender'])) : 'Gender not specified' ?>
     </li>
     <li><span class="icon">&#128231;</span> <?= e($volunteer['email']) ?></li>
@@ -453,4 +454,5 @@ try {
        <script src="../javascrpit/notifications_shared.js"></script>
 
 </html>
+
 

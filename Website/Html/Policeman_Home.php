@@ -50,7 +50,7 @@ function timeAgo(?string $datetime): string {
 }
 
 function formatDateTimeDisplay(?string $datetime): string {
-  if (!$datetime) return '—';
+  if (!$datetime) return 'â€”';
   try {
     $dt = new DateTime($datetime);
     return $dt->format('Y-m-d H:i');
@@ -207,7 +207,7 @@ try {
         continue;
       }
 
-      $missingLabel = (string)($row['full_name'] ?? 'Unknown') . ' • Last seen: ' . (string)($row['last_seen_location'] ?? 'Unknown');
+      $missingLabel = (string)($row['full_name'] ?? 'Unknown') . ' â€¢ Last seen: ' . (string)($row['last_seen_location'] ?? 'Unknown');
       if (isLikelyDummyText($missingLabel)) {
         continue;
       }
@@ -224,7 +224,7 @@ try {
         'image_url' => $imageUrl,
         'contact_mobile' => (string)($row['reporter_mobile'] ?? ''),
         'missing_name' => (string)($row['full_name'] ?? ''),
-        'extra_details' => trim((string)($row['gender'] ?? '') . ' • Age: ' . (string)($row['age'] ?? '') . ' • Mental: ' . (string)($row['mental_condition'] ?? '') . ' • Medical: ' . (string)($row['medical_notes'] ?? '')),
+        'extra_details' => trim((string)($row['gender'] ?? '') . ' â€¢ Age: ' . (string)($row['age'] ?? '') . ' â€¢ Mental: ' . (string)($row['mental_condition'] ?? '') . ' â€¢ Medical: ' . (string)($row['medical_notes'] ?? '')),
         'created_at' => (string)($row['created_at'] ?? ''),
       ];
       $caseCounts['missing'] += 1;
@@ -541,6 +541,7 @@ try {
     }
   </style>
   
+  <link rel="stylesheet" href="../css/button_theme_shared.css?v=20260503a">
 </head>
 <body data-current-user-name="<?= e($user['full_name'] ?? 'Policeman') ?>">
  <header class="navbar" style="display:flex; align-items:center; justify-content:space-between; padding:10px; position:fixed; top:0; left:0; right:0; z-index:2000; background:#fff;">
@@ -549,9 +550,8 @@ try {
     <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
   </div>
   
-  <!-- Right: Email + Logout -->
+  <!-- Right: Logout -->
   <div style="display:flex; align-items:center; gap:10px; margin-right:40px;">
-    <span><?= e($user['email'] ?? 'Guest') ?></span>
     <button class="navbar-donate" onclick="window.location.href='../Php/logout.php';" style="display:flex; align-items:center; gap:5px;">
       LOG OUT
       <img src="../Images/import.gif" alt="Gift" style="height:1.5em; border-radius:6px;">
@@ -565,7 +565,7 @@ try {
         <img src="<?= isset($user['profile_photo']) ? '../uploads/police/' . e($user['profile_photo']) : '../Images/demo_pic/profile.jpg' ?>" class="profile-pic">
         <button class="edit-btn" title="Profile Setting" onclick="location.href='../Html/Policeman_profile.php'">Profile</button>
 
-        <h3><?= e($user['full_name'] ?? '—') ?></h3>
+        <h3><?= e($user['full_name'] ?? 'â€”') ?></h3>
         <p class="user-bio"><?= !empty($user['bio']) ? e($user['bio']) : 'Any one can join with us.' ?></p>
       </div>
 
@@ -620,8 +620,8 @@ try {
   <h2 class="case-section-title">Investigation Cases</h2>
   <p class="case-section-desc">Track investigation cases in one place. Open all current cases or view solved case history.</p>
   <div class="case-section-actions">
-    <button id="openAllCasesBtn" type="button" class="case-section-btn view">📂 View All Cases</button>
-    <button id="openSolvedCasesBtn" type="button" class="case-section-btn history">✅ Solved Case History</button>
+    <button id="openAllCasesBtn" type="button" class="case-section-btn view">ðŸ“‚ View All Cases</button>
+    <button id="openSolvedCasesBtn" type="button" class="case-section-btn history">âœ… Solved Case History</button>
   </div>
 </div>
 
@@ -671,13 +671,13 @@ try {
                 $displaySource = $sourceKey === 'missing' ? 'Missing Person' : 'Post';
               ?>
               <tr data-case-source-key="<?= e($sourceKey) ?>">
-                <td><span class="all-cases-case-id"><?= e((string)($caseRow['case_no'] ?? '—')) ?></span></td>
+                <td><span class="all-cases-case-id"><?= e((string)($caseRow['case_no'] ?? 'â€”')) ?></span></td>
                 <td><span class="all-cases-type-chip"><?= e($displayType) ?></span></td>
                 <td class="all-cases-details-cell">
                   <?php if (!empty($caseRow['image_url'])): ?>
                     <img src="<?= e((string)$caseRow['image_url']) ?>" alt="Case image" class="all-cases-thumb">
                   <?php endif; ?>
-                  <?= e((string)($caseRow['details'] ?? '—')) ?>
+                  <?= e((string)($caseRow['details'] ?? 'â€”')) ?>
                 </td>
                 <td>
                   <span class="all-cases-type-chip">
@@ -688,9 +688,9 @@ try {
                 <td class="all-cases-actions">
                   <button type="button" class="all-cases-action-btn preview js-case-preview-btn"
                           onclick="openCasePreviewFromRow(this)"
-                          data-case-no="<?= e((string)($caseRow['case_no'] ?? '—')) ?>"
+                          data-case-no="<?= e((string)($caseRow['case_no'] ?? 'â€”')) ?>"
                           data-case-type="<?= e($displayType) ?>"
-                          data-case-details="<?= e((string)($caseRow['details'] ?? '—')) ?>"
+                          data-case-details="<?= e((string)($caseRow['details'] ?? 'â€”')) ?>"
                           data-case-status="<?= e((string)($caseRow['status'] ?? 'open')) ?>"
                           data-case-source="<?= e($displaySource) ?>"
                           data-case-created="<?= e((string)($caseRow['created_at'] ?? '')) ?>"
@@ -701,9 +701,9 @@ try {
                     >Preview</button>
                   <button type="button" class="all-cases-action-btn publish js-case-publish-btn"
                       onclick="publishCaseFromRow(this)"
-                          data-case-no="<?= e((string)($caseRow['case_no'] ?? '—')) ?>"
+                          data-case-no="<?= e((string)($caseRow['case_no'] ?? 'â€”')) ?>"
                         data-case-type="<?= e($displayType) ?>"
-                          data-case-details="<?= e((string)($caseRow['details'] ?? '—')) ?>"
+                          data-case-details="<?= e((string)($caseRow['details'] ?? 'â€”')) ?>"
                           data-case-status="<?= e((string)($caseRow['status'] ?? 'open')) ?>"
                           data-case-source="<?= e($displaySource) ?>"
                           data-case-created="<?= e((string)($caseRow['created_at'] ?? '')) ?>"
@@ -760,7 +760,7 @@ try {
 <div id="casePreviewModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:4100; align-items:center; justify-content:center; padding:16px;">
   <div style="width:min(650px,95vw); background:#fff; border-radius:12px; box-shadow:0 12px 28px rgba(0,0,0,.24); overflow:hidden;">
     <div style="background:linear-gradient(90deg,#dc2626,#ef4444); color:#fff; padding:12px 14px; display:flex; justify-content:space-between; align-items:center;">
-      <strong style="font-size:17px;">📢 Case Billboard Preview</strong>
+      <strong style="font-size:17px;">ðŸ“¢ Case Billboard Preview</strong>
       <button type="button" id="casePreviewClose" style="border:none; background:rgba(255,255,255,.2); color:#fff; width:32px; height:32px; border-radius:7px; cursor:pointer; font-size:18px;">&times;</button>
     </div>
     <div style="padding:14px;">
@@ -1512,4 +1512,5 @@ try {
       <script src="../javascrpit/messenger_shared.js"></script>
 
 </html>
+
 
