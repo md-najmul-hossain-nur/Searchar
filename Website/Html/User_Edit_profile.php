@@ -8,6 +8,7 @@ if (empty($_SESSION['role']) || $_SESSION['role'] !== 'user' || empty($_SESSION[
 }
 
 $user_id = $_SESSION['user_id'];
+$form_error = null;
 
 // Helper to escape output
 function e($str) {
@@ -52,10 +53,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $beforeRow = $beforeStmt->fetch(PDO::FETCH_ASSOC) ?: [];
   $wasComplete = isProfileComplete($beforeRow);
 
-    $full_name = $_POST['name'] ?? '';
-    $email = $_POST['email'] ?? '';
-    $mobile = $_POST['phone'] ?? '';
-    $bio = $_POST['bio'] ?? '';
+    $full_name = trim((string)($_POST['name'] ?? ''));
+    $email = trim((string)($_POST['email'] ?? ''));
+    $mobile = trim((string)($_POST['phone'] ?? ''));
+    $bio = trim((string)($_POST['bio'] ?? ''));
   $date_of_birth = trim((string)($_POST['date_of_birth'] ?? ''));
   $gender = trim((string)($_POST['gender'] ?? ''));
     $latitude = $_POST['latitude'] ?? '';
@@ -84,69 +85,103 @@ $country = trim((string)($_POST['country'] ?? ''));
     }
 
 
-
-// Update user in DB including address
-$stmt = $pdo->prepare("UPDATE users 
-  SET full_name = ?, email = ?, mobile = ?, bio = ?, profile_photo = ?, cover_photo = ?, date_of_birth = ?, gender = ?, latitude = ?, longitude = ?, street = ?, city = ?, postal_code = ?, country = ?
-    WHERE user_id = ?");
-$stmt->execute([
-    $full_name,
-    $email,
-    $mobile,
-    $bio,
-    $profile_photo_name,
-    $cover_photo_name,
-    $date_of_birth !== '' ? $date_of_birth : null,
-    $gender !== '' ? $gender : null,
-    $latitude,
-    $longitude,
-    $street,
-    $city,
-    $postal,
-    $country,
-    $user_id
-]);
-
-    $afterProfile = [
-      'profile_photo' => $profile_photo_name,
-      'cover_photo' => $cover_photo_name,
-      'date_of_birth' => $date_of_birth,
-      'gender' => $gender,
-      'street' => $street,
-      'city' => $city,
-      'country' => $country,
-      'latitude' => $latitude,
-      'longitude' => $longitude,
-    ];
-    $isNowComplete = isProfileComplete($afterProfile);
-
-    if ($isNowComplete) {
-      ensureNotificationsTable($pdo);
-      $deleteReminder = $pdo->prepare("DELETE FROM user_notifications
-        WHERE recipient_entity IN ('user', 'users')
-          AND recipient_id = :id
-          AND title = 'Admin Reminder'
-          AND message LIKE '%complete your profile%'");
-      $deleteReminder->execute([':id' => $user_id]);
-
-      $existsThanks = $pdo->prepare("SELECT notification_id FROM user_notifications WHERE recipient_entity IN ('user', 'users') AND recipient_id = :id AND title = 'Admin Thanks' LIMIT 1");
-      $existsThanks->execute([':id' => $user_id]);
-      if (!$existsThanks->fetchColumn()) {
-        $notify = $pdo->prepare('INSERT INTO user_notifications (recipient_entity, recipient_id, title, message, level, is_read) VALUES (:entity, :id, :title, :message, :level, 0)');
-        $notify->execute([
-          ':entity' => 'user',
-          ':id' => $user_id,
-          ':title' => 'Admin Thanks',
-          ':message' => 'Thanks for completing your profile. Your account is now fully ready.',
-          ':level' => 'info',
-        ]);
+    // Prevent duplicate key violations for unique columns before running UPDATE.
+    if ($mobile === '') {
+      $form_error = 'Phone number is required.';
+    } else {
+      $mobileCheck = $pdo->prepare("SELECT user_id FROM users WHERE mobile = ? AND user_id <> ? LIMIT 1");
+      $mobileCheck->execute([$mobile, $user_id]);
+      if ($mobileCheck->fetchColumn()) {
+        $form_error = 'This phone number is already used by another account.';
       }
     }
 
+    if ($form_error === null) {
+      if ($email === '') {
+        $form_error = 'Email is required.';
+      } else {
+        $emailCheck = $pdo->prepare("SELECT user_id FROM users WHERE email = ? AND user_id <> ? LIMIT 1");
+        $emailCheck->execute([$email, $user_id]);
+        if ($emailCheck->fetchColumn()) {
+          $form_error = 'This email is already used by another account.';
+        }
+      }
+    }
 
-    // ✅ Redirect to profile page after successful save
-    header("Location: ../Html/User_profile.php");
-    exit;
+    if ($form_error === null) {
+      try {
+        // Update user in DB including address
+        $stmt = $pdo->prepare("UPDATE users 
+          SET full_name = ?, email = ?, mobile = ?, bio = ?, profile_photo = ?, cover_photo = ?, date_of_birth = ?, gender = ?, latitude = ?, longitude = ?, street = ?, city = ?, postal_code = ?, country = ?
+            WHERE user_id = ?");
+        $stmt->execute([
+            $full_name,
+            $email,
+            $mobile,
+            $bio,
+            $profile_photo_name,
+            $cover_photo_name,
+            $date_of_birth !== '' ? $date_of_birth : null,
+            $gender !== '' ? $gender : null,
+            $latitude,
+            $longitude,
+            $street,
+            $city,
+            $postal,
+            $country,
+            $user_id
+        ]);
+      } catch (PDOException $e) {
+        if ((string)$e->getCode() === '23000') {
+          $form_error = 'Email or phone already exists. Please use a different one.';
+        } else {
+          throw $e;
+        }
+      }
+    }
+
+    if ($form_error === null) {
+      $afterProfile = [
+        'profile_photo' => $profile_photo_name,
+        'cover_photo' => $cover_photo_name,
+        'date_of_birth' => $date_of_birth,
+        'gender' => $gender,
+        'street' => $street,
+        'city' => $city,
+        'country' => $country,
+        'latitude' => $latitude,
+        'longitude' => $longitude,
+      ];
+      $isNowComplete = isProfileComplete($afterProfile);
+
+      if ($isNowComplete) {
+        ensureNotificationsTable($pdo);
+        $deleteReminder = $pdo->prepare("DELETE FROM user_notifications
+          WHERE recipient_entity IN ('user', 'users')
+            AND recipient_id = :id
+            AND title = 'Admin Reminder'
+            AND message LIKE '%complete your profile%'");
+        $deleteReminder->execute([':id' => $user_id]);
+
+        $existsThanks = $pdo->prepare("SELECT notification_id FROM user_notifications WHERE recipient_entity IN ('user', 'users') AND recipient_id = :id AND title = 'Admin Thanks' LIMIT 1");
+        $existsThanks->execute([':id' => $user_id]);
+        if (!$existsThanks->fetchColumn()) {
+          $notify = $pdo->prepare('INSERT INTO user_notifications (recipient_entity, recipient_id, title, message, level, is_read) VALUES (:entity, :id, :title, :message, :level, 0)');
+          $notify->execute([
+            ':entity' => 'user',
+            ':id' => $user_id,
+            ':title' => 'Admin Thanks',
+            ':message' => 'Thanks for completing your profile. Your account is now fully ready.',
+            ':level' => 'info',
+          ]);
+        }
+      }
+
+
+      // ✅ Redirect to profile page after successful save
+      header("Location: ../Html/User_profile.php");
+      exit;
+    }
 }
 
 // Fetch user data to prefill form
@@ -194,6 +229,11 @@ if (!$user) {
     </div>
 
     <form class="edit-profile-form" method="POST" enctype="multipart/form-data">
+      <?php if (!empty($form_error)): ?>
+        <div style="margin-bottom:12px;padding:10px 12px;border-radius:8px;background:#fff1f2;color:#9f1239;border:1px solid #fecdd3;">
+          <?= e($form_error) ?>
+        </div>
+      <?php endif; ?>
 
       <!-- Hidden for current images -->
       <input type="hidden" name="current_profile" value="<?= e($user['profile_photo']) ?>">
