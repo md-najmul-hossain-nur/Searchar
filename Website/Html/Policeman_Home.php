@@ -549,9 +549,8 @@ try {
     <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
   </div>
   
-  <!-- Right: Email + Logout -->
+  <!-- Right: Logout -->
   <div style="display:flex; align-items:center; gap:10px; margin-right:40px;">
-    <span><?= e($user['email'] ?? 'Guest') ?></span>
     <button class="navbar-donate" onclick="window.location.href='../Php/logout.php';" style="display:flex; align-items:center; gap:5px;">
       LOG OUT
       <img src="../Images/import.gif" alt="Gift" style="height:1.5em; border-radius:6px;">
