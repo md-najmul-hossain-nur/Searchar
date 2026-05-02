@@ -147,6 +147,7 @@ try {
   <link rel="stylesheet" href="../css/messenger_shared.css?v=20260410c">
    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
+  <link rel="stylesheet" href="../css/button_theme_shared.css?v=20260503a">
 </head>
 <body>
  <header class="navbar" style="display:flex; align-items:center; justify-content:space-between; padding:10px; position:sticky; top:0; z-index:2000; background:#fff;">
@@ -172,7 +173,7 @@ try {
         <img src="<?= isset($user['profile_photo']) ? '../uploads/camera/' . e($user['profile_photo']) : '../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg' ?>" class="profile-pic">
         <button class="edit-btn" title="Profile Setting" onclick="location.href='../Html/Camera_Contribution_profile.php'">Profile</button>
 
-        <h3><?= e($user['full_name'] ?? '—') ?></h3>
+        <h3><?= e($user['full_name'] ?? 'â€”') ?></h3>
         <p class="user-bio">
           <?= !empty($user['bio']) ? e($user['bio']) : 'Any one can join with us.' ?></p>
       </div>
@@ -181,7 +182,7 @@ try {
      <!-- Streamer Info Section -->
 <div class="money-withdrawal">
   <h2>Withdraw Your Stream Earnings</h2>
-  <p>You’ve earned money by helping the community through live CCTV streaming. You can withdraw your balance anytime using your preferred method.</p>
+  <p>Youâ€™ve earned money by helping the community through live CCTV streaming. You can withdraw your balance anytime using your preferred method.</p>
 
   <ul class="streamer-info">
     <li><strong>Name:</strong> Erik Jhonson</li>
@@ -264,9 +265,9 @@ try {
 <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
 
 <!-- Buttons -->
-<button id="find-hospitals" class="emergency-btn hospital">🏥 Show Nearby Hospitals</button>
-<button id="find-fire" class="emergency-btn fire">🚒 Show Fire Stations</button>
-<button id="find-police" class="emergency-btn police">👮 Show Police Stations</button>
+<button id="find-hospitals" class="emergency-btn hospital">ðŸ¥ Show Nearby Hospitals</button>
+<button id="find-fire" class="emergency-btn fire">ðŸš’ Show Fire Stations</button>
+<button id="find-police" class="emergency-btn police">ðŸ‘® Show Police Stations</button>
 
 <!-- Map Container -->
 <div id="emergency-map" style="height: 400px; border-radius: 8px; border: 2px solid #000; width: 100%; max-width: 100%; overflow: hidden; box-sizing: border-box; position: relative; z-index: 0;"></div>
@@ -585,10 +586,10 @@ try {
   <h4>Camera Contributor Panel</h4>
   
   <button id="startFeedBtn" class="camera-btn">
-    📷 Start Live / Upload Recorded Feed
+    ðŸ“· Start Live / Upload Recorded Feed
   </button>
   <button class="camera-btn" onclick="window.location.href='../Html/Camera_Contribution_Feed.php';">
-  👀 View Feed
+  ðŸ‘€ View Feed
 </button>
 
 </div>
@@ -674,8 +675,8 @@ try {
 
     <div class="cam-pricing-rules">
       <h4>Feed Payment Rule</h4>
-      <p><strong>Recorded Feed:</strong> ৳60 per hour</p>
-      <p><strong>Live Feed:</strong> ৳100 per hour</p>
+      <p><strong>Recorded Feed:</strong> à§³60 per hour</p>
+      <p><strong>Live Feed:</strong> à§³100 per hour</p>
       <small>Live feed pays more because real-time monitoring demand is higher.</small>
     </div>
   </div>
@@ -751,4 +752,5 @@ try {
       <script src="../javascrpit/messenger_shared.js"></script>
 
 </html>
+
 

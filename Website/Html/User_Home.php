@@ -219,7 +219,7 @@ function normalizeBrokenUtf8(?string $text): string {
   }
 
   // Fix common mojibake when UTF-8 bytes were decoded as latin1/cp1252.
-  if (preg_match('/ðŸ|Ã.|â.|ï¸|Â./u', $value) !== 1) {
+  if (preg_match('/Ã°Å¸|Ãƒ.|Ã¢.|Ã¯Â¸|Ã‚./u', $value) !== 1) {
     return $value;
   }
 
@@ -452,6 +452,7 @@ try {
   <link rel="stylesheet" href="../css/post_modal_shared.css?v=20260409a">
   <link rel="stylesheet" href="../css/profile_button_shared.css?v=20260410a">
 
+  <link rel="stylesheet" href="../css/button_theme_shared.css?v=20260503a">
 </head>
 <body data-current-user-name="<?= e($user['full_name'] ?? 'User') ?>" data-profile-incomplete="<?= $isProfileIncomplete ? '1' : '0' ?>" data-profile-missing="<?= e($profileMissingLabel) ?>" data-volunteer-ready="<?= $isVolunteerProfileReady ? '1' : '0' ?>" data-volunteer-missing="<?= e($volunteerProfileMissingLabel) ?>">
 <header class="navbar" style="display:flex; align-items:center; justify-content:space-between; padding:10px; position:sticky; top:0; z-index:2000; background:#fff;">
@@ -1443,3 +1444,4 @@ try {
     </body>
 
 </html>
+

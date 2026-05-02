@@ -68,6 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <title>Change Password - Searchar</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="../css/User_Passchagned.css?v=20260405bg">
+  <link rel="stylesheet" href="../css/button_theme_shared.css?v=20260503a">
 </head>
 <body>
   <header class="navbar">
@@ -82,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h2>Change Your Password</h2>
 
         <div class="back-button-container">
-          <a href="../Html/User_profile.php" class="back-btn">â† Back</a>
+          <a href="../Html/User_profile.php" class="back-btn">Ã¢â€ Â Back</a>
         </div>
 
         <?php if (!empty($error)): ?>
@@ -122,3 +123,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 </body>
 </html>
+
