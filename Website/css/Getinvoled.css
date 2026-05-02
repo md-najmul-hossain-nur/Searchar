@@ -2,8 +2,11 @@
 
 body {
   font-family: 'Roboto', Arial, sans-serif;
-  background: #f4f7fb;
-  color: #1a232a;
+  background:
+    radial-gradient(circle at top left, rgba(247, 92, 60, 0.06), transparent 22%),
+    linear-gradient(180deg, #ffffff 0%, #f6f8fb 100%);
+  color: #0f172a;
+  overflow-x: hidden;
 }
 
 .navbar {
@@ -38,30 +41,34 @@ body {
 }
 
 .involved-main {
-  width: min(1180px, 94%);
+  width: min(1240px, calc(100% - 40px));
   margin: 0 auto;
   padding-top: 126px;
   padding-bottom: 42px;
+  display: grid;
+  gap: 22px;
 }
 
 .involved-hero {
   position: relative;
-  border-radius: 22px;
+  border-radius: 26px;
   overflow: hidden;
   min-height: 420px;
   background:
-    linear-gradient(130deg, rgba(15, 23, 42, .9), rgba(14, 116, 144, .8)),
+    linear-gradient(130deg, rgba(10, 26, 40, 0.88), rgba(29, 78, 216, 0.72)),
     url('../Images/help.jpg') center/cover no-repeat;
   display: flex;
   align-items: center;
-  padding: 54px 44px;
-  box-shadow: 0 22px 42px rgba(15, 23, 42, 0.22);
+  padding: 56px 48px;
+  box-shadow: 0 22px 42px rgba(15, 23, 42, 0.18);
 }
 
 .involved-hero-overlay {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 90% 10%, rgba(255,255,255,.18), transparent 48%);
+  background:
+    radial-gradient(circle at 90% 10%, rgba(255,255,255,.16), transparent 42%),
+    linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0));
 }
 
 .involved-hero-content {
@@ -73,9 +80,9 @@ body {
 
 .hero-chip {
   display: inline-block;
-  background: rgba(255,255,255,.16);
-  border: 1px solid rgba(255,255,255,.35);
-  color: #fff;
+  background: #fff1ec;
+  border: 1px solid rgba(247, 92, 60, 0.2);
+  color: #d9482e;
   border-radius: 999px;
   padding: 8px 14px;
   font-size: 13px;
@@ -88,6 +95,7 @@ body {
   font-size: clamp(32px, 5vw, 54px);
   line-height: 1.12;
   margin-bottom: 14px;
+  color: #ffffff;
 }
 
 .involved-hero p {
@@ -116,9 +124,9 @@ body {
 }
 
 .cta-btn {
-  background: linear-gradient(135deg, #f75c3c, #ef4444);
+  background: linear-gradient(135deg, #f75c3c, #e3471c);
   color: #fff;
-  box-shadow: 0 8px 20px rgba(247, 92, 60, .28);
+  box-shadow: 0 8px 20px rgba(247, 92, 60, .24);
 }
 
 .cta-btn:hover {
@@ -126,9 +134,9 @@ body {
 }
 
 .ghost-btn {
-  border: 1px solid rgba(255,255,255,.45);
+  border: 1px solid rgba(255,255,255,.55);
   color: #fff;
-  background: rgba(255,255,255,.1);
+  background: rgba(255,255,255,.08);
 }
 
 .volunteer-steps,
@@ -142,24 +150,35 @@ body {
   font-family: 'Montserrat', Arial, sans-serif;
   font-size: 30px;
   margin-bottom: 14px;
+  color: #0a1a28;
+}
+
+.volunteer-steps,
+.benefit-section {
+  background: #ffffff;
+  border: 1px solid #e6edf5;
+  border-radius: 26px;
+  padding: 28px;
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.06);
 }
 
 .step-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  gap: 16px;
 }
 
 .step-card {
   background: #fff;
   border: 1px solid #e6edf5;
-  border-radius: 16px;
-  padding: 18px;
-  box-shadow: 0 8px 18px rgba(15, 23, 42, .06);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, .06);
+  border-top: 3px solid #f75c3c;
 }
 
 .step-card span {
-  color: #0ea5e9;
+  color: #f75c3c;
   font-weight: 800;
   margin-bottom: 8px;
   display: inline-block;
@@ -176,24 +195,20 @@ body {
 }
 
 .benefit-section {
-  background: #fff;
-  border: 1px solid #e6edf5;
-  border-radius: 18px;
-  padding: 22px;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, .06);
+  margin-top: 24px;
 }
 
 .benefit-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: 16px;
 }
 
 .benefit-card {
   background: #f8fbff;
   border: 1px solid #e5eefb;
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 16px;
+  padding: 18px;
 }
 
 .benefit-card h3 {
@@ -207,9 +222,9 @@ body {
 }
 
 .impact-strip {
-  background: linear-gradient(135deg, #0f172a, #1e3a8a);
-  border-radius: 16px;
-  padding: 22px;
+  background: linear-gradient(135deg, #0a1a28, #12324d);
+  border-radius: 22px;
+  padding: 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -230,10 +245,10 @@ body {
 .impact-stat {
   min-width: 220px;
   text-align: center;
-  background: rgba(255,255,255,.1);
-  border: 1px solid rgba(255,255,255,.3);
-  border-radius: 12px;
-  padding: 16px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 14px;
+  padding: 18px;
 }
 
 .impact-stat .count-up {
@@ -241,7 +256,7 @@ body {
   font-family: 'Montserrat', Arial, sans-serif;
   font-weight: 800;
   font-size: 46px;
-  color: #facc15;
+  color: #f75c3c;
 }
 
 .impact-stat small {
