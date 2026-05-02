@@ -142,63 +142,23 @@ try {
   <!-- Main CSS -->
   <link rel="stylesheet" href="../css/Volunteer_Home.css?v=20260409b">
   <link rel="stylesheet" href="../css/post_modal_shared.css?v=20260409a">
-  <link rel="stylesheet" href="../css/profile_button_shared.css?v=20260409a">
+  <link rel="stylesheet" href="../css/profile_button_shared.css?v=20260410a">
   <link rel="stylesheet" href="../css/notifications_shared.css">
-  <link rel="stylesheet" href="../css/messenger_shared.css">
-  <style>
-    .main-section { display:none; }
-    .main-section.active { display:block; }
-
-    /* Guaranteed page-local profile button style */
-    #homeProfileBtn {
-      position: absolute;
-      top: 14px;
-      right: 14px;
-      z-index: 2;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 36px;
-      padding: 8px 16px;
-      border: none;
-      border-radius: 8px;
-      background: linear-gradient(135deg, #ff6a4d 0%, #f05454 100%);
-      color: #fff;
-      font-size: 13px;
-      font-weight: 700;
-      line-height: 1.1;
-      letter-spacing: 0.2px;
-      white-space: nowrap;
-      cursor: pointer;
-      box-shadow: 0 6px 14px rgba(240, 84, 84, 0.28);
-      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
-    }
-
-    #homeProfileBtn:hover {
-      transform: translateY(-1px);
-      filter: brightness(0.96);
-      box-shadow: 0 8px 18px rgba(227, 71, 28, 0.34);
-    }
-
-    #homeProfileBtn:focus-visible {
-      outline: 2px solid rgba(240, 84, 84, 0.42);
-      outline-offset: 2px;
-    }
-  </style>
+  <link rel="stylesheet" href="../css/messenger_shared.css?v=20260410c">
 </head>
 <body data-current-user-name="<?= e($volunteer['full_name'] ?? 'Volunteer') ?>">
-<header class="navbar" style="display:flex; align-items:center; justify-content:space-between; padding:10px;">
+<header class="navbar navbar-home">
   <!-- Left: Logo -->
   <div class="navbar-logo">
     <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
   </div>
   
   <!-- Right: Email + Logout -->
-  <div style="display:flex; align-items:center; gap:10px; margin-right:40px;">
+  <div class="navbar-home-actions">
     <span><?= e($volunteer['email'] ?? 'Guest') ?></span>
-    <button class="navbar-donate" onclick="window.location.href='../Php/logout.php';" style="display:flex; align-items:center; gap:5px;">
+    <button class="navbar-donate navbar-donate-inline" onclick="window.location.href='../Php/logout.php';">
       LOG OUT
-      <img src="../Images/import.gif" alt="Gift" style="height:1.5em; border-radius:6px;">
+      <img src="../Images/import.gif" alt="Gift" class="navbar-donate-icon">
     </button>
   </div>
 </header>
@@ -215,7 +175,7 @@ try {
          class="profile-pic" 
          alt="Profile">
 
-    <button id="homeProfileBtn" class="edit-btn" title="Profile Setting" 
+    <button id="homeProfileBtn" title="Profile Setting" 
       onclick="location.href='../Html/Volunteer_profile.php?user_id=<?= e($volunteer_id); ?>'">Profile</button>
 
     <!-- Volunteer name and icon -->
@@ -245,7 +205,7 @@ try {
 
       <div class="rank-progress-wrap" aria-label="Rank progress">
         <div class="rank-progress-bar">
-          <div class="rank-progress-fill" id="rank-progress-fill" style="width:0%"></div>
+          <div class="rank-progress-fill" id="rank-progress-fill"></div>
         </div>
         <div class="rank-progress-meta">
           <span id="rank-progress-percent">0%</span>
@@ -314,7 +274,7 @@ try {
 <!-- Hospital Section -->
 <div class="hospital-section">
   <!-- Header -->
-  <h2 style="text-align: center; color: #333; margin-bottom: 15px; font-weight: 700;">
+  <h2 class="hospital-title">
     Emergency Services Locator
   </h2>
   <!-- Leaflet CSS -->
@@ -324,12 +284,12 @@ try {
 <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
 
 <!-- Buttons -->
-<button id="find-hospitals" style="padding:8px 15px;background:#f05454;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">🏥 Show Nearby Hospitals</button>
-<button id="find-fire" style="padding:8px 15px;background:#ff7f11;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">🚒 Show Fire Stations</button>
-<button id="find-police" style="padding:8px 15px;background:#0077b6;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:10px;">👮 Show Police Stations</button>
+<button id="find-hospitals" class="emergency-btn emergency-btn-hospital">🏥 Show Nearby Hospitals</button>
+<button id="find-fire" class="emergency-btn emergency-btn-fire">🚒 Show Fire Stations</button>
+<button id="find-police" class="emergency-btn emergency-btn-police">👮 Show Police Stations</button>
 
 <!-- Map Container -->
-<div id="emergency-map" style="height: 400px; border-radius: 8px;"></div>
+<div id="emergency-map" class="emergency-map"></div>
 
 <!-- JS Libraries -->
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -346,7 +306,7 @@ try {
         <input type="text" placeholder="What's on your mind?" readonly>
       </div>
 
-<!-- ✅ Popup Modal -->
+<!-- Popup Modal -->
 <div id="postModal" class="post-modal">
   <div class="post-modal-content">
     
@@ -359,7 +319,7 @@ try {
       <p class="post-modal-subtitle">Upload photos or a video and post instantly</p>
     </div>
 
-    <!-- ✅ Facebook Toggle -->
+    <!-- Facebook Toggle -->
     <div class="facebook-toggle">
       <label class="facebook-toggle-switch">
         <input type="checkbox" id="facebookShareToggle">
@@ -396,10 +356,10 @@ try {
   </label>
 </div>
 
-    <!-- ✅ Textarea -->
+    <!-- Textarea -->
     <textarea id="postText" class="post-modal-textarea" placeholder="Say Something..."></textarea>
 
-    <!-- ✅ Post Preview (Auto-filled from clicked post) -->
+    <!-- Post Preview (Auto-filled from clicked post) -->
     <div class="post-modal-preview">
       <div id="sharedPostMeta" class="preview-meta">
         <img id="sharedPostAuthorImage" class="preview-meta-avatar" src="" alt="Author" />
@@ -413,25 +373,24 @@ try {
       <video id="sharedPostVideo" class="preview-video" src="" controls controlsList="nodownload nofullscreen noplaybackrate" disablePictureInPicture oncontextmenu="return false;"></video>
     </div>
 
-    <!-- ✅ Media Upload Buttons -->
+    <!-- Media Upload Buttons -->
     <div class="post-media-options">
       <label>
         <input type="file" id="imageUpload" accept="image/*" multiple hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">Photo</button>
       </label>
       <label>
         <input type="file" id="videoUpload" accept="video/*" hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">Video</button>
       </label>
     </div>
-
     <p class="post-media-hint">You can select up to 5 photos in one post.</p>
 
 
-    <!-- ✅ Media Preview (optional preview for uploaded file) -->
+    <!-- Media Preview (optional preview for uploaded file) -->
     <div id="mediaPreview" class="post-media-preview"></div>
 
-    <!-- ✅ Action Buttons -->
+    <!-- Action Buttons -->
     <div class="post-modal-actions">
       <button class="post-cancel-btn" onclick="closeModal()">Cancel</button>
       <button class="post-submit-btn" onclick="createPost()">Post</button>
@@ -520,7 +479,7 @@ try {
         <span class="comment-btn"><i class="fa fa-comment"></i> Comment</span>
       </div>
 
-      <section class="comment-module" style="display:none;">
+      <section class="comment-module">
         <div class="comment-input-area">
           <div class="comment-editor" contenteditable="true" data-placeholder="Write a comment..."></div>
           <button class="comment-send-btn">
@@ -534,7 +493,7 @@ try {
   <?php endforeach; ?>
 <?php endif; ?>
 
-      <div class="post static-demo-post" id="post-1" data-post-id="1" data-category="mission" style="display:none;">
+      <div class="post static-demo-post" id="post-1" data-post-id="1" data-category="mission">
   <div class="post-header">
     <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg">
     <div>
@@ -550,7 +509,7 @@ try {
     <span class="comment-btn"><i class="fa fa-comment"></i> 41</span>
   </div>
 
-<section class="comment-module" style="display:none;">
+<section class="comment-module">
 
 <!-- Comment Input Area (Top) -->
   <div class="comment-input-area">
@@ -766,7 +725,7 @@ try {
     <span class="comment-btn"><i class="fa fa-comment"></i> 41</span>
   </div>
 
-<section class="comment-module" style="display:none;">
+<section class="comment-module">
 
 <!-- Comment Input Area (Top) -->
   <div class="comment-input-area">
@@ -982,7 +941,7 @@ try {
     <span class="comment-btn"><i class="fa fa-comment"></i> 41</span>
   </div>
 
-<section class="comment-module" style="display:none;">
+<section class="comment-module">
 
 <!-- Comment Input Area (Top) -->
   <div class="comment-input-area">
@@ -1237,60 +1196,6 @@ try {
   </button>
 </div>
 </div>
-<style>.redzone {
-  border: 1px solid #ffd4d4;
-  background: linear-gradient(135deg, #fff7f7, #ffecec);
-  padding: 14px;
-  border-radius: 12px;
-  margin-top: 12px;
-}
-
-.redzone h4 {
-  margin-bottom: 10px;
-  color: #c0392b;
-  font-weight: 700;
-}
-
-.redzone ul {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 10px 0;
-}
-
-.redzone ul li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #ffffff;
-  border-left: 4px solid #e74c3c;
-  padding: 8px 10px;
-  border-radius: 8px;
-  margin-bottom: 6px;
-  font-size: 14px;
-}
-
-.redzone ul li span:last-child {
-  font-size: 12px;
-  color: #888;
-}
-
-.redzone-btn {
-  width: 100%;
-  background: #e74c3c;
-  color: white;
-  border: none;
-  padding: 8px;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: 0.3s;
-}
-
-.redzone-btn:hover {
-  background: #c0392b;
-}
-</style>
-
 <div id="notificationsDrawerBackdrop" class="notifications-drawer-backdrop"></div>
 <aside id="notificationsDrawer" class="notifications-drawer" aria-hidden="true">
   <div class="notifications-drawer-header">
@@ -1357,7 +1262,7 @@ try {
 
      </body>
        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-       <script src="../javascrpit/Volunteer_Home.js"></script>
+      <script src="../javascrpit/Volunteer_Home.js?v=20260409g"></script>
       <script src="../javascrpit/post_interactions_shared.js?v=20260406d"></script>
        <script src="../javascrpit/notifications_shared.js"></script>
       <script src="../javascrpit/messenger_shared.js"></script>

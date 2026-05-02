@@ -1,39 +1,44 @@
-/* Unified profile button style for home profile cards */
-.profile-card .edit-btn {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  z-index: 2;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 36px;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #ff6a4d 0%, #f05454 100%);
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: 0.2px;
-  white-space: nowrap;
-  cursor: pointer;
-  box-shadow: 0 6px 14px rgba(240, 84, 84, 0.28);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+/* Unified profile button style for home profile cards (compact, beside avatar). */
+.sidebar-left .profile-card > .edit-btn {
+  position: absolute !important;
+  top: 126px !important;
+  left: 96px !important;
+  right: auto !important;
+  z-index: 6 !important;
+  width: auto !important;
+  min-width: 70px !important;
+  max-width: max-content !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 34px !important;
+  padding: 8px 14px !important;
+  border: none !important;
+  border-radius: 10px !important;
+  background: linear-gradient(135deg, #ff6a4d 0%, #f05454 100%) !important;
+  color: #ffffff !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  line-height: 1.1 !important;
+  letter-spacing: 0.2px !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 10px rgba(240, 84, 84, 0.3) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease !important;
+  margin: 0 !important;
 }
 
-.profile-card .edit-btn:hover {
+.sidebar-left .profile-card > .edit-btn:hover {
   transform: translateY(-1px);
   filter: brightness(0.96);
   box-shadow: 0 8px 18px rgba(227, 71, 28, 0.34);
 }
 
-.profile-card .edit-btn:focus-visible {
+.sidebar-left .profile-card > .edit-btn:focus-visible {
   outline: 2px solid rgba(240, 84, 84, 0.42);
   outline-offset: 2px;
 }
 
-.profile-card .edit-btn img {
+.sidebar-left .profile-card > .edit-btn img {
   display: none;
 }

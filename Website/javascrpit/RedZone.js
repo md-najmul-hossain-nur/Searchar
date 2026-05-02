@@ -301,6 +301,24 @@
     });
   }
 
+  function setupNavbarBack() {
+    const logoWrap = document.querySelector('.navbar-logo');
+    if (!logoWrap) return;
+
+    logoWrap.style.cursor = 'pointer';
+    logoWrap.addEventListener('click', () => {
+      const hasReferrer = !!document.referrer;
+      const sameOriginReferrer = hasReferrer && document.referrer.indexOf(window.location.origin) === 0;
+
+      if (sameOriginReferrer && window.history.length > 1) {
+        window.history.back();
+        return;
+      }
+
+      window.location.href = '../Html/Index.html';
+    });
+  }
+
   function roleLabel(role) {
     const key = String(role || '').toLowerCase();
     if (key === 'user') return 'User';
@@ -360,6 +378,7 @@
   setupRadiusControl();
   setupQuickJumps();
   setupLocateMe();
+  setupNavbarBack();
   hydrateProfileCard();
   syncChipActiveState();
   renderMap();

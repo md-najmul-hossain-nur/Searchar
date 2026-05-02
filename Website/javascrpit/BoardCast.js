@@ -1,90 +1,4 @@
-// Bangladesh: Division -> District -> Area
-const divisionDistrictAreaData = {
-
-  "Dhaka": {
-    "Dhaka District": ["Dhamrai", "Dohar", "Keraniganj", "Nawabganj", "Savar"],
-    "Faridpur": ["Alfadanga", "Bhanga", "Boalmari", "Char Bhadrasan", "Faridpur Sadar"],
-    "Gazipur": ["Gazipur Sadar", "Kaliakoir", "Kaliganj", "Kapasia", "Sreepur"],
-    "Gopalganj": ["Gopalganj Sadar", "Kashiani", "Kotalipara", "Maksudpur", "Tungipara"],
-    "Kishoreganj": ["Austagram", "Bajitpur", "Bhairab", "Hossainpur", "Itna"],
-    "Madaripur": ["Kalkini", "Madaripur Sadar", "Rajoir", "Shibchar"],
-    "Manikganj": ["Daulatpur", "Ghior", "Harirampur", "Manikganj Sadar"],
-    "Munshiganj": ["Gazaria", "Lauhajang", "Munshiganj Sadar", "Serajdikhan"],
-    "Narayanganj": ["Araihazar", "Bandar", "Narayanganj Sadar", "Rupganj"],
-    "Narsingdi": ["Belabo", "Monohardi", "Narsingdi Sadar", "Palash"],
-    "Rajbari": ["Baliakandi", "Goalanda", "Pangsha", "Rajbari Sadar"],
-    "Shariatpur": ["Bhedarganj", "Damudya", "Gosairhat", "Naria"],
-    "Tangail": ["Basail", "Bhuapur", "Delduar", "Dhanbari"],
-    "Jamalpur": ["Baksiganj", "Dewanganj", "Islampur", "Jamalpur Sadar"],
-    "Sherpur": ["Jhenaigati", "Nakla", "Nalitabari", "Sherpur Sadar"],
-    "Netrokona": ["Atpara", "Barhatta", "Durgapur", "Khaliajuri"],
-    "Mymensingh": ["Bhaluka", "Dhobaura", "Fulbaria", "Gaffargaon"]
-  },
-  "Chattogram": {
-    "Chattogram District": ["Anowara", "Banshkhali", "Boalkhali", "Chandnaish"],
-    "Cox’s Bazar": ["Cox’s Bazar Sadar", "Chakaria", "Kutubdia", "Maheshkhali"],
-    "Feni": ["Feni Sadar", "Daganbhuiyan", "Chhagalnaiya", "Fulgazi"],
-    "Cumilla (Comilla)": ["Cumilla Sadar North", "Cumilla Sadar South", "Barura", "Brahmanpara"],
-    "Bandarban": ["Bandarban Sadar", "Thanchi", "Ruma", "Lama"],
-    "Brahmanbaria": ["Brahmanbaria Sadar", "Ashuganj", "Bancharampur", "Bijoynagar"],
-    "Chandpur": ["Chandpur Sadar", "Faridganj", "Haimchar", "Haziganj"],
-    "Khagrachhari": ["Dighinala", "Khagrachhari Sadar", "Lakshmichhari", "Mahalchhari"],
-    "Lakshmipur": ["Lakshmipur Sadar", "Kamalnagar", "Raipur", "Ramganj"],
-    "Noakhali": ["Noakhali Sadar", "Begumganj", "Chatkhil", "Companiganj"],
-    "Rangamati": ["Rangamati Sadar", "Baghaichhari", "Barkal", "Kawkhali"]
-  },
-  "Barishal": {
-    "Barishal District": ["Agailjhara", "Babuganj", "Bakerganj", "Banaripara"],
-    "Barguna": ["Amtali", "Bamna", "Barguna Sadar", "Betagi"],
-    "Bhola": ["Bhola Sadar", "Borhanuddin", "Char Fasson", "Daulatkhan"],
-    "Jhalokathi": ["Jhalokathi Sadar", "Kathalia", "Nalchity", "Rajapur"],
-    "Patuakhali": ["Patuakhali Sadar", "Bauphal", "Dashmina", "Dumki"],
-    "Pirojpur": ["Pirojpur Sadar", "Bhandaria", "Kawkhali", "Mathbaria"]
-  },
-  "Khulna": {
-    "Jashore (Jessore)": ["Abhaynagar", "Bagherpara", "Chaugachha", "Jashore Sadar"],
-    "Kushtia": ["Kushtia Sadar", "Kumarkhali", "Khoksa", "Mirpur"],
-    "Satkhira": ["Satkhira Sadar", "Assasuni", "Debhata", "Kalaroa"],
-    "Meherpur": ["Meherpur Sadar", "Mujibnagar", "Gangni"],
-    "Bagerhat": ["Bagerhat Sadar", "Chitalmari", "Fakirhat", "Kachua"],
-    "Chuadanga": ["Chuadanga Sadar", "Alamdanga", "Damurhuda", "Jibannagar"],
-    "Jhenaidah": ["Jhenaidah Sadar", "Harinakundu", "Kaliganj", "Kotchandpur"],
-    "Magura": ["Magura Sadar", "Mohammadpur", "Shalikha", "Sreepur"],
-    "Narail": ["Narail Sadar", "Kalia", "Lohagara"]
-  },
-  "Rajshahi": {
-    "Joypurhat": ["Akkelpur", "Joypurhat Sadar", "Kalai", "Khetlal"],
-    "Bogra (Bogura)": ["Adamdighi", "Bogura Sadar", "Dhunat", "Dupchanchia"],
-    "Naogaon": ["Atrai", "Badalgachhi", "Dhamoirhat", "Mohadevpur"],
-    "Natore": ["Bagatipara", "Baraigram", "Gurudaspur", "Lalpur"],
-    "Sirajganj": ["Belkuchi", "Chauhali", "Kamarkhanda", "Kazipur"],
-    "Pabna": ["Atgharia", "Bera", "Bhangura", "Chatmohar"],
-    "Rajshahi": ["Bagha", "Bagmara", "Charghat", "Durgapur"]
-  },
-  "Rangpur": {
-    "Dinajpur": ["Birampur", "Birganj", "Biral", "Bochaganj"],
-    "Gaibandha": ["Fulchhari", "Gaibandha Sadar", "Gobindaganj", "Palashbari"],
-    "Kurigram": ["Bhurungamari", "Char Rajibpur", "Chilmari", "Kurigram Sadar"],
-    "Lalmonirhat": ["Aditmari", "Hatibandha", "Kaliganj", "Lalmonirhat Sadar"],
-    "Nilphamari": ["Dimla", "Domar", "Jaldhaka", "Kishoreganj"],
-    "Panchagarh": ["Atwari", "Boda", "Debiganj", "Panchagarh Sadar"],
-    "Rangpur": ["Badarganj", "Gangachara", "Kaunia", "Mithapukur"],
-    "Thakurgaon": ["Baliadangi", "Haripur", "Pirganj", "Ranisankail"]
-  },
-  "Mymensingh": {
-    "Mymensingh District": ["Mymensingh Sadar", "Trishal", "Bhaluka", "Dhobaura"],
-    "Sherpur": ["Sherpur Sadar", "Nalitabari", "Jhinaigati", "Nakla"],
-    "Jamalpur": ["Baksiganj", "Dewanganj", "Islampur", "Jamalpur Sadar"],
-    "Netrokona": ["Atpara", "Barhatta", "Durgapur", "Khaliajuri"]
-  },
-  "Sylhet": {
-    "Sylhet District": ["Sylhet Sadar", "Beanibazar", "Balaganj", "Bishwanath"],
-    "Moulvibazar": ["Moulvibazar Sadar", "Barlekha", "Kamalganj", "Kulaura"],
-    "Habiganj": ["Habiganj Sadar", "Baniachong", "Chunarughat", "Madhabpur"],
-    "Sunamganj": ["Sunamganj Sadar", "South Sunamganj", "Derai", "Dharmapasha"]
-  }
-
-};
+let divisionDistrictAreaData = {};
 
 // DOM elements
 const divisionSelect = document.getElementById('divisionSelect');
@@ -94,22 +8,275 @@ const cameraGrid = document.getElementById('cameraGrid');
 const cameraInfo = document.getElementById('cameraInfo');
 const cameraCount = document.getElementById('cameraCount');
 const areaName = document.getElementById('areaName');
+const logo = document.getElementById('logo');
+
+async function loadLocationTreeFromDatabase() {
+  try {
+    const res = await fetch('../Php/fetch_broadcast_locations.php', {
+      method: 'GET',
+      credentials: 'same-origin',
+      headers: { 'Accept': 'application/json' }
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data?.success || typeof data.tree !== 'object' || data.tree === null) {
+      throw new Error(data?.error || 'Unable to load location tree');
+    }
+
+    divisionDistrictAreaData = data.tree;
+    populateDivisions();
+
+    const divisionCount = Object.keys(divisionDistrictAreaData).length;
+    if (divisionCount === 0) {
+      renderEmptyState('No public cameraman location found yet. Ask cameraman to add public CCTV feed first.');
+    } else {
+      renderEmptyState('Select division, district and area from database-driven list to load broadcast feeds.');
+    }
+  } catch (error) {
+    divisionDistrictAreaData = {};
+    populateDivisions();
+    renderEmptyState('Could not load location filters from database right now.');
+  }
+}
+
+function generateFooterCalendar(year, month) {
+  const calendarHeader = document.getElementById('calendarHeader');
+  const calendarBody = document.querySelector('#calendar tbody');
+  if (!calendarHeader || !calendarBody) return;
+
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  calendarHeader.textContent = `${monthNames[month]} ${year}`;
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const startingDay = firstDay === 0 ? 6 : firstDay - 1;
+
+  calendarBody.innerHTML = '';
+  let date = 1;
+
+  for (let i = 0; i < 6; i++) {
+    const row = document.createElement('tr');
+
+    for (let j = 0; j < 7; j++) {
+      const cell = document.createElement('td');
+
+      if (i === 0 && j < startingDay) {
+        cell.textContent = '';
+      } else if (date <= daysInMonth) {
+        cell.textContent = date;
+
+        const today = new Date();
+        if (
+          date === today.getDate() &&
+          year === today.getFullYear() &&
+          month === today.getMonth()
+        ) {
+          cell.style.backgroundColor = '#ffffff';
+          cell.style.color = '#111111';
+          cell.style.fontWeight = '700';
+        }
+
+        date++;
+      } else {
+        cell.textContent = '';
+      }
+
+      row.appendChild(cell);
+    }
+
+    calendarBody.appendChild(row);
+    if (date > daysInMonth) break;
+  }
+}
+
+function renderEmptyState(message) {
+  cameraGrid.innerHTML = `
+    <article class="camera-empty-state">
+      <h3>Broadcast Standby</h3>
+      <p>${message}</p>
+    </article>
+  `;
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function toYouTubeEmbedUrl(url) {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.toLowerCase();
+
+    if (host.includes('youtu.be')) {
+      const id = u.pathname.replace('/', '').trim();
+      return id ? `https://www.youtube.com/embed/${id}` : '';
+    }
+
+    if (host.includes('youtube.com')) {
+      const videoId = u.searchParams.get('v');
+      if (videoId) {
+        return `https://www.youtube.com/embed/${videoId}`;
+      }
+    }
+  } catch (error) {
+    return '';
+  }
+
+  return '';
+}
+
+function renderStreamMarkup(feed) {
+  const isRecorded = String(feed.feed_type || '').toLowerCase() === 'recorded';
+  const videoUrl = String(feed.video_url || '');
+  const liveUrl = String(feed.live_url || '');
+
+  if (isRecorded && videoUrl) {
+    return {
+      hasMedia: true,
+      html: `<video class="camera-stream-video" controls preload="metadata" src="${escapeHtml(videoUrl)}"></video>`
+    };
+  }
+
+  if (!isRecorded && liveUrl) {
+    const ytEmbed = toYouTubeEmbedUrl(liveUrl);
+    if (ytEmbed) {
+      return {
+        hasMedia: true,
+        html: `<iframe class="camera-stream-iframe" src="${escapeHtml(ytEmbed)}" title="Live CCTV Stream" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>`
+      };
+    }
+
+    return {
+      hasMedia: false,
+      html: `<a class="camera-open-link" href="${escapeHtml(liveUrl)}" target="_blank" rel="noopener noreferrer">Open Live Feed</a>`
+    };
+  }
+
+  return {
+    hasMedia: false,
+    html: '<div class="camera-no-stream">No preview available for this feed.</div>'
+  };
+}
+
+function renderCameraCards(area, feeds) {
+  cameraGrid.innerHTML = "";
+
+  feeds.forEach((feed, index) => {
+    const stream = renderStreamMarkup(feed);
+    const isLive = String(feed.feed_type || '').toLowerCase() !== 'recorded';
+    const liveBadge = isLive ? 'LIVE' : 'RECORDED';
+    const signalLabel = Number(feed.is_active) === 1 ? 'Signal Active' : 'Signal Offline';
+    const aiClass = Number(feed.allow_ai_detection) === 1 ? 'risk-medium' : 'neutral';
+    const aiLabel = Number(feed.allow_ai_detection) === 1 ? 'AI Detection ON' : 'AI Detection OFF';
+    const ownerName = String(feed.owner_name || 'Camera Contributor');
+    const label = String(feed.feed_label || `Camera ${index + 1}`);
+    const location = String(feed.camera_location || area || 'Unknown area');
+
+    const videoCard = document.createElement("article");
+    videoCard.className = "camera-card";
+    videoCard.innerHTML = `
+      <div class="camera-card-stream ${stream.hasMedia ? 'has-media' : ''}">
+        <span class="camera-live-badge">${escapeHtml(liveBadge)}</span>
+        <div class="camera-signal">${escapeHtml(signalLabel)}</div>
+        ${stream.html}
+      </div>
+      <div class="camera-meta-row">
+        <h3>${escapeHtml(label)}</h3>
+        <span class="camera-zone">${escapeHtml(location)}</span>
+      </div>
+      <div class="camera-owner">By ${escapeHtml(ownerName)}</div>
+      <div class="camera-tags-row">
+        <span class="camera-tag ${aiClass}">${escapeHtml(aiLabel)}</span>
+        <span class="camera-tag neutral">${isLive ? 'Public Live Stream' : 'Recorded Evidence'}</span>
+      </div>
+      <p class="camera-status">Unified CCTV desk showing cameraman feeds for the selected region.</p>
+    `;
+    cameraGrid.appendChild(videoCard);
+  });
+}
+
+let latestFeedRequestId = 0;
+
+async function loadBroadcastFeeds(selection) {
+  const area = String(selection?.area || '').trim();
+  const district = String(selection?.district || '').trim();
+  const division = String(selection?.division || '').trim();
+
+  if (!area) {
+    cameraInfo.classList.add("hidden");
+    renderEmptyState("Please choose an area to start monitoring.");
+    return;
+  }
+
+  const requestId = ++latestFeedRequestId;
+  renderEmptyState("Loading CCTV feeds for selected location...");
+
+  try {
+    const qs = new URLSearchParams({ area, district, division });
+    const res = await fetch(`../Php/fetch_public_cctv_broadcast.php?${qs.toString()}`, {
+      method: 'GET',
+      credentials: 'same-origin',
+      headers: { 'Accept': 'application/json' }
+    });
+
+    const data = await res.json();
+    if (requestId !== latestFeedRequestId) return;
+
+    if (!res.ok || !data?.success) {
+      throw new Error(data?.error || 'Failed to load CCTV feeds');
+    }
+
+    const feeds = Array.isArray(data.feeds) ? data.feeds : [];
+    cameraInfo.classList.remove("hidden");
+    areaName.textContent = area;
+    cameraCount.textContent = String(feeds.length);
+
+    if (feeds.length === 0) {
+      renderEmptyState("No public CCTV feed found in this location yet.");
+      return;
+    }
+
+    renderCameraCards(area, feeds);
+  } catch (error) {
+    cameraInfo.classList.add("hidden");
+    renderEmptyState("Could not load feeds right now. Please try again.");
+  }
+}
 
 // Populate Division dropdown
 function populateDivisions() {
   divisionSelect.innerHTML = '<option value="">-- Choose Division --</option>';
-  for (const division in divisionDistrictAreaData) {
+  districtSelect.innerHTML = '<option value="">-- Choose District --</option>';
+  areaSelect.innerHTML = '<option value="">-- Choose Area --</option>';
+
+  const divisions = Object.keys(divisionDistrictAreaData || {});
+  for (const division of divisions) {
     const option = document.createElement('option');
     option.value = division;
     option.textContent = division;
     divisionSelect.appendChild(option);
   }
+
+  divisionSelect.disabled = divisions.length === 0;
+  districtSelect.disabled = true;
+  areaSelect.disabled = true;
 }
 
 // Populate Districts based on Division
 function populateDistricts(division) {
   districtSelect.innerHTML = '<option value="">-- Choose District --</option>';
   areaSelect.innerHTML = '<option value="">-- Choose Area --</option>';
+  districtSelect.disabled = true;
+  areaSelect.disabled = true;
+
   if (division && divisionDistrictAreaData[division]) {
     for (const district in divisionDistrictAreaData[division]) {
       const option = document.createElement('option');
@@ -117,12 +284,15 @@ function populateDistricts(division) {
       option.textContent = district;
       districtSelect.appendChild(option);
     }
+    districtSelect.disabled = false;
   }
 }
 
 // Populate Areas based on District
 function populateAreas(division, district) {
   areaSelect.innerHTML = '<option value="">-- Choose Area --</option>';
+  areaSelect.disabled = true;
+
   if (
     division &&
     district &&
@@ -135,43 +305,66 @@ function populateAreas(division, district) {
       option.textContent = area;
       areaSelect.appendChild(option);
     });
+    areaSelect.disabled = false;
   }
 }
 
 // Event Listeners
+if (logo) {
+  logo.style.cursor = 'pointer';
+  logo.addEventListener('click', () => {
+    const referrer = document.referrer || '';
+
+    // Prefer explicit referrer so user returns to the exact previous page.
+    if (referrer) {
+      try {
+        const refUrl = new URL(referrer);
+        const sameOrigin = refUrl.origin === window.location.origin;
+        const notSamePage = refUrl.pathname !== window.location.pathname;
+        if (sameOrigin && notSamePage) {
+          window.location.href = refUrl.href;
+          return;
+        }
+      } catch (error) {
+      }
+    }
+
+    if (window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+
+    window.location.href = '../Html/Policeman_Home.php';
+  });
+}
+
 divisionSelect.addEventListener('change', function () {
   populateDistricts(this.value);
   cameraInfo.classList.add("hidden");
-  cameraGrid.innerHTML = "";
+  renderEmptyState("Select a district and area to load active camera feeds.");
 });
 districtSelect.addEventListener('change', function () {
   populateAreas(divisionSelect.value, this.value);
   cameraInfo.classList.add("hidden");
-  cameraGrid.innerHTML = "";
+  renderEmptyState("Almost there. Pick an area to view live broadcast cards.");
 });
 
 areaSelect.addEventListener('change', function () {
   const area = areaSelect.value;
   if (area) {
-    cameraInfo.classList.remove("hidden");
-    areaName.textContent = area;
-    const randomCount = Math.floor(Math.random() * 5) + 1;
-    cameraCount.textContent = randomCount;
-    cameraGrid.innerHTML = "";
-    for (let i = 0; i < randomCount; i++) {
-      const video = document.createElement("div");
-      video.className = "bg-black rounded shadow p-2";
-      video.innerHTML = `
-        <div class="aspect-video bg-gray-700 rounded mb-2"></div>
-        <p class="text-white text-sm">Camera ${i + 1} - ${area}</p>
-      `;
-      cameraGrid.appendChild(video);
-    }
+    loadBroadcastFeeds({
+      division: divisionSelect.value,
+      district: districtSelect.value,
+      area,
+    });
   } else {
     cameraInfo.classList.add("hidden");
-    cameraGrid.innerHTML = "";
+    renderEmptyState("Please choose an area to start monitoring.");
   }
 });
 
 // Initial call
-populateDivisions();
+loadLocationTreeFromDatabase();
+
+const today = new Date();
+generateFooterCalendar(today.getFullYear(), today.getMonth());

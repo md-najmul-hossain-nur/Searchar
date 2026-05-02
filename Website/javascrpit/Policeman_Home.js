@@ -20,56 +20,153 @@
 
 
 const modal = document.getElementById("postModal");
-const feed = document.getElementById("post-feed");
 const mediaPreview = document.getElementById("mediaPreview");
-let selectedImage = null;
+const postTextInput = document.getElementById("postText");
+const imageUploadInput = document.getElementById("imageUpload");
+const videoUploadInput = document.getElementById("videoUpload");
+const sharedPreview = document.querySelector('.post-modal-preview');
+const sharedPostMeta = document.getElementById('sharedPostMeta');
+const sharedPostAuthorImage = document.getElementById('sharedPostAuthorImage');
+const sharedPostAuthorName = document.getElementById('sharedPostAuthorName');
+const sharedPostTime = document.getElementById('sharedPostTime');
+const sharedPostText = document.getElementById('sharedPostText');
+const sharedPostImage = document.getElementById('sharedPostImage');
+const sharedPostVideo = document.getElementById('sharedPostVideo');
+const MAX_IMAGE_COUNT = 5;
+let selectedImages = [];
 let selectedVideo = null;
 
+function renderSelectedImagesPreview() {
+  if (!mediaPreview) return;
+
+  if (!selectedImages.length) {
+    mediaPreview.innerHTML = '';
+    return;
+  }
+
+  const gridHtml = selectedImages.map((file, index) => {
+    const objectUrl = URL.createObjectURL(file);
+    return `
+      <div class="post-media-item">
+        <img src="${objectUrl}" alt="Selected image ${index + 1}">
+        <button type="button" class="post-media-remove-btn" data-remove-index="${index}" aria-label="Remove image">&times;</button>
+      </div>
+    `;
+  }).join('');
+
+  mediaPreview.innerHTML = `<div class="post-media-grid">${gridHtml}</div>`;
+
+  mediaPreview.querySelectorAll('.post-media-remove-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const removeIndex = Number(btn.getAttribute('data-remove-index'));
+      if (Number.isNaN(removeIndex)) return;
+
+      selectedImages = selectedImages.filter((_, idx) => idx !== removeIndex);
+      if (imageUploadInput && !selectedImages.length) {
+        imageUploadInput.value = '';
+      }
+      renderSelectedImagesPreview();
+    });
+  });
+}
+
+function resetSharedPreviewUi() {
+  if (sharedPreview) sharedPreview.style.display = 'none';
+  if (sharedPostMeta) sharedPostMeta.style.display = 'none';
+  if (sharedPostAuthorImage) sharedPostAuthorImage.removeAttribute('src');
+  if (sharedPostAuthorName) sharedPostAuthorName.innerText = '';
+  if (sharedPostTime) sharedPostTime.innerText = '';
+  if (sharedPostText) {
+    sharedPostText.innerText = '';
+    sharedPostText.style.display = 'none';
+  }
+  if (sharedPostImage) {
+    sharedPostImage.removeAttribute('src');
+    sharedPostImage.style.display = 'none';
+  }
+  if (sharedPostVideo) {
+    sharedPostVideo.removeAttribute('src');
+    sharedPostVideo.style.display = 'none';
+  }
+}
+
 function openModal() {
+  if (!modal) return;
+  resetSharedPreviewUi();
   modal.style.display = "flex";
 }
 
 function closeModal() {
+  if (!modal) return;
   modal.style.display = "none";
-  document.getElementById("postText").value = "";
-  document.getElementById("imageUpload").value = "";
-  document.getElementById("videoUpload").value = "";
+  if (postTextInput) postTextInput.value = "";
+  if (imageUploadInput) imageUploadInput.value = "";
+  if (videoUploadInput) videoUploadInput.value = "";
+  if (mediaPreview) {
+    mediaPreview.innerHTML = "";
+    mediaPreview.style.display = 'block';
+  }
+  const mediaOptions = document.querySelector('.post-media-options');
+  if (mediaOptions) mediaOptions.style.display = 'flex';
+  resetSharedPreviewUi();
   const anonymousToggle = document.getElementById('anonymousShareToggle');
   if (anonymousToggle) anonymousToggle.checked = false;
-  mediaPreview.innerHTML = "";
-  selectedImage = null;
+  selectedImages = [];
   selectedVideo = null;
 }
 
-// Handle image upload preview
-document.getElementById("imageUpload").addEventListener("change", function() {
-  const file = this.files[0];
-  if (file) {
-    selectedImage = file;
-    mediaPreview.innerHTML = `<img src="${URL.createObjectURL(file)}">`;
+if (imageUploadInput) {
+  imageUploadInput.addEventListener("change", function() {
+    const files = Array.from(this.files || []);
+    if (!files.length) return;
+
+    if (files.length > MAX_IMAGE_COUNT) {
+      alert(`You can select up to ${MAX_IMAGE_COUNT} photos in one post.`);
+      this.value = '';
+      return;
+    }
+
+    const nonImage = files.find((file) => !String(file.type || '').startsWith('image/'));
+    if (nonImage) {
+      alert('Only image files are allowed in photo selection.');
+      this.value = '';
+      return;
+    }
+
+    selectedImages = files;
     selectedVideo = null;
-    document.getElementById("videoUpload").value = "";
-  }
-});
+    renderSelectedImagesPreview();
+    if (videoUploadInput) videoUploadInput.value = "";
+  });
+}
 
-// Handle video upload preview
-document.getElementById("videoUpload").addEventListener("change", function() {
-  const file = this.files[0];
-  if (file) {
+if (videoUploadInput) {
+  videoUploadInput.addEventListener("change", function() {
+    const file = this.files[0];
+    if (!file) return;
+
+    if (!String(file.type || '').startsWith('video/')) {
+      alert('Please select a valid video file.');
+      this.value = '';
+      return;
+    }
+
     selectedVideo = file;
-    mediaPreview.innerHTML = `<video src="${URL.createObjectURL(file)}" controls></video>`;
-    selectedImage = null;
-    document.getElementById("imageUpload").value = "";
-  }
-});
+    selectedImages = [];
+    if (mediaPreview) mediaPreview.innerHTML = `<video src="${URL.createObjectURL(file)}" controls></video>`;
+    if (imageUploadInput) imageUploadInput.value = "";
+  });
+}
 
-// Create post
 function createPost() {
-  const text = document.getElementById("postText").value.trim();
-  if (text === "" && !selectedImage && !selectedVideo) {
+  if (!postTextInput) return;
+
+  const text = postTextInput.value.trim();
+  if (text === "" && !selectedImages.length && !selectedVideo) {
     alert("Please add text or media to post!");
     return;
   }
+
   const category = document.querySelector('input[name="category"]:checked')?.value || 'general';
   const fd = new FormData();
   fd.append('text', text);
@@ -78,9 +175,9 @@ function createPost() {
   fd.append('share_facebook', document.getElementById('facebookShareToggle')?.checked ? '1' : '0');
   fd.append('share_anonymous', document.getElementById('anonymousShareToggle')?.checked ? '1' : '0');
 
-  if (selectedImage) {
-    fd.append('media_images[]', selectedImage, selectedImage.name);
-  }
+  selectedImages.forEach((imageFile) => {
+    fd.append('media_images[]', imageFile, imageFile.name);
+  });
   if (selectedVideo) {
     fd.append('media_video', selectedVideo, selectedVideo.name);
   }
@@ -142,11 +239,6 @@ window.addEventListener('click', function(event) {
   if (event.target === missingModal) {
     missingModal.style.display = "none";
   }
-
-  const allCasesModal = document.getElementById('allCasesModal');
-  if (event.target === allCasesModal) {
-    allCasesModal.style.display = 'none';
-  }
 });
 
 const openAllCasesBtn = document.getElementById('openAllCasesBtn');
@@ -174,16 +266,125 @@ const solvedCasesModal = document.getElementById('solvedCasesModal');
 const closeSolvedCasesBtn = document.getElementById('closeSolvedCasesBtn');
 const solvedCasesTableBody = document.getElementById('solvedCasesTableBody');
 
+[allCasesModal, solvedCasesModal, casePreviewModal].forEach((modalEl) => {
+  if (modalEl && modalEl.parentElement !== document.body) {
+    document.body.appendChild(modalEl);
+  }
+});
+
+function syncCaseModalScrollLock() {
+  const hasOpenCaseModal = [allCasesModal, solvedCasesModal, casePreviewModal].some(
+    (modalEl) => modalEl && modalEl.style.display === 'flex'
+  );
+  document.body.style.overflow = hasOpenCaseModal ? 'hidden' : '';
+}
+
+function showCaseModal(modalEl) {
+  if (!modalEl) return;
+  modalEl.style.display = 'flex';
+  syncCaseModalScrollLock();
+}
+
+function hideCaseModal(modalEl) {
+  if (!modalEl) return;
+  modalEl.style.display = 'none';
+  syncCaseModalScrollLock();
+}
+
 const LIVE_BOARD_KEY = 'searchar_police_live_cases_v1';
 const SOLVED_CASES_KEY = 'searchar_police_solved_cases_v1';
 let previewCasePayload = null;
+
+function normalizeCaseNo(value) {
+  return String(value || '').trim().toUpperCase();
+}
+
+function looksLikeDummyText(value) {
+  const text = String(value || '').trim();
+  if (!text) return true;
+
+  const lower = text.toLowerCase();
+  const dummyPatterns = [
+    'lorem ipsum',
+    'dummy',
+    'sample',
+    'test post',
+    'case details pending',
+    'asdf',
+    'qwerty',
+    'dfdsf',
+  ];
+
+  if (dummyPatterns.some((p) => lower.includes(p))) {
+    return true;
+  }
+
+  // Catch keyboard-smash style content such as "rfdgfdgdsf".
+  if (/^[a-z]{8,}$/i.test(text)) {
+    const vowels = (text.match(/[aeiou]/gi) || []).length;
+    if (vowels <= 1) return true;
+  }
+
+  return false;
+}
+
+function sanitizeCaseRows(rows) {
+  const list = Array.isArray(rows) ? rows : [];
+  const out = [];
+  const seen = new Set();
+
+  list.forEach((item) => {
+    if (!item || typeof item !== 'object') return;
+
+    const caseNo = normalizeCaseNo(item.case_no);
+    if (!/^(PT|MP)-\d{1,6}$/.test(caseNo)) return;
+    if (seen.has(caseNo)) return;
+
+    const details = String(item.details || '').trim();
+    if (looksLikeDummyText(details)) return;
+
+    const next = {
+      ...item,
+      case_no: caseNo,
+      type: String(item.type || '').trim() || 'Case',
+      details,
+      source: String(item.source || '').trim() || 'Case Section',
+    };
+
+    out.push(next);
+    seen.add(caseNo);
+  });
+
+  return out;
+}
+
+function purgeStoredDummyCases() {
+  try {
+    const rawLive = JSON.parse(localStorage.getItem(LIVE_BOARD_KEY) || '[]');
+    const rawSolved = JSON.parse(localStorage.getItem(SOLVED_CASES_KEY) || '[]');
+
+    const cleanLive = sanitizeCaseRows(rawLive);
+    const cleanSolved = sanitizeCaseRows(rawSolved);
+
+    localStorage.setItem(LIVE_BOARD_KEY, JSON.stringify(cleanLive));
+    localStorage.setItem(SOLVED_CASES_KEY, JSON.stringify(cleanSolved));
+  } catch (_err) {
+    // If malformed storage data exists, reset to safe defaults.
+    localStorage.setItem(LIVE_BOARD_KEY, JSON.stringify([]));
+    localStorage.setItem(SOLVED_CASES_KEY, JSON.stringify([]));
+  }
+}
 
 function readLiveCases() {
   try {
     const raw = localStorage.getItem(LIVE_BOARD_KEY);
     if (!raw) return [];
     const data = JSON.parse(raw);
-    return Array.isArray(data) ? data : [];
+    const sanitized = sanitizeCaseRows(data);
+    if (JSON.stringify(sanitized) !== JSON.stringify(Array.isArray(data) ? data : [])) {
+      writeLiveCases(sanitized);
+    }
+    return sanitized;
   } catch (_err) {
     return [];
   }
@@ -200,7 +401,11 @@ function readSolvedCases() {
     const raw = localStorage.getItem(SOLVED_CASES_KEY);
     if (!raw) return [];
     const data = JSON.parse(raw);
-    return Array.isArray(data) ? data : [];
+    const sanitized = sanitizeCaseRows(data);
+    if (JSON.stringify(sanitized) !== JSON.stringify(Array.isArray(data) ? data : [])) {
+      writeSolvedCases(sanitized);
+    }
+    return sanitized;
   } catch (_err) {
     return [];
   }
@@ -284,6 +489,31 @@ async function syncClosedCasesFromServer() {
   }
 }
 
+async function pruneSolvedCasesAgainstServer() {
+  const solvedRows = readSolvedCases();
+  if (!solvedRows.length) return;
+
+  const payloadCases = solvedRows
+    .map((row) => ({ case_no: String(row?.case_no || '').trim() }))
+    .filter((row) => row.case_no);
+
+  if (!payloadCases.length) return;
+
+  try {
+    const json = await callCaseResolutionApi('sync_published', { cases: payloadCases });
+    const closedSet = new Set((Array.isArray(json?.closed_case_nos) ? json.closed_case_nos : []).map((v) => String(v || '').trim().toUpperCase()));
+
+    const filteredSolved = solvedRows.filter((row) => closedSet.has(String(row?.case_no || '').trim().toUpperCase()));
+    if (filteredSolved.length !== solvedRows.length) {
+      writeSolvedCases(filteredSolved);
+      renderSolvedCasesTable();
+      syncPublishedCaseButtons();
+    }
+  } catch (error) {
+    console.error('prune solved cases failed', error);
+  }
+}
+
 function renderSolvedCasesTable() {
   if (!solvedCasesTableBody) return;
   const rows = readSolvedCases();
@@ -359,7 +589,7 @@ function renderLivePublishedBoard() {
     const source = item.source || 'Case Section';
     const publishedAt = item.published_at || '';
     const imageHtml = item.image_url
-      ? `<img src="${item.image_url}" alt="Published case image" style="width:100%; max-height:190px; object-fit:cover; border-radius:8px; border:1px solid #fecaca; margin:6px 0 8px;">`
+      ? `<img src="${item.image_url}" alt="Published case image" style="width:100%; max-height:190px; object-fit:contain; background:#fff; border-radius:8px; border:1px solid #fecaca; margin:6px 0 8px;">`
       : `<div style="width:100%; height:140px; border-radius:8px; border:1px solid #fecaca; margin:6px 0 8px; background:linear-gradient(135deg,#fee2e2,#fecaca); display:flex; align-items:center; justify-content:center; color:#991b1b; font-weight:800; text-align:center; padding:10px;">${item.case_no || 'Case'}<br>${item.type || 'Alert'}</div>`;
     return `
       <article style="border-left:5px solid #ef4444; border-radius:10px; background:linear-gradient(135deg,#fff7f7,#fff); padding:10px 12px; box-shadow:0 2px 8px rgba(0,0,0,.08);">
@@ -481,12 +711,12 @@ function openCasePreview(payload) {
       if (casePreviewAutoThumb) casePreviewAutoThumb.style.display = 'flex';
     }
   }
-  casePreviewModal.style.display = 'flex';
+  showCaseModal(casePreviewModal);
 }
 
 function closeCasePreview() {
   if (!casePreviewModal) return;
-  casePreviewModal.style.display = 'none';
+  hideCaseModal(casePreviewModal);
 }
 
 function publishCase(payload) {
@@ -540,7 +770,7 @@ window.publishCaseFromRow = function (buttonEl) {
 
 if (openAllCasesBtn && allCasesModal) {
   openAllCasesBtn.addEventListener('click', function () {
-    allCasesModal.style.display = 'flex';
+    showCaseModal(allCasesModal);
     renderLivePublishedBoard();
     renderSolvedCasesTable();
     syncPublishedCaseButtons();
@@ -550,38 +780,44 @@ if (openAllCasesBtn && allCasesModal) {
 }
 
 if (openSolvedCasesBtn && solvedCasesModal) {
-  openSolvedCasesBtn.addEventListener('click', function () {
-    solvedCasesModal.style.display = 'flex';
+  openSolvedCasesBtn.addEventListener('click', async function () {
+    showCaseModal(solvedCasesModal);
+    await pruneSolvedCasesAgainstServer();
     renderSolvedCasesTable();
   });
 }
 
 if (closeSolvedCasesBtn && solvedCasesModal) {
   closeSolvedCasesBtn.addEventListener('click', function () {
-    solvedCasesModal.style.display = 'none';
+    hideCaseModal(solvedCasesModal);
   });
 }
 
 if (closeAllCasesBtn && allCasesModal) {
   closeAllCasesBtn.addEventListener('click', function () {
-    allCasesModal.style.display = 'none';
+    hideCaseModal(allCasesModal);
   });
 }
 
 document.addEventListener('keydown', function (event) {
   if (event.key === 'Escape' && allCasesModal && allCasesModal.style.display === 'flex') {
-    allCasesModal.style.display = 'none';
+    hideCaseModal(allCasesModal);
   }
   if (event.key === 'Escape' && casePreviewModal && casePreviewModal.style.display === 'flex') {
     closeCasePreview();
   }
   if (event.key === 'Escape' && solvedCasesModal && solvedCasesModal.style.display === 'flex') {
-    solvedCasesModal.style.display = 'none';
+    hideCaseModal(solvedCasesModal);
   }
 });
 
 if (allCasesModal) {
   allCasesModal.addEventListener('click', function (event) {
+    if (event.target === allCasesModal) {
+      hideCaseModal(allCasesModal);
+      return;
+    }
+
     const solvedBtn = event.target.closest('.js-mark-solved-btn');
     if (solvedBtn) {
       const caseNo = String(solvedBtn.getAttribute('data-case-no') || '');
@@ -609,6 +845,22 @@ if (allCasesModal) {
   });
 }
 
+if (solvedCasesModal) {
+  solvedCasesModal.addEventListener('click', function (event) {
+    if (event.target === solvedCasesModal) {
+      hideCaseModal(solvedCasesModal);
+    }
+  });
+}
+
+if (casePreviewModal) {
+  casePreviewModal.addEventListener('click', function (event) {
+    if (event.target === casePreviewModal) {
+      closeCasePreview();
+    }
+  });
+}
+
 if (casePreviewClose) {
   casePreviewClose.addEventListener('click', closeCasePreview);
 }
@@ -627,18 +879,17 @@ if (casePreviewPublish) {
 renderLivePublishedBoard();
 renderSolvedCasesTable();
 syncPublishedCaseButtons();
+purgeStoredDummyCases();
+renderLivePublishedBoard();
+renderSolvedCasesTable();
+syncPublishedCaseButtons();
 syncClosedCasesFromServer();
+pruneSolvedCasesAgainstServer();
 setInterval(syncClosedCasesFromServer, 30000);
 if (caseFilterPost) caseFilterPost.addEventListener('change', applyCaseSourceFilters);
 if (caseFilterMissing) caseFilterMissing.addEventListener('change', applyCaseSourceFilters);
 applyCaseSourceFilters();
-function closeModal() {
-  document.getElementById('postModal').style.display = 'none';
-  document.getElementById('postText').value = '';
-  document.getElementById('sharedPostText').innerText = '';  // ❌ এই লাইন
-  document.getElementById('sharedPostImage').src = '';       // ❌ এই লাইন
-  document.getElementById('facebookShareToggle').checked = false;
-}
+
 
 document.addEventListener("DOMContentLoaded", function () {
     var map = L.map('emergency-map').setView([23.8103, 90.4125], 13);

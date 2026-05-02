@@ -594,6 +594,35 @@ body {
   pointer-events: none; /* so clicks pass through image */
 }
 
+.find-love-simple .investigation-open-btn {
+  min-height: 38px;
+  padding: 9px 16px;
+  border-radius: 10px;
+  border: 1px solid #f5ccb8;
+  background: linear-gradient(135deg, #ff6a4d 0%, #f05454 100%);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+  box-shadow: 0 8px 18px rgba(214, 108, 68, 0.22);
+}
+
+.find-love-simple .investigation-open-btn:hover {
+  transform: translateY(-1px) scale(1.03);
+  box-shadow: 0 12px 24px rgba(214, 108, 68, 0.3);
+  filter: brightness(0.98);
+}
+
+.find-love-simple .investigation-open-btn:focus-visible {
+  outline: 2px solid rgba(240, 84, 84, 0.42);
+  outline-offset: 2px;
+}
+
 .find-love-simple .helpdesk-subtitle {
   font-size: 0.9rem;
   color: #5b667a;
@@ -2419,7 +2448,8 @@ body {
 }
 
 .advert .ad-thumb-small {
-  object-fit: cover;
+  object-fit: contain;
+  background: #ffffff;
   max-height: 74px;
 }
 
@@ -2727,200 +2757,6 @@ body {
   font-size: 0.9rem;
 }
 
-
-/* Overlay Background */
-.post-modal {
-  display: none; /* Hidden by default */
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
-
-/* Modal Content */
-.post-modal-content {
-  background: #fff;
-  width: 450px;
-  max-width: 95%;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  position: relative;
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-/* Close Button (X) */
-.post-modal-close {
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  font-size: 22px;
-  color: #555;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-
-.post-modal-close:hover {
-  color: #000;
-}
-
-/* Title */
-.post-modal-title {
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 15px;
-  text-align: center;
-  color: #333;
-}
-
-/* Textarea */
-.post-modal-textarea {
-  width: 100%;
-  height: 100px;
-  border: 1px solid #f05454;
-  border-radius: 8px;
-  resize: none;
-  padding: 10px;
-  font-size: 15px;
-  margin-bottom: 15px;
-  outline: none;
-  transition: border 0.3s;
-}
-
-.post-modal-textarea:focus {
-  border-color: #f05454;
-}
-
-/* Media Buttons */
-.post-media-options {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
-  justify-content: center;
-}
-
-.post-media-btn {
-  background: #f5f5f5;
-  border: 1px solid #ccc;
-  padding: 8px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background 0.3s;
-}
-
-.post-media-btn:hover {
-  background: #e8e8e8;
-}
-
-/* Media Preview (Image/Video) */
-.post-media-preview img,
-.post-media-preview video {
-  width: 100%;
-  max-height: 250px;
-  margin-top: 10px;
-  border-radius: 8px;
-  object-fit: cover;
-}
-
-/* Action Buttons */
-.post-modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 15px;
-}
-
-.post-cancel-btn,
-.post-submit-btn {
-  padding: 8px 15px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background 0.3s;
-}
-
-.post-cancel-btn {
-  background: #ccc;
-  color: #333;
-}
-
-.post-cancel-btn:hover {
-  background: #bbb;
-}
-
-.post-submit-btn {
-  background: #f05454;
-  color: #fff;
-}
-
-.post-submit-btn:hover {
-  background: #f05454;
-}
-
-/* Animation */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.facebook-toggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: 10px;
-  margin-bottom: 32px;
-}
-
-.facebook-toggle-switch {
-  position: relative;
-  display: inline-block;
-  width: 50px;
-  height: 26px;
-}
-
-.facebook-toggle-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.facebook-toggle-slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  border-radius: 30px;
-  transition: background-color 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 0 5px;
-  font-size: 16px;
-  color: white;
-}
-
-.facebook-toggle-switch input:checked + .facebook-toggle-slider {
-  background-color: #1877f2;
-  justify-content: flex-end;
-}
-
-.facebook-toggle-slider i {
-  transition: transform 0.3s;
-}
-
-.facebook-toggle-label {
-  font-size: 14px;
-  color: #333;
-}
 
 /* Missing Person Modal (match User Home design) */
 .missing-modal {
@@ -3314,27 +3150,6 @@ body {
   box-shadow: 0 6px 14px rgba(240, 84, 84, 0.18);
 }
 
-
-
-.post-modal-preview {
-  margin-top: 10px;
-  background: #f3f3f3;
-  padding: 10px;
-  border-radius: 8px;
-}
-
-.preview-text {
-  font-size: 14px;
-  color: #333;
-  margin-bottom: 8px;
-}
-
-.preview-img {
-  max-width: 100px;
-  max-height: 200px;
-  height: auto;
-  border-radius: 6px;
-}
 /* Calendar Section */
 .Calender-section {
   background: #fff;
@@ -3556,62 +3371,6 @@ body {
   font-size: 0.9rem;
   user-select: none;
 }
-.category-label {
-  text-align:left  center;
-  font-weight: 600;
-  font-size: 16px;
-  color: #333;
-  margin-bottom: 15px;
-  font-family: 'Roboto', Arial, sans-serif;
-}
-
-.category-toggle {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-bottom: 20px;
-  user-select: none;
-  font-family: 'Roboto', Arial, sans-serif;
-}
-
-.category-option {
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  padding: 10px 28px;
-  border: 2px solid #f75c3c;
-  border-radius: 30px;
-  font-weight: 600;
-  color: #f75c3c;
-  transition: all 0.3s ease;
-  user-select: none;
-  min-width: 140px;
-  justify-content: center;
-  gap: 8px;
-  background-color: white;
-  border-color: #1a73e8;
-}
-
-.category-icon {
-  width: 30px;
-  height: 30px;
-  object-fit: contain;
-}
-
-/* Highlight selected label */
-.category-option:has(input[type="radio"]:checked) {
-  background-color: #cdb468;
-  color: white;
-  box-shadow: 0 0 8px rgba(26, 115, 232, 0.5);
-  border-color: #f75c3c;
-}
-
-/* Hover effect */
-.category-option:hover {
-  background-color: rgba(26, 115, 232, 0.1);
-  border-color: #1a73e8;
-  color: #1a73e8;
-}
 /* Filter Bar Section (Styled like Volunteer Section, Improved Version) */
 .filter-bar-section {
   background: #fff;
@@ -3687,18 +3446,20 @@ body {
   margin-right: 2px;
 }
 .user-bio {
-    font-style: normal;            /* normal text instead of italic */
-    font-size: 0.95rem;            /* readable size */
-    color: #666;                   /* subtle gray */
-    background-color: #f9f9f9;     /* light background for bio */
-    padding: 8px 12px;             /* spacing inside box */
-    border-radius: 12px;           /* rounded corners */
-    border: 1px solid #e0e0e0;    /* soft border */
-    max-width: 100%;               /* responsive */
-    word-wrap: break-word;         /* prevent overflow */
-    line-height: 1.4;              /* better readability */
-    margin-top: 8px;
-    display: inline-block;         /* fit content width */
+  font-style: normal;
+  font-size: 0.95rem;
+  color: #4b5563;
+  background: linear-gradient(180deg, #f8fafc, #f3f4f6);
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid #d8dee6;
+  max-width: 100%;
+  word-wrap: break-word;
+  line-height: 1.45;
+  margin: 10px 0 0;
+  display: block;
+  width: 100%;
+  text-align: left;
 }
 
 /* Optional: hover effect */
@@ -3878,27 +3639,29 @@ body {
   border-radius: 6px !important;
 }
 
-.edit-btn {
+.profile-card .edit-btn {
   position: absolute;
-  top: 14px;
-  right: 14px;
-  z-index: 2;
+  top: 126px;
+  left: 102px;
+  right: auto;
+  z-index: 5;
   width: auto;
   height: auto;
   min-height: 34px;
   padding: 8px 14px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   background: #f75c3c;
   color: #ffffff;
   font-size: 12px;
   font-weight: 700;
   line-height: 1.1;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
   white-space: nowrap;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(247, 92, 60, 0.3);
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  margin: 0;
 }
 
 .edit-btn:hover {
@@ -3925,6 +3688,30 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Final override: keep profile button compact beside avatar (as requested). */
+.sidebar-left .profile-card > .edit-btn {
+  position: absolute !important;
+  top: 126px !important;
+  left: 96px !important;
+  right: auto !important;
+  width: auto !important;
+  min-width: 70px !important;
+  max-width: max-content !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 8px 14px !important;
+  min-height: 34px !important;
+  margin: 0 !important;
+  border-radius: 10px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  line-height: 1.1 !important;
+  letter-spacing: 0.2px !important;
+  white-space: nowrap !important;
+  z-index: 6 !important;
 }
 
 /* Desktop sticky sidebar layout */
@@ -3958,4 +3745,37 @@ body {
     overflow: visible;
     padding-right: 0;
   }
+}
+
+/* Final investigation CTA override (prevents old duplicate button hover rules). */
+.sidebar-right .find-love-simple .investigation-open-btn {
+  background: linear-gradient(135deg, #ff6a4d 0%, #f05454 100%) !important;
+  color: #fff !important;
+  border: 1px solid #f26a55 !important;
+  border-radius: 12px !important;
+  min-height: 40px !important;
+  padding: 10px 16px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.2px !important;
+  line-height: 1 !important;
+  box-shadow: 0 8px 18px rgba(214, 108, 68, 0.22) !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+.sidebar-right .find-love-simple .investigation-open-btn:hover {
+  opacity: 1 !important;
+  transform: translateY(-1px) !important;
+  filter: brightness(0.97) !important;
+  box-shadow: 0 12px 24px rgba(214, 108, 68, 0.3) !important;
+}
+
+.sidebar-right .find-love-simple .investigation-open-btn:active {
+  transform: translateY(0) !important;
+}
+
+.sidebar-right .find-love-simple .investigation-open-btn:focus-visible {
+  outline: 2px solid rgba(240, 84, 84, 0.42) !important;
+  outline-offset: 2px !important;
 }

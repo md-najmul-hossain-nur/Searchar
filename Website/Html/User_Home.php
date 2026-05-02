@@ -448,9 +448,9 @@ try {
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="icon" type="image/png" href="../Images/logo.png">
   <!-- Main CSS -->
-  <link rel="stylesheet" href="../css/User_Home.css?v=20260406e">
+  <link rel="stylesheet" href="../css/User_Home.css?v=20260410b">
   <link rel="stylesheet" href="../css/post_modal_shared.css?v=20260409a">
-  <link rel="stylesheet" href="../css/profile_button_shared.css?v=20260409a">
+  <link rel="stylesheet" href="../css/profile_button_shared.css?v=20260410a">
 
 </head>
 <body data-current-user-name="<?= e($user['full_name'] ?? 'User') ?>" data-profile-incomplete="<?= $isProfileIncomplete ? '1' : '0' ?>" data-profile-missing="<?= e($profileMissingLabel) ?>" data-volunteer-ready="<?= $isVolunteerProfileReady ? '1' : '0' ?>" data-volunteer-missing="<?= e($volunteerProfileMissingLabel) ?>">
@@ -469,10 +469,6 @@ try {
     </button>
   </div>
 </header>
-
-
-
-
     <div class="container">
     <!-- Left Sidebar -->
     <div class="sidebar-left">
