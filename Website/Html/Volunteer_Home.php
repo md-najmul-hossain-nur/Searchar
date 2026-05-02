@@ -284,9 +284,9 @@ try {
 <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
 
 <!-- Buttons -->
-<button id="find-hospitals" class="emergency-btn emergency-btn-hospital">ðŸ¥ Show Nearby Hospitals</button>
-<button id="find-fire" class="emergency-btn emergency-btn-fire">ðŸš’ Show Fire Stations</button>
-<button id="find-police" class="emergency-btn emergency-btn-police">ðŸ‘® Show Police Stations</button>
+<button id="find-hospitals" class="emergency-btn emergency-btn-hospital">🏥 Show Nearby Hospitals</button>
+<button id="find-fire" class="emergency-btn emergency-btn-fire">🚒 Show Fire Stations</button>
+<button id="find-police" class="emergency-btn emergency-btn-police">👮 Show Police Stations</button>
 
 <!-- Map Container -->
 <div id="emergency-map" class="emergency-map"></div>
