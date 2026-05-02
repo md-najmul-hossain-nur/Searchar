@@ -1178,8 +1178,6 @@ try {
     <a href="#!">Book Seat</a>
   </article>
 </div>
-
-
 <div class="notifications">
   <div class="redzone">
   <h4>Red Zone Alerts</h4>
@@ -1254,12 +1252,6 @@ try {
     </section>
   </div>
 </aside>
-
-
-
-  
-
-
      </body>
        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
       <script src="../javascrpit/Volunteer_Home.js?v=20260409g"></script>
