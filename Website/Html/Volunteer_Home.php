@@ -153,9 +153,8 @@ try {
     <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
   </div>
   
-  <!-- Right: Email + Logout -->
+  <!-- Right: Logout -->
   <div class="navbar-home-actions">
-    <span><?= e($volunteer['email'] ?? 'Guest') ?></span>
     <button class="navbar-donate navbar-donate-inline" onclick="window.location.href='../Php/logout.php';">
       LOG OUT
       <img src="../Images/import.gif" alt="Gift" class="navbar-donate-icon">
@@ -1178,8 +1177,6 @@ try {
     <a href="#!">Book Seat</a>
   </article>
 </div>
-
-
 <div class="notifications">
   <div class="redzone">
   <h4>Red Zone Alerts</h4>
@@ -1254,12 +1251,6 @@ try {
     </section>
   </div>
 </aside>
-
-
-
-  
-
-
      </body>
        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
       <script src="../javascrpit/Volunteer_Home.js?v=20260409g"></script>
