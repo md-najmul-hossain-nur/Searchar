@@ -180,10 +180,11 @@ body {
     background-color: var(--white);
     border-radius: 1.5rem;
     width: 100%;
-    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
     transform: scale(0);
     transition: .5s ease-in-out;
     transition-delay: 1s;
+    backdrop-filter: blur(10px);
 }
 
 .input-group {
@@ -209,10 +210,14 @@ body {
     border-radius: .5rem;
     border: 0.125rem solid var(--white);
     outline: none;
+    transition: all 0.3s ease;
 }
 
 .input-group input:focus {
     border: 0.125rem solid var(--primary-color);
+    background-color: var(--white);
+    box-shadow: 0 0 0 3px rgba(247, 92, 60, 0.1);
+    transform: translateY(-2px);
 }
 
 .form button {
@@ -225,6 +230,9 @@ body {
     color: var(--white);
     font-size: 1.2rem;
     outline: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(247, 92, 60, 0.25);
 }
 
 .form p {
@@ -241,10 +249,11 @@ body {
     padding: 1rem;
     border-radius: 1.5rem;
     width: 100%;
-    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
     transform: scale(0);
     transition: .5s ease-in-out;
     transition-delay: 1.2s;
+    background: rgba(255, 255, 255, 0.98);
 }
 
 .social-list>div {
@@ -255,7 +264,8 @@ body {
     border-radius: .5rem;
     cursor: pointer;
     transform: scale(0);
-    transition: .5s ease-in-out;
+    transition: all .3s ease-in-out;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .social-list>div:nth-child(1) {
@@ -279,8 +289,9 @@ body {
     transition: .4s ease-in-out;
 }
 
-.social-list>div:hover i {
-    transform: scale(1.5);
+.social-list>div:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
 }
 
 .facebook-bg {
@@ -331,6 +342,8 @@ body {
     font-weight: 800;
     margin: 2rem 0;
     transition: 1s ease-in-out;
+    letter-spacing: -0.02em;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .text p {
@@ -475,26 +488,23 @@ body {
   font-size: 1.2rem;
   font-weight: 600;
   outline: none;
-  box-shadow: 0 2px 8px rgba(205,180,104,0.14), 0 1.5px 8px rgba(0,0,0,0.06);
-  transition:
-    transform 0.25s,
-    background 0.25s,
-    box-shadow 0.25s;
+  box-shadow: 0 4px 15px rgba(247, 92, 60, 0.25);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
 }
 
-/* Hover: only scale up, no shine */
+/* Hover: scale and enhanced shadow */
 .form button:hover,
 .form button:focus-visible {
-  transform: scale(1.07);
+  transform: translateY(-3px);
   background: #f75c3c;
-  box-shadow:
-      0 6px 24px rgba(205,180,104,0.19),
-      0 2px 10px rgba(0,0,0,0.11);
+  box-shadow: 0 8px 25px rgba(247, 92, 60, 0.35);
 }
 
-/* Input Group */
+.form button:active {
+  transform: translateY(-1px);
+}
 .input-group {
   position: relative;
   width: 100%;
@@ -519,12 +529,22 @@ body {
   border: 1.5px solid #fff;
   outline: none;
   margin-bottom: 0.1rem;
-  transition: border 0.18s, background 0.15s;
+  transition: all 0.3s ease;
+  appearance: none;
+}
+
+.input-group select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%231976d2' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
 }
 .input-group select:focus,
 .input-group input:focus {
   border-color: #f75c3c;
-  background: #fff;
+  background-color: var(--white);
+  box-shadow: 0 0 0 3px rgba(247, 92, 60, 0.1);
+  transform: translateY(-2px);
 }
 /* Dynamic Form Container (where your JS injects more inputs) */
 #dynamicForm {
@@ -534,11 +554,12 @@ body {
   overflow-y: auto;         /* Scroll if content overflows */
   opacity: 0;
   transform: translateY(40px) scale(0.97);
-  transition: opacity 0.5s, transform 0.5s;
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   background: #fff;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08);
   border-radius: 1rem;
-  padding: 1rem;
+  padding: 1.2rem;
+  border: 1px solid rgba(247, 92, 60, 0.08);
 }
 
 /* Custom scrollbar styling (Chrome, Edge, Safari) */
@@ -614,12 +635,17 @@ body {
   cursor: pointer;
   width: 100%;
   margin-top: 8px;
-  transition: background 0.18s, box-shadow 0.18s, transform 0.18s;
-  box-shadow: 0 1.5px 6px rgba(25, 118, 210, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(247, 92, 60, 0.2);
 }
 #dynamicForm button:hover {
   background: #e3471c;
-  transform: scale(1.04);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(247, 92, 60, 0.3);
+}
+
+#dynamicForm button:active {
+  transform: translateY(0);
 }
 
 /* Checkbox, radio, etc. tweaks for neatness */
@@ -682,7 +708,7 @@ body {
 .form.sign-up {
   background: #fff;
   border-radius: 1.5rem;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08);
   padding: 2rem 1.5rem;
   width: 100%;
   max-width: 1500px;
@@ -691,9 +717,10 @@ body {
   flex-direction: column;
   align-items: stretch;
   transform: scale(0);
-  transition: transform 0.5s ease-in-out, box-shadow 0.25s;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
   transition-delay: 0.6s;
   margin-top: 120px;
+  border: 1px solid rgba(247, 92, 60, 0.08);
 }
 /* When active, scale in for animation (used with JS toggle) */
 .container.sign-up .form.sign-up {
@@ -875,13 +902,19 @@ body {
   font-weight: 700;
   color: #1d3658;
   margin-bottom: 8px;
+  background: linear-gradient(135deg, #1d3658 0%, #2d5a8c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.01em;
 }
 
 .auth-helper {
   font-size: 0.95rem;
   color: #4f627a;
-  line-height: 1.5;
+  line-height: 1.6;
   margin-bottom: 12px;
+  font-weight: 500;
 }
 
 .auth-note {
@@ -967,15 +1000,16 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 6px 12px;
+  padding: 8px 16px;
   border-radius: 999px;
-  border: 1px solid #d8e2ef;
-  background: #f8fbff;
+  border: 1.5px solid #d8e2ef;
+  background: linear-gradient(135deg, #f8fbff 0%, #eef5ff 100%);
   color: #1d4f91;
   font-weight: 700;
   font-size: 0.95rem;
   text-decoration: none;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(29, 79, 145, 0.08);
 }
 
 .back-toggle-btn .back-arrow {
@@ -987,13 +1021,19 @@ body {
   border-radius: 50%;
   background: #e9f2ff;
   font-size: 0.95rem;
+  transition: all 0.3s ease;
   line-height: 1;
 }
 
-.back-toggle-btn:hover {
-  background: #eef5ff;
-  border-color: #bfd6f3;
+.back-toggle-blinear-gradient(135deg, #eef5ff 0%, #dce9ff 100%);
+  border-color: #9db5d4;
   color: #0f3e78;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(29, 79, 145, 0.15);
+}
+
+.back-toggle-btn:hover .back-arrow {
+  transform: translateX(-3
   transform: translateY(-1px);
 }
 
@@ -1051,4 +1091,132 @@ body {
     font-size: 0.98rem;
     margin-bottom: 8px;
   }
+}
+
+/* ============== ENHANCED DESIGN POLISH ============== */
+
+/* Better focus states for accessibility */
+.input-group input:focus-visible,
+.input-group select:focus-visible {
+  outline: 2px solid #f75c3c;
+  outline-offset: 2px;
+}
+
+/* Enhanced form container hover effects */
+.form-wrapper:hover {
+  filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.12));
+}
+
+/* Improved label styling */
+.input-group label,
+.mb-3 .form-label {
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.input-group:focus-within label,
+.mb-3:focus-within .form-label {
+  color: #f75c3c;
+}
+
+/* Enhanced form input spacing */
+#dynamicForm input:not([type="checkbox"]):not([type="radio"]),
+#dynamicForm select,
+#dynamicForm textarea {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+}
+
+#dynamicForm input:not([type="checkbox"]):not([type="radio"]):hover,
+#dynamicForm select:hover,
+#dynamicForm textarea:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Enhanced checkbox styling */
+#dynamicForm .form-check-input {
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#dynamicForm .form-check-input:checked {
+  background-color: #f75c3c;
+  border-color: #f75c3c;
+  box-shadow: 0 4px 8px rgba(247, 92, 60, 0.2);
+}
+
+/* Smooth text transitions */
+.text h2, .text p {
+  transition: all 0.8s ease-in-out;
+}
+
+/* Enhanced pointer/link styling */
+.pointer {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.pointer::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: #f75c3c;
+  transition: width 0.3s ease;
+}
+
+.pointer:hover::after {
+  width: 100%;
+}
+
+/* Welcome subtitle enhancement */
+.welcome-subtext {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: all 0.3s ease;
+}
+
+/* Container background animation polish */
+.container::before {
+  transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced navbar styling */
+.navbar {
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.navbar-donate {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.navbar-donate:hover {
+  box-shadow: 0 6px 20px rgba(247, 92, 60, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Better text selection */
+.form input::selection,
+.form textarea::selection,
+#dynamicForm input::selection,
+#dynamicForm textarea::selection {
+  background: #f75c3c;
+  color: #fff;
+}
+
+/* Smooth page transitions */
+* {
+  transition: background-color 0.2s ease;
+}
+
+/* Auth panel text styling */
+.form .auth-panel-title {
+  transition: all 0.3s ease;
+}
+
+.form:hover .auth-panel-title {
+  letter-spacing: -0.02em;
 }
