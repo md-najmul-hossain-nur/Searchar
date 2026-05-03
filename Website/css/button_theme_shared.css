@@ -1,33 +1,35 @@
-/* Minimal shared button theme to prevent 404 and provide common button styles */
-:root {
-  --btn-bg: #1f2d3a;
-  --btn-accent: #f75c3c;
-  --btn-radius: 9px;
-  --btn-color: #ffffff;
-}
-
-.btn, .btn-dark, .navbar-donate, .rescue-stories-donate-btn, .donate-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 8px 14px;
-  border-radius: var(--btn-radius);
-  background: var(--btn-bg);
-  color: var(--btn-color);
-  border: none;
-  cursor: pointer;
+/* Shared button styles */
+.btn {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 1em;
   font-weight: 700;
+  padding: 12px 28px;
+  border-radius: 2px;
   text-decoration: none;
+  cursor: pointer;
+  transition: all .17s;
+  display: inline-block;
+  border: none;
+  outline: none;
 }
-
 .btn-outline {
   background: transparent;
-  border: 2px solid var(--btn-accent);
-  color: var(--btn-accent);
+  color: #fff;
+  border: 2px solid #fff;
 }
-
-.btn-dark { background: var(--btn-accent); color: #fff; }
+.btn-outline:hover {
+  background: #f75c3c;
+  border-color: #f75c3c;
+}
+.btn-dark {
+  background: transparent;
+  border: 2px solid #1a232a;
+  color: #1a232a;
+}
+.btn-dark:hover {
+  background: #1a232a;
+  color: #fff;
+}
 
 .back-btn {
   display: inline-flex;
@@ -41,8 +43,5 @@
   text-decoration: none;
 }
 
-/* small helper for navbar buttons */
-.navbar-donate { background: linear-gradient(135deg,#f75c3c,#cf3e2f); color: #fff; }
-
 /* accessible focus states */
-.btn:focus, .back-btn:focus, .navbar-donate:focus { outline: 3px solid rgba(247,92,60,0.18); outline-offset: 2px; }
+.btn:focus, .back-btn:focus { outline: 3px solid rgba(247,92,60,0.18); outline-offset: 2px; }
