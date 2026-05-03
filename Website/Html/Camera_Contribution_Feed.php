@@ -195,7 +195,7 @@ if ($latestFeed) {
           <p class="subtitle">Only you can see this page and your own camera feed data.</p>
         </div>
         <button class="back-btn" aria-label="Go back" onclick="window.location.href='../Html/Camera_Contribution_Home.php'">
-          <span aria-hidden="true">Ã¢â€ Â</span> Back
+          <span aria-hidden="true">‹</span> Back
         </button>
       </div>
     </header>
@@ -209,8 +209,8 @@ if ($latestFeed) {
           <div class="user-stats">
             <span><?= (int)$totalFeeds ?> <small>Total Feeds</small></span>
             <span><?= (int)$liveReadyCount ?> <small>Live Ready</small></span>
-            <span>Ã Â§Â³<?= e(number_format($totalEarnings, 2)) ?> <small>Total Earnings</small></span>
-            <span>Ã Â§Â³<?= (int)$runningHourlyRate ?>/hr <small>Running Rate</small></span>
+            <span>৳<?= e(number_format($totalEarnings, 2)) ?> <small>Total Earnings</small></span>
+            <span>৳<?= (int)$runningHourlyRate ?>/hr <small>Running Rate</small></span>
           </div>
         </div>
       </div>
@@ -262,7 +262,7 @@ if ($latestFeed) {
               <span class="camera-title"><?= e((string)($feed['feed_label'] ?? 'CCTV Feed')) ?></span>
               <span class="camera-time"><i class="fa-regular fa-clock"></i> <?= e(timeAgo((string)($feed['created_at'] ?? ''))) ?></span>
               <p class="camera-caption"><?= e((string)($feed['camera_location'] ?? 'Location not set')) ?></p>
-              <p class="camera-earning">Earned: Ã Â§Â³<?= e(number_format($earned, 2)) ?> Ã‚Â· Rate: Ã Â§Â³<?= (int)$rate ?>/hr Ã‚Â· <?= e(ucfirst($scope)) ?></p>
+              <p class="camera-earning">Earned: ৳<?= e(number_format($earned, 2)) ?> · Rate: ৳<?= (int)$rate ?>/hr · <?= e(ucfirst($scope)) ?></p>
               <div class="feed-controls">
                 <form method="post" action="../Php/camera_cctv_feeds.php">
                   <input type="hidden" name="action" value="toggle">

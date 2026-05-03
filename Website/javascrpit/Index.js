@@ -477,7 +477,7 @@ function setupLatestNewsCarousel() {
 
   const renderCard = (item) => `
     <div class="news-card">
-      <img class="news-card-img" src="${item.img}" alt="${item.title}">
+      <div class="news-card-img"><img src="${item.img}" alt="${item.title}"></div>
       <div class="news-card-meta-row">
         <span class="news-card-date"><i class="fa-regular fa-calendar"></i> ${item.date}</span>
       </div>
