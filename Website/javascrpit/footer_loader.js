@@ -10,6 +10,12 @@
         placeholder.innerHTML = html;
         const yearEl = document.getElementById('footerYear');
         if (yearEl) yearEl.textContent = new Date().getFullYear();
+        // notify other scripts that shared footer has been injected
+        try {
+          document.dispatchEvent(new CustomEvent('sharedFooter:loaded'));
+        } catch (e) {
+          // ignore
+        }
       }
     } catch (err) {
       // fail silently
