@@ -735,3 +735,24 @@ function setupHomeChatbot() {
 }
 
 setupHomeChatbot();
+
+// Delegated fallback: if the inline listeners failed to attach (missing elements at init),
+// handle clicks on the FAB via event delegation so the chatbot still opens.
+document.addEventListener('click', function (e) {
+  const fab = e.target.closest && e.target.closest('#chatbotToggle, .chatbot-fab');
+  if (!fab) return;
+  const panel = document.getElementById('chatbotPanel');
+  const widget = document.getElementById('chatbotWidget');
+  const input = document.getElementById('chatbotInput');
+  if (!panel) return;
+  if (panel.classList.contains('open')) {
+    panel.classList.remove('open');
+    panel.setAttribute('aria-hidden', 'true');
+    if (widget) widget.classList.remove('is-open');
+  } else {
+    panel.classList.add('open');
+    panel.setAttribute('aria-hidden', 'false');
+    if (widget) widget.classList.add('is-open');
+    if (input && typeof input.focus === 'function') input.focus();
+  }
+});

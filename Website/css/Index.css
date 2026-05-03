@@ -1632,6 +1632,7 @@ body {
   justify-content: center;
   gap: 0;
   white-space: nowrap;
+  z-index: 1300;
 }
 
 .chatbot-fab i {
