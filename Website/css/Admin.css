@@ -1107,6 +1107,72 @@ body {
   color: #1f2937;
 }
 
+.assign-modal__radius {
+  margin: 8px 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.assign-modal__radius-row {
+  display: flex;
+  gap: 8px;
+}
+
+.assign-modal__radius-row input {
+  flex: 1 1 auto;
+}
+
+.assign-modal__radius label span {
+  color: #1d4ed8;
+  font-weight: 800;
+}
+
+.assign-modal__radius-row input[type="range"] {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #bfdbfe 0%, #93c5fd 100%);
+  outline: none;
+  margin: 8px 0;
+}
+
+.assign-modal__radius-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #1d4ed8;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(29, 78, 216, 0.35);
+}
+
+.assign-modal__radius-row input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: none;
+  background: #1d4ed8;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(29, 78, 216, 0.35);
+}
+
+.assign-modal__radius-row button {
+  border: 1px solid #1d4ed8;
+  background: #2563eb;
+  color: #ffffff;
+  border-radius: 10px;
+  padding: 9px 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.assign-modal__radius-row button:hover {
+  background: #1d4ed8;
+}
+
 .assign-actions .primary {
   background: #2563eb;
   color: #fff;
@@ -1858,6 +1924,36 @@ body, html {
   font-size: 1.1rem;
   color: #555e72;
   margin-bottom: 0;
+}
+
+.admin-section-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 0 18px;
+}
+
+.admin-refresh-btn {
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(135deg, #f75c3c, #ff7a59);
+  box-shadow: 0 8px 18px rgba(247, 92, 60, 0.25);
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+.admin-refresh-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(247, 92, 60, 0.3);
+  filter: brightness(1.03);
+}
+
+.admin-refresh-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 14px rgba(247, 92, 60, 0.22);
 }
 
 #maps .fa-map-location-dot {

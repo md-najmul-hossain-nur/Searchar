@@ -929,6 +929,13 @@
         <option value="assist_police">Assist Police Response</option>
       </select>
     </div>
+    <div class="assign-modal__radius">
+      <label for="assign-radius-km"><strong>Search Radius</strong> <span id="assign-radius-value">2 KM</span></label>
+      <div class="assign-modal__radius-row">
+        <input type="range" id="assign-radius-km" min="1" max="30" step="1" value="2">
+        <button type="button" id="assign-radius-search">Search</button>
+      </div>
+    </div>
     <div class="assign-list" id="assign-volunteer-list">Loading…</div>
     <div class="assign-actions">
       <button type="button" class="primary" id="assign-confirm-btn">Assign Selected</button>
@@ -2600,7 +2607,13 @@
 
     document.addEventListener('admin:refresh-section', (event) => {
       const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
-      if (sectionId === 'dashboard' || sectionId === 'tables') {
+      if (sectionId === 'dashboard') {
+        loadCameraSeries();
+        loadDashboardCounts();
+        loadSocialTraffic();
+        return;
+      }
+      if (sectionId === 'tables') {
         loadAdminData();
       }
     });

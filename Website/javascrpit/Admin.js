@@ -114,7 +114,6 @@ legendChips.forEach(btn => {
 });
 
 loadCameraSeries();
-// Refresh every 30s for a near-real-time view
 setInterval(loadCameraSeries, 30000);
 
     // Orders Chart
@@ -1467,6 +1466,8 @@ function openAddVolunteerModal() {
     }
   }
 
+  window.loadMissingReports = loadMissingReports;
+
   [statusFilter, locationFilter, minAgeFilter, maxAgeFilter, genderFilter, dateFromFilter, dateToFilter]
     .filter(Boolean)
     .forEach(el => {
@@ -1475,6 +1476,13 @@ function openAddVolunteerModal() {
     });
 
   loadMissingReports();
+
+  document.addEventListener('admin:refresh-section', (event) => {
+    const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
+    if (sectionId === 'missing') {
+      loadMissingReports();
+    }
+  });
 
   document.addEventListener('click', (event) => {
     const viewBtn = event.target.closest('[data-missing-view]');
@@ -1613,6 +1621,9 @@ function openAddVolunteerModal() {
   const assignCaseIdEl = document.getElementById('assign-case-id');
   const assignCaseLandmarkEl = document.getElementById('assign-case-landmark');
   const assignMissionTypeEl = document.getElementById('assign-mission-type');
+  const assignRadiusInput = document.getElementById('assign-radius-km');
+  const assignRadiusValueEl = document.getElementById('assign-radius-value');
+  const assignRadiusSearchBtn = document.getElementById('assign-radius-search');
   const assignConfirmBtn = document.getElementById('assign-confirm-btn');
 
   if (!mapEl || !tableBody) return;
@@ -1746,6 +1757,8 @@ function openAddVolunteerModal() {
     }
   }
 
+  window.syncCrimesFromMissingReports = syncCrimesFromMissingReports;
+
   let demoCrimes = loadCrimeReports();
   let filteredCrimes = [...demoCrimes];
   let crimeMap = null;
@@ -1782,7 +1795,7 @@ function openAddVolunteerModal() {
   let currentAssignMedia = [];
   let currentAssignCoords = null;
   let assignCandidates = [];
-  const ASSIGN_RANGE_KM = 2;
+  const DEFAULT_ASSIGN_RADIUS_KM = 2;
 
   function getCrimeActionState(caseId) {
     const key = String(caseId || '');
@@ -1892,13 +1905,13 @@ function openAddVolunteerModal() {
 
   async function loadAssignCandidates() {
     try {
-      const [volRes, camRes] = await Promise.all([
+      const [volRes, comboRes] = await Promise.all([
         fetch('../Php/admin_fetch_volunteers.php', { credentials: 'same-origin', cache: 'no-store' }),
-        fetch('../Php/admin_fetch_cameras.php', { credentials: 'same-origin', cache: 'no-store' })
+        fetch('../Php/admin_fetch_combo_users.php', { credentials: 'same-origin', cache: 'no-store' })
       ]);
 
       const volJson = await volRes.json();
-      const camJson = await camRes.json();
+      const comboJson = await comboRes.json();
 
       const volunteers = Array.isArray(volJson?.data)
         ? volJson.data.map(v => ({
@@ -1915,15 +1928,79 @@ function openAddVolunteerModal() {
             recipient_entity: 'volunteer',
             recipient_id: Number(v.volunteer_id || 0),
             lat: Number(v.lat ?? v.latitude),
-            lng: Number(v.lng ?? v.lon ?? v.longitude)
+            lng: Number(v.lng ?? v.lon ?? v.longitude),
+            profile_tag: 'Volunteer'
           }))
         : [];
 
-      assignCandidates = volunteers.filter(a => a.recipient_id > 0);
+      const volunteerById = new Map();
+      volunteers.forEach((item) => {
+        const idNum = Number(item.recipient_id || 0);
+        if (idNum > 0) volunteerById.set(idNum, item);
+      });
+
+      const comboRows = Array.isArray(comboJson?.data) ? comboJson.data : [];
+      const comboCandidates = comboRows.map((row) => {
+        const volunteerId = Number(row?.volunteer_id || 0);
+        const linkedVolunteer = volunteerById.get(volunteerId);
+        const name = String(row?.full_name || linkedVolunteer?.name || 'Volunteer').trim();
+        const location = normalizeAssignLocation(
+          [
+            row?.city,
+            row?.country,
+            linkedVolunteer?.location
+          ]
+            .map(item => String(item || '').trim())
+            .filter(Boolean)
+            .join(', ')
+        ) || (linkedVolunteer?.location || 'Dhaka');
+
+        const recipientEntity = volunteerId > 0 ? 'volunteer' : 'user';
+        const recipientId = volunteerId > 0 ? volunteerId : Number(row?.user_id || 0);
+
+        return {
+          id: `VPLUS-${row?.application_id || volunteerId || recipientId || name}`,
+          name,
+          location,
+          status: 'available',
+          role: 'volunteer_plus',
+          recipient_entity: recipientEntity,
+          recipient_id: recipientId,
+          lat: Number(linkedVolunteer?.lat),
+          lng: Number(linkedVolunteer?.lng),
+          profile_tag: 'Volunteer + User'
+        };
+      }).filter(item => Number(item.recipient_id || 0) > 0);
+
+      const merged = new Map();
+      volunteers.forEach((item) => {
+        const key = `${item.recipient_entity}:${item.recipient_id}`;
+        merged.set(key, item);
+      });
+      comboCandidates.forEach((item) => {
+        const key = `${item.recipient_entity}:${item.recipient_id}`;
+        if (merged.has(key)) {
+          const prev = merged.get(key);
+          merged.set(key, {
+            ...prev,
+            profile_tag: 'Volunteer + User'
+          });
+        } else {
+          merged.set(key, item);
+        }
+      });
+
+      assignCandidates = Array.from(merged.values()).filter(a => a.recipient_id > 0);
     } catch (error) {
       console.error('assign candidates load failed', error);
       assignCandidates = [];
     }
+  }
+
+  function updateAssignRadiusLabel(value) {
+    if (!assignRadiusValueEl) return;
+    const km = Number(value);
+    assignRadiusValueEl.textContent = `${Number.isFinite(km) && km > 0 ? km : DEFAULT_ASSIGN_RADIUS_KM} KM`;
   }
 
   function closeCrimeAssignModal() {
@@ -1943,7 +2020,7 @@ function openAddVolunteerModal() {
     return 6371 * c;
   }
 
-  function renderAssignList(landmark) {
+  function renderAssignList(radiusKm) {
     if (!assignList) return;
     const sourceList = assignCandidates.length
       ? assignCandidates
@@ -1964,10 +2041,12 @@ function openAddVolunteerModal() {
 
     const hasCaseCoords = Number.isFinite(caseLat) && Number.isFinite(caseLng);
     let filtered = [];
-    let matchType = `Within ${ASSIGN_RANGE_KM} KM`;
+    const normalizedRadiusKm = Number(radiusKm);
+    const useRadiusKm = Number.isFinite(normalizedRadiusKm) && normalizedRadiusKm > 0 ? normalizedRadiusKm : DEFAULT_ASSIGN_RADIUS_KM;
+    let matchType = `Within ${useRadiusKm} KM`;
 
     if (hasCaseCoords) {
-      filtered = eligibleSource
+      const withDistance = eligibleSource
         .map(v => {
           const vLat = Number(v.lat);
           const vLng = Number(v.lng);
@@ -1977,8 +2056,10 @@ function openAddVolunteerModal() {
           const distanceKm = haversineDistanceKm(caseLat, caseLng, vLat, vLng);
           return { ...v, distanceKm };
         })
-        .filter(v => v && v.distanceKm <= ASSIGN_RANGE_KM)
+        .filter(Boolean)
         .sort((a, b) => a.distanceKm - b.distanceKm);
+
+      filtered = withDistance.filter(v => v.distanceKm <= useRadiusKm);
     } else {
       matchType = 'Case coordinates unavailable';
       filtered = [];
@@ -1987,7 +2068,8 @@ function openAddVolunteerModal() {
     const header = `<div class="assign-vol-meta" style="padding:4px 8px 10px; font-weight:700;">Showing: ${matchType}</div>`;
 
     if (!filtered.length) {
-      assignList.innerHTML = `${header}<div class="assign-vol-meta" style="padding:8px;">No available volunteers within ${ASSIGN_RANGE_KM} KM for this case.</div>`;
+      const fallbackText = `No available volunteers within ${useRadiusKm} KM for this case.`;
+      assignList.innerHTML = `${header}<div class="assign-vol-meta" style="padding:8px;">${fallbackText}</div>`;
       return;
     }
 
@@ -1997,7 +2079,7 @@ function openAddVolunteerModal() {
           <span>
             <input type="checkbox" value="${v.id}" data-recipient-entity="${v.recipient_entity || ''}" data-recipient-id="${v.recipient_id || ''}" data-recipient-name="${v.name || ''}">
             <strong>${v.name}</strong>
-            <div class="assign-vol-meta">${v.location || 'Location unavailable'} • ${v.status} • ${Number(v.distanceKm).toFixed(2)} KM</div>
+            <div class="assign-vol-meta">${v.location || 'Location unavailable'} • ${v.profile_tag || v.status} • ${Number(v.distanceKm).toFixed(2)} KM</div>
           </span>
         </label>
       `;
@@ -2050,10 +2132,33 @@ function openAddVolunteerModal() {
       : null;
     if (assignCaseIdEl) assignCaseIdEl.textContent = caseId;
     if (assignCaseLandmarkEl) assignCaseLandmarkEl.textContent = landmark || '—';
-    renderAssignList(landmark || '');
+    if (assignRadiusInput) assignRadiusInput.value = String(DEFAULT_ASSIGN_RADIUS_KM);
+    updateAssignRadiusLabel(DEFAULT_ASSIGN_RADIUS_KM);
+    if (assignList) {
+      assignList.innerHTML = '<div class="assign-vol-meta" style="padding:8px;">Enter radius in KM and click Search.</div>';
+    }
     if (assignModal) assignModal.classList.add('open');
   }
   window.openAssignModal = openAssignModal;
+
+  if (assignRadiusSearchBtn) {
+    assignRadiusSearchBtn.addEventListener('click', () => {
+      const raw = Number(assignRadiusInput?.value);
+      if (!Number.isFinite(raw) || raw <= 0) {
+        if (assignList) {
+          assignList.innerHTML = '<div class="assign-vol-meta" style="padding:8px;">Please enter a valid radius (KM).</div>';
+        }
+        return;
+      }
+      renderAssignList(raw);
+    });
+  }
+
+  if (assignRadiusInput) {
+    assignRadiusInput.addEventListener('input', () => {
+      updateAssignRadiusLabel(assignRadiusInput.value);
+    });
+  }
 
   if (assignConfirmBtn) {
     assignConfirmBtn.addEventListener('click', async () => {
@@ -2595,7 +2700,19 @@ function openAddVolunteerModal() {
   generateAnonToken();
   applyFilters();
   syncCrimesFromMissingReports();
-  setInterval(syncCrimesFromMissingReports, 15000);
+
+  setInterval(() => {
+    if (!document.hidden) {
+      syncCrimesFromMissingReports();
+    }
+  }, 15000);
+
+  document.addEventListener('admin:refresh-section', (event) => {
+    const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
+    if (sectionId === 'crime') {
+      syncCrimesFromMissingReports();
+    }
+  });
 })();
 
 // Load Donations, Broadcast, Volunteer Missions, Withdraw sections
@@ -2614,10 +2731,6 @@ function openAddVolunteerModal() {
   let isLoadingMiscSections = false;
 
   if (!donationsBody && !broadcastBody && !missionsBody && !withdrawBody) return;
-
-  function shouldAutoRefreshMiscSections() {
-    return !document.hidden;
-  }
 
   function esc(v) {
     return String(v ?? '')
@@ -3080,7 +3193,7 @@ function openAddVolunteerModal() {
   });
 
   setInterval(() => {
-    if (shouldAutoRefreshMiscSections()) {
+    if (!document.hidden) {
       loadMiscSections();
     }
   }, 10000);
@@ -3642,8 +3755,32 @@ function openAddVolunteerModal() {
 
   loadReports();
   setInterval(() => {
-    loadReports({ silent: true });
+    if (!document.hidden) {
+      loadReports({ silent: true });
+    }
   }, 12000);
+
+  document.addEventListener('admin:refresh-section', (event) => {
+    const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
+    if (sectionId === 'review' || sectionId === 'reports') {
+      loadReports();
+    }
+  });
+})();
+
+// AI detection logs are static demo content, so refresh restores the section markup.
+(function () {
+  const section = document.getElementById('ai');
+  const tableBody = document.getElementById('ai-table-body');
+  if (!section || !tableBody) return;
+
+  const initialRows = tableBody.innerHTML;
+  document.addEventListener('admin:refresh-section', (event) => {
+    const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
+    if (sectionId === 'ai') {
+      tableBody.innerHTML = initialRows;
+    }
+  });
 })();
 
 // Donations export: download current table as CSV
@@ -4152,7 +4289,6 @@ function openAddVolunteerModal() {
     }
   });
 
-  // Keep logs fresh without manual refresh while section is open.
   setInterval(function () {
     if (isSectionActive() && !isAutoRefreshPaused()) {
       refreshLogs();
@@ -4179,6 +4315,7 @@ function openAddVolunteerModal() {
 (function () {
   const refreshSections = [
     'dashboard',
+    'tables',
     'post-control',
     'admin-post',
     'crime',
@@ -4188,6 +4325,7 @@ function openAddVolunteerModal() {
     'volunteer',
     'volunteer-approver',
     'withdraw',
+    'review',
     'reports',
     'chatbot-logs'
   ];
