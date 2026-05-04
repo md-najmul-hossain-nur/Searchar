@@ -1621,9 +1621,6 @@ function openAddVolunteerModal() {
   const assignCaseIdEl = document.getElementById('assign-case-id');
   const assignCaseLandmarkEl = document.getElementById('assign-case-landmark');
   const assignMissionTypeEl = document.getElementById('assign-mission-type');
-  const assignRadiusInput = document.getElementById('assign-radius-km');
-  const assignRadiusValueEl = document.getElementById('assign-radius-value');
-  const assignRadiusSearchBtn = document.getElementById('assign-radius-search');
   const assignConfirmBtn = document.getElementById('assign-confirm-btn');
 
   if (!mapEl || !tableBody) return;
@@ -1792,10 +1789,10 @@ function openAddVolunteerModal() {
   let caseAssignHistory = loadCaseAssignHistory();
   const crimeActionState = new Map();
   let currentAssignCaseId = null;
+  let currentAssignLandmark = '';
   let currentAssignMedia = [];
   let currentAssignCoords = null;
   let assignCandidates = [];
-  const DEFAULT_ASSIGN_RADIUS_KM = 2;
 
   function getCrimeActionState(caseId) {
     const key = String(caseId || '');
@@ -1905,13 +1902,29 @@ function openAddVolunteerModal() {
 
   async function loadAssignCandidates() {
     try {
-      const [volRes, comboRes] = await Promise.all([
+      const [volRes, comboRes, miscRes] = await Promise.all([
         fetch('../Php/admin_fetch_volunteers.php', { credentials: 'same-origin', cache: 'no-store' }),
-        fetch('../Php/admin_fetch_combo_users.php', { credentials: 'same-origin', cache: 'no-store' })
+        fetch('../Php/admin_fetch_combo_users.php', { credentials: 'same-origin', cache: 'no-store' }),
+        fetch('../Php/admin_fetch_misc_sections.php', { credentials: 'same-origin', cache: 'no-store' })
       ]);
 
       const volJson = await volRes.json();
       const comboJson = await comboRes.json();
+      const miscJson = await miscRes.json();
+
+      const activeMissionIds = new Set(
+        Array.isArray(miscJson?.missions)
+          ? miscJson.missions
+              .filter((row) => {
+                const status = String(row?.status || '').toLowerCase();
+                const response = String(row?.response_status || '').toLowerCase();
+                return !['completed', 'rejected_busy', 'closed_by_police'].includes(status)
+                  && !['completed', 'rejected_busy', 'closed_by_police'].includes(response);
+              })
+              .map((row) => Number(row?.volunteer_id || 0))
+              .filter((id) => id > 0)
+          : []
+      );
 
       const volunteers = Array.isArray(volJson?.data)
         ? volJson.data.map(v => ({
@@ -1990,18 +2003,19 @@ function openAddVolunteerModal() {
         }
       });
 
-      assignCandidates = Array.from(merged.values()).filter(a => a.recipient_id > 0);
+      assignCandidates = Array.from(merged.values())
+        .filter(a => a.recipient_id > 0)
+        .map(candidate => ({
+          ...candidate,
+          status: activeMissionIds.has(Number(candidate.recipient_id || 0)) ? 'busy' : candidate.status
+        }));
     } catch (error) {
       console.error('assign candidates load failed', error);
       assignCandidates = [];
     }
   }
 
-  function updateAssignRadiusLabel(value) {
-    if (!assignRadiusValueEl) return;
-    const km = Number(value);
-    assignRadiusValueEl.textContent = `${Number.isFinite(km) && km > 0 ? km : DEFAULT_ASSIGN_RADIUS_KM} KM`;
-  }
+  function updateAssignRadiusLabel(_value) {}
 
   function closeCrimeAssignModal() {
     if (assignModal) assignModal.classList.remove('open');
@@ -2010,17 +2024,7 @@ function openAddVolunteerModal() {
   }
   window.closeCrimeAssignModal = closeCrimeAssignModal;
 
-  function haversineDistanceKm(lat1, lng1, lat2, lng2) {
-    const toRad = (deg) => (deg * Math.PI) / 180;
-    const dLat = toRad(lat2 - lat1);
-    const dLng = toRad(lng2 - lng1);
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-      + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return 6371 * c;
-  }
-
-  function renderAssignList(radiusKm) {
+  function renderAssignList() {
     if (!assignList) return;
     const sourceList = assignCandidates.length
       ? assignCandidates
@@ -2036,50 +2040,20 @@ function openAddVolunteerModal() {
       return true;
     });
 
-    const caseLat = Number(currentAssignCoords?.lat);
-    const caseLng = Number(currentAssignCoords?.lng);
+    const header = `<div class="assign-vol-meta" style="padding:4px 8px 10px; font-weight:700;">Showing all available volunteers from database</div>`;
 
-    const hasCaseCoords = Number.isFinite(caseLat) && Number.isFinite(caseLng);
-    let filtered = [];
-    const normalizedRadiusKm = Number(radiusKm);
-    const useRadiusKm = Number.isFinite(normalizedRadiusKm) && normalizedRadiusKm > 0 ? normalizedRadiusKm : DEFAULT_ASSIGN_RADIUS_KM;
-    let matchType = `Within ${useRadiusKm} KM`;
-
-    if (hasCaseCoords) {
-      const withDistance = eligibleSource
-        .map(v => {
-          const vLat = Number(v.lat);
-          const vLng = Number(v.lng);
-          if (!Number.isFinite(vLat) || !Number.isFinite(vLng)) {
-            return null;
-          }
-          const distanceKm = haversineDistanceKm(caseLat, caseLng, vLat, vLng);
-          return { ...v, distanceKm };
-        })
-        .filter(Boolean)
-        .sort((a, b) => a.distanceKm - b.distanceKm);
-
-      filtered = withDistance.filter(v => v.distanceKm <= useRadiusKm);
-    } else {
-      matchType = 'Case coordinates unavailable';
-      filtered = [];
-    }
-
-    const header = `<div class="assign-vol-meta" style="padding:4px 8px 10px; font-weight:700;">Showing: ${matchType}</div>`;
-
-    if (!filtered.length) {
-      const fallbackText = `No available volunteers within ${useRadiusKm} KM for this case.`;
-      assignList.innerHTML = `${header}<div class="assign-vol-meta" style="padding:8px;">${fallbackText}</div>`;
+    if (!eligibleSource.length) {
+      assignList.innerHTML = `${header}<div class="assign-vol-meta" style="padding:8px;">No available volunteers found in database.</div>`;
       return;
     }
 
-    const rows = filtered.map(v => {
+    const rows = eligibleSource.map(v => {
       return `
         <label class="assign-list-item">
           <span>
             <input type="checkbox" value="${v.id}" data-recipient-entity="${v.recipient_entity || ''}" data-recipient-id="${v.recipient_id || ''}" data-recipient-name="${v.name || ''}">
             <strong>${v.name}</strong>
-            <div class="assign-vol-meta">${v.location || 'Location unavailable'} • ${v.profile_tag || v.status} • ${Number(v.distanceKm).toFixed(2)} KM</div>
+            <div class="assign-vol-meta">${v.location || 'Location unavailable'} • ${v.profile_tag || v.status}</div>
           </span>
         </label>
       `;
@@ -2126,39 +2100,22 @@ function openAddVolunteerModal() {
 
   function openAssignModal(caseId, landmark, media = [], coords = null) {
     currentAssignCaseId = caseId;
+    currentAssignLandmark = String(landmark || '');
     currentAssignMedia = Array.isArray(media) ? media : [];
     currentAssignCoords = coords && Number.isFinite(Number(coords.lat)) && Number.isFinite(Number(coords.lng))
       ? { lat: Number(coords.lat), lng: Number(coords.lng) }
       : null;
     if (assignCaseIdEl) assignCaseIdEl.textContent = caseId;
     if (assignCaseLandmarkEl) assignCaseLandmarkEl.textContent = landmark || '—';
-    if (assignRadiusInput) assignRadiusInput.value = String(DEFAULT_ASSIGN_RADIUS_KM);
-    updateAssignRadiusLabel(DEFAULT_ASSIGN_RADIUS_KM);
     if (assignList) {
-      assignList.innerHTML = '<div class="assign-vol-meta" style="padding:8px;">Enter radius in KM and click Search.</div>';
+      assignList.innerHTML = '<div class="assign-vol-meta" style="padding:8px;">Loading volunteers from database…</div>';
     }
     if (assignModal) assignModal.classList.add('open');
+    loadAssignCandidates()
+      .catch((error) => console.error('assign candidates refresh failed', error))
+      .finally(() => renderAssignList());
   }
   window.openAssignModal = openAssignModal;
-
-  if (assignRadiusSearchBtn) {
-    assignRadiusSearchBtn.addEventListener('click', () => {
-      const raw = Number(assignRadiusInput?.value);
-      if (!Number.isFinite(raw) || raw <= 0) {
-        if (assignList) {
-          assignList.innerHTML = '<div class="assign-vol-meta" style="padding:8px;">Please enter a valid radius (KM).</div>';
-        }
-        return;
-      }
-      renderAssignList(raw);
-    });
-  }
-
-  if (assignRadiusInput) {
-    assignRadiusInput.addEventListener('input', () => {
-      updateAssignRadiusLabel(assignRadiusInput.value);
-    });
-  }
 
   if (assignConfirmBtn) {
     assignConfirmBtn.addEventListener('click', async () => {

@@ -1070,6 +1070,10 @@ function isMissionClosed(item) {
     || ['completed', 'rejected_busy', 'closed_by_police'].includes(response);
 }
 
+function hasMissionProof(item) {
+  return String(item?.proof_file || '').trim() !== '';
+}
+
 function renderComboMissionMedia(metaJsonText) {
   let meta = null;
   try {
@@ -1130,10 +1134,16 @@ function renderComboMissionMedia(metaJsonText) {
 
 function getCurrentComboMissionForProof() {
   if (!Array.isArray(comboMissionsCache) || comboMissionsCache.length === 0) return null;
-  const accepted = comboMissionsCache.find(item => !isMissionClosed(item) && isComboMissionAccepted(item));
-  if (accepted) return accepted;
-  const active = comboMissionsCache.find(item => !isMissionClosed(item));
-  return active || comboMissionsCache[0] || null;
+  const activeMissions = comboMissionsCache.filter(item => !isMissionClosed(item) && isComboMissionAccepted(item));
+  if (activeMissions.length === 0) {
+    const active = comboMissionsCache.find(item => !isMissionClosed(item));
+    return active || comboMissionsCache[0] || null;
+  }
+
+  const latestWithoutProof = activeMissions.find(item => !hasMissionProof(item));
+  if (latestWithoutProof) return latestWithoutProof;
+
+  return activeMissions[0] || comboMissionsCache[0] || null;
 }
 
 async function submitComboMissionResponse(item, action) {
@@ -1206,10 +1216,10 @@ function renderAssignedMissionsInModal() {
     const status = String(item?.status || '').toLowerCase();
     const response = String(item?.response_status || '').toLowerCase();
 
-    // Keep only currently actionable missions in this panel.
+    // Keep only missions that are still active or waiting for a response.
     if (['completed', 'rejected_busy', 'closed_by_police'].includes(status)) return false;
     if (['completed', 'rejected_busy', 'closed_by_police'].includes(response)) return false;
-    return response === 'pending' || response === 'accepted' || response === '';
+    return true;
   });
 
   if (missions.length === 0) {
@@ -1281,23 +1291,34 @@ function updateMissionProofUiState() {
   if (!mission) {
     missionProofStatus.textContent = 'No mission available right now.';
     missionProofSubmitBtn.disabled = true;
+    if (missionProofFileInput) missionProofFileInput.disabled = true;
     return;
   }
 
   if (isMissionClosed(mission)) {
     missionProofStatus.textContent = 'This mission is already closed/completed.';
     missionProofSubmitBtn.disabled = true;
+    if (missionProofFileInput) missionProofFileInput.disabled = true;
     return;
   }
 
   if (!isComboMissionAccepted(mission)) {
     missionProofStatus.textContent = 'Please accept the mission first to submit proof.';
     missionProofSubmitBtn.disabled = true;
+    if (missionProofFileInput) missionProofFileInput.disabled = true;
+    return;
+  }
+
+  if (hasMissionProof(mission)) {
+    missionProofStatus.textContent = `Proof already submitted for ${String(mission?.mission_title || 'Mission')}.`;
+    missionProofSubmitBtn.disabled = true;
+    if (missionProofFileInput) missionProofFileInput.disabled = true;
     return;
   }
 
   missionProofStatus.textContent = `Selected mission: ${String(mission?.mission_title || 'Mission')}`;
   missionProofSubmitBtn.disabled = false;
+  if (missionProofFileInput) missionProofFileInput.disabled = false;
 }
 
 function openMissionModal() {
@@ -1305,9 +1326,13 @@ function openMissionModal() {
   syncMissionModalOffset();
   volunteerMissionModal.classList.remove('hidden');
   volunteerMissionModal.focus();
-  renderAssignedMissionsInModal();
-  renderMissionHistoryFromCombo();
-  updateMissionProofUiState();
+  loadComboMissions()
+    .catch((error) => console.error('combo missions refresh failed', error))
+    .finally(() => {
+      renderAssignedMissionsInModal();
+      renderMissionHistoryFromCombo();
+      updateMissionProofUiState();
+    });
 }
 
 function closeMissionModal() {
@@ -1412,6 +1437,12 @@ if (missionProofSubmitBtn) {
       return;
     }
 
+    if (hasMissionProof(mission)) {
+      alert('Proof is already submitted for this mission.');
+      updateMissionProofUiState();
+      return;
+    }
+
     missionProofSubmitBtn.disabled = true;
     const prevText = missionProofSubmitBtn.textContent;
     missionProofSubmitBtn.textContent = 'Submitting...';
@@ -1435,15 +1466,17 @@ if (missionProofSubmitBtn) {
 
       if (missionProofStatus) missionProofStatus.textContent = 'Proof submitted successfully.';
       alert('Mission proof submitted successfully.');
-      missionProofFileInput.value = '';
+      if (missionProofFileInput) missionProofFileInput.value = '';
       if (missionProofPreview) missionProofPreview.innerHTML = '';
+      if (missionProofFileInput) missionProofFileInput.disabled = true;
+      missionProofSubmitBtn.disabled = true;
       await loadComboMissions();
     } catch (error) {
       if (missionProofStatus) missionProofStatus.textContent = error?.message || 'Could not submit mission proof.';
       alert(error?.message || 'Could not submit mission proof.');
     } finally {
-      missionProofSubmitBtn.disabled = false;
       missionProofSubmitBtn.textContent = prevText || '✅ Submit Proof';
+      updateMissionProofUiState();
     }
   });
 }

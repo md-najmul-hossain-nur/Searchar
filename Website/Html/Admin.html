@@ -159,7 +159,7 @@
         </div>
       </div>
       <div class="dashboard-bottom">
-        <div class="social-traffic-card action-queue-card">
+        <div class="action-queue-card">
           <div class="st-header">
             <span>Action Queue (Pending Approvals)</span>
             <div class="action-queue-summary" id="action-queue-summary">Loading…</div>
@@ -180,24 +180,6 @@
             </tbody>
           </table>
 
-        </div>
-        <div class="social-traffic-card">
-          <div class="st-header">
-            <span>Social traffic</span>
-            <button class="see-all-btn" id="social-see-all">SEE ALL</button>
-          </div>
-          <table class="st-table">
-            <thead>
-              <tr>
-                <th>REFERRAL</th>
-                <th>VISITORS</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="social-table-body">
-              <tr><td colspan="3">Loading social traffic…</td></tr>
-            </tbody>
-          </table>
         </div>
       </div>
     </div>
@@ -929,13 +911,7 @@
         <option value="assist_police">Assist Police Response</option>
       </select>
     </div>
-    <div class="assign-modal__radius">
-      <label for="assign-radius-km"><strong>Search Radius</strong> <span id="assign-radius-value">2 KM</span></label>
-      <div class="assign-modal__radius-row">
-        <input type="range" id="assign-radius-km" min="1" max="30" step="1" value="2">
-        <button type="button" id="assign-radius-search">Search</button>
-      </div>
-    </div>
+    <p class="assign-modal__radius-note"><strong>Available from database:</strong> all available volunteers and volunteer-plus accounts are shown below.</p>
     <div class="assign-list" id="assign-volunteer-list">Loading…</div>
     <div class="assign-actions">
       <button type="button" class="primary" id="assign-confirm-btn">Assign Selected</button>
@@ -1182,56 +1158,6 @@
       } catch (e) {
         console.error('Add officer failed', e);
         alert('Could not add officer.');
-      }
-    }
-
-    function renderSocialTraffic(rows) {
-      const tbody = document.getElementById('social-table-body');
-      if (!tbody) return;
-      if (!Array.isArray(rows) || !rows.length) {
-        setRows(tbody, '<tr><td colspan="3">No social traffic yet.</td></tr>');
-        return;
-      }
-
-      const total = rows.reduce((sum, r) => sum + (Number(r.visitors) || 0), 0) || 1;
-      const html = rows.map(r => {
-        const source = r.source || 'Unknown';
-        const visitors = Number(r.visitors) || 0;
-        const pct = Math.round((visitors / total) * 100);
-        return `
-          <tr>
-            <td>${source}</td>
-            <td>${visitors.toLocaleString('en-US')}</td>
-            <td>
-              <div class="st-progress-bar">
-                <div class="st-progress-inner" style="width:${pct}%"></div>
-              </div>
-              ${pct}%
-            </td>
-          </tr>`;
-      }).join('');
-      setRows(tbody, html);
-    }
-
-    async function loadSocialTraffic(showAll = false) {
-      const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-      try {
-        const url = showAll ? '../Php/admin_social_traffic.php?all=1' : '../Php/admin_social_traffic.php';
-        const res = await fetchJSON(url);
-        if (!res || !res.success || !Array.isArray(res.data)) throw new Error('Bad response');
-        renderSocialTraffic(res.data);
-      } catch (e) {
-        console.error('Social traffic load failed', e);
-        // Demo fallback with random social sources
-        const demo = [
-          { source: 'Facebook', visitors: randInt(500, 1500) },
-          { source: 'Instagram', visitors: randInt(400, 1200) },
-          { source: 'YouTube', visitors: randInt(300, 900) },
-          { source: 'Twitter/X', visitors: randInt(200, 800) },
-          { source: 'Direct', visitors: randInt(250, 700) },
-          { source: 'LinkedIn', visitors: randInt(100, 400) }
-        ];
-        renderSocialTraffic(demo);
       }
     }
 
@@ -2458,10 +2384,6 @@
 
   loadDashboardCounts();
   setInterval(loadDashboardCounts, 30000);
-  loadSocialTraffic();
-  setInterval(() => loadSocialTraffic(), 15000);
-  const socialSeeAll = document.getElementById('social-see-all');
-  if (socialSeeAll) socialSeeAll.addEventListener('click', () => loadSocialTraffic(true));
 
   const modalEditBtn = document.getElementById('profile-edit-btn');
   const modalSaveBtn = document.getElementById('profile-save-btn');
@@ -2610,7 +2532,6 @@
       if (sectionId === 'dashboard') {
         loadCameraSeries();
         loadDashboardCounts();
-        loadSocialTraffic();
         return;
       }
       if (sectionId === 'tables') {

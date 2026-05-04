@@ -210,7 +210,7 @@ try {
         <div class="rank-progress-meta">
           <span id="rank-progress-percent">0%</span>
           <span id="rank-next-value">Next: Silver Responder</span>
-          <span id="rank-needed-value">Need 200 XP</span>
+          <span id="rank-needed-value">Need more XP</span>
         </div>
       </div>
 

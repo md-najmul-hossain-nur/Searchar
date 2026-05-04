@@ -589,7 +589,7 @@ try {
         <div class="combo-rank-progress-track" aria-hidden="true">
           <div id="comboRankProgressBar" class="combo-rank-progress-bar" style="width: 0%;"></div>
         </div>
-        <p id="comboRankNeed" class="combo-rank-need">Need 380 XP</p>
+        <p id="comboRankNeed" class="combo-rank-need">Need more XP</p>
         <div class="combo-rank-tiers" aria-hidden="true">
           <span>Bronze</span>
           <span>Silver</span>

@@ -1229,7 +1229,7 @@ async function loadRankAssignedPreview() {
     const proofDone = isMissionProofSaved(Number(latest.id || 0), details.caseId);
 
     if (responseState === 'rejected_busy' || proofDone) {
-      renderRankAssignedPreview(null, { hidden: true });
+      renderRankAssignedPreview(latest, { responseState, proofDone });
       setMissionTimer('');
       return;
     }
@@ -1348,7 +1348,7 @@ async function loadAssignedMissionDetails() {
       missionProofSubmitted = false;
       updateMissionProofLock('pending');
       setMissionTimer('');
-      renderRankAssignedPreview(null, { hidden: true });
+      renderRankAssignedPreview(latest, { responseState, proofDone: false });
       return;
     }
 
@@ -1364,7 +1364,7 @@ async function loadAssignedMissionDetails() {
       if (status) status.textContent = 'Proof already submitted for this mission.';
       updateMissionProofLock('accepted');
       setMissionTimer('');
-      renderRankAssignedPreview(null, { hidden: true });
+      renderRankAssignedPreview(latest, { responseState, proofDone: true });
       return;
     }
 

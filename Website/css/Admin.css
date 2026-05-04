@@ -1514,7 +1514,7 @@ body {
   flex-wrap: wrap;
 }
 
-.page-visits-card, .social-traffic-card {
+.page-visits-card, .action-queue-card {
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 4px 18px 0 rgba(16,30,54,.09);
@@ -1826,7 +1826,7 @@ body, html {
   .orders-card,
   .overview-card,
   .page-visits-card,
-  .social-traffic-card {
+  .action-queue-card {
     min-width: 0;
     width: 100%;
     margin-top: 20px;
@@ -1889,7 +1889,7 @@ body, html {
   .orders-card,
   .overview-card,
   .page-visits-card,
-  .social-traffic-card {
+  .action-queue-card {
     margin-top: 10px;
     padding: 8px 3px;
   }

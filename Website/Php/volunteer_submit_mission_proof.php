@@ -171,6 +171,15 @@ try {
         exit;
     }
 
+    $proofCheck = $pdo->prepare('SELECT proof_file FROM volunteer_missions WHERE mission_id = :mid AND volunteer_id = :vid LIMIT 1');
+    $proofCheck->execute([':mid' => $missionId, ':vid' => $volunteerId]);
+    $existingProof = trim((string)$proofCheck->fetchColumn());
+    if ($existingProof !== '') {
+        http_response_code(409);
+        echo json_encode(['success' => false, 'error' => 'Proof already submitted for this mission']);
+        exit;
+    }
+
     $uploadsRoot = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'mission_proofs';
     if (!is_dir($uploadsRoot)) {
         @mkdir($uploadsRoot, 0777, true);
