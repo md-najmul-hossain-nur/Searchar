@@ -184,12 +184,12 @@ try {
   <p>You’ve earned money by helping the community through live CCTV streaming. You can withdraw your balance anytime using your preferred method.</p>
 
   <ul class="streamer-info">
-    <li><strong>Name:</strong> Erik Jhonson</li>
-    <li><strong>Total Streams:</strong> 45</li>
-    <li><strong>Total Earned:</strong> $1000</li>
-    <li><strong>Available Balance:</strong> $1000</li>
-    <li><strong>Pending Transactions:</strong> $0</li>
-    <li><strong>Last Withdrawal Date:</strong> July 24, 2025</li>
+    <li><strong>Name:</strong> <span id="ccName"><?= e($user['full_name'] ?? '—') ?></span></li>
+    <li><strong>Total Streams:</strong> <span id="ccTotalStreams">0</span></li>
+    <li><strong>Total Earned:</strong> <span id="ccTotalEarned">BDT 0.00</span></li>
+    <li><strong>Available Balance:</strong> <span id="ccAvailableBalance">BDT 0.00</span></li>
+    <li><strong>Pending Transactions:</strong> <span id="ccPendingCount">0</span></li>
+    <li><strong>Last Withdrawal Date:</strong> <span id="ccLastWithdrawalDate">—</span></li>
   </ul>
 
   <button id="openWithdrawBtn" class="withdraw-btn">Withdraw Now</button>
@@ -206,6 +206,7 @@ try {
   <h2 style="text-align: center; color: #333; margin-bottom: 15px; font-weight: 700;">
     Emergency Services Locator
   </h2>
+  <p style="text-align:center; color:#555; margin:0 0 12px; font-size:14px;">Find the nearest hospital, fire station, or police station and get directions instantly.</p>
   <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
@@ -213,9 +214,9 @@ try {
 <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
 
 <!-- Buttons -->
-<button id="find-hospitals" class="emergency-btn hospital">🏥 Show Nearby Hospitals</button>
-<button id="find-fire" class="emergency-btn fire">🚒 Show Fire Stations</button>
-<button id="find-police" class="emergency-btn police">👮 Show Police Stations</button>
+<button id="find-hospitals" style="padding:8px 15px;background:#f05454;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">Show Nearby Hospitals</button>
+<button id="find-fire" style="padding:8px 15px;background:#ff7f11;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">Show Fire Stations</button>
+<button id="find-police" style="padding:8px 15px;background:#0077b6;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:10px;">Show Police Stations</button>
 
 <!-- Map Container -->
 <div id="emergency-map" style="height: 400px; border-radius: 8px; border: 2px solid #000; width: 100%; max-width: 100%; overflow: hidden; box-sizing: border-box; position: relative; z-index: 0;"></div>
@@ -461,6 +462,7 @@ try {
 <!-- Camera Contributor Panel -->
 <div class="camera-contributor-panel">
   <h4>Camera Contributor Panel</h4>
+  <p style="margin:6px 0 12px; color:#555; font-size:13px;">Start a live stream or upload a recorded feed to help community monitoring. You can view all your submitted feeds anytime.</p>
   
   <button id="startFeedBtn" class="camera-btn">
     📷 Start Live / Upload Recorded Feed
@@ -657,18 +659,9 @@ try {
               <th>Status</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="withdrawHistoryBody">
             <tr>
-              <td>July 20, 2025</td>
-              <td>bKash</td>
-              <td>$200</td>
-              <td>Completed</td>
-            </tr>
-            <tr>
-              <td>July 15, 2025</td>
-              <td>PayPal</td>
-              <td>$300</td>
-              <td>Pending</td>
+              <td colspan="4">Loading withdrawal history...</td>
             </tr>
           </tbody>
         </table>

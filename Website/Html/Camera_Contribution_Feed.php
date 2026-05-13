@@ -27,7 +27,14 @@ function timeAgo(?string $dateTime): string {
 }
 
   function hourlyRate(string $feedType): int {
-    return strtolower($feedType) === 'live' ? 100 : 60;
+    // 20 BDT per 30 minutes = 40 BDT per hour
+    return 40;
+  }
+
+  function truncateText(string $value, int $limit = 120): string {
+    $value = trim($value);
+    if (mb_strlen($value) <= $limit) return $value;
+    return mb_substr($value, 0, $limit - 3) . '...';
   }
 
   function accruedSeconds(array $feed): int {
@@ -126,6 +133,7 @@ $profileLocationParts = array_filter([
   (string)($user['country'] ?? ''),
 ]);
 $cameraLocation = !empty($profileLocationParts) ? implode(', ', $profileLocationParts) : 'Unknown Location';
+$cameraLocation = truncateText($cameraLocation, 140);
 $streamType = 'Live Stream';
 
 $totalFeeds = count($cctvFeeds);
@@ -141,6 +149,27 @@ foreach ($cctvFeeds as $feed) {
     $runningHourlyRate += $rate;
   }
 }
+
+$nextPayoutSeconds = null;
+foreach ($cctvFeeds as $feed) {
+  if ((int)($feed['is_active'] ?? 0) !== 1) {
+    continue;
+  }
+  $acc = accruedSeconds($feed);
+  $remaining = 1800 - ($acc % 1800);
+  if ($remaining === 1800) {
+    $remaining = 0;
+  }
+  if ($nextPayoutSeconds === null || $remaining < $nextPayoutSeconds) {
+    $nextPayoutSeconds = $remaining;
+  }
+}
+
+if ($liveReadyCount === 0) {
+  $nextPayoutSeconds = null;
+}
+
+$streamType = $liveReadyCount > 0 ? 'Live Stream' : 'Recorded Feed';
 
 $latestFeed = $cctvFeeds[0] ?? null;
 $latestMedia = '';
@@ -169,8 +198,6 @@ if ($latestFeed) {
   <link rel="stylesheet" href="../css/Camera_Contribution_Feed.css">
 </head>
 <body>
-  <a href="#main" class="skip-link">Skip to main content</a>
-
   <nav class="navbar" role="navigation" aria-label="Main Navigation">
     <div class="navbar-logo">
       <a href="../Html/Camera_Contribution_Home.php">
@@ -194,7 +221,7 @@ if ($latestFeed) {
           <p class="subtitle">Only you can see this page and your own camera feed data.</p>
         </div>
         <button class="back-btn" aria-label="Go back" onclick="window.location.href='../Html/Camera_Contribution_Home.php'">
-          <span aria-hidden="true">â†</span> Back
+          <span aria-hidden="true">&larr;</span> Back
         </button>
       </div>
     </header>
@@ -208,8 +235,8 @@ if ($latestFeed) {
           <div class="user-stats">
             <span><?= (int)$totalFeeds ?> <small>Total Feeds</small></span>
             <span><?= (int)$liveReadyCount ?> <small>Live Ready</small></span>
-            <span>à§³<?= e(number_format($totalEarnings, 2)) ?> <small>Total Earnings</small></span>
-            <span>à§³<?= (int)$runningHourlyRate ?>/hr <small>Running Rate</small></span>
+            <span>&#2547;<?= e(number_format($totalEarnings, 2)) ?> <small>Total Earnings</small></span>
+            <span>&#2547;<?= (int)$runningHourlyRate ?>/hr <small>Running Rate</small></span>
           </div>
         </div>
       </div>
@@ -217,6 +244,7 @@ if ($latestFeed) {
         <span class="side-title">Location</span>
         <span class="side-value"><?= e($cameraLocation) ?></span>
         <span class="side-meta"><?= e($streamType) ?></span>
+        <span class="side-meta">Next payout in: <strong id="payoutCountdown" data-next-payout="<?= e($nextPayoutSeconds !== null ? (string)$nextPayoutSeconds : '') ?>">--:--</strong></span>
       </div>
     </section>
 
@@ -261,7 +289,7 @@ if ($latestFeed) {
               <span class="camera-title"><?= e((string)($feed['feed_label'] ?? 'CCTV Feed')) ?></span>
               <span class="camera-time"><i class="fa-regular fa-clock"></i> <?= e(timeAgo((string)($feed['created_at'] ?? ''))) ?></span>
               <p class="camera-caption"><?= e((string)($feed['camera_location'] ?? 'Location not set')) ?></p>
-              <p class="camera-earning">Earned: à§³<?= e(number_format($earned, 2)) ?> Â· Rate: à§³<?= (int)$rate ?>/hr Â· <?= e(ucfirst($scope)) ?></p>
+              <p class="camera-earning">Earned: &#2547;<?= e(number_format($earned, 2)) ?> &middot; Rate: &#2547;20/30 min &middot; <?= e(ucfirst($scope)) ?></p>
               <div class="feed-controls">
                 <form method="post" action="../Php/camera_cctv_feeds.php">
                   <input type="hidden" name="action" value="toggle">

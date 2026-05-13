@@ -2677,14 +2677,15 @@ function openAddVolunteerModal() {
   const donationsBody = document.getElementById('donations-table-body');
   const broadcastBody = document.getElementById('broadcast-table-body');
   const missionsBody = document.getElementById('volunteer-mission-body');
-  const withdrawBody = document.getElementById('withdraw-table-body');
+  // Withdraw Control is managed in Admin.html now; avoid overwriting its data
+  const withdrawBody = (typeof window.renderWithdrawalsTable === 'function') ? null : document.getElementById('withdraw-table-body');
   const volunteerTotalMissions = document.getElementById('volunteer-total-missions');
   const volunteerThisMonth = document.getElementById('volunteer-this-month');
   const donationsTotalAmount = document.getElementById('donations-total-amount');
   const donationsTopDonor = document.getElementById('donations-top-donor');
   const withdrawTotalAmount = document.getElementById('withdraw-total-amount');
   const withdrawPendingCount = document.getElementById('withdraw-pending-count');
-  const miscSectionIds = ['donations', 'broadcast', 'volunteer', 'withdraw'];
+  const miscSectionIds = ['donations', 'broadcast', 'volunteer'];
   let isLoadingMiscSections = false;
 
   if (!donationsBody && !broadcastBody && !missionsBody && !withdrawBody) return;
@@ -3057,63 +3058,7 @@ function openAddVolunteerModal() {
       }
 
       if (withdrawBody) {
-        if (!withdraws.length) {
-          setNoData(withdrawBody, 5, 'No withdrawal requests found.');
-        } else {
-          withdrawBody.innerHTML = withdraws.map(w => `
-            <tr>
-              <td>${esc(w.requester_name || 'Volunteer')}</td>
-              <td>৳${esc(Number(w.amount || 0).toFixed(2))}</td>
-              <td>${renderWithdrawStatusChip(w.status)}</td>
-              <td>${esc(fmtDate(w.request_date))}</td>
-              <td>
-                <button type="button" data-withdraw-action="approve" data-withdraw-id="${esc(w.request_id || '')}" data-requester-name="${esc(w.requester_name || '')}" data-request-amount="${esc(w.amount || 0)}" data-request-date="${esc(w.request_date || '')}" ${String(w.status || 'pending').toLowerCase() === 'pending' ? '' : 'disabled'}>Approve</button>
-                <button type="button" data-withdraw-action="reject" data-withdraw-id="${esc(w.request_id || '')}" data-requester-name="${esc(w.requester_name || '')}" data-request-amount="${esc(w.amount || 0)}" data-request-date="${esc(w.request_date || '')}" ${String(w.status || 'pending').toLowerCase() === 'pending' ? '' : 'disabled'}>Reject</button>
-              </td>
-            </tr>
-          `).join('');
-
-          withdrawBody.querySelectorAll('[data-withdraw-action]').forEach(btn => {
-            btn.addEventListener('click', async () => {
-              const action = String(btn.getAttribute('data-withdraw-action') || '').toLowerCase();
-              if (action !== 'approve' && action !== 'reject') return;
-
-              const row = btn.closest('tr');
-              const requestId = Number(btn.getAttribute('data-withdraw-id') || 0);
-              const requesterName = String(btn.getAttribute('data-requester-name') || '').trim();
-              const amount = Number(btn.getAttribute('data-request-amount') || 0);
-              const requestDate = String(btn.getAttribute('data-request-date') || '').trim();
-
-              const approveBtn = row?.querySelector('[data-withdraw-action="approve"]');
-              const rejectBtn = row?.querySelector('[data-withdraw-action="reject"]');
-              if (approveBtn) approveBtn.disabled = true;
-              if (rejectBtn) rejectBtn.disabled = true;
-
-              try {
-                const res = await fetch('../Php/admin_update_withdraw_status.php', {
-                  method: 'POST',
-                  credentials: 'same-origin',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    action,
-                    request_id: requestId,
-                    requester_name: requesterName,
-                    amount,
-                    request_date: requestDate
-                  })
-                });
-
-                const json = await res.json();
-                if (!json?.success) throw new Error(json?.error || 'Failed to update withdrawal');
-                await loadMiscSections();
-              } catch (e) {
-                if (approveBtn) approveBtn.disabled = false;
-                if (rejectBtn) rejectBtn.disabled = false;
-                alert(e?.message || 'Could not update withdrawal status.');
-              }
-            });
-          });
-        }
+        // Withdraw rendering handled by Admin.html (avoid double render)
       }
     } catch (error) {
       if (donationsBody) setNoData(donationsBody, 8, 'Failed to load donations.');
