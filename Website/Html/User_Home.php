@@ -507,48 +507,7 @@ try {
     <button class="donate-btn" type="button" onclick="openDonationPopup()">Donate Now</button>
 
 </div>
-
-    <div id="donationModal" class="donation-modal" aria-hidden="true">
-      <div class="donation-modal-content" role="dialog" aria-modal="true" aria-labelledby="donationModalTitle">
-        <button type="button" class="donation-close" aria-label="Close" onclick="closeDonationPopup()">&times;</button>
-        <h3 id="donationModalTitle">Support Emergency Rescue</h3>
-        <p class="donation-subtitle">Your contribution helps verified rescue operations, medical aid, and missing-person response.</p>
-
-        <div class="donation-payment-box">
-          <p class="donation-payment-title">Send Donation To</p>
-          <div class="donation-payment-row">
-            <strong id="donationReceiverNumber">01743094595</strong>
-            <button type="button" class="donation-copy-btn" id="copyDonationNumberBtn">Copy</button>
-          </div>
-          <p class="donation-payment-hint">Please send money first, then enter the Transaction ID below.</p>
-        </div>
-
-        <form id="donationForm" class="donation-form">
-          <label for="donationName">Full Name</label>
-          <input id="donationName" name="donation_name" type="text" placeholder="Enter your name" value="<?= e($user['full_name'] ?? '') ?>" required>
-
-          <label for="donationPhone">Mobile Number</label>
-          <input id="donationPhone" name="donation_phone" type="tel" placeholder="01XXXXXXXXX" required>
-
-          <label for="donationAmount">Amount (BDT)</label>
-          <input id="donationAmount" name="donation_amount" type="number" min="50" step="50" placeholder="e.g. 500" required>
-
-          <label for="donationTxId">Transaction ID (TxID)</label>
-          <input id="donationTxId" name="donation_tx_id" type="text" placeholder="Enter payment transaction ID" required>
-
-          <div class="donation-quick-amounts" aria-label="Quick amount selection">
-            <button type="button" data-amount="200">200 BDT</button>
-            <button type="button" data-amount="500">500 BDT</button>
-            <button type="button" data-amount="1000">1000 BDT</button>
-          </div>
-
-          <div class="donation-actions">
-            <button type="button" class="donation-cancel" onclick="closeDonationPopup()">Cancel</button>
-            <button type="submit" class="donation-submit">Proceed Donation</button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <!-- donation modal moved to end of page to avoid clipping by sticky sidebars -->
 
 
 
@@ -1306,6 +1265,48 @@ try {
     </section>
   </div>
 </aside>
+    <!-- Donation modal moved here to avoid clipping by sticky sidebars -->
+    <div id="donationModal" class="donation-modal" aria-hidden="true">
+      <div class="donation-modal-content" role="dialog" aria-modal="true" aria-labelledby="donationModalTitle">
+        <button type="button" class="donation-close" aria-label="Close" onclick="closeDonationPopup()">&times;</button>
+        <h3 id="donationModalTitle">Support Emergency Rescue</h3>
+        <p class="donation-subtitle">Your contribution helps verified rescue operations, medical aid, and missing-person response.</p>
+
+        <div class="donation-payment-box">
+          <p class="donation-payment-title">Send Donation To</p>
+          <div class="donation-payment-row">
+            <strong id="donationReceiverNumber">01743094595</strong>
+            <button type="button" class="donation-copy-btn" id="copyDonationNumberBtn">Copy</button>
+          </div>
+          <p class="donation-payment-hint">Please send money first, then enter the Transaction ID below.</p>
+        </div>
+
+        <form id="donationForm" class="donation-form">
+          <label for="donationName">Full Name</label>
+          <input id="donationName" name="donation_name" type="text" placeholder="Enter your name" value="<?= e($user['full_name'] ?? '') ?>" required>
+
+          <label for="donationPhone">Mobile Number</label>
+          <input id="donationPhone" name="donation_phone" type="tel" placeholder="01XXXXXXXXX" required>
+
+          <label for="donationAmount">Amount (BDT)</label>
+          <input id="donationAmount" name="donation_amount" type="number" min="50" step="50" placeholder="e.g. 500" required>
+
+          <label for="donationTxId">Transaction ID (TxID)</label>
+          <input id="donationTxId" name="donation_tx_id" type="text" placeholder="Enter payment transaction ID" required>
+
+          <div class="donation-quick-amounts" aria-label="Quick amount selection">
+            <button type="button" data-amount="200">200 BDT</button>
+            <button type="button" data-amount="500">500 BDT</button>
+            <button type="button" data-amount="1000">1000 BDT</button>
+          </div>
+
+          <div class="donation-actions">
+            <button type="button" class="donation-cancel" onclick="closeDonationPopup()">Cancel</button>
+            <button type="submit" class="donation-submit">Proceed Donation</button>
+          </div>
+        </form>
+      </div>
+    </div>
 
        <script>
          (function () {

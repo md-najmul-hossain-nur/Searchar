@@ -1242,87 +1242,7 @@ try {
   </article>
 </div>
 
-<!-- Missing Person Investigation Popup -->
-<div id="missingFormModal" class="missing-modal">
-  <div class="missing-modal-content">
-    <span class="missing-close" onclick="closeMissingForm()">&times;</span>
-    <h2>Police Missing Person Investigation Form</h2>
-
-    <form id="missingForm" action="../Php/save_missing_person.php" method="POST" enctype="multipart/form-data">
-      <input type="hidden" name="return_to" value="Policeman_Home.php">
-      <h3>Personal Details</h3>
-      <label>Full Name</label>
-      <input type="text" name="full_name" required>
-
-      <label>Nickname / Alias</label>
-      <input type="text" name="nickname">
-
-      <label>Gender</label>
-      <select name="gender" required>
-        <option value="">Select Gender</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-        <option value="Other">Other</option>
-      </select>
-
-      <label>Age</label>
-      <input type="number" name="age" min="1" required>
-
-      <label>Physical Description (Height / Dress / Marks)</label>
-      <input type="text" name="physical_description" placeholder="E.g., 5'6, blue shirt, scar on left hand">
-
-      <label>Photo Upload</label>
-      <input type="file" id="personPhotoInput" name="person_photo" accept="image/*" required>
-      <div id="personPhotoPreviewWrap" class="person-photo-preview-wrap" style="display:none;">
-        <p class="person-photo-preview-title">Photo Preview</p>
-        <img id="personPhotoPreview" class="person-photo-preview" src="" alt="Missing Person Photo Preview">
-      </div>
-
-      <h3>Last Seen Information</h3>
-      <label>Last Seen Date</label>
-      <input type="date" name="last_seen_date" required>
-
-      <label>Last Seen Location</label>
-      <input type="text" name="last_seen_location" placeholder="E.g., Dhanmondi 27, Dhaka" required>
-
-      <label>Approximate Time</label>
-      <input type="text" name="last_seen_time" placeholder="E.g., 6:30 PM">
-
-      <h3>Health & Mental Condition</h3>
-      <label>Mental Condition</label>
-      <select name="mental_condition">
-        <option value="Stable">Stable</option>
-        <option value="Depression">Depression</option>
-        <option value="Autism">Autism</option>
-        <option value="Memory Loss">Memory Loss</option>
-      </select>
-
-      <label>Medical Notes</label>
-      <input type="text" name="medical_notes" placeholder="E.g., Needs regular medicine">
-
-      <h3>Officer / Reporter Contact</h3>
-      <label>Reporting Officer Name</label>
-      <input type="text" name="reporter_name" required>
-
-      <label>Official Contact Number</label>
-      <input type="tel" name="reporter_mobile" required>
-
-      <label>Source Relation</label>
-      <input type="text" name="relationship" placeholder="E.g., Witness / Family / Field Team">
-
-      <h3>Consent</h3>
-      <label>
-        <input type="checkbox" name="consent" value="1" required> I confirm this information is verified for investigation use.
-      </label>
-
-      <div class="modal-actions">
-        <button type="button" onclick="closeMissingForm()" class="cancel-btn">Cancel</button>
-        <button type="submit" class="submit-btn">Submit Investigation Report</button>
-      </div>
-    </form>
-  </div>
-</div>
-
+<!-- Missing Person Investigation Popup moved to page end to avoid stacking context issues -->
  <style>.advert {
   border: 1px solid #eee;
   padding: 10px;
@@ -1503,7 +1423,89 @@ try {
       </div>
     </section>
   </div>
+
 </aside>
+
+    <!-- Missing Person Investigation Popup moved here to avoid stacking context issues -->
+    <div id="missingFormModal" class="missing-modal">
+      <div class="missing-modal-content">
+        <span class="missing-close" onclick="closeMissingForm()">&times;</span>
+        <h2>Police Missing Person Investigation Form</h2>
+
+        <form id="missingForm" action="../Php/save_missing_person.php" method="POST" enctype="multipart/form-data">
+          <input type="hidden" name="return_to" value="Policeman_Home.php">
+          <h3>Personal Details</h3>
+          <label>Full Name</label>
+          <input type="text" name="full_name" required>
+
+          <label>Nickname / Alias</label>
+          <input type="text" name="nickname">
+
+          <label>Gender</label>
+          <select name="gender" required>
+            <option value="">Select Gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+
+          <label>Age</label>
+          <input type="number" name="age" min="1" required>
+
+          <label>Physical Description (Height / Dress / Marks)</label>
+          <input type="text" name="physical_description" placeholder="E.g., 5'6, blue shirt, scar on left hand">
+
+          <label>Photo Upload</label>
+          <input type="file" id="personPhotoInput" name="person_photo" accept="image/*" required>
+          <div id="personPhotoPreviewWrap" class="person-photo-preview-wrap" style="display:none;">
+            <p class="person-photo-preview-title">Photo Preview</p>
+            <img id="personPhotoPreview" class="person-photo-preview" src="" alt="Missing Person Photo Preview">
+          </div>
+
+          <h3>Last Seen Information</h3>
+          <label>Last Seen Date</label>
+          <input type="date" name="last_seen_date" required>
+
+          <label>Last Seen Location</label>
+          <input type="text" name="last_seen_location" placeholder="E.g., Dhanmondi 27, Dhaka" required>
+
+          <label>Approximate Time</label>
+          <input type="text" name="last_seen_time" placeholder="E.g., 6:30 PM">
+
+          <h3>Health & Mental Condition</h3>
+          <label>Mental Condition</label>
+          <select name="mental_condition">
+            <option value="Stable">Stable</option>
+            <option value="Depression">Depression</option>
+            <option value="Autism">Autism</option>
+            <option value="Memory Loss">Memory Loss</option>
+          </select>
+
+          <label>Medical Notes</label>
+          <input type="text" name="medical_notes" placeholder="E.g., Needs regular medicine">
+
+          <h3>Officer / Reporter Contact</h3>
+          <label>Reporting Officer Name</label>
+          <input type="text" name="reporter_name" required>
+
+          <label>Official Contact Number</label>
+          <input type="tel" name="reporter_mobile" required>
+
+          <label>Source Relation</label>
+          <input type="text" name="relationship" placeholder="E.g., Witness / Family / Field Team">
+
+          <h3>Consent</h3>
+          <label>
+            <input type="checkbox" name="consent" value="1" required> I confirm this information is verified for investigation use.
+          </label>
+
+          <div class="modal-actions">
+            <button type="button" onclick="closeMissingForm()" class="cancel-btn">Cancel</button>
+            <button type="submit" class="submit-btn">Submit Investigation Report</button>
+          </div>
+        </form>
+      </div>
+    </div>
 
     </body>
       <script src="../javascrpit/Policeman_Home.js?v=20260410e"></script>

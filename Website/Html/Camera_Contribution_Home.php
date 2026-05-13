@@ -3,7 +3,6 @@ declare(strict_types=1);
 session_start();
 require_once __DIR__ . '/../Php/db.php';
 
-// Require a logged-in user id. This page specifically displays camera contributor data,
 // so always fetch from `camera_contributors` using the session `user_id`.
 if (
   empty($_SESSION['role']) ||
@@ -196,58 +195,7 @@ try {
   <button id="openWithdrawBtn" class="withdraw-btn">Withdraw Now</button>
 </div>
 
-<!-- Withdrawal Modal -->
-<div id="withdrawModal" class="withdrawal-modal" style="display:none;">
-  <div class="withdrawal-modal-content">
-    <span id="closeModalBtn" class="withdrawal-close">&times;</span>
-    <h3>Withdrawal Form</h3>
-    <form id="withdrawForm" class="withdrawal-form">
-      <label for="method">Withdrawal Method:</label>
-      <select id="method" name="method" required>
-        <option value="">Select Method</option>
-        <option value="bkash">bKash</option>
-        <option value="nagad">Nagad</option>
-        <option value="bank">Bank Transfer</option>
-        <option value="paypal">PayPal</option>
-      </select>
-
-      <label for="accountNumber">Account Number:</label>
-      <input type="text" id="accountNumber" name="accountNumber" placeholder="Enter your account number" required>
-
-      <label for="amount">Amount to Withdraw:</label>
-      <input type="number" id="amount" name="amount" min="5" max="1000" placeholder="Enter amount" required>
-
-      <button type="submit" class="confirm-btn">Confirm Withdrawal</button>
-    </form>
-
-    <!-- Transaction History -->
-    <h4>Transaction History</h4>
-    <table class="transaction-table" border="1" cellpadding="8" cellspacing="0">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Method</th>
-          <th>Amount</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>July 20, 2025</td>
-          <td>bKash</td>
-          <td>$200</td>
-          <td>Completed</td>
-        </tr>
-        <tr>
-          <td>July 15, 2025</td>
-          <td>PayPal</td>
-          <td>$300</td>
-          <td>Pending</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+<!-- Withdrawal Modal moved to end of document to avoid stacking context issues -->
 
 
 
@@ -673,6 +621,59 @@ try {
   </div>
 </aside>
 
+
+    <!-- Withdrawal Modal (moved here to avoid stacking context issues) -->
+    <div id="withdrawModal" class="withdrawal-modal" style="display:none;">
+      <div class="withdrawal-modal-content">
+        <span id="closeModalBtn" class="withdrawal-close">&times;</span>
+        <h3>Withdrawal Form</h3>
+        <form id="withdrawForm" class="withdrawal-form">
+          <label for="method">Withdrawal Method:</label>
+          <select id="method" name="method" required>
+            <option value="">Select Method</option>
+            <option value="bkash">bKash</option>
+            <option value="nagad">Nagad</option>
+            <option value="bank">Bank Transfer</option>
+            <option value="paypal">PayPal</option>
+          </select>
+
+          <label for="accountNumber">Account Number:</label>
+          <input type="text" id="accountNumber" name="accountNumber" placeholder="Enter your account number" required>
+
+          <label for="amount">Amount to Withdraw:</label>
+          <input type="number" id="amount" name="amount" min="5" max="1000" placeholder="Enter amount" required>
+
+          <button type="submit" class="confirm-btn">Confirm Withdrawal</button>
+        </form>
+
+        <!-- Transaction History -->
+        <h4>Transaction History</h4>
+        <table class="transaction-table" border="1" cellpadding="8" cellspacing="0">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Method</th>
+              <th>Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>July 20, 2025</td>
+              <td>bKash</td>
+              <td>$200</td>
+              <td>Completed</td>
+            </tr>
+            <tr>
+              <td>July 15, 2025</td>
+              <td>PayPal</td>
+              <td>$300</td>
+              <td>Pending</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
     </body>
       <script src="../javascrpit/Camera_Contribution_Home.js?v=20260410a"></script>
