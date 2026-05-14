@@ -190,12 +190,12 @@ try {
     </p>
 </div>
     
- <!-- ðŸŽ–ï¸ Volunteer Missions Panel -->
+ <!-- Volunteer Missions Panel -->
 <div class="Volunteer-rank">
   <h2>Volunteer Rank & Missions</h2>
 
   <div class="volunteer-rank-box">
-    <h3>ðŸŽ–ï¸ Real-Life Missions</h3>
+    <h3>Real-Life Missions</h3>
 
     <div class="rank-game-panel" id="rank-game-panel">
       <div class="rank-headline">
@@ -221,11 +221,11 @@ try {
         <span>Platinum</span>
       </div>
 
-      <p id="rank-stats" class="rank-stats">Accepted 0 â€¢ Completed 0 â€¢ Busy 0</p>
-      <p id="rank-rules" class="rank-rules">+10 XP (Accept) â€¢ +20 XP (Complete) â€¢ +2 XP (Auto-close by Police)</p>
+      <p id="rank-stats" class="rank-stats">Accepted 0 • Completed 0 • Busy 0</p>
+      <p id="rank-rules" class="rank-rules">+10 XP (Accept) • +20 XP (Complete) • +2 XP (Auto-close by Police)</p>
     </div>
 
-    <button class="view-missions-btn" onclick="openMissionModal()">ðŸ“‹ View Missions</button>
+    <button class="view-missions-btn" onclick="openMissionModal()">View Missions</button>
 
     <div id="rank-assigned-preview" class="rank-assigned-preview" aria-live="polite"></div>
 
@@ -1178,8 +1178,6 @@ try {
     <a href="#!">Book Seat</a>
   </article>
 </div>
-
-
 <div class="notifications">
   <div class="redzone">
   <h4>Red Zone Alerts</h4>
@@ -1254,12 +1252,6 @@ try {
     </section>
   </div>
 </aside>
-
-
-
-  
-
-
      </body>
        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
       <script src="../javascrpit/Volunteer_Home.js?v=20260409g"></script>

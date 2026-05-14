@@ -82,13 +82,15 @@ setInterval(() => {
   });
   
 function generateCalendar(year, month) {
-    const calendarHeader = document.getElementById("calendarHeader");
-    const calendarBody = document.querySelector("#calendar tbody");
+    // Support both inline calendar ids (#calendar / #calendarHeader) and shared footer ids (#footerCalendar / #footerCalendarHeader)
+    const calendarHeader = document.getElementById('calendarHeader') || document.getElementById('footerCalendarHeader');
+    const calendarBody = document.querySelector('#calendar tbody') || document.querySelector('#footerCalendar tbody');
+    if (!calendarHeader || !calendarBody) return;
 
     // Month and year header
     const monthNames = [
-      "January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December"
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
     ];
     calendarHeader.textContent = `${monthNames[month]} ${year}`;
 
@@ -100,17 +102,17 @@ function generateCalendar(year, month) {
     const startingDay = firstDay === 0 ? 6 : firstDay - 1;
 
     // Clear existing rows
-    calendarBody.innerHTML = "";
+    calendarBody.innerHTML = '';
 
     let date = 1;
     for (let i = 0; i < 6; i++) {
-      const row = document.createElement("tr");
+      const row = document.createElement('tr');
 
       for (let j = 0; j < 7; j++) {
-        const cell = document.createElement("td");
+        const cell = document.createElement('td');
 
         if (i === 0 && j < startingDay) {
-          cell.textContent = "";
+          cell.textContent = '';
         } else if (date <= daysInMonth) {
           cell.textContent = date;
 
@@ -121,14 +123,14 @@ function generateCalendar(year, month) {
             year === today.getFullYear() &&
             month === today.getMonth()
           ) {
-            cell.style.backgroundColor = "white";
-            cell.style.color = "black";
-            cell.style.fontWeight = "bold";
+            cell.style.backgroundColor = 'white';
+            cell.style.color = 'black';
+            cell.style.fontWeight = 'bold';
           }
 
           date++;
         } else {
-          cell.textContent = "";
+          cell.textContent = '';
         }
 
         row.appendChild(cell);
@@ -141,9 +143,22 @@ function generateCalendar(year, month) {
     }
   }
 
-  // Auto-generate calendar for today
-  const today = new Date();
-  generateCalendar(today.getFullYear(), today.getMonth());
+  // Auto-generate calendar for today when calendar container exists.
+  function tryInitCalendar() {
+    const hasHeader = document.getElementById('calendarHeader') || document.getElementById('footerCalendarHeader');
+    const hasBody = document.querySelector('#calendar tbody') || document.querySelector('#footerCalendar tbody');
+    if (!hasHeader || !hasBody) return;
+    const today = new Date();
+    generateCalendar(today.getFullYear(), today.getMonth());
+  }
+
+  // Run on DOMContentLoaded and when the shared footer is injected.
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', tryInitCalendar);
+  } else {
+    tryInitCalendar();
+  }
+  document.addEventListener('sharedFooter:loaded', tryInitCalendar);
 
 async function loadHomeLiveStats() {
   const solvedEl = document.getElementById('stat-cases-solved');
@@ -477,7 +492,7 @@ function setupLatestNewsCarousel() {
 
   const renderCard = (item) => `
     <div class="news-card">
-      <img class="news-card-img" src="${item.img}" alt="${item.title}">
+      <div class="news-card-img"><img src="${item.img}" alt="${item.title}"></div>
       <div class="news-card-meta-row">
         <span class="news-card-date"><i class="fa-regular fa-calendar"></i> ${item.date}</span>
       </div>
@@ -590,6 +605,8 @@ function setupHomeChatbot() {
   const quickBox = document.getElementById('chatbotQuick');
   if (!panel || !toggle || !closeBtn || !form || !input || !messages) return;
 
+  let isTogglingDebounce = false;
+
   const sessionToken = (() => {
     try {
       let token = localStorage.getItem(CHAT_SESSION_KEY);
@@ -701,15 +718,28 @@ function setupHomeChatbot() {
     }
   };
 
-  toggle.addEventListener('click', () => {
+  toggle.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isTogglingDebounce) return;
+    isTogglingDebounce = true;
+    setTimeout(() => { isTogglingDebounce = false; }, 300);
+    
     if (panel.classList.contains('open')) {
       closePanel();
-      return;
+    } else {
+      openPanel();
     }
-    openPanel();
   });
 
-  closeBtn.addEventListener('click', closePanel);
+  closeBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isTogglingDebounce) return;
+    isTogglingDebounce = true;
+    setTimeout(() => { isTogglingDebounce = false; }, 300);
+    closePanel();
+  });
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -729,6 +759,19 @@ function setupHomeChatbot() {
       askAndReply(q);
     });
   }
+
+  // Handle clicks outside the panel to close it
+  document.addEventListener('click', (ev) => {
+    if (!panel.classList.contains('open')) return;
+    const isInsidePanel = ev.target.closest && ev.target.closest('.chatbot-panel');
+    const isFabClick = ev.target.closest && ev.target.closest('#chatbotToggle, .chatbot-fab');
+    if (!isInsidePanel && !isFabClick) {
+      if (isTogglingDebounce) return;
+      isTogglingDebounce = true;
+      setTimeout(() => { isTogglingDebounce = false; }, 300);
+      closePanel();
+    }
+  });
 
   pollAdminReplies();
   setInterval(pollAdminReplies, 1800);

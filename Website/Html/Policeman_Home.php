@@ -207,7 +207,7 @@ try {
         continue;
       }
 
-      $missingLabel = (string)($row['full_name'] ?? 'Unknown') . ' â€¢ Last seen: ' . (string)($row['last_seen_location'] ?? 'Unknown');
+      $missingLabel = (string)($row['full_name'] ?? 'Unknown') . ' • Last seen: ' . (string)($row['last_seen_location'] ?? 'Unknown');
       if (isLikelyDummyText($missingLabel)) {
         continue;
       }
@@ -224,7 +224,7 @@ try {
         'image_url' => $imageUrl,
         'contact_mobile' => (string)($row['reporter_mobile'] ?? ''),
         'missing_name' => (string)($row['full_name'] ?? ''),
-        'extra_details' => trim((string)($row['gender'] ?? '') . ' â€¢ Age: ' . (string)($row['age'] ?? '') . ' â€¢ Mental: ' . (string)($row['mental_condition'] ?? '') . ' â€¢ Medical: ' . (string)($row['medical_notes'] ?? '')),
+        'extra_details' => trim((string)($row['gender'] ?? '') . ' • Age: ' . (string)($row['age'] ?? '') . ' • Mental: ' . (string)($row['mental_condition'] ?? '') . ' • Medical: ' . (string)($row['medical_notes'] ?? '')),
         'created_at' => (string)($row['created_at'] ?? ''),
       ];
       $caseCounts['missing'] += 1;
