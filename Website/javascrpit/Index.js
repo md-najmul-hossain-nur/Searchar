@@ -4,12 +4,17 @@ function delayedRedirect() {
       window.location.href = '../Html/loginAdmin.html';
     }, 2000); // 2000 ms = 2 seconds
   }
-  document.getElementById('view-causes-btn').addEventListener('click', function(e) {
-  e.preventDefault(); // Prevent default anchor behavior
-  document.getElementById('our-causes').scrollIntoView({
-    behavior: 'smooth'
+const viewCausesBtn = document.getElementById('view-causes-btn');
+if (viewCausesBtn) {
+  viewCausesBtn.addEventListener('click', function(e) {
+    e.preventDefault(); // Prevent default anchor behavior
+    const causesSection = document.getElementById('our-causes');
+    if (!causesSection) return;
+    causesSection.scrollIntoView({
+      behavior: 'smooth'
+    });
   });
-});
+}
 const slides = [
   {
     image: "../Images/makeachange.jpg",
@@ -42,44 +47,51 @@ const heroLabel = document.getElementById('hero-label');
 const heroPetition = document.getElementById('hero-petition');
 const heroTitle = document.getElementById('hero-title');
 
-// Preload images
-slides.forEach(slide => {
-  const img = new Image();
-  img.src = slide.image;
-});
+if (heroBg && heroLabel && heroPetition && heroTitle) {
+  // Preload images
+  slides.forEach(slide => {
+    const img = new Image();
+    img.src = slide.image;
+  });
 
-function showSlide(idx) {
-  heroLabel.style.opacity = 0;
-  heroPetition.style.opacity = 0;
-  heroTitle.style.opacity = 0;
-  heroBg.style.opacity = 0.2;   // Do not set to 0, so no white flash
+  function showSlide(idx) {
+    heroLabel.style.opacity = 0;
+    heroPetition.style.opacity = 0;
+    heroTitle.style.opacity = 0;
+    heroBg.style.opacity = 0.2;   // Do not set to 0, so no white flash
 
-  setTimeout(() => {
-    heroBg.src = slides[idx].image;
-    heroLabel.innerText = slides[idx].label;
-    heroPetition.innerText = slides[idx].petition;
-    heroTitle.innerHTML = slides[idx].title;
+    setTimeout(() => {
+      heroBg.src = slides[idx].image;
+      heroLabel.innerText = slides[idx].label;
+      heroPetition.innerText = slides[idx].petition;
+      heroTitle.innerHTML = slides[idx].title;
 
-    heroBg.style.opacity = 1;
-    heroLabel.style.opacity = 1;
-    heroPetition.style.opacity = 1;
-    heroTitle.style.opacity = 1;
-  }, 400);
+      heroBg.style.opacity = 1;
+      heroLabel.style.opacity = 1;
+      heroPetition.style.opacity = 1;
+      heroTitle.style.opacity = 1;
+    }, 400);
+  }
+
+  showSlide(currentSlide);
+
+  setInterval(() => {
+    currentSlide = (currentSlide + 1) % slides.length;
+    showSlide(currentSlide);
+  }, 4000);
 }
 
-showSlide(currentSlide);
-
-setInterval(() => {
-  currentSlide = (currentSlide + 1) % slides.length;
-  showSlide(currentSlide);
-}, 4000);
-
- document.getElementById('read-more-btn').addEventListener('click', function(e) {
+const readMoreBtn = document.getElementById('read-more-btn');
+if (readMoreBtn) {
+  readMoreBtn.addEventListener('click', function(e) {
     e.preventDefault(); // Prevent jump
-    document.getElementById('hero-involved').scrollIntoView({
+    const heroInvolved = document.getElementById('hero-involved');
+    if (!heroInvolved) return;
+    heroInvolved.scrollIntoView({
       behavior: 'smooth'
     });
   });
+}
   
 function generateCalendar(year, month) {
     // Support both inline calendar ids (#calendar / #calendarHeader) and shared footer ids (#footerCalendar / #footerCalendarHeader)
