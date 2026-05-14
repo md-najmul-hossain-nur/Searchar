@@ -63,9 +63,9 @@ body {
 .donation-hero {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(240px, 0.65fr);
+  grid-template-columns: 1fr;
   align-items: center;
-  gap: 28px;
+  gap: 22px;
   background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
   border-radius: 26px;
   padding: 48px 44px;
@@ -78,7 +78,7 @@ body {
 .donation-hero-content {
   position: relative;
   z-index: 1;
-  max-width: 760px;
+  max-width: 860px;
 }
 
 .hero-badge {
@@ -106,6 +106,50 @@ body {
   font-size: 18px;
   line-height: 1.55;
   color: #475569;
+}
+
+.donation-hero-media {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 14px;
+  justify-items: stretch;
+}
+
+.hero-video-frame {
+  width: 100%;
+  max-width: 720px;
+  aspect-ratio: 16 / 9;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.14);
+  position: relative;
+  background: #0f172a;
+  margin: 0 auto;
+}
+
+.hero-video-frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.05) 0%, rgba(15, 23, 42, 0.35) 100%);
+  pointer-events: none;
+}
+
+.hero-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.hero-media-caption {
+  font-size: 14px;
+  text-align: center;
+  color: #475569;
+  max-width: 520px;
+  margin: 0 auto;
 }
 
 .hero-quick-stats {
@@ -145,6 +189,7 @@ body {
   right: -70px;
   top: -90px;
   pointer-events: none;
+  opacity: 0.6;
 }
 
 .impact-section {
@@ -338,7 +383,6 @@ body {
   }
 
   .donation-hero {
-    grid-template-columns: 1fr;
     padding: 32px 22px;
   }
 

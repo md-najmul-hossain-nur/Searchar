@@ -62,6 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+
   const donationForm = document.getElementById('donationForm');
 
   const animatedNodes = document.querySelectorAll('.animate-text');
