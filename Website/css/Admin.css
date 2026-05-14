@@ -1932,6 +1932,29 @@ body, html {
   margin: 0 0 18px;
 }
 
+.broadcast-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.broadcast-header .admin-section-toolbar {
+  margin: 0;
+}
+
+.section-subtitle {
+  margin: 12px 0 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2f2f2f;
+}
+
+.broadcast-video-section {
+  margin-top: 18px;
+}
+
 .admin-refresh-btn {
   border: 0;
   border-radius: 999px;
@@ -1942,13 +1965,43 @@ body, html {
   background: linear-gradient(135deg, #f75c3c, #ff7a59);
   box-shadow: 0 8px 18px rgba(247, 92, 60, 0.25);
   cursor: pointer;
+  text-decoration: none;
   transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+.broadcast-open-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #1e3a8a, #2563eb);
+  border: 1px solid #1e40af;
+  box-shadow: 0 10px 20px rgba(30, 64, 175, 0.28);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  text-decoration: none;
+}
+
+.broadcast-open-btn::before {
+  content: '\f03d';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  font-size: 12px;
+}
+
+.broadcast-open-btn:hover {
+  text-decoration: none;
+  box-shadow: 0 12px 26px rgba(29, 78, 216, 0.32);
 }
 
 .admin-refresh-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 10px 22px rgba(247, 92, 60, 0.3);
   filter: brightness(1.03);
+}
+
+.broadcast-open-btn:focus-visible {
+  outline: 2px solid #1d4ed8;
+  outline-offset: 2px;
 }
 
 .admin-refresh-btn:active {

@@ -58,7 +58,7 @@
     <span class="icon"><i class="fa-solid fa-hand-holding-dollar"></i></span> Donations Control
   </li>
   <li data-section="broadcast">
-    <span class="icon"><i class="fa-solid fa-bullhorn"></i></span> Broadcast & Notifications
+    <span class="icon"><i class="fa-solid fa-bullhorn"></i></span> Broadcast & Camera Videos
   </li>
   <li data-section="volunteer">
     <span class="icon"><i class="fa-solid fa-handshake-angle"></i></span> Volunteer Missions
@@ -791,32 +791,54 @@
 </div>
 
 <div id="broadcast" class="main-section">
-  <h2>Broadcast & 
-    Notifications</h2>
+  <div class="broadcast-header">
+    <h2>Broadcast Requests & Camera Videos</h2>
+    <div class="admin-section-toolbar">
+      <a class="admin-refresh-btn broadcast-open-btn" href="../Html/BroadCast.php">Open Broadcast Desk</a>
+    </div>
+  </div>
   <div class="filters-bar" id="broadcast-filters">
     <input id="broadcast-filter-text" type="text" placeholder="Search title, message, area">
     <button type="button" id="broadcast-filter-reset" class="ghost">Reset</button>
   </div>
-  <table class="styled-table">
-    <thead>
-      <tr>
-        <th>Title</th><th>Message</th><th>Target Area</th><th>User Type</th>
-        <th>Sent On</th><th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="broadcast-table-body">
-      <tr>
-        <td>Amber Alert</td><td>Child missing in Dhanmondi</td><td>Dhanmondi</td>
-        <td>All</td><td>2025-07-27 13:00</td>
-        <td>
-          <button>Repeat</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-  <div class="broadcast-actions">
-    <button class="btn-alert"><i class="fa-solid fa-bullhorn"></i> Send New Alert</button>
-    <button class="btn-schedule"><i class="fa-regular fa-calendar-check"></i> Schedule Broadcast</button>
+  <div class="section-table-block">
+    <h3 class="section-subtitle">Broadcast Requests</h3>
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th>Police Officer</th>
+          <th>Station</th>
+          <th>Reason</th>
+          <th>Requested On</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="broadcast-request-body">
+        <tr>
+          <td colspan="6">Loading broadcast requests...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="section-table-block broadcast-video-section">
+    <h3 class="section-subtitle">Camera Video Submissions</h3>
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th>Cameraman</th>
+          <th>Video</th>
+          <th>Location</th>
+          <th>Sent On</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="camera-video-table-body">
+        <tr>
+          <td colspan="5">Loading camera videos...</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>
 

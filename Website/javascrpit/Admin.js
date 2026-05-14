@@ -2677,6 +2677,8 @@ function openAddVolunteerModal() {
   const donationsBody = document.getElementById('donations-table-body');
   const broadcastBody = document.getElementById('broadcast-table-body');
   const missionsBody = document.getElementById('volunteer-mission-body');
+  const cameraVideoBody = document.getElementById('camera-video-table-body');
+  const broadcastRequestBody = document.getElementById('broadcast-request-body');
   // Withdraw Control is managed in Admin.html now; avoid overwriting its data
   const withdrawBody = (typeof window.renderWithdrawalsTable === 'function') ? null : document.getElementById('withdraw-table-body');
   const volunteerTotalMissions = document.getElementById('volunteer-total-missions');
@@ -2688,7 +2690,7 @@ function openAddVolunteerModal() {
   const miscSectionIds = ['donations', 'broadcast', 'volunteer'];
   let isLoadingMiscSections = false;
 
-  if (!donationsBody && !broadcastBody && !missionsBody && !withdrawBody) return;
+  if (!donationsBody && !broadcastBody && !missionsBody && !withdrawBody && !cameraVideoBody && !broadcastRequestBody) return;
 
   function esc(v) {
     return String(v ?? '')
@@ -2751,6 +2753,54 @@ function openAddVolunteerModal() {
     return `../${path}`;
   }
 
+  function cameraVideoUrl(rawPath) {
+    const path = String(rawPath || '').trim();
+    if (!path) return '';
+    if (/^https?:\/\//i.test(path)) return path;
+    if (path.startsWith('../') || path.startsWith('./') || path.startsWith('/')) return path;
+    return `../${path}`;
+  }
+
+  function broadcastRequestStatusChip(status) {
+    const s = String(status || 'pending').toLowerCase();
+    if (s === 'approved') return '<span class="status-approved">Approved</span>';
+    if (s === 'rejected') return '<span class="status-rejected">Rejected</span>';
+    return '<span class="status-pending">Pending</span>';
+  }
+
+  function renderBroadcastRequests(rows) {
+    if (!broadcastRequestBody) return;
+    if (!Array.isArray(rows) || rows.length === 0) {
+      setNoData(broadcastRequestBody, 6, 'No broadcast requests yet.');
+      return;
+    }
+
+    broadcastRequestBody.innerHTML = rows.map((row) => {
+      const requestId = Number(row.request_id || 0);
+      const policeName = String(row.police_name || 'Police Officer');
+      const station = String(row.station || '—');
+      const status = String(row.status || 'pending').toLowerCase();
+      const statusHtml = broadcastRequestStatusChip(status);
+      const createdAt = fmtDate(row.created_at || '');
+      const requestReason = String(row.request_reason || '').trim() || '—';
+      const canAct = status === 'pending';
+
+      return `
+        <tr data-broadcast-request-id="${esc(requestId)}">
+          <td>${esc(policeName)}</td>
+          <td>${esc(station)}</td>
+          <td>${esc(requestReason)}</td>
+          <td>${esc(createdAt)}</td>
+          <td>${statusHtml}</td>
+          <td>
+            <button type="button" data-broadcast-request-action="approve" data-broadcast-request-id="${esc(requestId)}" ${canAct ? '' : 'disabled'}>Approve</button>
+            <button type="button" data-broadcast-request-action="reject" data-broadcast-request-id="${esc(requestId)}" ${canAct ? '' : 'disabled'}>Reject</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
   async function loadMiscSections() {
     if (isLoadingMiscSections) {
       return;
@@ -2758,17 +2808,30 @@ function openAddVolunteerModal() {
 
     isLoadingMiscSections = true;
     try {
-      const res = await fetch('../Php/admin_fetch_misc_sections.php', {
+      const miscRequest = fetch('../Php/admin_fetch_misc_sections.php', {
         credentials: 'same-origin',
         cache: 'no-store'
       });
-      const json = await res.json();
+      const cameraRequest = cameraVideoBody
+        ? fetch('../Php/admin_fetch_camera_videos.php', { credentials: 'same-origin', cache: 'no-store' })
+        : Promise.resolve(null);
+
+      const broadcastRequest = broadcastRequestBody
+        ? fetch('../Php/admin_fetch_broadcast_requests.php', { credentials: 'same-origin', cache: 'no-store' })
+        : Promise.resolve(null);
+
+      const [miscRes, cameraRes, broadcastRes] = await Promise.all([miscRequest, cameraRequest, broadcastRequest]);
+      const json = await miscRes.json();
+      const cameraJson = cameraRes ? await cameraRes.json() : null;
+      const broadcastReqJson = broadcastRes ? await broadcastRes.json() : null;
       if (!json?.success) throw new Error(json?.error || 'Load failed');
 
       const donations = Array.isArray(json.donations) ? json.donations : [];
       const broadcasts = Array.isArray(json.broadcasts) ? json.broadcasts : [];
       const missions = Array.isArray(json.missions) ? json.missions : [];
       const withdraws = Array.isArray(json.withdraws) ? json.withdraws : [];
+      const cameraVideos = Array.isArray(cameraJson?.rows) ? cameraJson.rows : [];
+      const broadcastRequests = Array.isArray(broadcastReqJson?.rows) ? broadcastReqJson.rows : [];
       const totalDonationAmount = donations.reduce((sum, d) => sum + Number(d?.amount || 0), 0);
       const topDonorRow = donations.reduce((top, row) => {
         const topAmount = Number(top?.amount || 0);
@@ -2845,7 +2908,7 @@ function openAddVolunteerModal() {
 
       if (broadcastBody) {
         if (!broadcasts.length) {
-          setNoData(broadcastBody, 6, 'No broadcast notifications found.');
+          broadcastBody.innerHTML = '';
         } else {
           broadcastBody.innerHTML = broadcasts.map(b => `
             <tr>
@@ -3060,11 +3123,49 @@ function openAddVolunteerModal() {
       if (withdrawBody) {
         // Withdraw rendering handled by Admin.html (avoid double render)
       }
+
+      if (cameraVideoBody) {
+        if (!cameraVideos.length) {
+          setNoData(cameraVideoBody, 5, 'No camera feeds found yet.');
+        } else {
+          cameraVideoBody.innerHTML = cameraVideos.map(row => {
+            const videoUrl = cameraVideoUrl(row.video_path || row.video_url || row.live_url || '');
+            const label = String(row.feed_label || (row.feed_type ? `${row.feed_type} feed` : 'Camera Feed'));
+            const location = String(row.camera_location || '').trim()
+              || [row.street, row.city, row.country].map(v => String(v || '').trim()).filter(Boolean).join(', ')
+              || '—';
+            const cameraman = String(row.cameraman_name || 'Camera Contributor');
+            const sentOn = fmtDate(row.created_at);
+            const videoCell = videoUrl
+              ? `<a href="${esc(videoUrl)}" target="_blank" rel="noopener">${esc(label)}</a>`
+              : '<span>—</span>';
+            const actionCell = videoUrl
+              ? `<a href="${esc(videoUrl)}" target="_blank" rel="noopener">Open</a>`
+              : '<span>—</span>';
+
+            return `
+              <tr>
+                <td>${esc(cameraman)}</td>
+                <td>${videoCell}</td>
+                <td>${esc(location)}</td>
+                <td>${esc(sentOn)}</td>
+                <td>${actionCell}</td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+
+      if (broadcastRequestBody) {
+        renderBroadcastRequests(broadcastRequests);
+      }
     } catch (error) {
       if (donationsBody) setNoData(donationsBody, 8, 'Failed to load donations.');
       if (broadcastBody) setNoData(broadcastBody, 6, 'Failed to load broadcast notifications.');
       if (missionsBody) setNoData(missionsBody, 9, 'Failed to load volunteer missions.');
       if (withdrawBody) setNoData(withdrawBody, 5, 'Failed to load withdrawals.');
+      if (cameraVideoBody) setNoData(cameraVideoBody, 5, 'Failed to load camera videos.');
+      if (broadcastRequestBody) setNoData(broadcastRequestBody, 5, 'Failed to load broadcast requests.');
       if (donationsTotalAmount) donationsTotalAmount.textContent = '৳0.00';
       if (donationsTopDonor) donationsTopDonor.textContent = '—';
       if (withdrawTotalAmount) withdrawTotalAmount.textContent = '৳0.00';
@@ -3099,6 +3200,47 @@ function openAddVolunteerModal() {
       loadMiscSections();
     }
   }, 10000);
+
+  document.addEventListener('click', (event) => {
+    const actionBtn = event.target.closest('[data-broadcast-request-action]');
+    if (!actionBtn) return;
+    const action = String(actionBtn.getAttribute('data-broadcast-request-action') || '').toLowerCase();
+    const requestId = Number(actionBtn.getAttribute('data-broadcast-request-id') || 0);
+    if (!requestId || (action !== 'approve' && action !== 'reject')) return;
+
+    let reasonText = '';
+    if (action === 'reject') {
+      const reasonPrompt = window.prompt('Write a reason for rejecting this request:');
+      if (reasonPrompt === null) return;
+      reasonText = String(reasonPrompt || '').trim();
+      if (!reasonText) {
+        alert('Please write a rejection reason.');
+        return;
+      }
+    }
+
+    actionBtn.disabled = true;
+    const prevLabel = actionBtn.textContent;
+    actionBtn.textContent = action === 'approve' ? 'Approving...' : 'Rejecting...';
+
+    fetch('../Php/admin_update_broadcast_request.php', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ request_id: String(requestId), action, reason: reasonText })
+    })
+      .then(res => res.json())
+      .then(json => {
+        if (!json?.success) throw new Error(json?.error || 'Update failed');
+        loadMiscSections();
+      })
+      .catch(error => {
+        console.error('broadcast request update failed', error);
+        actionBtn.disabled = false;
+        actionBtn.textContent = prevLabel || 'Update';
+        alert(error?.message || 'Could not update request.');
+      });
+  });
 })();
 
 // Dashboard pending action queue
@@ -3131,8 +3273,9 @@ function openAddVolunteerModal() {
     const missionPending = Number(summary?.mission_proof_pending || 0);
     const volunteerPending = Number(summary?.volunteer_pending || 0);
     const reportPending = Number(summary?.report_pending || 0);
+    const broadcastPending = Number(summary?.broadcast_pending || 0);
     const chatLogTotal = Number(summary?.chat_log_total || 0);
-    summaryEl.textContent = `Post ${postPending} • Volunteer ${volunteerPending} • Report ${reportPending} • Missing ${missingPending} • Withdraw ${withdrawPending} • Proof ${missionPending} • Chat Log ${chatLogTotal}`;
+    summaryEl.textContent = `Post ${postPending} • Volunteer ${volunteerPending} • Report ${reportPending} • Missing ${missingPending} • Withdraw ${withdrawPending} • Proof ${missionPending} • Broadcast ${broadcastPending} • Chat Log ${chatLogTotal}`;
   }
 
   function statusChip(statusText) {
@@ -3271,6 +3414,18 @@ function openAddVolunteerModal() {
             if (first && (first.textContent || '').trim() === String(itemRef || '').trim()) return true;
             return (tr.textContent || '').toLowerCase().includes(String(searchKey || '').toLowerCase());
           });
+        if (row) jumpHighlight(row);
+        return;
+      }
+
+      if (targetSection === 'broadcast') {
+        const input = document.getElementById('broadcast-filter-text');
+        if (input && searchKey) {
+          input.value = searchKey;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        const row = Array.from(document.querySelectorAll('#broadcast-request-body tr'))
+          .find(tr => (tr.textContent || '').toLowerCase().includes(String(searchKey || '').toLowerCase()));
         if (row) jumpHighlight(row);
       }
     }, 350);
@@ -3413,8 +3568,41 @@ function openAddVolunteerModal() {
   // Donations: text filter
   setupTextFilter('donations', 'donations-filter-text', 'donations-filter-reset');
 
-  // Broadcast: text filter
-  setupTextFilter('broadcast', 'broadcast-filter-text', 'broadcast-filter-reset');
+  // Broadcast: text filter (apply to both broadcast + camera video tables)
+  (function () {
+    const section = document.getElementById('broadcast');
+    if (!section) return;
+    const input = document.getElementById('broadcast-filter-text');
+    const reset = document.getElementById('broadcast-filter-reset');
+    const broadcastBody = document.getElementById('broadcast-table-body');
+    const cameraBody = document.getElementById('camera-video-table-body');
+    const requestBody = document.getElementById('broadcast-request-body');
+    if (!input) return;
+
+    const apply = () => {
+      const q = input.value.trim().toLowerCase();
+      const rows = [];
+      if (broadcastBody) rows.push(...Array.from(broadcastBody.querySelectorAll('tr')));
+      if (cameraBody) rows.push(...Array.from(cameraBody.querySelectorAll('tr')));
+      if (requestBody) rows.push(...Array.from(requestBody.querySelectorAll('tr')));
+
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = q && !text.includes(q) ? 'none' : '';
+      });
+    };
+
+    input.addEventListener('input', apply);
+    if (reset) {
+      reset.addEventListener('click', () => {
+        input.value = '';
+        apply();
+        document.dispatchEvent(new CustomEvent('admin:refresh-section', {
+          detail: { sectionId: 'broadcast' }
+        }));
+      });
+    }
+  })();
 
   // Volunteer: text + status (status col index 6)
   setupTextStatusFilter('volunteer', 'volunteer-filter-text', 'volunteer-filter-status', 'volunteer-filter-reset', 'tbody tr', 6);

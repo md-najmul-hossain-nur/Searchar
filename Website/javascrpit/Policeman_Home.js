@@ -1,5 +1,119 @@
-﻿document.getElementById('requestBroadcastBtn').addEventListener('click', function() {
-  window.location.href = '../Html/BroadCast.php';
+﻿const requestBroadcastBtn = document.getElementById('requestBroadcastBtn');
+const broadcastStatus = document.getElementById('broadcastStatus');
+const broadcastLink = document.getElementById('broadcastLink');
+let broadcastPollTimer = null;
+
+function setBroadcastUi(state, message) {
+  if (broadcastStatus) {
+    broadcastStatus.textContent = message || '';
+    if (state === 'approved') {
+      broadcastStatus.style.color = 'green';
+    } else if (state === 'rejected') {
+      broadcastStatus.style.color = 'red';
+    } else if (state === 'pending') {
+      broadcastStatus.style.color = 'orange';
+    } else {
+      broadcastStatus.style.color = '#444';
+    }
+  }
+
+  if (broadcastLink) {
+    broadcastLink.style.display = state === 'approved' ? 'block' : 'none';
+  }
+
+  if (requestBroadcastBtn) {
+    if (state === 'approved') {
+      requestBroadcastBtn.style.display = 'none';
+    } else {
+      requestBroadcastBtn.style.display = '';
+      requestBroadcastBtn.disabled = state === 'pending';
+    }
+  }
+}
+
+async function fetchBroadcastStatus() {
+  try {
+    const res = await fetch('../Php/police_fetch_broadcast_status.php', {
+      method: 'GET',
+      credentials: 'same-origin',
+      headers: { 'Accept': 'application/json' }
+    });
+    const json = await res.json();
+    if (!json?.success) return null;
+    return json;
+  } catch (error) {
+    return null;
+  }
+}
+
+function startBroadcastPolling() {
+  if (broadcastPollTimer) return;
+  broadcastPollTimer = setInterval(async () => {
+    const data = await fetchBroadcastStatus();
+    if (!data) return;
+    if (data.status === 'approved') {
+      setBroadcastUi('approved', 'Request approved. Join broadcast now.');
+      clearInterval(broadcastPollTimer);
+      broadcastPollTimer = null;
+    } else if (data.status === 'rejected') {
+      const reasonText = String(data.reason || '').trim();
+      const msg = reasonText ? `Request rejected by admin. Reason: ${reasonText}` : 'Request rejected by admin.';
+      setBroadcastUi('rejected', msg);
+      clearInterval(broadcastPollTimer);
+      broadcastPollTimer = null;
+    } else if (data.status === 'pending') {
+      setBroadcastUi('pending', 'Request sent. Waiting for admin approval...');
+    }
+  }, 8000);
+}
+
+async function submitBroadcastRequest() {
+  if (!requestBroadcastBtn) return;
+  const reasonText = window.prompt('Write a short reason for the broadcast request:');
+  if (reasonText === null) return;
+  const reason = String(reasonText || '').trim();
+  if (!reason) {
+    alert('Please write a reason before sending the request.');
+    return;
+  }
+  requestBroadcastBtn.disabled = true;
+  setBroadcastUi('pending', 'Sending broadcast request...');
+
+  try {
+    const res = await fetch('../Php/police_request_broadcast.php', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ action: 'request', reason })
+    });
+    const json = await res.json();
+    if (!json?.success) {
+      throw new Error(json?.error || 'Request failed');
+    }
+    setBroadcastUi('pending', json?.message || 'Request sent. Waiting for admin approval...');
+    startBroadcastPolling();
+  } catch (error) {
+    setBroadcastUi('idle', error?.message || 'Could not send request right now.');
+    if (requestBroadcastBtn) requestBroadcastBtn.disabled = false;
+  }
+}
+
+if (requestBroadcastBtn) {
+  requestBroadcastBtn.addEventListener('click', submitBroadcastRequest);
+}
+
+fetchBroadcastStatus().then((data) => {
+  if (!data) return;
+  if (data.status === 'approved') {
+    setBroadcastUi('approved', 'Request approved. Join broadcast now.');
+  } else if (data.status === 'rejected') {
+    const reasonText = String(data.reason || '').trim();
+    const msg = reasonText ? `Request rejected by admin. Reason: ${reasonText}` : 'Request rejected by admin.';
+    setBroadcastUi('rejected', msg);
+  } else if (data.status === 'pending') {
+    setBroadcastUi('pending', 'Request sent. Waiting for admin approval...');
+    startBroadcastPolling();
+  }
 });
 
 
