@@ -4,13 +4,22 @@ let divisionDistrictAreaData = {};
 const divisionSelect = document.getElementById('divisionSelect');
 const districtSelect = document.getElementById('districtSelect');
 const areaSelect = document.getElementById('areaSelect');
+const broadcastSearch = document.getElementById('broadcastSearch');
+const feedTypeFilter = document.getElementById('feedTypeFilter');
+const broadcastFilterButton = document.getElementById('broadcastFilterButton');
 const cameraGrid = document.getElementById('cameraGrid');
 const cameraInfo = document.getElementById('cameraInfo');
 const cameraCount = document.getElementById('cameraCount');
 const areaName = document.getElementById('areaName');
 const logo = document.getElementById('logo');
+const useFilters = !!(divisionSelect && districtSelect && areaSelect);
+let currentFeeds = [];
+let currentAreaLabel = '';
 
 async function loadLocationTreeFromDatabase() {
+  if (!useFilters) {
+    return;
+  }
   try {
     const res = await fetch('../Php/fetch_broadcast_locations.php', {
       method: 'GET',
@@ -203,6 +212,38 @@ function renderCameraCards(area, feeds) {
   });
 }
 
+function applyFeedFilters() {
+  const query = String(broadcastSearch?.value || '').trim().toLowerCase();
+  const typeFilter = String(feedTypeFilter?.value || 'all').toLowerCase();
+
+  let filtered = currentFeeds.slice();
+  if (typeFilter !== 'all') {
+    filtered = filtered.filter(feed => String(feed.feed_type || '').toLowerCase() === typeFilter);
+  }
+
+  if (query) {
+    filtered = filtered.filter(feed => {
+      const label = String(feed.feed_label || '').toLowerCase();
+      const location = String(feed.camera_location || '').toLowerCase();
+      const owner = String(feed.owner_name || '').toLowerCase();
+      return label.includes(query) || location.includes(query) || owner.includes(query);
+    });
+  }
+
+  cameraInfo.classList.remove("hidden");
+  if (areaName) {
+    areaName.textContent = currentAreaLabel || 'Selected Area';
+  }
+  cameraCount.textContent = String(filtered.length);
+
+  if (filtered.length === 0) {
+    renderEmptyState("No cameras match your filters.");
+    return;
+  }
+
+  renderCameraCards(currentAreaLabel, filtered);
+}
+
 let latestFeedRequestId = 0;
 
 async function loadBroadcastFeeds(selection) {
@@ -210,7 +251,7 @@ async function loadBroadcastFeeds(selection) {
   const district = String(selection?.district || '').trim();
   const division = String(selection?.division || '').trim();
 
-  if (!area) {
+  if (!area && useFilters) {
     cameraInfo.classList.add("hidden");
     renderEmptyState("Please choose an area to start monitoring.");
     return;
@@ -220,7 +261,10 @@ async function loadBroadcastFeeds(selection) {
   renderEmptyState("Loading CCTV feeds for selected location...");
 
   try {
-    const qs = new URLSearchParams({ area, district, division });
+    const qs = new URLSearchParams();
+    if (division) qs.set('division', division);
+    if (district) qs.set('district', district);
+    if (area) qs.set('area', area);
     const res = await fetch(`../Php/fetch_public_cctv_broadcast.php?${qs.toString()}`, {
       method: 'GET',
       credentials: 'same-origin',
@@ -235,16 +279,16 @@ async function loadBroadcastFeeds(selection) {
     }
 
     const feeds = Array.isArray(data.feeds) ? data.feeds : [];
-    cameraInfo.classList.remove("hidden");
-    areaName.textContent = area;
-    cameraCount.textContent = String(feeds.length);
+    currentFeeds = feeds;
+    currentAreaLabel = area || 'Selected Area';
 
     if (feeds.length === 0) {
-      renderEmptyState("No public CCTV feed found in this location yet.");
+      cameraInfo.classList.add("hidden");
+      renderEmptyState("No public CCTV feed found yet.");
       return;
     }
 
-    renderCameraCards(area, feeds);
+    applyFeedFilters();
   } catch (error) {
     cameraInfo.classList.add("hidden");
     renderEmptyState("Could not load feeds right now. Please try again.");
@@ -268,6 +312,11 @@ function populateDivisions() {
   divisionSelect.disabled = divisions.length === 0;
   districtSelect.disabled = true;
   areaSelect.disabled = true;
+
+  if (divisions.length > 0) {
+    divisionSelect.value = divisions[0];
+    populateDistricts(divisions[0]);
+  }
 }
 
 // Populate Districts based on Division
@@ -285,6 +334,12 @@ function populateDistricts(division) {
       districtSelect.appendChild(option);
     }
     districtSelect.disabled = false;
+
+    const districts = Object.keys(divisionDistrictAreaData[division]);
+    if (districts.length > 0) {
+      districtSelect.value = districts[0];
+      populateAreas(division, districts[0]);
+    }
   }
 }
 
@@ -306,6 +361,16 @@ function populateAreas(division, district) {
       areaSelect.appendChild(option);
     });
     areaSelect.disabled = false;
+
+    const areas = divisionDistrictAreaData[division][district];
+    if (Array.isArray(areas) && areas.length > 0) {
+      areaSelect.value = areas[0];
+      loadBroadcastFeeds({
+        division,
+        district,
+        area: areas[0],
+      });
+    }
   }
 }
 
@@ -338,30 +403,56 @@ if (logo) {
   });
 }
 
-divisionSelect.addEventListener('change', function () {
-  populateDistricts(this.value);
-  cameraInfo.classList.add("hidden");
-  renderEmptyState("Select a district and area to load active camera feeds.");
-});
-districtSelect.addEventListener('change', function () {
-  populateAreas(divisionSelect.value, this.value);
-  cameraInfo.classList.add("hidden");
-  renderEmptyState("Almost there. Pick an area to view live broadcast cards.");
-});
-
-areaSelect.addEventListener('change', function () {
-  const area = areaSelect.value;
-  if (area) {
-    loadBroadcastFeeds({
-      division: divisionSelect.value,
-      district: districtSelect.value,
-      area,
-    });
-  } else {
+if (useFilters) {
+  divisionSelect.addEventListener('change', function () {
+    populateDistricts(this.value);
     cameraInfo.classList.add("hidden");
-    renderEmptyState("Please choose an area to start monitoring.");
-  }
-});
+    renderEmptyState("Select a district and area to load active camera feeds.");
+  });
+  districtSelect.addEventListener('change', function () {
+    populateAreas(divisionSelect.value, this.value);
+    cameraInfo.classList.add("hidden");
+    renderEmptyState("Almost there. Pick an area to view live broadcast cards.");
+  });
+
+  areaSelect.addEventListener('change', function () {
+    const area = areaSelect.value;
+    if (area) {
+      loadBroadcastFeeds({
+        division: divisionSelect.value,
+        district: districtSelect.value,
+        area,
+      });
+    } else {
+      cameraInfo.classList.add("hidden");
+      renderEmptyState("Please choose an area to start monitoring.");
+    }
+  });
+}
+
+if (broadcastSearch) {
+  broadcastSearch.addEventListener('input', () => {
+    if (currentFeeds.length > 0) {
+      applyFeedFilters();
+    }
+  });
+}
+
+if (feedTypeFilter) {
+  feedTypeFilter.addEventListener('change', () => {
+    if (currentFeeds.length > 0) {
+      applyFeedFilters();
+    }
+  });
+}
+
+if (broadcastFilterButton) {
+  broadcastFilterButton.addEventListener('click', () => {
+    if (currentFeeds.length > 0) {
+      applyFeedFilters();
+    }
+  });
+}
 
 // Initial call
 loadLocationTreeFromDatabase();

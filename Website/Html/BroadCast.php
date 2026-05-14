@@ -1,3 +1,12 @@
+<?php
+declare(strict_types=1);
+session_start();
+$userRole = (string)($_SESSION['role'] ?? '');
+if (empty($userRole) || !in_array($userRole, ['police', 'admin'], true) || empty($_SESSION['user_id'])) {
+  header('Location: ../Html/login.html?error=unauthorized');
+  exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,6 +17,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/BroadCast.css?v=20260410g">
 </head>
+
 <body>
   <!-- Navbar -->
   <header class="navbar">
@@ -15,7 +25,7 @@
       <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
     </div>
     <nav class="navbar-menu">
-      <a href="BoardCast.html">Broadcast</a>
+      <a href="BroadCast.php">Broadcast</a>
       <a href="#about">About</a>
     </nav>
   </header>
@@ -24,19 +34,18 @@
     <section class="broadcast-hero">
       <p class="broadcast-kicker">Real-Time Safety Grid</p>
       <h1>Live Monitoring Desk</h1>
-      <p class="broadcast-subtitle">Pick a location to view active public camera streams and instantly scan high-risk zones.</p>
+      <p class="broadcast-subtitle">This live desk is reserved for Policeman and Admin use only. Select your division, district and area, then hit Search to view assigned CCTV feeds.</p>
       <div class="broadcast-metrics">
         <span class="metric-pill">Nationwide Camera Mapping</span>
         <span class="metric-pill">AI Alert Layer Active</span>
         <span class="metric-pill">Field Volunteer Network Ready</span>
       </div>
     </section>
-
     <div class="layout-flex broadcast-shell">
       <!-- Sidebar: Location Filters -->
       <aside class="sidebar location-sidebar">
         <h2 class="sidebar-title">Select Location</h2>
-        <p class="sidebar-note">Choose division, district, and area to load available camera feeds.</p>
+        <p class="sidebar-note">Only authorized Policeman and Admin can access this area. Select division, district, and area for the assigned police zone, then press Search.</p>
 
         <label class="sidebar-label" for="divisionSelect">Division</label>
         <select id="divisionSelect" class="sidebar-select division-select"></select>
@@ -50,6 +59,7 @@
         <select id="areaSelect" class="sidebar-select area-select">
           <option value="">-- Choose Area --</option>
         </select>
+
       </aside>
 
       <!-- Broadcast Section -->

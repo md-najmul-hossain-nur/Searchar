@@ -586,7 +586,7 @@ try {
 
   <!-- Broadcast Link (Hidden until approved) -->
   <div id="broadcastLink" style="display:none;">
-    <a href="../Html/BroadCast.html" target="_blank" class="broadcast-btn">Join Broadcast</a>
+    <a href="../Html/BroadCast.php" target="_blank" class="broadcast-btn">Join Broadcast</a>
   </div>
 </div>
 

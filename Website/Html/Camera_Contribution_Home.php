@@ -465,11 +465,11 @@ try {
   <p style="margin:6px 0 12px; color:#555; font-size:13px;">Start a live stream or upload a recorded feed to help community monitoring. You can view all your submitted feeds anytime.</p>
   
   <button id="startFeedBtn" class="camera-btn">
-    📷 Start Live / Upload Recorded Feed
+    Start Live / Upload Recorded Feed
   </button>
   <button class="camera-btn" onclick="window.location.href='../Html/Camera_Contribution_Feed.php';">
-  👀 View Feed
-</button>
+    View Feed
+  </button>
 
 </div>
 
@@ -554,9 +554,8 @@ try {
 
     <div class="cam-pricing-rules">
       <h4>Feed Payment Rule</h4>
-      <p><strong>Recorded Feed:</strong> ৳60 per hour</p>
-      <p><strong>Live Feed:</strong> ৳100 per hour</p>
-      <small>Live feed pays more because real-time monitoring demand is higher.</small>
+      <p><strong>Per camera rate:</strong> 1 cam ৳20/hr, 2 cams ৳15/hr, 3 cams ৳10/hr, 4+ cams ৳5/hr</p>
+      <small>Only active cameras with a valid stream earn.</small>
     </div>
   </div>
 </div>
