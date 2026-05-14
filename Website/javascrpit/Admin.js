@@ -2727,24 +2727,26 @@ function openAddVolunteerModal() {
 
       if (donationsBody) {
         if (!donations.length) {
-          setNoData(donationsBody, 8, 'No donations found.');
+          setNoData(donationsBody, 9, 'No donations found.');
         } else {
           donationsBody.innerHTML = donations.map(d => `
             <tr>
               <td>${esc(d.donor_name || 'Anonymous')}</td>
+              <td>${esc(d.donor_email || '—')}</td>
               <td>${esc(d.sender_mobile || '—')}</td>
               <td>${esc(d.tx_id || '—')}</td>
               <td>৳${esc(Number(d.amount || 0).toFixed(2))}</td>
               <td>${esc(fmtDate(d.date))}</td>
               <td>${Number(d.anonymous || 0) === 1 ? 'Yes' : 'No'}</td>
               <td>${esc(d.message || '—')}</td>
-              <td><button type="button" data-donation-report="1" data-donor-name="${esc(d.donor_name || 'Anonymous')}" data-donation-mobile="${esc(d.sender_mobile || '')}" data-donation-txid="${esc(d.tx_id || '')}" data-donation-amount="${esc(Number(d.amount || 0).toFixed(2))}" data-donation-date="${esc(d.date || '')}" data-donation-anon="${esc(Number(d.anonymous || 0))}" data-donation-message="${esc(d.message || '')}">Report</button></td>
+              <td><button type="button" data-donation-report="1" data-donor-name="${esc(d.donor_name || 'Anonymous')}" data-donation-email="${esc(d.donor_email || '')}" data-donation-mobile="${esc(d.sender_mobile || '')}" data-donation-txid="${esc(d.tx_id || '')}" data-donation-amount="${esc(Number(d.amount || 0).toFixed(2))}" data-donation-date="${esc(d.date || '')}" data-donation-anon="${esc(Number(d.anonymous || 0))}" data-donation-message="${esc(d.message || '')}">Report</button></td>
             </tr>
           `).join('');
 
           donationsBody.querySelectorAll('[data-donation-report]').forEach(btn => {
             btn.addEventListener('click', () => {
               const donorName = String(btn.getAttribute('data-donor-name') || 'Anonymous');
+              const donorEmail = String(btn.getAttribute('data-donation-email') || '').trim() || '—';
               const donorMobile = String(btn.getAttribute('data-donation-mobile') || '').trim() || '—';
               const donationTxId = String(btn.getAttribute('data-donation-txid') || '').trim() || '—';
               const amount = String(btn.getAttribute('data-donation-amount') || '0.00');
@@ -2765,7 +2767,7 @@ function openAddVolunteerModal() {
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#39;');
 
-              popup.document.write(`<!doctype html><html><head><title>Donation Report</title><style>body{font-family:Arial,sans-serif;padding:20px;color:#1f2937}h2{margin-top:0}table{border-collapse:collapse;width:100%;margin-top:12px}th,td{border:1px solid #d1d5db;padding:10px;text-align:left}th{background:#f3f4f6}</style></head><body><h2>Donation Report</h2><table><tr><th>Donor</th><td>${safe(donorName)}</td></tr><tr><th>Mobile</th><td>${safe(donorMobile)}</td></tr><tr><th>TxID</th><td>${safe(donationTxId)}</td></tr><tr><th>Amount</th><td>৳${safe(amount)}</td></tr><tr><th>Date</th><td>${safe(fmtDate(dateText))}</td></tr><tr><th>Anonymous</th><td>${safe(anonymous)}</td></tr><tr><th>Message</th><td>${safe(message)}</td></tr></table><p style="margin-top:16px;color:#6b7280">Generated from SEARCHAR Admin Panel</p></body></html>`);
+              popup.document.write(`<!doctype html><html><head><title>Donation Report</title><style>body{font-family:Arial,sans-serif;padding:20px;color:#1f2937}h2{margin-top:0}table{border-collapse:collapse;width:100%;margin-top:12px}th,td{border:1px solid #d1d5db;padding:10px;text-align:left}th{background:#f3f4f6}</style></head><body><h2>Donation Report</h2><table><tr><th>Donor</th><td>${safe(donorName)}</td></tr><tr><th>Email</th><td>${safe(donorEmail)}</td></tr><tr><th>Mobile</th><td>${safe(donorMobile)}</td></tr><tr><th>TxID</th><td>${safe(donationTxId)}</td></tr><tr><th>Amount</th><td>৳${safe(amount)}</td></tr><tr><th>Date</th><td>${safe(fmtDate(dateText))}</td></tr><tr><th>Anonymous</th><td>${safe(anonymous)}</td></tr><tr><th>Message</th><td>${safe(message)}</td></tr></table><p style="margin-top:16px;color:#6b7280">Generated from SEARCHAR Admin Panel</p></body></html>`);
               popup.document.close();
             });
           });

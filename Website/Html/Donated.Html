@@ -27,13 +27,23 @@
   </header>
   <main class="donation-main">
     <section class="donation-hero">
+      <div class="hero-backdrop"></div>
       <div class="donation-hero-content">
-        <span class="hero-badge animate-text" data-delay="0">Support Emergency Response</span>
-        <h1 class="donation-title animate-text" data-delay="0.08">Your Donation Saves Lives</h1>
+        <span class="hero-kicker animate-text" data-delay="0">Emergency Response Fund</span>
+        <h1 class="donation-title animate-text" data-delay="0.08">Turn urgency into action.</h1>
         <p class="donation-desc animate-text" data-delay="0.16">
-          Every verified contribution helps SEARCHAR support rescue teams, emergency supplies, and community safety activities.
+          Verified donations keep rescue teams moving, supplies stocked, and neighborhoods safer when every minute matters.
         </p>
-        <div class="hero-quick-stats animate-text" data-delay="0.24">
+        <div class="hero-actions animate-text" data-delay="0.22">
+          <a class="hero-primary" href="#donation-form">Donate Now</a>
+          <a class="hero-secondary" href="#hero-video">Watch Story</a>
+        </div>
+        <div class="hero-trust animate-text" data-delay="0.28">
+          <span class="hero-chip">Live verification</span>
+          <span class="hero-chip">Rapid response teams</span>
+          <span class="hero-chip">Community-first</span>
+        </div>
+        <div class="hero-quick-stats animate-text" data-delay="0.34">
           <article>
             <h3>2,500+</h3>
             <p>Families Assisted</p>
@@ -49,35 +59,19 @@
         </div>
       </div>
       <div class="donation-hero-media animate-text" data-delay="0.18">
-        <div class="hero-video-frame">
-          <video class="hero-video" autoplay muted loop playsinline controls>
-            <source src="../Video/DONATION PROMO.mp4" type="video/mp4">
-          </video>
+        <div class="hero-media-panel">
+          <div class="hero-video-frame">
+            <video class="hero-video" id="hero-video" autoplay loop playsinline controls preload="auto">
+              <source src="../Video/DONATION PROMO.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="hero-media-caption">Every second counts. Your support powers the next rescue.</div>
         </div>
-        <div class="hero-media-caption">Every second counts. Your support powers the next rescue.</div>
-      </div>
-      <div class="hero-glow"></div>
-    </section>
-
-    <section class="impact-section">
-      <h2 class="animate-text" data-delay="0">Where Your Money Goes</h2>
-      <div class="impact-grid">
-        <article class="impact-card animate-text" data-delay="0.08">
-          <h3>Emergency Medical Aid</h3>
-          <p>Immediate first-aid kits, ambulance support, and urgent medical transport.</p>
-        </article>
-        <article class="impact-card animate-text" data-delay="0.14">
-          <h3>Rescue Operations</h3>
-          <p>Field teams, equipment fuel, and volunteer deployment in critical areas.</p>
-        </article>
-        <article class="impact-card animate-text" data-delay="0.2">
-          <h3>Relief Support</h3>
-          <p>Food, clean water, shelter materials, and basic safety supplies.</p>
-        </article>
       </div>
     </section>
 
-    <section class="donation-form-section">
+
+    <section class="donation-form-section" id="donation-form">
       <div class="donation-form-card animate-text" data-delay="0.08">
         <div class="form-head animate-text" data-delay="0.14">
           <span class="form-head-tag">Donation Verification</span>
@@ -102,6 +96,19 @@
             </div>
           </div>
 
+          <div class="form-grid">
+            <div class="field-group">
+              <label for="donor-mobile">Mobile Number</label>
+              <input type="tel" id="donor-mobile" name="mobile" required placeholder="Enter your mobile number">
+            </div>
+            <div class="field-group">
+              <label for="donation-amount">Donation Amount (BDT)</label>
+              <input type="number" id="donation-amount" name="amount" min="1" step="1" required placeholder="Enter amount">
+            </div>
+          </div>
+
+          <input type="hidden" id="receiver-number" name="receiver_number" value="01743094595">
+
           <div class="field-group">
             <label for="txid">Transaction ID (TXID)</label>
             <input type="text" id="txid" name="txid" required placeholder="Example: 8H6D7K2P9X">
@@ -112,6 +119,14 @@
             <textarea id="donation-message" name="message" rows="3" placeholder="Write a short message"></textarea>
           </div>
 
+          <div class="checkbox-row">
+            <label class="checkbox-field">
+              <input type="checkbox" id="donation-anonymous" name="anonymous" value="1">
+              Donate anonymously
+            </label>
+          </div>
+
+          <p class="form-alert" id="donation-alert" role="status" aria-live="polite"></p>
           <button type="submit" class="donate-btn">Confirm Donation</button>
           <p class="secure-note">Your donation info is used only for verification and transparency.</p>
         </form>

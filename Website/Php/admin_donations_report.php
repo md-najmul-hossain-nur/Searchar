@@ -13,7 +13,7 @@ header('Content-Disposition: attachment; filename=' . $filename);
 echo "\xEF\xBB\xBF";
 
 $out = fopen('php://output', 'w');
-fputcsv($out, ['Donor Name', 'Mobile', 'TxID', 'Amount', 'Date', 'Anonymous']);
+fputcsv($out, ['Donor Name', 'Email', 'Mobile', 'TxID', 'Amount', 'Date', 'Anonymous']);
 
 function columnExists(PDO $pdo, string $tableName, string $columnName): bool {
     $stmt = $pdo->prepare("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :t AND COLUMN_NAME = :c LIMIT 1");
@@ -24,9 +24,11 @@ function columnExists(PDO $pdo, string $tableName, string $columnName): bool {
 try {
     $hasSenderMobile = columnExists($pdo, 'donations', 'sender_mobile');
     $hasTxId = columnExists($pdo, 'donations', 'tx_id');
+    $hasDonorEmail = columnExists($pdo, 'donations', 'donor_email');
     $selectParts = ['donor_name', 'amount', 'date', 'anonymous'];
     $selectParts[] = $hasSenderMobile ? 'sender_mobile' : 'NULL AS sender_mobile';
     $selectParts[] = $hasTxId ? 'tx_id' : 'NULL AS tx_id';
+    $selectParts[] = $hasDonorEmail ? 'donor_email' : 'NULL AS donor_email';
 
     $stmt = $pdo->query('SELECT ' . implode(', ', $selectParts) . ' FROM donations ORDER BY date DESC');
     $found = false;
@@ -47,6 +49,7 @@ try {
 
         fputcsv($out, [
             $row['donor_name'] ?? '',
+            $row['donor_email'] ?? '',
             $row['sender_mobile'] ?? '',
             $row['tx_id'] ?? '',
             $amountFormatted,
@@ -56,10 +59,10 @@ try {
     }
 
     if (!$found) {
-        fputcsv($out, ['No data', '', '', '', '', '']);
+        fputcsv($out, ['No data', '', '', '', '', '', '']);
     }
 } catch (Throwable $e) {
-    fputcsv($out, ['Error', 'Unable to fetch donations', '', '', '', '']);
+    fputcsv($out, ['Error', 'Unable to fetch donations', '', '', '', '', '']);
 }
 
 fclose($out);

@@ -62,8 +62,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const heroVideo = document.getElementById('hero-video');
+  if (heroVideo) {
+    heroVideo.muted = false;
+    heroVideo.volume = 1;
+    const playAttempt = heroVideo.play();
+    if (playAttempt && typeof playAttempt.catch === 'function') {
+      playAttempt.catch(() => {
+        heroVideo.controls = true;
+      });
+    }
+  }
+
 
   const donationForm = document.getElementById('donationForm');
+  const donationAlert = document.getElementById('donation-alert');
 
   const animatedNodes = document.querySelectorAll('.animate-text');
   if (animatedNodes.length) {
@@ -83,19 +96,84 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!donationForm) return;
 
+  function setDonationAlert(type, message) {
+    if (!donationAlert) return;
+    donationAlert.textContent = message;
+    donationAlert.className = `form-alert show ${type}`;
+  }
+
   donationForm.addEventListener('submit', (event) => {
     event.preventDefault();
 
+    const nameInput = document.getElementById('donor-name');
+    const emailInput = document.getElementById('donor-email');
+    const mobileInput = document.getElementById('donor-mobile');
+    const amountInput = document.getElementById('donation-amount');
     const txidInput = document.getElementById('txid');
+
+    const donorName = String(nameInput?.value || '').trim();
+    const donorEmail = String(emailInput?.value || '').trim();
+    const donorMobile = String(mobileInput?.value || '').trim();
+    const amountValue = String(amountInput?.value || '').trim();
     const txid = String(txidInput?.value || '').trim();
 
+    if (donorName.length < 2) {
+      setDonationAlert('error', 'Please enter your full name.');
+      nameInput?.focus();
+      return;
+    }
+
+    if (!donorEmail.includes('@')) {
+      setDonationAlert('error', 'Please enter a valid email address.');
+      emailInput?.focus();
+      return;
+    }
+
+    if (donorMobile.length < 10) {
+      setDonationAlert('error', 'Please enter a valid mobile number.');
+      mobileInput?.focus();
+      return;
+    }
+
+    if (!amountValue || Number(amountValue) <= 0) {
+      setDonationAlert('error', 'Please enter a valid donation amount.');
+      amountInput?.focus();
+      return;
+    }
+
     if (txid.length < 6) {
-      alert('Please enter a valid TXID.');
+      setDonationAlert('error', 'Please enter a valid TXID.');
       txidInput?.focus();
       return;
     }
 
-    alert('Thank you! Your donation request has been received for verification.');
-    donationForm.reset();
+    const submitButton = donationForm.querySelector('button[type="submit"]');
+    if (submitButton) submitButton.disabled = true;
+    setDonationAlert('success', 'Submitting your donation details...');
+
+    const formData = new FormData(donationForm);
+
+    fetch('../Php/submit_donation.php', {
+      method: 'POST',
+      body: formData,
+      credentials: 'same-origin'
+    })
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data?.success) {
+          throw new Error(data?.error || 'Submission failed.');
+        }
+        return data;
+      })
+      .then(() => {
+        setDonationAlert('success', 'Thank you! Your donation was received for verification.');
+        donationForm.reset();
+      })
+      .catch((error) => {
+        setDonationAlert('error', error?.message || 'Submission failed. Please try again.');
+      })
+      .finally(() => {
+        if (submitButton) submitButton.disabled = false;
+      });
   });
 });
