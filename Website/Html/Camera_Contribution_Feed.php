@@ -240,11 +240,7 @@ if ($latestFeed) {
           <p class="subtitle">Only you can see this page and your own camera feed data.</p>
         </div>
         <button class="back-btn" aria-label="Go back" onclick="window.location.href='../Html/Camera_Contribution_Home.php'">
-<<<<<<< HEAD
-          <span aria-hidden="true">‹</span> Back
-=======
           <span aria-hidden="true">&larr;</span> Back
->>>>>>> nur
         </button>
       </div>
     </header>
@@ -258,13 +254,8 @@ if ($latestFeed) {
           <div class="user-stats">
             <span><?= (int)$totalFeeds ?> <small>Total Feeds</small></span>
             <span><?= (int)$liveReadyCount ?> <small>Live Ready</small></span>
-<<<<<<< HEAD
-            <span>৳<?= e(number_format($totalEarnings, 2)) ?> <small>Total Earnings</small></span>
-            <span>৳<?= (int)$runningHourlyRate ?>/hr <small>Running Rate</small></span>
-=======
             <span>&#2547;<?= e(number_format($totalEarnings, 2)) ?> <small>Total Earnings</small></span>
             <span>&#2547;<?= (int)$runningHourlyRate ?>/hr <small>Running Rate</small></span>
->>>>>>> nur
           </div>
         </div>
       </div>
@@ -339,11 +330,7 @@ if ($latestFeed) {
               <span class="camera-title"><?= e((string)($feed['feed_label'] ?? 'CCTV Feed')) ?></span>
               <span class="camera-time"><i class="fa-regular fa-clock"></i> <?= e(timeAgo((string)($feed['created_at'] ?? ''))) ?></span>
               <p class="camera-caption"><?= e((string)($feed['camera_location'] ?? 'Location not set')) ?></p>
-<<<<<<< HEAD
-              <p class="camera-earning">Earned: ৳<?= e(number_format($earned, 2)) ?> · Rate: ৳<?= (int)$rate ?>/hr · <?= e(ucfirst($scope)) ?></p>
-=======
               <p class="camera-earning">Earned: &#2547;<?= e(number_format($earned, 2)) ?> &middot; Rate: <?= ($isActive && $hasStream) ? ('&#2547;' . (int)$rate . '/hr') : ($isActive ? 'No stream' : 'Paused') ?> &middot; <?= e(ucfirst($scope)) ?></p>
->>>>>>> nur
               <div class="feed-controls">
                 <form method="post" action="../Php/camera_cctv_feeds.php">
                   <input type="hidden" name="action" value="toggle">

@@ -239,38 +239,7 @@ try {
   </div>
 </div>
 
-<<<<<<< HEAD
-<!-- ðŸ§­ Volunteer Mission Modal -->
-<div id="volunteerMissionModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="missionModalTitle" tabindex="-1">
-  <div class="modal-content">
-    <button class="close" onclick="closeMissionModal()" aria-label="Close modal">&times;</button>
-    <h3 id="missionModalTitle">ðŸ§­ Missions for Your Rank</h3>
-
-    <ul class="mission-list">
-      <li id="mission-proof-single" class="mission-step" data-step="single">
-        <strong>ðŸ“¤ Mission Proof Submission</strong><br>
-        Upload one proof file (image/video/pdf) for your assigned mission.<br><br>
-        <label>
-          Submit Proof:
-          <input id="mission-proof-file" type="file" accept="image/*,video/*,application/pdf" />
-        </label><br><br>
-        <div id="mission-proof-preview" class="mission-preview-box"></div>
-        <p id="mission-proof-status" class="mission-status-note"></p>
-        <button class="submit-proof-btn" data-mission-proof-submit="1">âœ… Submit Proof</button>
-      </li>
-
-      <li id="mission-history-single" class="mission-step">
-        <strong>ðŸ—‚ Completed Missions History</strong><br>
-        See your previously completed missions below.
-        <div id="mission-history-list" class="mission-history-list"></div>
-        <p id="mission-history-empty" class="mission-history-empty">No completed mission yet.</p>
-      </li>
-    </ul>
-  </div>
-</div>
-=======
 <!-- Volunteer Mission Modal moved to page end to avoid stacking context issues -->
->>>>>>> nur
 
 
 

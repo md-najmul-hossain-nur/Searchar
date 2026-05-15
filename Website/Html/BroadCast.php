@@ -16,7 +16,6 @@ if (empty($userRole) || !in_array($userRole, ['police', 'admin'], true) || empty
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/BroadCast.css?v=20260410g">
-  <link rel="stylesheet" href="../css/button_theme_shared.css?v=20260503a">
 </head>
 
 <body>
@@ -26,16 +25,8 @@ if (empty($userRole) || !in_array($userRole, ['police', 'admin'], true) || empty
       <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
     </div>
     <nav class="navbar-menu">
-<<<<<<< HEAD
       <a href="BroadCast.php">Broadcast</a>
       <a href="#about">About</a>
-=======
-<<<<<<<< HEAD:Website/Html/BroadCast.html
-========
-      <a href="BroadCast.php">Broadcast</a>
-      <a href="#about">About</a>
->>>>>>>> nur:Website/Html/BroadCast.php
->>>>>>> nur
     </nav>
   </header>
   <!-- Main Content (Navbar untouched) -->
@@ -90,10 +81,53 @@ if (empty($userRole) || !in_array($userRole, ['police', 'admin'], true) || empty
 
   </main>
 
-  <div id="site-footer-placeholder"></div>
+  <footer class="site-footer" id="about">
+    <div class="footer-container">
+      <div class="footer-col">
+        <div class="footer-title">ABOUT US</div>
+        <div class="footer-about">
+          This website is developed by <strong>Light Seekers</strong>, a group of students from the <strong>Department of CSE</strong>,
+          <em>United International University</em>.
+        </div>
+        <div class="footer-contact">
+          <span><i class="fa fa-map-marker"></i> United City, Madani Avenue, Badda</span>
+          <span><i class="fa fa-envelope"></i> mnajmulhossainnur@gmail.com</span>
+        </div>
+      </div>
 
-  <script src="../javascrpit/footer_loader.js"></script>
+      <div class="footer-col">
+        <div class="footer-title">WHAT WE DO</div>
+        <p class="footer-what-we-do">
+          We are Light Seekers, a CSE team from UIU, building impactful projects in gaming, robotics,
+          and micro-eCommerce to solve real-life problems.
+        </p>
+        <div class="footer-social">
+          <a href="https://www.youtube.com/@najmu-lhossain-nur" target="_blank" rel="noopener noreferrer" title="Visit our YouTube Channel">
+            <i class="fa fa-youtube-play"></i>
+          </a>
+          <a href="https://www.facebook.com/profile.php?id=61578891052858" target="_blank" rel="noopener noreferrer" title="Visit our Facebook">
+            <i class="fa fa-facebook-official"></i>
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-calendar">
+        <div class="footer-calendar-title">CALENDAR</div>
+        <table class="footer-calendar-table" id="calendar">
+          <thead>
+            <tr>
+              <th colspan="7" id="calendarHeader"></th>
+            </tr>
+            <tr>
+              <th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th><th>S</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </footer>
+
   <script src="../javascrpit/BoardCast.js?v=20260410k"></script>
 </body>
 </html>
-

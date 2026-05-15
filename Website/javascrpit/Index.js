@@ -201,21 +201,18 @@ async function loadHomeLiveStats() {
 loadHomeLiveStats();
 
 function setupDonationAnimations() {
-  const donationCard = document.querySelector('.donation-progress-card');
-  const progressText = document.getElementById('donation-progress-value');
-  const progressRing = document.getElementById('donation-progress-ring');
-  if (!donationCard || !progressText || !progressRing) return;
+  const sections = Array.from(document.querySelectorAll('.donation-progress-bg'));
+  if (sections.length === 0) return;
 
-  donationCard.classList.add('reveal-ready');
+  const animateProgress = (section) => {
+    const progressRing = section.querySelector('#donation-progress-ring');
+    const rawTarget = section.getAttribute('data-progress');
+    if (!progressRing || rawTarget == null) return;
+    if (section.dataset.progressAnimated === 'true') return;
 
-  const target = Math.max(0, Math.min(100, Number(progressText.textContent) || 70));
-  const fullCircumference = 339.292;
-  let animated = false;
-
-  const animateProgress = () => {
-    if (animated) return;
-    animated = true;
-
+    section.dataset.progressAnimated = 'true';
+    const target = Math.max(0, Math.min(100, Number(rawTarget) || 70));
+    const fullCircumference = 339.292;
     const duration = 1300;
     const start = performance.now();
 
@@ -223,8 +220,6 @@ function setupDonationAnimations() {
       const p = Math.min(1, (now - start) / duration);
       const eased = 1 - Math.pow(1 - p, 3);
       const value = Math.round(target * eased);
-
-      progressText.textContent = String(value);
       progressRing.style.strokeDashoffset = String(fullCircumference - (fullCircumference * value) / 100);
 
       if (p < 1) requestAnimationFrame(tick);
@@ -233,20 +228,29 @@ function setupDonationAnimations() {
     requestAnimationFrame(tick);
   };
 
+  const revealSection = (section) => {
+    section.classList.add('reveal-ready');
+    section.classList.add('is-visible');
+    animateProgress(section);
+  };
+
   if ('IntersectionObserver' in window) {
     const observer = new IntersectionObserver((entries, obs) => {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
-        donationCard.classList.add('is-visible');
-        animateProgress();
-        obs.disconnect();
+        const section = entry.target;
+        section.classList.add('is-visible');
+        animateProgress(section);
+        obs.unobserve(section);
       });
     }, { threshold: 0.33 });
 
-    observer.observe(donationCard);
+    sections.forEach((section) => {
+      section.classList.add('reveal-ready');
+      observer.observe(section);
+    });
   } else {
-    donationCard.classList.add('is-visible');
-    animateProgress();
+    sections.forEach(revealSection);
   }
 }
 
@@ -492,117 +496,6 @@ function setupAchievementsCarousel() {
 }
 
 setupAchievementsCarousel();
-
-function setupLatestNewsCarousel() {
-  const track = document.getElementById('latestNewsTrack');
-  const prevBtn = document.getElementById('latestNewsPrevBtn');
-  const nextBtn = document.getElementById('latestNewsNextBtn');
-  if (!track || !prevBtn || !nextBtn) return;
-
-  const latestNews = Array.isArray(window.SEARCHAR_NEWS) ? window.SEARCHAR_NEWS : [];
-  if (latestNews.length === 0) return;
-
-  const renderCard = (item) => `
-    <div class="news-card">
-      <div class="news-card-img"><img src="${item.img}" alt="${item.title}"></div>
-      <div class="news-card-meta-row">
-        <span class="news-card-date"><i class="fa-regular fa-calendar"></i> ${item.date}</span>
-      </div>
-      <div class="news-card-headline">${item.title}</div>
-      <div class="news-card-desc">${item.desc}</div>
-      <a href="../Html/News_Details.html?news=${encodeURIComponent(item.id)}" class="news-card-readmore">Read More</a>
-    </div>
-  `;
-
-  let currentIndex = 0;
-  let visibleCount = 1;
-  let cardWidth = 0;
-  let isAnimating = false;
-  let autoTimer = null;
-  const originalCount = latestNews.length;
-
-  const getCardWidth = () => {
-    const card = track.querySelector('.news-card');
-    if (!card) return 0;
-    const gap = parseFloat(getComputedStyle(track).gap || '0');
-    return card.getBoundingClientRect().width + gap;
-  };
-
-  const getVisibleCount = () => {
-    if (window.innerWidth <= 900) return 1;
-    if (window.innerWidth <= 1200) return 2;
-    return 4;
-  };
-
-  const snapTo = (index) => {
-    cardWidth = getCardWidth();
-    track.style.transition = 'none';
-    track.style.transform = `translate3d(${-index * cardWidth}px, 0, 0)`;
-    void track.offsetWidth;
-    track.style.transition = 'transform .95s cubic-bezier(.25, .8, .25, 1)';
-    currentIndex = index;
-  };
-
-  const buildLoopTrack = () => {
-    visibleCount = getVisibleCount();
-    const prefix = latestNews.slice(-visibleCount);
-    const suffix = latestNews.slice(0, visibleCount);
-    const loopItems = [...prefix, ...latestNews, ...suffix];
-    track.innerHTML = loopItems.map(renderCard).join('');
-    snapTo(visibleCount);
-  };
-
-  const slideTo = (index) => {
-    if (isAnimating) return;
-    isAnimating = true;
-    cardWidth = getCardWidth();
-    currentIndex = index;
-    track.style.transform = `translate3d(${-currentIndex * cardWidth}px, 0, 0)`;
-  };
-
-  const restartAuto = () => {
-    if (autoTimer) clearInterval(autoTimer);
-    autoTimer = setInterval(() => slideTo(currentIndex + 1), 5600);
-  };
-
-  track.addEventListener('transitionend', () => {
-    isAnimating = false;
-
-    if (currentIndex >= originalCount + visibleCount) {
-      snapTo(visibleCount);
-      return;
-    }
-
-    if (currentIndex < visibleCount) {
-      snapTo(originalCount + visibleCount - 1);
-    }
-  });
-
-  prevBtn.addEventListener('click', () => {
-    slideTo(currentIndex - 1);
-    restartAuto();
-  });
-
-  nextBtn.addEventListener('click', () => {
-    slideTo(currentIndex + 1);
-    restartAuto();
-  });
-
-  track.addEventListener('mouseenter', () => {
-    if (autoTimer) clearInterval(autoTimer);
-  });
-
-  track.addEventListener('mouseleave', () => {
-    restartAuto();
-  });
-
-  window.addEventListener('resize', buildLoopTrack);
-
-  buildLoopTrack();
-  restartAuto();
-}
-
-setupLatestNewsCarousel();
 
 function setupHomeChatbot() {
   const CHATBOT_LOG_KEY = 'searchar_chatbot_logs_v1';

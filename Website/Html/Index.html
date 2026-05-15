@@ -107,34 +107,38 @@ Brave individuals stepping up to help when it matters most.
       </div>
     </section>
   </main>
-  <div class="donation-progress-bg">
-  <div class="donation-progress-card">
-    <div class="donation-image">
-      <img src="../Images/demo.jpg" alt="Syrian Refugee Crisis" style="width:100%;height:100%;object-fit:cover;">
+ 
+  <section class="donation-progress-bg trust-partners-bg" id="trust-partners">
+    <div class="trust-partners-inner">
+      <div class="trust-partners-label">TRUSTED BY PARTNERS</div>
+      <h2 class="trust-partners-title">Partners Who Power Our Mission</h2>
+      <p class="trust-partners-desc">
+        From public safety teams to community tech groups, our partners help us act faster and reach farther.
+      </p>
+      <p class="trust-partners-desc trust-partners-desc-strong">
+        We work with verified NGOs, neighborhood watch groups, and response units so every alert is checked, shared,
+        and acted on without delay.
+      </p>
+      <div class="trust-partners-stats" aria-label="Partner highlights">
+        <div class="trust-stat">
+          <span class="trust-stat-value">24/7</span>
+          <span class="trust-stat-label">Active Monitoring</span>
+        </div>
+        <div class="trust-stat">
+          <span class="trust-stat-value">50+</span>
+          <span class="trust-stat-label">Community Hubs</span>
+        </div>
+        <div class="trust-stat">
+          <span class="trust-stat-value">1 hr</span>
+          <span class="trust-stat-label">Avg. Signal Share</span>
+        </div>
+      </div>
+      <div class="trust-partners-logos" aria-label="Partner logos">
+        <div class="trust-logo"><img src="../Images/logo.png" alt="Searchar"></div>
+        <div class="trust-logo"><img src="../Images/image.png" alt="Searchar Partners"></div>
+      </div>
     </div>
-    <div class="donation-info">
-      <div class="donation-caption">URBAN SAFETY RESPONSE FUND</div>
-      <div class="donation-title">Your Support Saves Time, Evidence, and Lives</div>
-  <div class="donation-desc">
-        Every donation helps us run AI surveillance checks, dispatch verified alerts, and support volunteers in the field. When response time drops, survival chances rise for real families.
-  </div>
-      <a class="donation-cta" href="../Html/Donated.Html">Contribute Now</a>
-</div>
-<div class="donation-progress-outer">
-  <div class="donation-progress-circle">
-    <svg>
-      <circle cx="60" cy="60" r="54" stroke="#fff" stroke-width="7" fill="none" style="opacity:.25"/>
-      <circle id="donation-progress-ring" cx="60" cy="60" r="54" stroke="#f75c3c" stroke-width="7" fill="none"
-        stroke-dasharray="339.292" stroke-dashoffset="101.7876" style="transition:stroke-dashoffset .6s;"/>
-    </svg>
-    <div class="progress-text"><span id="donation-progress-value">70</span><span style="font-size:.6em;vertical-align:super;">%</span>
-      <span class="progress-label">Donated</span>
-    </div>
-  </div>
-</div>
-    </div>
-  </div>
-</div>
+  </section>
 <div class="our-causes-section" id="our-causes">
   <div class="causes-label">STORY ABOUT US</div>
   <div class="our-causes-title">SUCCESS STORIES / ACHIEVEMENTS</div>
@@ -237,57 +241,6 @@ Brave individuals stepping up to help when it matters most.
 </button>
   </div>
 </div>
-<section class="latest-news-section" id="latest-news">
-  <div class="latest-news-label">BE FIRST TO READ</div>
-  <h2 class="latest-news-title">LATEST NEWS</h2>
-  <div class="latest-news-viewport">
-  <div class="latest-news-cards" id="latestNewsTrack">
-    <!-- Card 1 -->
-    <div class="news-card">
-      <div class="news-card-img">
-        <img src="../Images/demo.jpg" alt="The 2016 Global Refugee and Displacement Crisis">
-      </div>
-      <div class="news-card-content">
-        <div class="news-card-date">November 27, 2015</div>
-        <div class="news-card-headline">AI Makes Breakthrough in Missing Persons Search</div>
-        <div class="news-card-desc">
-Our AI technology successfully identified and located a missing child using CCTV footage and community volunteer action. The child was reunited with their family within hours.        </div>
-        <a href="#" class="news-card-readmore">Read More</a>
-      </div>
-    </div>
-    <!-- Card 2 Highlighted -->
-   <div class="news-card">
-      <div class="news-card-img">
-        <img src="../Images/demo.jpg" alt="Choosing Among Bad Options in Dadaab Refugee Camp">
-      </div>
-      <div class="news-card-content">
-        <div class="news-card-date">November 20, 2015</div>
-        <div class="news-card-headline">Anonymous Crime Footage Leads to Arrest</div>
-        <div class="news-card-desc">
-A user-uploaded anonymous crime video helped police catch a suspect within 24 hours. Contributors are rewarded while staying completely anonymous.        </div>
-        <a href="#" class="news-card-readmore">Read More</a>
-      </div>
-    </div>
-    <!-- Card 3 -->
-    <div class="news-card">
-      <div class="news-card-img">
-        <img src="../Images/demo.jpg" alt="Choosing Among Bad Options in Dadaab Refugee Camp">
-      </div>
-      <div class="news-card-content">
-        <div class="news-card-date">November 20, 2015</div>
-        <div class="news-card-headline">Anonymous Crime Footage Leads to Arrest</div>
-        <div class="news-card-desc">
-A user-uploaded anonymous crime video helped police catch a suspect within 24 hours. Contributors are rewarded while staying completely anonymous.        </div>
-        <a href="#" class="news-card-readmore">Read More</a>
-      </div>
-    </div>
-  </div>
-  </div>
-  <div class="latest-news-nav">
-    <button class="latest-news-arrow" id="latestNewsPrevBtn" aria-label="Previous">&#8592;</button>
-    <button class="latest-news-arrow" id="latestNewsNextBtn" aria-label="Next">&#8594;</button>
-  </div>
-</section>
 <div class="rescue-stories-section">
   <div class="rescue-stories-content">
     <div class="rescue-stories-label">STORY ABOUT US</div>
@@ -347,7 +300,6 @@ A user-uploaded anonymous crime video helped police catch a suspect within 24 ho
 </body>
 
 <script src="../javascrpit/footer_loader.js"></script>
-<script src="../javascrpit/news_data.js"></script>
 <script src="../javascrpit/Index.js"></script>
 
 </html>
