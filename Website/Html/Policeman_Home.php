@@ -1338,23 +1338,6 @@ try {
   background: #c0392b;
 }
 </style>
-<div class="Calender-section">
-  <div class="calendar-container">
-    <h2 class="calendar-title">Calendar</h2>
-    <p class="calendar-info">Select a date to add your events. Use the arrows to navigate months.</p>
-  </div>
-  <div class="calendar-header">
-    <button id="prevMonth">&lt;</button>
-    <h2 id="monthYear"></h2>
-    <button id="nextMonth">&gt;</button>
-  </div>
-
-  <div class="calendar-weekdays"></div>  <!-- Add this -->
-
-  <div class="calendar-grid" id="calendarGrid"></div>
-</div>
-
-
 <!-- Event Modal -->
 <div id="myEventModal" class="my-event-modal" style="display:none;">
   <div class="event-modal-content">
