@@ -1,0 +1,91 @@
+<?php
+declare(strict_types=1);
+session_start();
+$userRole = (string)($_SESSION['role'] ?? '');
+if (empty($userRole) || !in_array($userRole, ['police', 'admin'], true) || empty($_SESSION['user_id'])) {
+  header('Location: ../Html/login.html?error=unauthorized');
+  exit();
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Searchar </title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="../css/BroadCast.css?v=20260410g">
+  <link rel="stylesheet" href="../css/button_theme_shared.css?v=20260503a">
+</head>
+
+<body>
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="navbar-logo">
+      <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
+    </div>
+    <nav class="navbar-menu">
+      <a href="BroadCast.php">Broadcast</a>
+      <a href="#about">About</a>
+    </nav>
+  </header>
+  <!-- Main Content (Navbar untouched) -->
+  <main class="broadcast-page">
+    <section class="broadcast-hero">
+      <p class="broadcast-kicker">Real-Time Safety Grid</p>
+      <h1>Live Monitoring Desk</h1>
+      <p class="broadcast-subtitle">This live desk is reserved for Policeman and Admin use only. Select your division, district and area, then hit Search to view assigned CCTV feeds.</p>
+      <div class="broadcast-metrics">
+        <span class="metric-pill">Nationwide Camera Mapping</span>
+        <span class="metric-pill">AI Alert Layer Active</span>
+        <span class="metric-pill">Field Volunteer Network Ready</span>
+      </div>
+    </section>
+    <div class="layout-flex broadcast-shell">
+      <!-- Sidebar: Location Filters -->
+      <aside class="sidebar location-sidebar">
+        <h2 class="sidebar-title">Select Location</h2>
+        <p class="sidebar-note">Only authorized Policeman and Admin can access this area. Select division, district, and area for the assigned police zone, then press Search.</p>
+
+        <label class="sidebar-label" for="divisionSelect">Division</label>
+        <select id="divisionSelect" class="sidebar-select division-select"></select>
+
+        <label class="sidebar-label" for="districtSelect">District</label>
+        <select id="districtSelect" class="sidebar-select district-select">
+          <option value="">-- Choose District --</option>
+        </select>
+
+        <label class="sidebar-label" for="areaSelect">Area</label>
+        <select id="areaSelect" class="sidebar-select area-select">
+          <option value="">-- Choose Area --</option>
+        </select>
+
+      </aside>
+
+      <!-- Broadcast Section -->
+      <section class="broadcast-section content-padding">
+        <div class="broadcast-headline-row">
+          <h2 class="broadcast-title">Live CCTV Broadcast</h2>
+        </div>
+        <p class="broadcast-helper">All public cameraman CCTV feeds for the selected location appear here in one combined broadcast desk.</p>
+
+        <div id="cameraInfo" class="camera-info hidden">
+          Showing <span id="cameraCount">0</span> live cameras in <span id="areaName">...</span>
+        </div>
+
+        <div id="cameraGrid" class="camera-grid">
+          <!-- Live camera feeds dynamically loaded -->
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <div id="site-footer-placeholder"></div>
+
+  <script src="../javascrpit/footer_loader.js"></script>
+  <script src="../javascrpit/BoardCast.js?v=20260410k"></script>
+</body>
+</html>
+
