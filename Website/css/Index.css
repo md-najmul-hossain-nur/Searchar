@@ -1094,7 +1094,7 @@ body {
 .rescue-stories-section {
   width: 100%;
   min-height: 520px;
-  background: linear-gradient(180deg, #f7f1e3 0%, #ead9b2 100%);
+  background: linear-gradient(135deg, #f8f3ea 0%, #efe3d1 100%);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -1156,7 +1156,7 @@ body {
   font-family: 'Montserrat', Arial, sans-serif;
   font-size: 2.4em;
   font-weight: bold;
-  color: #1f2a33;
+  color: #1b262f;
   letter-spacing: 1.2px;
   margin-bottom: 32px;
 }
@@ -1168,12 +1168,13 @@ body {
   border-radius: 50%;
   overflow: hidden;
   margin: 0 auto 16px auto;
-  border: 3px solid #fff;
+  border: 3px solid #d8c8a5;
   object-fit: cover;
   background: #eee;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 10px 22px rgba(27, 38, 47, 0.14);
 }
 .rescue-stories-dots {
   display: flex;
@@ -1185,14 +1186,14 @@ body {
 .rescue-stories-dot {
   width: 7px;
   height: 7px;
-  background: #fff;
-  opacity: 0.45;
+  background: #2c3a44;
+  opacity: 0.4;
   border-radius: 50%;
   display: inline-block;
 }
 .rescue-stories-dot.active {
   opacity: 1;
-  background: #fff;
+  background: #1b262f;
 }
 
 /* Quote */
@@ -1201,7 +1202,7 @@ body {
   font-family: 'Montserrat', Arial, sans-serif;
   font-weight: 500;
   line-height: 1.42;
-  color: #2c3a44;
+  color: #1f2a33;
   max-width: 700px;
   margin: 0 auto 32px auto;
   text-align: center;
@@ -1213,11 +1214,11 @@ body {
   font-weight: 700;
   font-size: 1.12em;
   margin-bottom: 2px;
-  color: #1f2a33;
+  color: #1b262f;
 }
 .rescue-stories-role {
   font-size: .97em;
-  color: #5b6872;
+  color: #4b5a66;
   margin-bottom: 0;
 }
 
