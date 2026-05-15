@@ -210,7 +210,7 @@ try {
         <div class="rank-progress-meta">
           <span id="rank-progress-percent">0%</span>
           <span id="rank-next-value">Next: Silver Responder</span>
-          <span id="rank-needed-value">Need 200 XP</span>
+          <span id="rank-needed-value">Need more XP</span>
         </div>
       </div>
 
@@ -239,6 +239,7 @@ try {
   </div>
 </div>
 
+<<<<<<< HEAD
 <!-- ðŸ§­ Volunteer Mission Modal -->
 <div id="volunteerMissionModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="missionModalTitle" tabindex="-1">
   <div class="modal-content">
@@ -267,6 +268,9 @@ try {
     </ul>
   </div>
 </div>
+=======
+<!-- Volunteer Mission Modal moved to page end to avoid stacking context issues -->
+>>>>>>> nur
 
 
 
@@ -1178,22 +1182,6 @@ try {
     <a href="#!">Book Seat</a>
   </article>
 </div>
-<div class="notifications">
-  <div class="redzone">
-  <h4>Red Zone Alerts</h4>
-  <ul>
-    <li><span>Badda: Fire risk</span><span>Today</span></li>
-    <li><span>Kuril: Accident zone</span><span>1 hr ago</span></li>
-    <li><span>Gulshan-2: Snatching alert</span><span>Yesterday</span></li>
-    <li><span>Rampura: Traffic heavy</span><span>30 min ago</span></li>
-  </ul>
-
-  <button class="redzone-btn"
-    onclick="window.location.href='../Html/RedZone.html';">
-    Open Red Zone Map
-  </button>
-</div>
-</div>
 <div id="notificationsDrawerBackdrop" class="notifications-drawer-backdrop"></div>
 <aside id="notificationsDrawer" class="notifications-drawer" aria-hidden="true">
   <div class="notifications-drawer-header">
@@ -1252,6 +1240,36 @@ try {
     </section>
   </div>
 </aside>
+
+    <!-- Volunteer Mission Modal moved here to avoid stacking context issues -->
+    <div id="volunteerMissionModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="missionModalTitle" tabindex="-1">
+      <div class="modal-content">
+        <button class="close" onclick="closeMissionModal()" aria-label="Close modal">&times;</button>
+        <h3 id="missionModalTitle">🧭 Missions for Your Rank</h3>
+
+        <ul class="mission-list">
+          <li id="mission-proof-single" class="mission-step" data-step="single">
+            <strong>📤 Mission Proof Submission</strong><br>
+            Upload one proof file (image/video/pdf) for your assigned mission.<br><br>
+            <label>
+              Submit Proof:
+              <input id="mission-proof-file" type="file" accept="image/*,video/*,application/pdf" />
+            </label><br><br>
+            <div id="mission-proof-preview" class="mission-preview-box"></div>
+            <p id="mission-proof-status" class="mission-status-note"></p>
+            <button class="submit-proof-btn" data-mission-proof-submit="1">✅ Submit Proof</button>
+          </li>
+
+          <li id="mission-history-single" class="mission-step">
+            <strong>🗂 Completed Missions History</strong><br>
+            See your previously completed missions below.
+            <div id="mission-history-list" class="mission-history-list"></div>
+            <p id="mission-history-empty" class="mission-history-empty">No completed mission yet.</p>
+          </li>
+        </ul>
+      </div>
+    </div>
+
      </body>
        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
       <script src="../javascrpit/Volunteer_Home.js?v=20260409g"></script>

@@ -16,7 +16,7 @@
   <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
   <!-- Main CSS -->
   <link rel="stylesheet" href="../css/Admin.css">
-  
+  <link rel="stylesheet" href="../css/messenger_shared.css">
   
   <link rel="stylesheet" href="../css/button_theme_shared.css?v=20260503a">
 </head>
@@ -59,7 +59,7 @@
     <span class="icon"><i class="fa-solid fa-hand-holding-dollar"></i></span> Donations Control
   </li>
   <li data-section="broadcast">
-    <span class="icon"><i class="fa-solid fa-bullhorn"></i></span> Broadcast & Notifications
+    <span class="icon"><i class="fa-solid fa-bullhorn"></i></span> Broadcast & Camera Videos
   </li>
   <li data-section="volunteer">
     <span class="icon"><i class="fa-solid fa-handshake-angle"></i></span> Volunteer Missions
@@ -160,7 +160,7 @@
         </div>
       </div>
       <div class="dashboard-bottom">
-        <div class="social-traffic-card action-queue-card">
+        <div class="action-queue-card">
           <div class="st-header">
             <span>Action Queue (Pending Approvals)</span>
             <div class="action-queue-summary" id="action-queue-summary">Loadingâ€¦</div>
@@ -182,6 +182,7 @@
           </table>
 
         </div>
+<<<<<<< HEAD
         <div class="social-traffic-card">
           <div class="st-header">
             <span>Social traffic</span>
@@ -200,6 +201,8 @@
             </tbody>
           </table>
         </div>
+=======
+>>>>>>> nur
       </div>
     </div>
   <!-- Tables Section -->
@@ -778,7 +781,7 @@
       <table class="styled-table">
         <thead>
           <tr>
-            <th>Volunteer Name</th>
+            <th>Cameraman Name</th>
             <th>Withdrawal Amount</th>
             <th>Status</th>
             <th>Request Date</th>
@@ -810,32 +813,54 @@
 </div>
 
 <div id="broadcast" class="main-section">
-  <h2>Broadcast & 
-    Notifications</h2>
+  <div class="broadcast-header">
+    <h2>Broadcast Requests & Camera Videos</h2>
+    <div class="admin-section-toolbar">
+      <a class="admin-refresh-btn broadcast-open-btn" href="../Html/BroadCast.php">Open Broadcast Desk</a>
+    </div>
+  </div>
   <div class="filters-bar" id="broadcast-filters">
     <input id="broadcast-filter-text" type="text" placeholder="Search title, message, area">
     <button type="button" id="broadcast-filter-reset" class="ghost">Reset</button>
   </div>
-  <table class="styled-table">
-    <thead>
-      <tr>
-        <th>Title</th><th>Message</th><th>Target Area</th><th>User Type</th>
-        <th>Sent On</th><th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="broadcast-table-body">
-      <tr>
-        <td>Amber Alert</td><td>Child missing in Dhanmondi</td><td>Dhanmondi</td>
-        <td>All</td><td>2025-07-27 13:00</td>
-        <td>
-          <button>Repeat</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-  <div class="broadcast-actions">
-    <button class="btn-alert"><i class="fa-solid fa-bullhorn"></i> Send New Alert</button>
-    <button class="btn-schedule"><i class="fa-regular fa-calendar-check"></i> Schedule Broadcast</button>
+  <div class="section-table-block">
+    <h3 class="section-subtitle">Broadcast Requests</h3>
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th>Police Officer</th>
+          <th>Station</th>
+          <th>Reason</th>
+          <th>Requested On</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="broadcast-request-body">
+        <tr>
+          <td colspan="6">Loading broadcast requests...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="section-table-block broadcast-video-section">
+    <h3 class="section-subtitle">Camera Video Submissions</h3>
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th>Cameraman</th>
+          <th>Video</th>
+          <th>Location</th>
+          <th>Sent On</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="camera-video-table-body">
+        <tr>
+          <td colspan="5">Loading camera videos...</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>
 
@@ -930,7 +955,12 @@
         <option value="assist_police">Assist Police Response</option>
       </select>
     </div>
+<<<<<<< HEAD
     <div class="assign-list" id="assign-volunteer-list">Loadingâ€¦</div>
+=======
+    <p class="assign-modal__radius-note"><strong>Available from database:</strong> all available volunteers and volunteer-plus accounts are shown below.</p>
+    <div class="assign-list" id="assign-volunteer-list">Loading…</div>
+>>>>>>> nur
     <div class="assign-actions">
       <button type="button" class="primary" id="assign-confirm-btn">Assign Selected</button>
       <button type="button" class="secondary" onclick="closeCrimeAssignModal()">Cancel</button>
@@ -1179,56 +1209,6 @@
       }
     }
 
-    function renderSocialTraffic(rows) {
-      const tbody = document.getElementById('social-table-body');
-      if (!tbody) return;
-      if (!Array.isArray(rows) || !rows.length) {
-        setRows(tbody, '<tr><td colspan="3">No social traffic yet.</td></tr>');
-        return;
-      }
-
-      const total = rows.reduce((sum, r) => sum + (Number(r.visitors) || 0), 0) || 1;
-      const html = rows.map(r => {
-        const source = r.source || 'Unknown';
-        const visitors = Number(r.visitors) || 0;
-        const pct = Math.round((visitors / total) * 100);
-        return `
-          <tr>
-            <td>${source}</td>
-            <td>${visitors.toLocaleString('en-US')}</td>
-            <td>
-              <div class="st-progress-bar">
-                <div class="st-progress-inner" style="width:${pct}%"></div>
-              </div>
-              ${pct}%
-            </td>
-          </tr>`;
-      }).join('');
-      setRows(tbody, html);
-    }
-
-    async function loadSocialTraffic(showAll = false) {
-      const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-      try {
-        const url = showAll ? '../Php/admin_social_traffic.php?all=1' : '../Php/admin_social_traffic.php';
-        const res = await fetchJSON(url);
-        if (!res || !res.success || !Array.isArray(res.data)) throw new Error('Bad response');
-        renderSocialTraffic(res.data);
-      } catch (e) {
-        console.error('Social traffic load failed', e);
-        // Demo fallback with random social sources
-        const demo = [
-          { source: 'Facebook', visitors: randInt(500, 1500) },
-          { source: 'Instagram', visitors: randInt(400, 1200) },
-          { source: 'YouTube', visitors: randInt(300, 900) },
-          { source: 'Twitter/X', visitors: randInt(200, 800) },
-          { source: 'Direct', visitors: randInt(250, 700) },
-          { source: 'LinkedIn', visitors: randInt(100, 400) }
-        ];
-        renderSocialTraffic(demo);
-      }
-    }
-
     async function loadDashboardCounts() {
       const usersEl = document.getElementById('new-users-value');
       const usersMetaEl = document.getElementById('new-users-meta');
@@ -1298,6 +1278,7 @@
     let volunteerApprovalsData = [];
     let volunteersData = [];
     let camerasData = [];
+    let withdrawalsData = [];
 
     function populateVolunteerFilterOptions(rows) {
       const statusSelect = document.getElementById('vol-filter-status');
@@ -2251,6 +2232,113 @@
       if (text) text.addEventListener('input', filterCameras);
       if (status) status.addEventListener('change', filterCameras);
     }
+// Withdrawals rendering + actions
+    function renderWithdrawalsTable(rows) {
+      console.debug('admin:renderWithdrawalsTable rows', rows && rows.length);
+      const tbody = document.getElementById('withdraw-table-body');
+      if (!tbody) return;
+      if (!rows || !rows.length) {
+        setRows(tbody, '<tr><td colspan="5">No withdrawal requests found.</td></tr>');
+        const totalEl = document.getElementById('withdraw-total-amount');
+        const pendingEl = document.getElementById('withdraw-pending-count');
+        if (totalEl) totalEl.textContent = '৳0.00';
+        if (pendingEl) pendingEl.textContent = '0';
+        return;
+      }
+
+      const html = rows.map(r => {
+        const id = r.id || '';
+        const name = escapeHtml(r.contributor_name || (`User #${r.contributor_id || '—'}`));
+        const amountNum = Number(r.amount || 0);
+        const amountStr = '৳' + amountNum.toFixed(2);
+        const status = String(r.status || 'pending').toLowerCase();
+        const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+        const statusClass = status === 'approved' ? 'status-approved' : (status === 'rejected' ? 'status-rejected' : 'status-pending');
+        const created = escapeHtml(r.created_at || '');
+        const actions = status === 'pending' ? `<button class="withdraw-approve" data-id="${id}">Approve</button> <button class="withdraw-reject" data-id="${id}">Reject</button>` : '';
+        return `
+          <tr>
+            <td>${name}</td>
+            <td>${escapeHtml(amountStr)}</td>
+            <td><span class="${statusClass}">${escapeHtml(statusLabel)}</span></td>
+            <td>${created}</td>
+            <td class="actions-cell">${actions}</td>
+          </tr>`;
+      }).join('');
+
+      setRows(tbody, html);
+
+      const total = rows.reduce((s, rr) => s + Number(rr.amount || 0), 0);
+      const pendingCount = rows.filter(rr => String(rr.status || '').toLowerCase() === 'pending').length;
+      const totalEl = document.getElementById('withdraw-total-amount');
+      const pendingEl = document.getElementById('withdraw-pending-count');
+      if (totalEl) totalEl.textContent = `৳${total.toFixed(2)}`;
+      if (pendingEl) pendingEl.textContent = String(pendingCount);
+
+      // bind approve/reject buttons
+      const tbodyEl = document.getElementById('withdraw-table-body');
+      if (!tbodyEl) return;
+      tbodyEl.querySelectorAll('.withdraw-approve').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.id;
+          await processWithdraw(id, 'approve');
+        });
+      });
+      tbodyEl.querySelectorAll('.withdraw-reject').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.id;
+          await processWithdraw(id, 'reject');
+        });
+      });
+    }
+
+    function filterWithdrawals() {
+      const text = (document.getElementById('withdraw-filter-text')?.value || '').trim().toLowerCase();
+      const status = (document.getElementById('withdraw-filter-status')?.value || '').trim().toLowerCase();
+      const tokens = text.split(/\s+/).filter(Boolean);
+      const filtered = withdrawalsData.filter(item => {
+        const hay = `${item.contributor_name || ''} ${item.amount || ''}`.toLowerCase();
+        const matchesText = !tokens.length || tokens.every(t => hay.includes(t));
+        const matchesStatus = !status || (String(item.status || '').toLowerCase() === status);
+        return matchesText && matchesStatus;
+      });
+      renderWithdrawalsTable(filtered);
+    }
+
+    function attachWithdrawFilterListeners() {
+      const text = document.getElementById('withdraw-filter-text');
+      const status = document.getElementById('withdraw-filter-status');
+      const reset = document.getElementById('withdraw-filter-reset');
+      if (text) text.addEventListener('input', filterWithdrawals);
+      if (status) status.addEventListener('change', filterWithdrawals);
+      if (reset) reset.addEventListener('click', () => {
+        if (text) text.value = '';
+        if (status) status.value = '';
+        filterWithdrawals();
+      });
+    }
+
+    async function processWithdraw(requestId, action) {
+      if (!requestId) return;
+      const ok = confirm(`Confirm to ${action} this withdrawal?`);
+      if (!ok) return;
+      try {
+        const res = await fetch('../Php/admin_update_withdraw_status.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ action: action, request_id: Number(requestId) })
+        });
+        const json = await res.json();
+        console.debug('admin:update_withdraw_response', json);
+        if (!json || !json.success) throw new Error(json?.error || 'Could not update');
+        alert('Request ' + (json.status || action));
+        await loadAdminData();
+      } catch (err) {
+        console.error('Process withdraw failed', err);
+        alert('Could not update withdraw request.');
+      }
+    }
 
     function renderPolicemenTable(rows) {
       const tbody = document.getElementById('policemen-table-body');
@@ -2397,6 +2485,7 @@
     attachVolunteerFilterListeners();
     attachCctvFilterListeners();
     bindVolunteerApproverActions();
+    attachWithdrawFilterListeners();
 
     function applyTablesVisibilityFromCheckboxes() {
       const checkboxes = Array.from(document.querySelectorAll('.table-visibility-checkbox'));
@@ -2452,10 +2541,6 @@
 
   loadDashboardCounts();
   setInterval(loadDashboardCounts, 30000);
-  loadSocialTraffic();
-  setInterval(() => loadSocialTraffic(), 15000);
-  const socialSeeAll = document.getElementById('social-see-all');
-  if (socialSeeAll) socialSeeAll.addEventListener('click', () => loadSocialTraffic(true));
 
   const modalEditBtn = document.getElementById('profile-edit-btn');
   const modalSaveBtn = document.getElementById('profile-save-btn');
@@ -2594,6 +2679,17 @@
         console.error('Policemen fetch failed', e);
         renderPolicemenTable([]);
       }
+      // Withdrawals
+      try {
+        const wres = await fetchJSON('../Php/admin_fetch_withdrawals.php');
+        console.debug('admin:fetch_withdrawals_response', wres);
+        withdrawalsData = wres && wres.success && Array.isArray(wres.data) ? wres.data : [];
+        console.debug('admin:withdrawalsData_count', Array.isArray(withdrawalsData) ? withdrawalsData.length : 0);
+      } catch (e) {
+        console.error('Withdrawals fetch failed', e);
+        withdrawalsData = [];
+      }
+      filterWithdrawals();
     }
 
     window.loadAdminData = loadAdminData;
@@ -2601,7 +2697,12 @@
 
     document.addEventListener('admin:refresh-section', (event) => {
       const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
-      if (sectionId === 'dashboard' || sectionId === 'tables') {
+      if (sectionId === 'dashboard') {
+        loadCameraSeries();
+        loadDashboardCounts();
+        return;
+      }
+      if (sectionId === 'tables') {
         loadAdminData();
       }
     });
@@ -2609,6 +2710,56 @@
   <!-- Chart.js CDN for demo chart drawing (remove if you use your own chart lib) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
       <script src="../javascrpit/Admin.js?v=20260405e"></script>
+
+    <!-- Messenger FAB + Drawer (reused shared markup) -->
+    <button type="button" id="messengerFab" class="messenger-fab" aria-label="Open Messenger" title="Messenger">
+      <i class="fa fa-comments" aria-hidden="true"></i>
+    </button>
+    <div id="messengerBackdrop" class="messenger-backdrop" aria-hidden="true"></div>
+    <aside id="messengerDrawer" class="messenger-drawer" aria-hidden="true">
+      <div class="messenger-drawer-header">
+        <h3>Messenger</h3>
+        <button type="button" id="messengerClose" class="messenger-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="messenger-layout">
+        <aside class="messenger-list">
+          <div class="messenger-list-title">All</div>
+          <input type="text" class="messenger-search" placeholder="Search" aria-label="Search chats">
+          <div class="messenger-contact">
+            <div class="avatar">
+              <img src="../Images/businessman.gif" alt="Admin Logo" class="admin-avatar-img" onerror="this.onerror=null;this.src='../Images/demo_pic/profile.jpg';">
+            </div>
+            <div>
+              <strong>Admin Desk</strong>
+              <small>Announcements and updates</small>
+            </div>
+          </div>
+        </aside>
+
+        <section class="messenger-chat">
+          <div class="messenger-chat-top">
+            <div class="avatar online">
+              <img src="../Images/businessman.gif" alt="Admin Logo" class="admin-avatar-img" onerror="this.onerror=null;this.src='../Images/demo_pic/profile.jpg';">
+            </div>
+            <div>
+              <strong>Admin Desk</strong>
+              <small>Active now</small>
+            </div>
+          </div>
+          <div class="messenger-chat-feed">
+            <p class="messenger-bubble support">Hi, this is Admin Desk. How can we help you today?</p>
+          </div>
+          <div class="messenger-composer">
+            <input id="messengerInput" class="messenger-input" type="text" placeholder="Type a message..." autocomplete="off">
+            <button type="button" class="messenger-send" aria-label="Send">
+              <i class="fa fa-paper-plane" aria-hidden="true"></i>
+            </button>
+          </div>
+        </section>
+      </div>
+    </aside>
+
+    <script src="../javascrpit/messenger_shared.js"></script>
 </body>
 </html>
 

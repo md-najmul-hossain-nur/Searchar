@@ -114,7 +114,6 @@ legendChips.forEach(btn => {
 });
 
 loadCameraSeries();
-// Refresh every 30s for a near-real-time view
 setInterval(loadCameraSeries, 30000);
 
     // Orders Chart
@@ -1467,6 +1466,8 @@ function openAddVolunteerModal() {
     }
   }
 
+  window.loadMissingReports = loadMissingReports;
+
   [statusFilter, locationFilter, minAgeFilter, maxAgeFilter, genderFilter, dateFromFilter, dateToFilter]
     .filter(Boolean)
     .forEach(el => {
@@ -1475,6 +1476,13 @@ function openAddVolunteerModal() {
     });
 
   loadMissingReports();
+
+  document.addEventListener('admin:refresh-section', (event) => {
+    const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
+    if (sectionId === 'missing') {
+      loadMissingReports();
+    }
+  });
 
   document.addEventListener('click', (event) => {
     const viewBtn = event.target.closest('[data-missing-view]');
@@ -1746,6 +1754,8 @@ function openAddVolunteerModal() {
     }
   }
 
+  window.syncCrimesFromMissingReports = syncCrimesFromMissingReports;
+
   let demoCrimes = loadCrimeReports();
   let filteredCrimes = [...demoCrimes];
   let crimeMap = null;
@@ -1779,10 +1789,10 @@ function openAddVolunteerModal() {
   let caseAssignHistory = loadCaseAssignHistory();
   const crimeActionState = new Map();
   let currentAssignCaseId = null;
+  let currentAssignLandmark = '';
   let currentAssignMedia = [];
   let currentAssignCoords = null;
   let assignCandidates = [];
-  const ASSIGN_RANGE_KM = 2;
 
   function getCrimeActionState(caseId) {
     const key = String(caseId || '');
@@ -1892,13 +1902,29 @@ function openAddVolunteerModal() {
 
   async function loadAssignCandidates() {
     try {
-      const [volRes, camRes] = await Promise.all([
+      const [volRes, comboRes, miscRes] = await Promise.all([
         fetch('../Php/admin_fetch_volunteers.php', { credentials: 'same-origin', cache: 'no-store' }),
-        fetch('../Php/admin_fetch_cameras.php', { credentials: 'same-origin', cache: 'no-store' })
+        fetch('../Php/admin_fetch_combo_users.php', { credentials: 'same-origin', cache: 'no-store' }),
+        fetch('../Php/admin_fetch_misc_sections.php', { credentials: 'same-origin', cache: 'no-store' })
       ]);
 
       const volJson = await volRes.json();
-      const camJson = await camRes.json();
+      const comboJson = await comboRes.json();
+      const miscJson = await miscRes.json();
+
+      const activeMissionIds = new Set(
+        Array.isArray(miscJson?.missions)
+          ? miscJson.missions
+              .filter((row) => {
+                const status = String(row?.status || '').toLowerCase();
+                const response = String(row?.response_status || '').toLowerCase();
+                return !['completed', 'rejected_busy', 'closed_by_police'].includes(status)
+                  && !['completed', 'rejected_busy', 'closed_by_police'].includes(response);
+              })
+              .map((row) => Number(row?.volunteer_id || 0))
+              .filter((id) => id > 0)
+          : []
+      );
 
       const volunteers = Array.isArray(volJson?.data)
         ? volJson.data.map(v => ({
@@ -1915,16 +1941,81 @@ function openAddVolunteerModal() {
             recipient_entity: 'volunteer',
             recipient_id: Number(v.volunteer_id || 0),
             lat: Number(v.lat ?? v.latitude),
-            lng: Number(v.lng ?? v.lon ?? v.longitude)
+            lng: Number(v.lng ?? v.lon ?? v.longitude),
+            profile_tag: 'Volunteer'
           }))
         : [];
 
-      assignCandidates = volunteers.filter(a => a.recipient_id > 0);
+      const volunteerById = new Map();
+      volunteers.forEach((item) => {
+        const idNum = Number(item.recipient_id || 0);
+        if (idNum > 0) volunteerById.set(idNum, item);
+      });
+
+      const comboRows = Array.isArray(comboJson?.data) ? comboJson.data : [];
+      const comboCandidates = comboRows.map((row) => {
+        const volunteerId = Number(row?.volunteer_id || 0);
+        const linkedVolunteer = volunteerById.get(volunteerId);
+        const name = String(row?.full_name || linkedVolunteer?.name || 'Volunteer').trim();
+        const location = normalizeAssignLocation(
+          [
+            row?.city,
+            row?.country,
+            linkedVolunteer?.location
+          ]
+            .map(item => String(item || '').trim())
+            .filter(Boolean)
+            .join(', ')
+        ) || (linkedVolunteer?.location || 'Dhaka');
+
+        const recipientEntity = volunteerId > 0 ? 'volunteer' : 'user';
+        const recipientId = volunteerId > 0 ? volunteerId : Number(row?.user_id || 0);
+
+        return {
+          id: `VPLUS-${row?.application_id || volunteerId || recipientId || name}`,
+          name,
+          location,
+          status: 'available',
+          role: 'volunteer_plus',
+          recipient_entity: recipientEntity,
+          recipient_id: recipientId,
+          lat: Number(linkedVolunteer?.lat),
+          lng: Number(linkedVolunteer?.lng),
+          profile_tag: 'Volunteer + User'
+        };
+      }).filter(item => Number(item.recipient_id || 0) > 0);
+
+      const merged = new Map();
+      volunteers.forEach((item) => {
+        const key = `${item.recipient_entity}:${item.recipient_id}`;
+        merged.set(key, item);
+      });
+      comboCandidates.forEach((item) => {
+        const key = `${item.recipient_entity}:${item.recipient_id}`;
+        if (merged.has(key)) {
+          const prev = merged.get(key);
+          merged.set(key, {
+            ...prev,
+            profile_tag: 'Volunteer + User'
+          });
+        } else {
+          merged.set(key, item);
+        }
+      });
+
+      assignCandidates = Array.from(merged.values())
+        .filter(a => a.recipient_id > 0)
+        .map(candidate => ({
+          ...candidate,
+          status: activeMissionIds.has(Number(candidate.recipient_id || 0)) ? 'busy' : candidate.status
+        }));
     } catch (error) {
       console.error('assign candidates load failed', error);
       assignCandidates = [];
     }
   }
+
+  function updateAssignRadiusLabel(_value) {}
 
   function closeCrimeAssignModal() {
     if (assignModal) assignModal.classList.remove('open');
@@ -1933,17 +2024,7 @@ function openAddVolunteerModal() {
   }
   window.closeCrimeAssignModal = closeCrimeAssignModal;
 
-  function haversineDistanceKm(lat1, lng1, lat2, lng2) {
-    const toRad = (deg) => (deg * Math.PI) / 180;
-    const dLat = toRad(lat2 - lat1);
-    const dLng = toRad(lng2 - lng1);
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-      + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return 6371 * c;
-  }
-
-  function renderAssignList(landmark) {
+  function renderAssignList() {
     if (!assignList) return;
     const sourceList = assignCandidates.length
       ? assignCandidates
@@ -1959,45 +2040,20 @@ function openAddVolunteerModal() {
       return true;
     });
 
-    const caseLat = Number(currentAssignCoords?.lat);
-    const caseLng = Number(currentAssignCoords?.lng);
+    const header = `<div class="assign-vol-meta" style="padding:4px 8px 10px; font-weight:700;">Showing all available volunteers from database</div>`;
 
-    const hasCaseCoords = Number.isFinite(caseLat) && Number.isFinite(caseLng);
-    let filtered = [];
-    let matchType = `Within ${ASSIGN_RANGE_KM} KM`;
-
-    if (hasCaseCoords) {
-      filtered = eligibleSource
-        .map(v => {
-          const vLat = Number(v.lat);
-          const vLng = Number(v.lng);
-          if (!Number.isFinite(vLat) || !Number.isFinite(vLng)) {
-            return null;
-          }
-          const distanceKm = haversineDistanceKm(caseLat, caseLng, vLat, vLng);
-          return { ...v, distanceKm };
-        })
-        .filter(v => v && v.distanceKm <= ASSIGN_RANGE_KM)
-        .sort((a, b) => a.distanceKm - b.distanceKm);
-    } else {
-      matchType = 'Case coordinates unavailable';
-      filtered = [];
-    }
-
-    const header = `<div class="assign-vol-meta" style="padding:4px 8px 10px; font-weight:700;">Showing: ${matchType}</div>`;
-
-    if (!filtered.length) {
-      assignList.innerHTML = `${header}<div class="assign-vol-meta" style="padding:8px;">No available volunteers within ${ASSIGN_RANGE_KM} KM for this case.</div>`;
+    if (!eligibleSource.length) {
+      assignList.innerHTML = `${header}<div class="assign-vol-meta" style="padding:8px;">No available volunteers found in database.</div>`;
       return;
     }
 
-    const rows = filtered.map(v => {
+    const rows = eligibleSource.map(v => {
       return `
         <label class="assign-list-item">
           <span>
             <input type="checkbox" value="${v.id}" data-recipient-entity="${v.recipient_entity || ''}" data-recipient-id="${v.recipient_id || ''}" data-recipient-name="${v.name || ''}">
             <strong>${v.name}</strong>
-            <div class="assign-vol-meta">${v.location || 'Location unavailable'} • ${v.status} • ${Number(v.distanceKm).toFixed(2)} KM</div>
+            <div class="assign-vol-meta">${v.location || 'Location unavailable'} • ${v.profile_tag || v.status}</div>
           </span>
         </label>
       `;
@@ -2044,14 +2100,20 @@ function openAddVolunteerModal() {
 
   function openAssignModal(caseId, landmark, media = [], coords = null) {
     currentAssignCaseId = caseId;
+    currentAssignLandmark = String(landmark || '');
     currentAssignMedia = Array.isArray(media) ? media : [];
     currentAssignCoords = coords && Number.isFinite(Number(coords.lat)) && Number.isFinite(Number(coords.lng))
       ? { lat: Number(coords.lat), lng: Number(coords.lng) }
       : null;
     if (assignCaseIdEl) assignCaseIdEl.textContent = caseId;
     if (assignCaseLandmarkEl) assignCaseLandmarkEl.textContent = landmark || '—';
-    renderAssignList(landmark || '');
+    if (assignList) {
+      assignList.innerHTML = '<div class="assign-vol-meta" style="padding:8px;">Loading volunteers from database…</div>';
+    }
     if (assignModal) assignModal.classList.add('open');
+    loadAssignCandidates()
+      .catch((error) => console.error('assign candidates refresh failed', error))
+      .finally(() => renderAssignList());
   }
   window.openAssignModal = openAssignModal;
 
@@ -2595,7 +2657,19 @@ function openAddVolunteerModal() {
   generateAnonToken();
   applyFilters();
   syncCrimesFromMissingReports();
-  setInterval(syncCrimesFromMissingReports, 15000);
+
+  setInterval(() => {
+    if (!document.hidden) {
+      syncCrimesFromMissingReports();
+    }
+  }, 15000);
+
+  document.addEventListener('admin:refresh-section', (event) => {
+    const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
+    if (sectionId === 'crime') {
+      syncCrimesFromMissingReports();
+    }
+  });
 })();
 
 // Load Donations, Broadcast, Volunteer Missions, Withdraw sections
@@ -2603,21 +2677,20 @@ function openAddVolunteerModal() {
   const donationsBody = document.getElementById('donations-table-body');
   const broadcastBody = document.getElementById('broadcast-table-body');
   const missionsBody = document.getElementById('volunteer-mission-body');
-  const withdrawBody = document.getElementById('withdraw-table-body');
+  const cameraVideoBody = document.getElementById('camera-video-table-body');
+  const broadcastRequestBody = document.getElementById('broadcast-request-body');
+  // Withdraw Control is managed in Admin.html now; avoid overwriting its data
+  const withdrawBody = (typeof window.renderWithdrawalsTable === 'function') ? null : document.getElementById('withdraw-table-body');
   const volunteerTotalMissions = document.getElementById('volunteer-total-missions');
   const volunteerThisMonth = document.getElementById('volunteer-this-month');
   const donationsTotalAmount = document.getElementById('donations-total-amount');
   const donationsTopDonor = document.getElementById('donations-top-donor');
   const withdrawTotalAmount = document.getElementById('withdraw-total-amount');
   const withdrawPendingCount = document.getElementById('withdraw-pending-count');
-  const miscSectionIds = ['donations', 'broadcast', 'volunteer', 'withdraw'];
+  const miscSectionIds = ['donations', 'broadcast', 'volunteer'];
   let isLoadingMiscSections = false;
 
-  if (!donationsBody && !broadcastBody && !missionsBody && !withdrawBody) return;
-
-  function shouldAutoRefreshMiscSections() {
-    return !document.hidden;
-  }
+  if (!donationsBody && !broadcastBody && !missionsBody && !withdrawBody && !cameraVideoBody && !broadcastRequestBody) return;
 
   function esc(v) {
     return String(v ?? '')
@@ -2680,6 +2753,54 @@ function openAddVolunteerModal() {
     return `../${path}`;
   }
 
+  function cameraVideoUrl(rawPath) {
+    const path = String(rawPath || '').trim();
+    if (!path) return '';
+    if (/^https?:\/\//i.test(path)) return path;
+    if (path.startsWith('../') || path.startsWith('./') || path.startsWith('/')) return path;
+    return `../${path}`;
+  }
+
+  function broadcastRequestStatusChip(status) {
+    const s = String(status || 'pending').toLowerCase();
+    if (s === 'approved') return '<span class="status-approved">Approved</span>';
+    if (s === 'rejected') return '<span class="status-rejected">Rejected</span>';
+    return '<span class="status-pending">Pending</span>';
+  }
+
+  function renderBroadcastRequests(rows) {
+    if (!broadcastRequestBody) return;
+    if (!Array.isArray(rows) || rows.length === 0) {
+      setNoData(broadcastRequestBody, 6, 'No broadcast requests yet.');
+      return;
+    }
+
+    broadcastRequestBody.innerHTML = rows.map((row) => {
+      const requestId = Number(row.request_id || 0);
+      const policeName = String(row.police_name || 'Police Officer');
+      const station = String(row.station || '—');
+      const status = String(row.status || 'pending').toLowerCase();
+      const statusHtml = broadcastRequestStatusChip(status);
+      const createdAt = fmtDate(row.created_at || '');
+      const requestReason = String(row.request_reason || '').trim() || '—';
+      const canAct = status === 'pending';
+
+      return `
+        <tr data-broadcast-request-id="${esc(requestId)}">
+          <td>${esc(policeName)}</td>
+          <td>${esc(station)}</td>
+          <td>${esc(requestReason)}</td>
+          <td>${esc(createdAt)}</td>
+          <td>${statusHtml}</td>
+          <td>
+            <button type="button" data-broadcast-request-action="approve" data-broadcast-request-id="${esc(requestId)}" ${canAct ? '' : 'disabled'}>Approve</button>
+            <button type="button" data-broadcast-request-action="reject" data-broadcast-request-id="${esc(requestId)}" ${canAct ? '' : 'disabled'}>Reject</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
   async function loadMiscSections() {
     if (isLoadingMiscSections) {
       return;
@@ -2687,17 +2808,30 @@ function openAddVolunteerModal() {
 
     isLoadingMiscSections = true;
     try {
-      const res = await fetch('../Php/admin_fetch_misc_sections.php', {
+      const miscRequest = fetch('../Php/admin_fetch_misc_sections.php', {
         credentials: 'same-origin',
         cache: 'no-store'
       });
-      const json = await res.json();
+      const cameraRequest = cameraVideoBody
+        ? fetch('../Php/admin_fetch_camera_videos.php', { credentials: 'same-origin', cache: 'no-store' })
+        : Promise.resolve(null);
+
+      const broadcastRequest = broadcastRequestBody
+        ? fetch('../Php/admin_fetch_broadcast_requests.php', { credentials: 'same-origin', cache: 'no-store' })
+        : Promise.resolve(null);
+
+      const [miscRes, cameraRes, broadcastRes] = await Promise.all([miscRequest, cameraRequest, broadcastRequest]);
+      const json = await miscRes.json();
+      const cameraJson = cameraRes ? await cameraRes.json() : null;
+      const broadcastReqJson = broadcastRes ? await broadcastRes.json() : null;
       if (!json?.success) throw new Error(json?.error || 'Load failed');
 
       const donations = Array.isArray(json.donations) ? json.donations : [];
       const broadcasts = Array.isArray(json.broadcasts) ? json.broadcasts : [];
       const missions = Array.isArray(json.missions) ? json.missions : [];
       const withdraws = Array.isArray(json.withdraws) ? json.withdraws : [];
+      const cameraVideos = Array.isArray(cameraJson?.rows) ? cameraJson.rows : [];
+      const broadcastRequests = Array.isArray(broadcastReqJson?.rows) ? broadcastReqJson.rows : [];
       const totalDonationAmount = donations.reduce((sum, d) => sum + Number(d?.amount || 0), 0);
       const topDonorRow = donations.reduce((top, row) => {
         const topAmount = Number(top?.amount || 0);
@@ -2776,7 +2910,7 @@ function openAddVolunteerModal() {
 
       if (broadcastBody) {
         if (!broadcasts.length) {
-          setNoData(broadcastBody, 6, 'No broadcast notifications found.');
+          broadcastBody.innerHTML = '';
         } else {
           broadcastBody.innerHTML = broadcasts.map(b => `
             <tr>
@@ -2989,69 +3123,51 @@ function openAddVolunteerModal() {
       }
 
       if (withdrawBody) {
-        if (!withdraws.length) {
-          setNoData(withdrawBody, 5, 'No withdrawal requests found.');
+        // Withdraw rendering handled by Admin.html (avoid double render)
+      }
+
+      if (cameraVideoBody) {
+        if (!cameraVideos.length) {
+          setNoData(cameraVideoBody, 5, 'No camera feeds found yet.');
         } else {
-          withdrawBody.innerHTML = withdraws.map(w => `
-            <tr>
-              <td>${esc(w.requester_name || 'Volunteer')}</td>
-              <td>৳${esc(Number(w.amount || 0).toFixed(2))}</td>
-              <td>${renderWithdrawStatusChip(w.status)}</td>
-              <td>${esc(fmtDate(w.request_date))}</td>
-              <td>
-                <button type="button" data-withdraw-action="approve" data-withdraw-id="${esc(w.request_id || '')}" data-requester-name="${esc(w.requester_name || '')}" data-request-amount="${esc(w.amount || 0)}" data-request-date="${esc(w.request_date || '')}" ${String(w.status || 'pending').toLowerCase() === 'pending' ? '' : 'disabled'}>Approve</button>
-                <button type="button" data-withdraw-action="reject" data-withdraw-id="${esc(w.request_id || '')}" data-requester-name="${esc(w.requester_name || '')}" data-request-amount="${esc(w.amount || 0)}" data-request-date="${esc(w.request_date || '')}" ${String(w.status || 'pending').toLowerCase() === 'pending' ? '' : 'disabled'}>Reject</button>
-              </td>
-            </tr>
-          `).join('');
+          cameraVideoBody.innerHTML = cameraVideos.map(row => {
+            const videoUrl = cameraVideoUrl(row.video_path || row.video_url || row.live_url || '');
+            const label = String(row.feed_label || (row.feed_type ? `${row.feed_type} feed` : 'Camera Feed'));
+            const location = String(row.camera_location || '').trim()
+              || [row.street, row.city, row.country].map(v => String(v || '').trim()).filter(Boolean).join(', ')
+              || '—';
+            const cameraman = String(row.cameraman_name || 'Camera Contributor');
+            const sentOn = fmtDate(row.created_at);
+            const videoCell = videoUrl
+              ? `<a href="${esc(videoUrl)}" target="_blank" rel="noopener">${esc(label)}</a>`
+              : '<span>—</span>';
+            const actionCell = videoUrl
+              ? `<a href="${esc(videoUrl)}" target="_blank" rel="noopener">Open</a>`
+              : '<span>—</span>';
 
-          withdrawBody.querySelectorAll('[data-withdraw-action]').forEach(btn => {
-            btn.addEventListener('click', async () => {
-              const action = String(btn.getAttribute('data-withdraw-action') || '').toLowerCase();
-              if (action !== 'approve' && action !== 'reject') return;
-
-              const row = btn.closest('tr');
-              const requestId = Number(btn.getAttribute('data-withdraw-id') || 0);
-              const requesterName = String(btn.getAttribute('data-requester-name') || '').trim();
-              const amount = Number(btn.getAttribute('data-request-amount') || 0);
-              const requestDate = String(btn.getAttribute('data-request-date') || '').trim();
-
-              const approveBtn = row?.querySelector('[data-withdraw-action="approve"]');
-              const rejectBtn = row?.querySelector('[data-withdraw-action="reject"]');
-              if (approveBtn) approveBtn.disabled = true;
-              if (rejectBtn) rejectBtn.disabled = true;
-
-              try {
-                const res = await fetch('../Php/admin_update_withdraw_status.php', {
-                  method: 'POST',
-                  credentials: 'same-origin',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    action,
-                    request_id: requestId,
-                    requester_name: requesterName,
-                    amount,
-                    request_date: requestDate
-                  })
-                });
-
-                const json = await res.json();
-                if (!json?.success) throw new Error(json?.error || 'Failed to update withdrawal');
-                await loadMiscSections();
-              } catch (e) {
-                if (approveBtn) approveBtn.disabled = false;
-                if (rejectBtn) rejectBtn.disabled = false;
-                alert(e?.message || 'Could not update withdrawal status.');
-              }
-            });
-          });
+            return `
+              <tr>
+                <td>${esc(cameraman)}</td>
+                <td>${videoCell}</td>
+                <td>${esc(location)}</td>
+                <td>${esc(sentOn)}</td>
+                <td>${actionCell}</td>
+              </tr>
+            `;
+          }).join('');
         }
+      }
+
+      if (broadcastRequestBody) {
+        renderBroadcastRequests(broadcastRequests);
       }
     } catch (error) {
       if (donationsBody) setNoData(donationsBody, 8, 'Failed to load donations.');
       if (broadcastBody) setNoData(broadcastBody, 6, 'Failed to load broadcast notifications.');
       if (missionsBody) setNoData(missionsBody, 9, 'Failed to load volunteer missions.');
       if (withdrawBody) setNoData(withdrawBody, 5, 'Failed to load withdrawals.');
+      if (cameraVideoBody) setNoData(cameraVideoBody, 5, 'Failed to load camera videos.');
+      if (broadcastRequestBody) setNoData(broadcastRequestBody, 5, 'Failed to load broadcast requests.');
       if (donationsTotalAmount) donationsTotalAmount.textContent = '৳0.00';
       if (donationsTopDonor) donationsTopDonor.textContent = '—';
       if (withdrawTotalAmount) withdrawTotalAmount.textContent = '৳0.00';
@@ -3082,10 +3198,51 @@ function openAddVolunteerModal() {
   });
 
   setInterval(() => {
-    if (shouldAutoRefreshMiscSections()) {
+    if (!document.hidden) {
       loadMiscSections();
     }
   }, 10000);
+
+  document.addEventListener('click', (event) => {
+    const actionBtn = event.target.closest('[data-broadcast-request-action]');
+    if (!actionBtn) return;
+    const action = String(actionBtn.getAttribute('data-broadcast-request-action') || '').toLowerCase();
+    const requestId = Number(actionBtn.getAttribute('data-broadcast-request-id') || 0);
+    if (!requestId || (action !== 'approve' && action !== 'reject')) return;
+
+    let reasonText = '';
+    if (action === 'reject') {
+      const reasonPrompt = window.prompt('Write a reason for rejecting this request:');
+      if (reasonPrompt === null) return;
+      reasonText = String(reasonPrompt || '').trim();
+      if (!reasonText) {
+        alert('Please write a rejection reason.');
+        return;
+      }
+    }
+
+    actionBtn.disabled = true;
+    const prevLabel = actionBtn.textContent;
+    actionBtn.textContent = action === 'approve' ? 'Approving...' : 'Rejecting...';
+
+    fetch('../Php/admin_update_broadcast_request.php', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ request_id: String(requestId), action, reason: reasonText })
+    })
+      .then(res => res.json())
+      .then(json => {
+        if (!json?.success) throw new Error(json?.error || 'Update failed');
+        loadMiscSections();
+      })
+      .catch(error => {
+        console.error('broadcast request update failed', error);
+        actionBtn.disabled = false;
+        actionBtn.textContent = prevLabel || 'Update';
+        alert(error?.message || 'Could not update request.');
+      });
+  });
 })();
 
 // Dashboard pending action queue
@@ -3118,8 +3275,9 @@ function openAddVolunteerModal() {
     const missionPending = Number(summary?.mission_proof_pending || 0);
     const volunteerPending = Number(summary?.volunteer_pending || 0);
     const reportPending = Number(summary?.report_pending || 0);
+    const broadcastPending = Number(summary?.broadcast_pending || 0);
     const chatLogTotal = Number(summary?.chat_log_total || 0);
-    summaryEl.textContent = `Post ${postPending} • Volunteer ${volunteerPending} • Report ${reportPending} • Missing ${missingPending} • Withdraw ${withdrawPending} • Proof ${missionPending} • Chat Log ${chatLogTotal}`;
+    summaryEl.textContent = `Post ${postPending} • Volunteer ${volunteerPending} • Report ${reportPending} • Missing ${missingPending} • Withdraw ${withdrawPending} • Proof ${missionPending} • Broadcast ${broadcastPending} • Chat Log ${chatLogTotal}`;
   }
 
   function statusChip(statusText) {
@@ -3258,6 +3416,18 @@ function openAddVolunteerModal() {
             if (first && (first.textContent || '').trim() === String(itemRef || '').trim()) return true;
             return (tr.textContent || '').toLowerCase().includes(String(searchKey || '').toLowerCase());
           });
+        if (row) jumpHighlight(row);
+        return;
+      }
+
+      if (targetSection === 'broadcast') {
+        const input = document.getElementById('broadcast-filter-text');
+        if (input && searchKey) {
+          input.value = searchKey;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        const row = Array.from(document.querySelectorAll('#broadcast-request-body tr'))
+          .find(tr => (tr.textContent || '').toLowerCase().includes(String(searchKey || '').toLowerCase()));
         if (row) jumpHighlight(row);
       }
     }, 350);
@@ -3400,8 +3570,41 @@ function openAddVolunteerModal() {
   // Donations: text filter
   setupTextFilter('donations', 'donations-filter-text', 'donations-filter-reset');
 
-  // Broadcast: text filter
-  setupTextFilter('broadcast', 'broadcast-filter-text', 'broadcast-filter-reset');
+  // Broadcast: text filter (apply to both broadcast + camera video tables)
+  (function () {
+    const section = document.getElementById('broadcast');
+    if (!section) return;
+    const input = document.getElementById('broadcast-filter-text');
+    const reset = document.getElementById('broadcast-filter-reset');
+    const broadcastBody = document.getElementById('broadcast-table-body');
+    const cameraBody = document.getElementById('camera-video-table-body');
+    const requestBody = document.getElementById('broadcast-request-body');
+    if (!input) return;
+
+    const apply = () => {
+      const q = input.value.trim().toLowerCase();
+      const rows = [];
+      if (broadcastBody) rows.push(...Array.from(broadcastBody.querySelectorAll('tr')));
+      if (cameraBody) rows.push(...Array.from(cameraBody.querySelectorAll('tr')));
+      if (requestBody) rows.push(...Array.from(requestBody.querySelectorAll('tr')));
+
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = q && !text.includes(q) ? 'none' : '';
+      });
+    };
+
+    input.addEventListener('input', apply);
+    if (reset) {
+      reset.addEventListener('click', () => {
+        input.value = '';
+        apply();
+        document.dispatchEvent(new CustomEvent('admin:refresh-section', {
+          detail: { sectionId: 'broadcast' }
+        }));
+      });
+    }
+  })();
 
   // Volunteer: text + status (status col index 6)
   setupTextStatusFilter('volunteer', 'volunteer-filter-text', 'volunteer-filter-status', 'volunteer-filter-reset', 'tbody tr', 6);
@@ -3644,8 +3847,32 @@ function openAddVolunteerModal() {
 
   loadReports();
   setInterval(() => {
-    loadReports({ silent: true });
+    if (!document.hidden) {
+      loadReports({ silent: true });
+    }
   }, 12000);
+
+  document.addEventListener('admin:refresh-section', (event) => {
+    const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
+    if (sectionId === 'review' || sectionId === 'reports') {
+      loadReports();
+    }
+  });
+})();
+
+// AI detection logs are static demo content, so refresh restores the section markup.
+(function () {
+  const section = document.getElementById('ai');
+  const tableBody = document.getElementById('ai-table-body');
+  if (!section || !tableBody) return;
+
+  const initialRows = tableBody.innerHTML;
+  document.addEventListener('admin:refresh-section', (event) => {
+    const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
+    if (sectionId === 'ai') {
+      tableBody.innerHTML = initialRows;
+    }
+  });
 })();
 
 // Donations export: download current table as CSV
@@ -4154,7 +4381,6 @@ function openAddVolunteerModal() {
     }
   });
 
-  // Keep logs fresh without manual refresh while section is open.
   setInterval(function () {
     if (isSectionActive() && !isAutoRefreshPaused()) {
       refreshLogs();
@@ -4181,6 +4407,7 @@ function openAddVolunteerModal() {
 (function () {
   const refreshSections = [
     'dashboard',
+    'tables',
     'post-control',
     'admin-post',
     'crime',
@@ -4190,6 +4417,7 @@ function openAddVolunteerModal() {
     'volunteer',
     'volunteer-approver',
     'withdraw',
+    'review',
     'reports',
     'chatbot-logs'
   ];

@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
 	const liveVideos = Array.from(document.querySelectorAll('.live-video'));
-	if (!liveVideos.length) return;
 
 	const initLiveVideo = (videoEl) => {
 		const sourceUrl = (videoEl.getAttribute('data-live-src') || '').trim();
@@ -37,5 +36,28 @@ document.addEventListener('DOMContentLoaded', () => {
 		videoEl.insertAdjacentElement('afterend', fallbackLink);
 	};
 
-	liveVideos.forEach(initLiveVideo);
+	if (liveVideos.length) {
+		liveVideos.forEach(initLiveVideo);
+	}
+
+	const payoutEl = document.getElementById('payoutCountdown');
+	if (payoutEl) {
+		let remaining = Number(payoutEl.getAttribute('data-next-payout') || '');
+		if (!Number.isFinite(remaining) || remaining < 0) {
+			payoutEl.textContent = 'Paused';
+		} else {
+			const render = () => {
+				const mins = Math.floor(remaining / 60);
+				const secs = remaining % 60;
+				payoutEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+			};
+			render();
+			setInterval(() => {
+				if (remaining > 0) {
+					remaining -= 1;
+					render();
+				}
+			}, 1000);
+		}
+	}
 });

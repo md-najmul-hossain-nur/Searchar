@@ -350,42 +350,163 @@ const openBtn = document.getElementById('openWithdrawBtn');
 const withdrawModal = document.getElementById('withdrawModal');
 const closeBtn = document.getElementById('closeModalBtn');
 const withdrawForm = document.getElementById('withdrawForm');
+const withdrawHistoryBody = document.getElementById('withdrawHistoryBody');
+const pendingCountEl = document.getElementById('ccPendingCount');
+const lastWithdrawalEl = document.getElementById('ccLastWithdrawalDate');
+const totalStreamsEl = document.getElementById('ccTotalStreams');
+const totalEarnedEl = document.getElementById('ccTotalEarned');
+const availableBalanceEl = document.getElementById('ccAvailableBalance');
 
-openBtn.addEventListener('click', () => {
-  withdrawModal.style.display = 'flex';
-});
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
-closeBtn.addEventListener('click', () => {
-  withdrawModal.style.display = 'none';
-});
+function formatHistoryDate(value) {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return escapeHtml(value);
+  return date.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+}
 
-window.addEventListener('click', (e) => {
-  if (e.target === withdrawModal) {
+function renderWithdrawalHistory(rows) {
+  if (!withdrawHistoryBody) return;
+  if (!Array.isArray(rows) || rows.length === 0) {
+    withdrawHistoryBody.innerHTML = '<tr><td colspan="4">No withdrawal history yet.</td></tr>';
+  } else {
+    withdrawHistoryBody.innerHTML = rows.map(row => {
+      const statusRaw = String(row.status || 'pending').toLowerCase();
+      const statusLabel = statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1);
+      return `
+        <tr>
+          <td>${escapeHtml(formatHistoryDate(row.created_at))}</td>
+          <td>${escapeHtml(row.method || '—')}</td>
+          <td>BDT ${escapeHtml(Number(row.amount || 0).toFixed(2))}</td>
+          <td>${escapeHtml(statusLabel)}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  const pendingCount = Array.isArray(rows)
+    ? rows.filter(r => String(r.status || '').toLowerCase() === 'pending').length
+    : 0;
+  if (pendingCountEl) pendingCountEl.textContent = String(pendingCount);
+
+  if (lastWithdrawalEl) {
+    const latest = Array.isArray(rows) && rows.length ? rows[0].created_at : '';
+    lastWithdrawalEl.textContent = latest ? formatHistoryDate(latest) : '—';
+  }
+}
+
+function formatDate(value) {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+async function loadCameraEarnings() {
+  try {
+    const res = await fetch('../Php/fetch_camera_earnings.php', {
+      credentials: 'same-origin',
+      cache: 'no-store'
+    });
+    const json = await res.json();
+    const data = json && json.success ? json.data : null;
+    if (!data) return;
+
+    if (totalStreamsEl) totalStreamsEl.textContent = String(data.total_streams ?? 0);
+    if (totalEarnedEl) totalEarnedEl.textContent = `BDT ${Number(data.total_earned || 0).toFixed(2)}`;
+    if (availableBalanceEl) availableBalanceEl.textContent = `BDT ${Number(data.available_balance || 0).toFixed(2)}`;
+    if (pendingCountEl) pendingCountEl.textContent = String(data.pending_withdrawals ?? 0);
+    if (lastWithdrawalEl) lastWithdrawalEl.textContent = formatDate(data.last_withdrawal_date);
+  } catch (error) {
+    // Keep existing values on error.
+  }
+}
+
+async function loadWithdrawalHistory() {
+  if (!withdrawHistoryBody) return;
+  try {
+    const res = await fetch('../Php/fetch_withdrawal_history.php', {
+      credentials: 'same-origin',
+      cache: 'no-store'
+    });
+    const json = await res.json();
+    const rows = json && json.success && Array.isArray(json.data) ? json.data : [];
+    renderWithdrawalHistory(rows);
+  } catch (error) {
+    withdrawHistoryBody.innerHTML = '<tr><td colspan="4">Failed to load history.</td></tr>';
+  }
+}
+
+if (openBtn && withdrawModal) {
+  openBtn.addEventListener('click', () => {
+    withdrawModal.style.display = 'flex';
+  });
+}
+
+if (closeBtn && withdrawModal) {
+  closeBtn.addEventListener('click', () => {
     withdrawModal.style.display = 'none';
-  }
-});
+  });
+}
 
-withdrawForm.addEventListener('submit', function(e) {
-  e.preventDefault();
+if (withdrawModal) {
+  window.addEventListener('click', (e) => {
+    if (e.target === withdrawModal) {
+      withdrawModal.style.display = 'none';
+    }
+  });
+}
 
-  const amount = Number(this.amount.value);
-  const availableBalance = 1000;
-  const minWithdrawal = 5;
+if (withdrawForm) {
+  withdrawForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
 
-  if (amount < minWithdrawal) {
-    alert(`Minimum withdrawal amount is $${minWithdrawal}.`);
-    return;
-  }
+    const method = String(this.method?.value || '').trim();
+    const accountNumber = String(this.accountNumber?.value || '').trim();
+    const amount = Number(this.amount?.value || 0);
 
-  if (amount > availableBalance) {
-    alert('Amount cannot exceed available balance.');
-    return;
-  }
+    if (!method || !accountNumber || !amount || Number.isNaN(amount)) {
+      alert('Please fill out all fields correctly.');
+      return;
+    }
 
-  alert('Withdrawal request submitted!');
-  withdrawModal.style.display = 'none';
-  this.reset();
-});
+    const minWithdrawal = 5;
+    if (amount < minWithdrawal) {
+      alert(`Minimum withdrawal amount is $${minWithdrawal}.`);
+      return;
+    }
+
+    try {
+      const res = await fetch('../Php/save_withdrawal.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ method, accountNumber, amount })
+      });
+      const json = await res.json();
+      if (!json || !json.success) throw new Error(json?.error || 'Request failed');
+
+      alert('Withdrawal request submitted!');
+      withdrawModal.style.display = 'none';
+      this.reset();
+      await loadWithdrawalHistory();
+    } catch (error) {
+      alert('Could not submit withdrawal.');
+    }
+  });
+}
+
+loadWithdrawalHistory();
+loadCameraEarnings();
+setInterval(loadCameraEarnings, 30000);
 function filterPosts(category) {
   // Remove .active from all filter buttons
   document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));

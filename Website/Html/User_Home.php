@@ -507,48 +507,7 @@ try {
     <button class="donate-btn" type="button" onclick="openDonationPopup()">Donate Now</button>
 
 </div>
-
-    <div id="donationModal" class="donation-modal" aria-hidden="true">
-      <div class="donation-modal-content" role="dialog" aria-modal="true" aria-labelledby="donationModalTitle">
-        <button type="button" class="donation-close" aria-label="Close" onclick="closeDonationPopup()">&times;</button>
-        <h3 id="donationModalTitle">Support Emergency Rescue</h3>
-        <p class="donation-subtitle">Your contribution helps verified rescue operations, medical aid, and missing-person response.</p>
-
-        <div class="donation-payment-box">
-          <p class="donation-payment-title">Send Donation To</p>
-          <div class="donation-payment-row">
-            <strong id="donationReceiverNumber">01743094595</strong>
-            <button type="button" class="donation-copy-btn" id="copyDonationNumberBtn">Copy</button>
-          </div>
-          <p class="donation-payment-hint">Please send money first, then enter the Transaction ID below.</p>
-        </div>
-
-        <form id="donationForm" class="donation-form">
-          <label for="donationName">Full Name</label>
-          <input id="donationName" name="donation_name" type="text" placeholder="Enter your name" value="<?= e($user['full_name'] ?? '') ?>" required>
-
-          <label for="donationPhone">Mobile Number</label>
-          <input id="donationPhone" name="donation_phone" type="tel" placeholder="01XXXXXXXXX" required>
-
-          <label for="donationAmount">Amount (BDT)</label>
-          <input id="donationAmount" name="donation_amount" type="number" min="50" step="50" placeholder="e.g. 500" required>
-
-          <label for="donationTxId">Transaction ID (TxID)</label>
-          <input id="donationTxId" name="donation_tx_id" type="text" placeholder="Enter payment transaction ID" required>
-
-          <div class="donation-quick-amounts" aria-label="Quick amount selection">
-            <button type="button" data-amount="200">200 BDT</button>
-            <button type="button" data-amount="500">500 BDT</button>
-            <button type="button" data-amount="1000">1000 BDT</button>
-          </div>
-
-          <div class="donation-actions">
-            <button type="button" class="donation-cancel" onclick="closeDonationPopup()">Cancel</button>
-            <button type="submit" class="donation-submit">Proceed Donation</button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <!-- donation modal moved to end of page to avoid clipping by sticky sidebars -->
 
 
 
@@ -589,7 +548,7 @@ try {
         <div class="combo-rank-progress-track" aria-hidden="true">
           <div id="comboRankProgressBar" class="combo-rank-progress-bar" style="width: 0%;"></div>
         </div>
-        <p id="comboRankNeed" class="combo-rank-need">Need 380 XP</p>
+        <p id="comboRankNeed" class="combo-rank-need">Need more XP</p>
         <div class="combo-rank-tiers" aria-hidden="true">
           <span>Bronze</span>
           <span>Silver</span>
@@ -1161,75 +1120,6 @@ try {
     <a href="#!">Book Seat</a>
   </article>
 </div>
-<div class="notifications">
-  <div class="redzone">
-  <h4>Red Zone Alerts</h4>
-  <ul>
-    <li><span>Badda: Fire risk</span><span>Today</span></li>
-    <li><span>Kuril: Accident zone</span><span>1 hr ago</span></li>
-    <li><span>Gulshan-2: Snatching alert</span><span>Yesterday</span></li>
-    <li><span>Rampura: Traffic heavy</span><span>30 min ago</span></li>
-  </ul>
-
-  <button class="redzone-btn"
-    onclick="window.location.href='../Html/RedZone.html';">
-    Open Red Zone Map
-  </button>
-</div>
-</div>
-<style>.redzone {
-  border: 1px solid #ffd4d4;
-  background: linear-gradient(135deg, #fff7f7, #ffecec);
-  padding: 14px;
-  border-radius: 12px;
-  margin-top: 12px;
-}
-
-.redzone h4 {
-  margin-bottom: 10px;
-  color: #c0392b;
-  font-weight: 700;
-}
-
-.redzone ul {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 10px 0;
-}
-
-.redzone ul li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #ffffff;
-  border-left: 4px solid #e74c3c;
-  padding: 8px 10px;
-  border-radius: 8px;
-  margin-bottom: 6px;
-  font-size: 14px;
-}
-
-.redzone ul li span:last-child {
-  font-size: 12px;
-  color: #888;
-}
-
-.redzone-btn {
-  width: 100%;
-  background: #e74c3c;
-  color: white;
-  border: none;
-  padding: 8px;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: 0.3s;
-}
-
-.redzone-btn:hover {
-  background: #c0392b;
-}
-</style>
 
 
 <!-- Missing Person Report Popup -->
@@ -1375,6 +1265,48 @@ try {
     </section>
   </div>
 </aside>
+    <!-- Donation modal moved here to avoid clipping by sticky sidebars -->
+    <div id="donationModal" class="donation-modal" aria-hidden="true">
+      <div class="donation-modal-content" role="dialog" aria-modal="true" aria-labelledby="donationModalTitle">
+        <button type="button" class="donation-close" aria-label="Close" onclick="closeDonationPopup()">&times;</button>
+        <h3 id="donationModalTitle">Support Emergency Rescue</h3>
+        <p class="donation-subtitle">Your contribution helps verified rescue operations, medical aid, and missing-person response.</p>
+
+        <div class="donation-payment-box">
+          <p class="donation-payment-title">Send Donation To</p>
+          <div class="donation-payment-row">
+            <strong id="donationReceiverNumber">01743094595</strong>
+            <button type="button" class="donation-copy-btn" id="copyDonationNumberBtn">Copy</button>
+          </div>
+          <p class="donation-payment-hint">Please send money first, then enter the Transaction ID below.</p>
+        </div>
+
+        <form id="donationForm" class="donation-form">
+          <label for="donationName">Full Name</label>
+          <input id="donationName" name="donation_name" type="text" placeholder="Enter your name" value="<?= e($user['full_name'] ?? '') ?>" required>
+
+          <label for="donationPhone">Mobile Number</label>
+          <input id="donationPhone" name="donation_phone" type="tel" placeholder="01XXXXXXXXX" required>
+
+          <label for="donationAmount">Amount (BDT)</label>
+          <input id="donationAmount" name="donation_amount" type="number" min="50" step="50" placeholder="e.g. 500" required>
+
+          <label for="donationTxId">Transaction ID (TxID)</label>
+          <input id="donationTxId" name="donation_tx_id" type="text" placeholder="Enter payment transaction ID" required>
+
+          <div class="donation-quick-amounts" aria-label="Quick amount selection">
+            <button type="button" data-amount="200">200 BDT</button>
+            <button type="button" data-amount="500">500 BDT</button>
+            <button type="button" data-amount="1000">1000 BDT</button>
+          </div>
+
+          <div class="donation-actions">
+            <button type="button" class="donation-cancel" onclick="closeDonationPopup()">Cancel</button>
+            <button type="submit" class="donation-submit">Proceed Donation</button>
+          </div>
+        </form>
+      </div>
+    </div>
 
        <script>
          (function () {

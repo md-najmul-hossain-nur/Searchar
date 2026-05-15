@@ -26,8 +26,16 @@ if (empty($userRole) || !in_array($userRole, ['police', 'admin'], true) || empty
       <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
     </div>
     <nav class="navbar-menu">
+<<<<<<< HEAD
       <a href="BroadCast.php">Broadcast</a>
       <a href="#about">About</a>
+=======
+<<<<<<<< HEAD:Website/Html/BroadCast.html
+========
+      <a href="BroadCast.php">Broadcast</a>
+      <a href="#about">About</a>
+>>>>>>>> nur:Website/Html/BroadCast.php
+>>>>>>> nur
     </nav>
   </header>
   <!-- Main Content (Navbar untouched) -->
