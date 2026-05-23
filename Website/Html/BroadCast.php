@@ -16,6 +16,7 @@ if (empty($userRole) || !in_array($userRole, ['police', 'admin'], true) || empty
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/BroadCast.css?v=20260410g">
+  <link rel="stylesheet" href="../css/footer_shared.css?v=20260523a">
 </head>
 
 <body>

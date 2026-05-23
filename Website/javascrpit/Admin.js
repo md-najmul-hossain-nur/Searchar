@@ -114,7 +114,6 @@ legendChips.forEach(btn => {
 });
 
 loadCameraSeries();
-setInterval(loadCameraSeries, 30000);
 
     // Orders Chart
     const ordersChart = new Chart(document.getElementById('ordersChart').getContext('2d'), {
@@ -2658,12 +2657,6 @@ function openAddVolunteerModal() {
   applyFilters();
   syncCrimesFromMissingReports();
 
-  setInterval(() => {
-    if (!document.hidden) {
-      syncCrimesFromMissingReports();
-    }
-  }, 15000);
-
   document.addEventListener('admin:refresh-section', (event) => {
     const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
     if (sectionId === 'crime') {
@@ -3197,12 +3190,6 @@ function openAddVolunteerModal() {
     }
   });
 
-  setInterval(() => {
-    if (!document.hidden) {
-      loadMiscSections();
-    }
-  }, 10000);
-
   document.addEventListener('click', (event) => {
     const actionBtn = event.target.closest('[data-broadcast-request-action]');
     if (!actionBtn) return;
@@ -3490,7 +3477,6 @@ function openAddVolunteerModal() {
   });
 
   loadActionQueue();
-  setInterval(loadActionQueue, 25000);
 })();
 
 // Generic table filters for various sections
@@ -3846,11 +3832,6 @@ function openAddVolunteerModal() {
   });
 
   loadReports();
-  setInterval(() => {
-    if (!document.hidden) {
-      loadReports({ silent: true });
-    }
-  }, 12000);
 
   document.addEventListener('admin:refresh-section', (event) => {
     const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
@@ -4381,12 +4362,6 @@ function openAddVolunteerModal() {
     }
   });
 
-  setInterval(function () {
-    if (isSectionActive() && !isAutoRefreshPaused()) {
-      refreshLogs();
-    }
-  }, 5000);
-
   body.addEventListener('focusin', function (event) {
     if (event.target.closest('.chatbot-admin-reply-wrap')) {
       pauseAutoRefresh(15000);
@@ -4421,16 +4396,4 @@ function openAddVolunteerModal() {
     'reports',
     'chatbot-logs'
   ];
-
-  function triggerAllSectionRefreshes() {
-    if (document.hidden) return;
-    refreshSections.forEach((sectionId) => {
-      document.dispatchEvent(new CustomEvent('admin:refresh-section', {
-        detail: { sectionId }
-      }));
-    });
-  }
-
-  triggerAllSectionRefreshes();
-  setInterval(triggerAllSectionRefreshes, 30000);
 })();

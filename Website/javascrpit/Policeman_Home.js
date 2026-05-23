@@ -1150,6 +1150,8 @@ const selectedDateText = document.getElementById('selectedDateText');
 const eventInput = document.getElementById('eventInput');
 const saveEventBtn = document.getElementById('saveEventBtn');
 
+if (monthYear && calendarGrid && prevMonthBtn && nextMonthBtn && eventModal && closeModalBtn && selectedDateText && eventInput && saveEventBtn) {
+
 const now = new Date();
 let activeDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 let selectedDate = null;
@@ -1298,6 +1300,7 @@ setInterval(() => {
 
 // Initial render
 renderCalendar();
+}
 
 function filterPosts(category) {
   // Remove .active from all filter buttons

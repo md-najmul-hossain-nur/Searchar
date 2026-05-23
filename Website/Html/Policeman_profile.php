@@ -117,37 +117,37 @@ try {
         <ul class="info-list">
     <!-- Badge ID -->
     <li>
-        <span class="icon">ðŸ·ï¸</span>
+      <span class="icon">&#127991;&#65039;</span>
         <?= !empty($user['badge_id']) ? e($user['badge_id']) : 'Badge not set' ?>
     </li>
 
     <!-- Designation -->
     <li>
-        <span class="icon">ðŸ’¼</span>
+      <span class="icon">&#128188;</span>
         <?= !empty($user['designation']) ? e($user['designation']) : 'Designation not set' ?>
     </li>
 
     <!-- Station -->
     <li>
-        <span class="icon">ðŸ¢</span>
+      <span class="icon">&#127979;</span>
         <?= !empty($user['station']) ? e($user['station']) : 'Station not set' ?>
     </li>
 
     <!-- Email -->
     <li>
-        <span class="icon">âœ‰ï¸</span>
+      <span class="icon">&#9993;&#65039;</span>
         <?= !empty($user['email']) ? e($user['email']) : 'No email provided' ?>
     </li>
 
     <!-- Street / Address -->
     <li>
-        <span class="icon">ðŸ </span>
+      <span class="icon">&#127968;</span>
         <?= !empty($user['street']) ? e($user['street']) : 'No street provided' ?>
     </li>
 
     <!-- City / Country -->
     <li>
-        <span class="icon">ðŸŒ</span>
+      <span class="icon">&#127757;</span>
         <?= !empty($user['city']) ? e($user['city']) : 'No city provided' ?>,
         <?= !empty($user['country']) ? e($user['country']) : 'No country provided' ?>
     </li>
