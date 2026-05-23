@@ -99,6 +99,7 @@ try {
   <link rel="stylesheet" href="../css/post_modal_shared.css?v=20260409a">
   <link rel="stylesheet" href="../css/notifications_shared.css">
 
+  <link rel="stylesheet" href="../css/button_theme_shared.css?v=20260503a">
 </head>
 <body>
   <header class="navbar">
@@ -134,31 +135,31 @@ try {
         <ul class="info-list">
     <!-- Birthday -->
     <li>
-        <span class="icon">&#127874;</span> <!-- 🎂 cake icon -->
+        <span class="icon">&#127874;</span> <!-- ðŸŽ‚ cake icon -->
         <?= !empty($user['date_of_birth']) ? e($user['date_of_birth']) : 'No birthday provided' ?>
     </li>
 
     <!-- Gender -->
     <li>
-        <span class="icon">&#9794;&#9792;</span> <!-- ⚥ gender icon -->
+        <span class="icon">&#9794;&#9792;</span> <!-- âš¥ gender icon -->
         <?= !empty($user['gender']) ? ucfirst(e($user['gender'])) : 'Gender not specified' ?>
     </li>
 
     <!-- Email -->
     <li>
-        <span class="icon">&#9993;</span> <!-- ✉️ envelope icon -->
+        <span class="icon">&#9993;</span> <!-- âœ‰ï¸ envelope icon -->
         <?= !empty($user['email']) ? e($user['email']) : 'No email provided' ?>
     </li>
 
     <!-- Street / Address -->
     <li>
-        <span class="icon">&#127968;</span> <!-- 🏠 house icon -->
+        <span class="icon">&#127968;</span> <!-- ðŸ  house icon -->
         <?= !empty($user['street']) ? e($user['street']) : 'No street provided' ?>
     </li>
 
     <!-- City / Country -->
     <li>
-        <span class="icon">&#127758;</span> <!-- 🌎 globe icon -->
+        <span class="icon">&#127758;</span> <!-- ðŸŒŽ globe icon -->
         <?= !empty($user['city']) ? e($user['city']) : 'No city provided' ?>, 
         <?= !empty($user['country']) ? e($user['country']) : 'No country provided' ?>
     </li>
@@ -331,11 +332,11 @@ try {
     <div class="post-media-options">
       <label>
         <input type="file" id="imageUpload" accept="image/*" multiple hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">📷 Photo</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('imageUpload').click()">ðŸ“· Photo</button>
       </label>
       <label>
         <input type="file" id="videoUpload" accept="video/*" hidden>
-        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">🎥 Video</button>
+        <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">ðŸŽ¥ Video</button>
       </label>
     </div>
 
@@ -363,77 +364,8 @@ try {
         <ul id="recentNotificationsList" class="notifications-list">
           <li class="notifications-empty">Loading notifications...</li>
         </ul>
-      </div><div class="notifications">
-  <div class="redzone">
-  <h4>Red Zone Alerts</h4>
-  <ul>
-    <li><span>Badda: Fire risk</span><span>Today</span></li>
-    <li><span>Kuril: Accident zone</span><span>1 hr ago</span></li>
-    <li><span>Gulshan-2: Snatching alert</span><span>Yesterday</span></li>
-    <li><span>Rampura: Traffic heavy</span><span>30 min ago</span></li>
-  </ul>
-
-  <button class="redzone-btn"
-    onclick="window.location.href='../Html/RedZone.html';">
-    Open Red Zone Map
-  </button>
-</div>
-</div>
-<style>.redzone {
-  border: 1px solid #ffd4d4;
-  background: linear-gradient(135deg, #fff7f7, #ffecec);
-  padding: 14px;
-  border-radius: 12px;
-  margin-top: 12px;
-}
-
-.redzone h4 {
-  margin-bottom: 10px;
-  color: #c0392b;
-  font-weight: 700;
-}
-
-.redzone ul {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 10px 0;
-}
-
-.redzone ul li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #ffffff;
-  border-left: 4px solid #e74c3c;
-  padding: 8px 10px;
-  border-radius: 8px;
-  margin-bottom: 6px;
-  font-size: 14px;
-}
-
-.redzone ul li span:last-child {
-  font-size: 12px;
-  color: #888;
-}
-
-.redzone-btn {
-  width: 100%;
-  background: #e74c3c;
-  color: white;
-  border: none;
-  padding: 8px;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: 0.3s;
-}
-
-.redzone-btn:hover {
-  background: #c0392b;
-}
-</style>
-      
-    </div>
+      </div>
+     
   </div>
 
 <div id="notificationsDrawerBackdrop" class="notifications-drawer-backdrop"></div>
@@ -453,4 +385,5 @@ try {
        <script src="../javascrpit/notifications_shared.js"></script>
 
 </html>
+
 

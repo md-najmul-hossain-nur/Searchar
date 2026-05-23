@@ -1309,26 +1309,28 @@ background: linear-gradient(80deg, #d1b75a);
 }
 
 .money-withdrawal {
-  background: #fff;
-  border: 1px solid #eceff3;
-  border-top: 3px solid #f05454;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(17, 24, 39, 0.1);
-  padding: 16px;
+  background: linear-gradient(135deg, #ffffff 0%, #f6f9ff 100%);
+  border: 1px solid #e3e9f2;
+  border-radius: 16px;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+  padding: 18px 18px 16px;
   text-align: left;
   margin-bottom: 20px;
   color: #1a232a;
+  position: relative;
+  overflow: hidden;
 }
 
 .money-withdrawal h2 {
-  font-size: 1.18rem;
-  margin-bottom: 8px;
+  font-size: 1.2rem;
+  margin-bottom: 6px;
   color: #1a232a;
   line-height: 1.35;
+  font-weight: 700;
 }
 
 .money-withdrawal p {
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   color: #5f6b7a;
   margin-bottom: 14px;
   line-height: 1.45;
@@ -1340,51 +1342,54 @@ background: linear-gradient(80deg, #d1b75a);
   margin: 0 0 14px 0;
   text-align: left;
   max-width: 100%;
-}
-
-.streamer-info li {
-  margin-bottom: 8px;
-  color: #435164;
-  font-size: 0.92rem;
-  padding: 8px 10px;
-  border-radius: 8px;
-  background: #f8fafc;
-  border: 1px solid #edf2f7;
-  border-left: 3px solid #f1f5f9;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(160px, 1fr));
   gap: 10px;
 }
 
+.streamer-info li {
+  margin-bottom: 0;
+  color: #3f4f62;
+  font-size: 0.9rem;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e7edf5;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.06);
+}
+
 .streamer-info strong {
-  color: #1f2937;
-  font-weight: 700;
-  min-width: 145px;
-  display: inline-block;
+  color: #6b7a8a;
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
 
 .streamer-info li:nth-child(4) {
-  border-color: #d9efe2;
-  border-left-color: #34a853;
-  background: #f3fbf6;
+  border-color: #d9e7ff;
+  background: #f3f7ff;
 }
 
 .withdraw-btn {
   position: relative;
-  border: 1px solid #ea4335;
-  background: linear-gradient(90deg, #f05454 0%, #e3471c 100%);
+  border: none;
+  background: linear-gradient(90deg, #ff7a45 0%, #f05454 100%);
   color: #fff;
-  padding: 9px 22px;
+  padding: 10px 24px;
   font-size: 0.95rem;
-  border-radius: 24px;
+  border-radius: 999px;
   cursor: pointer;
   overflow: hidden;
   transition: transform 0.2s ease, box-shadow 0.25s ease, background-color 0.2s ease;
-  margin: 2px auto 0;
+  margin: 2px 0 0;
   display: inline-block;
   font-weight: 700;
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+  box-shadow: 0 8px 18px rgba(240, 84, 84, 0.25);
 }
 
 .withdraw-btn::before {
@@ -1396,24 +1401,18 @@ background: linear-gradient(80deg, #d1b75a);
   height: 100%;
   background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.55), transparent);
   transform: skewX(-25deg);
-  animation: youtube-shine 2s ease-in-out infinite;
+  animation: youtube-shine 2.4s ease-in-out infinite;
   pointer-events: none;
 }
 
 .withdraw-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 7px 16px rgba(239, 68, 68, 0.28);
+  box-shadow: 0 10px 22px rgba(240, 84, 84, 0.3);
 }
 
 @media (max-width: 640px) {
-  .streamer-info strong {
-    min-width: 120px;
-    font-size: 0.9rem;
-  }
-
-  .streamer-info li {
-    padding: 7px 9px;
-    font-size: 0.88rem;
+  .streamer-info {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -1795,40 +1794,46 @@ background: linear-gradient(80deg, #d1b75a);
 }
 /* Camera Contributor Panel (Matching Volunteer Section Style) */
 .camera-contributor-panel {
-  background: #fff;
-  padding: 16px;
-  border: 1px solid #eceff3;
-  border-top: 3px solid #f05454;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  background: linear-gradient(135deg, #ffffff 0%, #fff5ef 100%);
+  padding: 18px;
+  border: 1px solid #f0e3dc;
+  border-radius: 14px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
   text-align: left;
 }
 
+.camera-contributor-panel p {
+  color: #5b6a7a;
+  font-size: 0.9rem;
+  margin: 6px 0 14px;
+  line-height: 1.45;
+}
+
 .camera-contributor-panel h4 {
-  font-size: 1.05rem;
-  margin-bottom: 10px;
+  font-size: 1.1rem;
+  margin-bottom: 8px;
   color: #1a232a;
   font-weight: 700;
 }
 
 .camera-btn {
-  background: linear-gradient(90deg, #f05454 0%, #e3471c 100%);
+  background: linear-gradient(90deg, #ff7a45 0%, #f05454 100%);
   color: #fff;
   border: none;
-  padding: 10px 14px;
+  padding: 11px 14px;
   font-size: 0.9rem;
-  border-radius: var(--cc-home-btn-radius);
+  border-radius: 12px;
   cursor: pointer;
   transition: background 0.2s ease-in-out, transform 0.18s ease;
-  margin: 6px 0;
+  margin: 8px 0 0;
   width: 100%;
   text-align: center;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(240, 84, 84, 0.22);
+  box-shadow: 0 6px 14px rgba(240, 84, 84, 0.22);
 }
 
 .camera-btn:hover {
-  background: linear-gradient(90deg, #e94b4b 0%, #d63f17 100%);
+  background: linear-gradient(90deg, #f06a38 0%, #e24646 100%);
   transform: translateY(-1px);
 }
 

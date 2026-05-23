@@ -87,6 +87,7 @@ try {
   <link rel="stylesheet" href="../css/Policeman_profile.css?v=20260406f">
   <link rel="stylesheet" href="../css/post_modal_shared.css?v=20260409a">
   <link rel="stylesheet" href="../css/notifications_shared.css">
+  <link rel="stylesheet" href="../css/button_theme_shared.css?v=20260503a">
 </head>
 <body>
   <header class="navbar">
@@ -116,37 +117,37 @@ try {
         <ul class="info-list">
     <!-- Badge ID -->
     <li>
-        <span class="icon">🏷️</span>
+        <span class="icon">ðŸ·ï¸</span>
         <?= !empty($user['badge_id']) ? e($user['badge_id']) : 'Badge not set' ?>
     </li>
 
     <!-- Designation -->
     <li>
-        <span class="icon">💼</span>
+        <span class="icon">ðŸ’¼</span>
         <?= !empty($user['designation']) ? e($user['designation']) : 'Designation not set' ?>
     </li>
 
     <!-- Station -->
     <li>
-        <span class="icon">🏢</span>
+        <span class="icon">ðŸ¢</span>
         <?= !empty($user['station']) ? e($user['station']) : 'Station not set' ?>
     </li>
 
     <!-- Email -->
     <li>
-        <span class="icon">✉️</span>
+        <span class="icon">âœ‰ï¸</span>
         <?= !empty($user['email']) ? e($user['email']) : 'No email provided' ?>
     </li>
 
     <!-- Street / Address -->
     <li>
-        <span class="icon">🏠</span>
+        <span class="icon">ðŸ </span>
         <?= !empty($user['street']) ? e($user['street']) : 'No street provided' ?>
     </li>
 
     <!-- City / Country -->
     <li>
-        <span class="icon">🌍</span>
+        <span class="icon">ðŸŒ</span>
         <?= !empty($user['city']) ? e($user['city']) : 'No city provided' ?>,
         <?= !empty($user['country']) ? e($user['country']) : 'No country provided' ?>
     </li>
@@ -444,5 +445,6 @@ try {
 <script src="../javascrpit/notifications_shared.js"></script>
 </body>
 </html>
+
 
 

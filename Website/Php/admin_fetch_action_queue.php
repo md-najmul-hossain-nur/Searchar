@@ -266,6 +266,46 @@ try {
         }
     }
 
+    if (tableExists($pdo, 'user_notifications')) {
+        $sql = "SELECT notification_id, message, meta_json, created_at, is_read
+                FROM user_notifications
+                WHERE recipient_entity = 'admin' AND title = 'Broadcast Request'
+                ORDER BY created_at DESC, notification_id DESC
+                LIMIT 80";
+
+        $rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        foreach ($rows as $row) {
+            $metaRaw = (string)($row['meta_json'] ?? '');
+            $meta = json_decode($metaRaw, true);
+            $meta = is_array($meta) ? $meta : [];
+            $status = strtolower(trim((string)($meta['status'] ?? '')));
+            if ($status === '') {
+                $status = (int)($row['is_read'] ?? 0) === 1 ? 'approved' : 'pending';
+            }
+
+            if ($status !== 'pending') {
+                continue;
+            }
+
+            $requestId = (int)($row['notification_id'] ?? 0);
+            $policeName = trim((string)($meta['police_name'] ?? '')) ?: 'Police Officer';
+            $station = trim((string)($meta['station'] ?? '')) ?: 'Station not set';
+            $label = $policeName . ' • ' . $station;
+
+            $queue[] = [
+                'type' => 'Broadcast Request',
+                'submitted_by' => $policeName,
+                'actor_role' => 'Policeman',
+                'item_ref' => $requestId > 0 ? ('BR-' . str_pad((string)$requestId, 4, '0', STR_PAD_LEFT)) : '-',
+                'item_label' => $label,
+                'status' => 'Pending',
+                'submitted_at' => normalizeDate((string)($row['created_at'] ?? '')),
+                'section' => 'broadcast',
+                'search_key' => $policeName,
+            ];
+        }
+    }
+
     usort($queue, static function (array $a, array $b): int {
         $ta = strtotime((string)($a['submitted_at'] ?? '')) ?: 0;
         $tb = strtotime((string)($b['submitted_at'] ?? '')) ?: 0;
@@ -281,6 +321,7 @@ try {
         'mission_proof_pending' => 0,
         'volunteer_pending' => 0,
         'report_pending' => 0,
+        'broadcast_pending' => 0,
         'chat_log_total' => 0,
         'total' => count($queue),
     ];
@@ -298,6 +339,7 @@ try {
         elseif ($type === 'mission proof') $summary['mission_proof_pending']++;
         elseif ($type === 'volunteer application') $summary['volunteer_pending']++;
         elseif ($type === 'post report' || $type === 'comment report') $summary['report_pending']++;
+        elseif ($type === 'broadcast request') $summary['broadcast_pending']++;
     }
 
     echo json_encode([

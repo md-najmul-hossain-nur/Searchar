@@ -3,7 +3,6 @@ declare(strict_types=1);
 session_start();
 require_once __DIR__ . '/../Php/db.php';
 
-// Require a logged-in user id. This page specifically displays camera contributor data,
 // so always fetch from `camera_contributors` using the session `user_id`.
 if (
   empty($_SESSION['role']) ||
@@ -185,69 +184,18 @@ try {
   <p>You’ve earned money by helping the community through live CCTV streaming. You can withdraw your balance anytime using your preferred method.</p>
 
   <ul class="streamer-info">
-    <li><strong>Name:</strong> Erik Jhonson</li>
-    <li><strong>Total Streams:</strong> 45</li>
-    <li><strong>Total Earned:</strong> $1000</li>
-    <li><strong>Available Balance:</strong> $1000</li>
-    <li><strong>Pending Transactions:</strong> $0</li>
-    <li><strong>Last Withdrawal Date:</strong> July 24, 2025</li>
+    <li><strong>Name:</strong> <span id="ccName"><?= e($user['full_name'] ?? '—') ?></span></li>
+    <li><strong>Total Streams:</strong> <span id="ccTotalStreams">0</span></li>
+    <li><strong>Total Earned:</strong> <span id="ccTotalEarned">BDT 0.00</span></li>
+    <li><strong>Available Balance:</strong> <span id="ccAvailableBalance">BDT 0.00</span></li>
+    <li><strong>Pending Transactions:</strong> <span id="ccPendingCount">0</span></li>
+    <li><strong>Last Withdrawal Date:</strong> <span id="ccLastWithdrawalDate">—</span></li>
   </ul>
 
   <button id="openWithdrawBtn" class="withdraw-btn">Withdraw Now</button>
 </div>
 
-<!-- Withdrawal Modal -->
-<div id="withdrawModal" class="withdrawal-modal" style="display:none;">
-  <div class="withdrawal-modal-content">
-    <span id="closeModalBtn" class="withdrawal-close">&times;</span>
-    <h3>Withdrawal Form</h3>
-    <form id="withdrawForm" class="withdrawal-form">
-      <label for="method">Withdrawal Method:</label>
-      <select id="method" name="method" required>
-        <option value="">Select Method</option>
-        <option value="bkash">bKash</option>
-        <option value="nagad">Nagad</option>
-        <option value="bank">Bank Transfer</option>
-        <option value="paypal">PayPal</option>
-      </select>
-
-      <label for="accountNumber">Account Number:</label>
-      <input type="text" id="accountNumber" name="accountNumber" placeholder="Enter your account number" required>
-
-      <label for="amount">Amount to Withdraw:</label>
-      <input type="number" id="amount" name="amount" min="5" max="1000" placeholder="Enter amount" required>
-
-      <button type="submit" class="confirm-btn">Confirm Withdrawal</button>
-    </form>
-
-    <!-- Transaction History -->
-    <h4>Transaction History</h4>
-    <table class="transaction-table" border="1" cellpadding="8" cellspacing="0">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Method</th>
-          <th>Amount</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>July 20, 2025</td>
-          <td>bKash</td>
-          <td>$200</td>
-          <td>Completed</td>
-        </tr>
-        <tr>
-          <td>July 15, 2025</td>
-          <td>PayPal</td>
-          <td>$300</td>
-          <td>Pending</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+<!-- Withdrawal Modal moved to end of document to avoid stacking context issues -->
 
 
 
@@ -258,6 +206,7 @@ try {
   <h2 style="text-align: center; color: #333; margin-bottom: 15px; font-weight: 700;">
     Emergency Services Locator
   </h2>
+  <p style="text-align:center; color:#555; margin:0 0 12px; font-size:14px;">Find the nearest hospital, fire station, or police station and get directions instantly.</p>
   <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
@@ -265,9 +214,9 @@ try {
 <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
 
 <!-- Buttons -->
-<button id="find-hospitals" class="emergency-btn hospital">🏥 Show Nearby Hospitals</button>
-<button id="find-fire" class="emergency-btn fire">🚒 Show Fire Stations</button>
-<button id="find-police" class="emergency-btn police">👮 Show Police Stations</button>
+<button id="find-hospitals" style="padding:8px 15px;background:#f05454;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">Show Nearby Hospitals</button>
+<button id="find-fire" style="padding:8px 15px;background:#ff7f11;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">Show Fire Stations</button>
+<button id="find-police" style="padding:8px 15px;background:#0077b6;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:10px;">Show Police Stations</button>
 
 <!-- Map Container -->
 <div id="emergency-map" style="height: 400px; border-radius: 8px; border: 2px solid #000; width: 100%; max-width: 100%; overflow: hidden; box-sizing: border-box; position: relative; z-index: 0;"></div>
@@ -510,87 +459,17 @@ try {
     <a href="#!">Book Seat</a>
   </article>
 </div>
-
-<div class="notifications">
-  <div class="redzone">
-  <h4>Red Zone Alerts</h4>
-  <ul>
-    <li><span>Badda: Fire risk</span><span>Today</span></li>
-    <li><span>Kuril: Accident zone</span><span>1 hr ago</span></li>
-    <li><span>Gulshan-2: Snatching alert</span><span>Yesterday</span></li>
-    <li><span>Rampura: Traffic heavy</span><span>30 min ago</span></li>
-  </ul>
-
-  <button class="redzone-btn"
-    onclick="window.location.href='../Html/RedZone.html';">
-    Open Red Zone Map
-  </button>
-</div>
-</div>
-<style>.redzone {
-  border: 1px solid #ffd4d4;
-  background: linear-gradient(135deg, #fff7f7, #ffecec);
-  padding: 14px;
-  border-radius: 12px;
-  margin-top: 12px;
-}
-
-.redzone h4 {
-  margin-bottom: 10px;
-  color: #c0392b;
-  font-weight: 700;
-}
-
-.redzone ul {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 10px 0;
-}
-
-.redzone ul li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #ffffff;
-  border-left: 4px solid #e74c3c;
-  padding: 8px 10px;
-  border-radius: 8px;
-  margin-bottom: 6px;
-  font-size: 14px;
-}
-
-.redzone ul li span:last-child {
-  font-size: 12px;
-  color: #888;
-}
-
-.redzone-btn {
-  width: 100%;
-  background: #e74c3c;
-  color: white;
-  border: none;
-  padding: 8px;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: 0.3s;
-}
-
-.redzone-btn:hover {
-  background: #c0392b;
-}
-</style>
-
 <!-- Camera Contributor Panel -->
 <div class="camera-contributor-panel">
   <h4>Camera Contributor Panel</h4>
+  <p style="margin:6px 0 12px; color:#555; font-size:13px;">Start a live stream or upload a recorded feed to help community monitoring. You can view all your submitted feeds anytime.</p>
   
   <button id="startFeedBtn" class="camera-btn">
-    📷 Start Live / Upload Recorded Feed
+    Start Live / Upload Recorded Feed
   </button>
   <button class="camera-btn" onclick="window.location.href='../Html/Camera_Contribution_Feed.php';">
-  👀 View Feed
-</button>
+    View Feed
+  </button>
 
 </div>
 
@@ -675,9 +554,8 @@ try {
 
     <div class="cam-pricing-rules">
       <h4>Feed Payment Rule</h4>
-      <p><strong>Recorded Feed:</strong> ৳60 per hour</p>
-      <p><strong>Live Feed:</strong> ৳100 per hour</p>
-      <small>Live feed pays more because real-time monitoring demand is higher.</small>
+      <p><strong>Per camera rate:</strong> 1 cam ৳20/hr, 2 cams ৳15/hr, 3 cams ৳10/hr, 4+ cams ৳5/hr</p>
+      <small>Only active cameras with a valid stream earn.</small>
     </div>
   </div>
 </div>
@@ -744,6 +622,50 @@ try {
   </div>
 </aside>
 
+
+    <!-- Withdrawal Modal (moved here to avoid stacking context issues) -->
+    <div id="withdrawModal" class="withdrawal-modal" style="display:none;">
+      <div class="withdrawal-modal-content">
+        <span id="closeModalBtn" class="withdrawal-close">&times;</span>
+        <h3>Withdrawal Form</h3>
+        <form id="withdrawForm" class="withdrawal-form">
+          <label for="method">Withdrawal Method:</label>
+          <select id="method" name="method" required>
+            <option value="">Select Method</option>
+            <option value="bkash">bKash</option>
+            <option value="nagad">Nagad</option>
+            <option value="bank">Bank Transfer</option>
+            <option value="paypal">PayPal</option>
+          </select>
+
+          <label for="accountNumber">Account Number:</label>
+          <input type="text" id="accountNumber" name="accountNumber" placeholder="Enter your account number" required>
+
+          <label for="amount">Amount to Withdraw:</label>
+          <input type="number" id="amount" name="amount" min="5" max="1000" placeholder="Enter amount" required>
+
+          <button type="submit" class="confirm-btn">Confirm Withdrawal</button>
+        </form>
+
+        <!-- Transaction History -->
+        <h4>Transaction History</h4>
+        <table class="transaction-table" border="1" cellpadding="8" cellspacing="0">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Method</th>
+              <th>Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="withdrawHistoryBody">
+            <tr>
+              <td colspan="4">Loading withdrawal history...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
     </body>
       <script src="../javascrpit/Camera_Contribution_Home.js?v=20260410a"></script>

@@ -169,11 +169,13 @@ try {
         $hasSenderMobile = columnExists($pdo, 'donations', 'sender_mobile');
         $hasTxId = columnExists($pdo, 'donations', 'tx_id');
         $hasReceiverNumber = columnExists($pdo, 'donations', 'receiver_number');
+        $hasDonorEmail = columnExists($pdo, 'donations', 'donor_email');
 
         $selectParts = ['donor_name', 'amount', 'date', 'anonymous', 'message'];
         $selectParts[] = $hasSenderMobile ? 'sender_mobile' : 'NULL AS sender_mobile';
         $selectParts[] = $hasTxId ? 'tx_id' : 'NULL AS tx_id';
         $selectParts[] = $hasReceiverNumber ? 'receiver_number' : 'NULL AS receiver_number';
+        $selectParts[] = $hasDonorEmail ? 'donor_email' : 'NULL AS donor_email';
 
         $stmt = $pdo->query('SELECT ' . implode(', ', $selectParts) . ' FROM donations ORDER BY date DESC LIMIT 100');
         $donations = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];

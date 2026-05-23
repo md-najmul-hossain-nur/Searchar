@@ -37,13 +37,23 @@ function extractLocationParts(array $row): array {
         }
     }
 
-    $stateToken = count($tokens) >= 2 ? trim((string)$tokens[count($tokens) - 2]) : '';
-    $cityToken = count($tokens) >= 3 ? trim((string)$tokens[count($tokens) - 3]) : '';
-    $streetToken = !empty($tokens) ? trim((string)$tokens[0]) : '';
+    $divisionToken = '';
+    $districtToken = '';
+    $areaToken = '';
+    $tokenCount = count($tokens);
+    if ($tokenCount >= 1) {
+        $divisionToken = trim((string)$tokens[$tokenCount - 1]);
+    }
+    if ($tokenCount >= 2) {
+        $districtToken = trim((string)$tokens[$tokenCount - 2]);
+    }
+    if ($tokenCount >= 3) {
+        $areaToken = trim((string)$tokens[$tokenCount - 3]);
+    }
 
-    $division = $stateToken !== '' ? $stateToken : ($country !== '' ? $country : 'Bangladesh');
-    $district = $city !== '' ? $city : ($cityToken !== '' ? $cityToken : $division);
-    $area = $street !== '' ? $street : ($streetToken !== '' ? $streetToken : ($rawLocation !== '' ? $rawLocation : $district));
+    $division = $divisionToken !== '' ? $divisionToken : ($country !== '' ? $country : 'Bangladesh');
+    $district = $districtToken !== '' ? $districtToken : ($city !== '' ? $city : $division);
+    $area = $areaToken !== '' ? $areaToken : ($street !== '' ? $street : ($rawLocation !== '' ? $rawLocation : $district));
 
     return [
         'division' => $division,
@@ -68,8 +78,7 @@ try {
             c.country
         FROM camera_cctv_feeds f
         LEFT JOIN camera_contributors c ON c.camera_id = f.camera_id
-        WHERE f.is_active = 1
-          AND (LOWER(COALESCE(f.stream_scope, 'private')) = 'public' OR f.allow_public_viewing = 1)
+                WHERE f.is_active = 1
         ORDER BY f.feed_id DESC
         LIMIT 2000
     ";

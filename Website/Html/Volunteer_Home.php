@@ -145,6 +145,7 @@ try {
   <link rel="stylesheet" href="../css/profile_button_shared.css?v=20260410a">
   <link rel="stylesheet" href="../css/notifications_shared.css">
   <link rel="stylesheet" href="../css/messenger_shared.css?v=20260410c">
+  <link rel="stylesheet" href="../css/button_theme_shared.css?v=20260503a">
 </head>
 <body data-current-user-name="<?= e($volunteer['full_name'] ?? 'Volunteer') ?>">
 <header class="navbar navbar-home">
@@ -153,9 +154,8 @@ try {
     <img src="../Images/logo.png" alt="SEARCHAR Logo" class="navbar-logo-img" id="logo" />
   </div>
   
-  <!-- Right: Email + Logout -->
+  <!-- Right: Logout -->
   <div class="navbar-home-actions">
-    <span><?= e($volunteer['email'] ?? 'Guest') ?></span>
     <button class="navbar-donate navbar-donate-inline" onclick="window.location.href='../Php/logout.php';">
       LOG OUT
       <img src="../Images/import.gif" alt="Gift" class="navbar-donate-icon">
@@ -190,12 +190,12 @@ try {
     </p>
 </div>
     
- <!-- 🎖️ Volunteer Missions Panel -->
+ <!-- Volunteer Missions Panel -->
 <div class="Volunteer-rank">
   <h2>Volunteer Rank & Missions</h2>
 
   <div class="volunteer-rank-box">
-    <h3>🎖️ Real-Life Missions</h3>
+    <h3>Real-Life Missions</h3>
 
     <div class="rank-game-panel" id="rank-game-panel">
       <div class="rank-headline">
@@ -210,7 +210,7 @@ try {
         <div class="rank-progress-meta">
           <span id="rank-progress-percent">0%</span>
           <span id="rank-next-value">Next: Silver Responder</span>
-          <span id="rank-needed-value">Need 200 XP</span>
+          <span id="rank-needed-value">Need more XP</span>
         </div>
       </div>
 
@@ -225,48 +225,21 @@ try {
       <p id="rank-rules" class="rank-rules">+10 XP (Accept) • +20 XP (Complete) • +2 XP (Auto-close by Police)</p>
     </div>
 
-    <button class="view-missions-btn" onclick="openMissionModal()">📋 View Missions</button>
+    <button class="view-missions-btn" onclick="openMissionModal()">View Missions</button>
 
     <div id="rank-assigned-preview" class="rank-assigned-preview" aria-live="polite"></div>
 
     <!-- Certificate Display -->
     <div id="certificate-unlock" class="certificate-box hidden" aria-live="polite" data-volunteer-name="<?= e($volunteer['full_name'] ?? 'Volunteer') ?>">
-      <p id="certificate-message">🎉 Congratulations! You’ve reached <strong>Silver Responder</strong>!</p>
+      <p id="certificate-message">ðŸŽ‰ Congratulations! Youâ€™ve reached <strong>Silver Responder</strong>!</p>
       <div class="certificate-actions">
-        <button id="view-certificate-btn" class="view-certificate-btn" type="button">🏅 Certificate</button>
+        <button id="view-certificate-btn" class="view-certificate-btn" type="button">ðŸ… Certificate</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- 🧭 Volunteer Mission Modal -->
-<div id="volunteerMissionModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="missionModalTitle" tabindex="-1">
-  <div class="modal-content">
-    <button class="close" onclick="closeMissionModal()" aria-label="Close modal">&times;</button>
-    <h3 id="missionModalTitle">🧭 Missions for Your Rank</h3>
-
-    <ul class="mission-list">
-      <li id="mission-proof-single" class="mission-step" data-step="single">
-        <strong>📤 Mission Proof Submission</strong><br>
-        Upload one proof file (image/video/pdf) for your assigned mission.<br><br>
-        <label>
-          Submit Proof:
-          <input id="mission-proof-file" type="file" accept="image/*,video/*,application/pdf" />
-        </label><br><br>
-        <div id="mission-proof-preview" class="mission-preview-box"></div>
-        <p id="mission-proof-status" class="mission-status-note"></p>
-        <button class="submit-proof-btn" data-mission-proof-submit="1">✅ Submit Proof</button>
-      </li>
-
-      <li id="mission-history-single" class="mission-step">
-        <strong>🗂 Completed Missions History</strong><br>
-        See your previously completed missions below.
-        <div id="mission-history-list" class="mission-history-list"></div>
-        <p id="mission-history-empty" class="mission-history-empty">No completed mission yet.</p>
-      </li>
-    </ul>
-  </div>
-</div>
+<!-- Volunteer Mission Modal moved to page end to avoid stacking context issues -->
 
 
 
@@ -1178,24 +1151,6 @@ try {
     <a href="#!">Book Seat</a>
   </article>
 </div>
-
-
-<div class="notifications">
-  <div class="redzone">
-  <h4>Red Zone Alerts</h4>
-  <ul>
-    <li><span>Badda: Fire risk</span><span>Today</span></li>
-    <li><span>Kuril: Accident zone</span><span>1 hr ago</span></li>
-    <li><span>Gulshan-2: Snatching alert</span><span>Yesterday</span></li>
-    <li><span>Rampura: Traffic heavy</span><span>30 min ago</span></li>
-  </ul>
-
-  <button class="redzone-btn"
-    onclick="window.location.href='../Html/RedZone.html';">
-    Open Red Zone Map
-  </button>
-</div>
-</div>
 <div id="notificationsDrawerBackdrop" class="notifications-drawer-backdrop"></div>
 <aside id="notificationsDrawer" class="notifications-drawer" aria-hidden="true">
   <div class="notifications-drawer-header">
@@ -1255,10 +1210,34 @@ try {
   </div>
 </aside>
 
+    <!-- Volunteer Mission Modal moved here to avoid stacking context issues -->
+    <div id="volunteerMissionModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="missionModalTitle" tabindex="-1">
+      <div class="modal-content">
+        <button class="close" onclick="closeMissionModal()" aria-label="Close modal">&times;</button>
+        <h3 id="missionModalTitle">🧭 Missions for Your Rank</h3>
 
+        <ul class="mission-list">
+          <li id="mission-proof-single" class="mission-step" data-step="single">
+            <strong>📤 Mission Proof Submission</strong><br>
+            Upload one proof file (image/video/pdf) for your assigned mission.<br><br>
+            <label>
+              Submit Proof:
+              <input id="mission-proof-file" type="file" accept="image/*,video/*,application/pdf" />
+            </label><br><br>
+            <div id="mission-proof-preview" class="mission-preview-box"></div>
+            <p id="mission-proof-status" class="mission-status-note"></p>
+            <button class="submit-proof-btn" data-mission-proof-submit="1">✅ Submit Proof</button>
+          </li>
 
-  
-
+          <li id="mission-history-single" class="mission-step">
+            <strong>🗂 Completed Missions History</strong><br>
+            See your previously completed missions below.
+            <div id="mission-history-list" class="mission-history-list"></div>
+            <p id="mission-history-empty" class="mission-history-empty">No completed mission yet.</p>
+          </li>
+        </ul>
+      </div>
+    </div>
 
      </body>
        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -1268,4 +1247,5 @@ try {
       <script src="../javascrpit/messenger_shared.js"></script>
 
 </html>
+
 

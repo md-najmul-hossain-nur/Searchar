@@ -39,14 +39,24 @@ if ($action !== 'approve' && $action !== 'reject') {
 $newStatus = $action === 'approve' ? 'approved' : 'rejected';
 
 try {
-    if (!tableExists($pdo, 'withdraw_requests')) {
+    // support both common table names used by different endpoints
+    $tableCandidates = ['withdraw_requests', 'withdrawal_requests'];
+    $tableName = null;
+    foreach ($tableCandidates as $t) {
+        if (tableExists($pdo, $t)) {
+            $tableName = $t;
+            break;
+        }
+    }
+
+    if ($tableName === null) {
         failResponse(404, 'Withdraw requests table not found');
     }
 
     $idColumn = null;
-    if (columnExists($pdo, 'withdraw_requests', 'withdraw_id')) {
+    if (columnExists($pdo, $tableName, 'withdraw_id')) {
         $idColumn = 'withdraw_id';
-    } elseif (columnExists($pdo, 'withdraw_requests', 'id')) {
+    } elseif (columnExists($pdo, $tableName, 'id')) {
         $idColumn = 'id';
     }
 
@@ -72,29 +82,85 @@ try {
         $params[':request_date'] = $requestDate;
     }
 
-    $updatedAtSet = '';
-    if (columnExists($pdo, 'withdraw_requests', 'updated_at')) {
-        $updatedAtSet = ', updated_at = NOW()';
+    try {
+        // perform select-for-update then update within a transaction so we can create a notification
+        $pdo->beginTransaction();
+
+        $selectSql = "SELECT * FROM `{$tableName}` WHERE {$where} LIMIT 1 FOR UPDATE";
+        $selectStmt = $pdo->prepare($selectSql);
+        // execute select with only the WHERE params (exclude :new_status)
+        $selectParams = $params;
+        if (array_key_exists(':new_status', $selectParams)) unset($selectParams[':new_status']);
+        $selectStmt->execute($selectParams);
+        $row = $selectStmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row) {
+            $pdo->rollBack();
+            failResponse(409, 'Request already processed or not found');
+        }
+
+        $currentStatus = strtolower(trim((string)($row['status'] ?? 'pending')));
+        if ($currentStatus !== 'pending') {
+            $pdo->rollBack();
+            failResponse(409, 'Request already processed or not found');
+        }
+
+        $updatedAtSet = '';
+        if (columnExists($pdo, $tableName, 'updated_at')) {
+            $updatedAtSet = ', updated_at = NOW()';
+        } elseif (columnExists($pdo, $tableName, 'processed_at')) {
+            // some schemas use processed_at
+            $updatedAtSet = ', processed_at = NOW()';
+        }
+
+        $updateSql = "UPDATE `{$tableName}`
+                        SET status = :new_status{$updatedAtSet}
+                        WHERE {$where}
+                            AND LOWER(COALESCE(status, 'pending')) = 'pending'
+                        LIMIT 1";
+
+        $updateStmt = $pdo->prepare($updateSql);
+        // update requires :new_status and the where params
+        $updateStmt->execute($params);
+
+        if ($updateStmt->rowCount() < 1) {
+            $pdo->rollBack();
+            failResponse(409, 'Request already processed or not found');
+        }
+
+        // Insert a user notification for the contributor (if contributor_id exists)
+        $contributorId = isset($row['contributor_id']) ? (int)$row['contributor_id'] : 0;
+        $amountVal = isset($row['amount']) ? $row['amount'] : null;
+        if ($contributorId > 0 && tableExists($pdo, 'user_notifications')) {
+            $title = ($newStatus === 'approved') ? 'Admin: Withdrawal Approved' : 'Admin: Withdrawal Update';
+            $message = ($newStatus === 'approved') ? "Your withdrawal request of ৳{$amountVal} has been approved." : "Your withdrawal request of ৳{$amountVal} has been rejected.";
+            $meta = json_encode(['request_id' => $row[$idColumn] ?? $requestId, 'amount' => $amountVal, 'status' => $newStatus]);
+            $level = ($newStatus === 'approved') ? 'success' : 'warning';
+
+            $notifStmt = $pdo->prepare('INSERT INTO user_notifications (recipient_entity, recipient_id, title, message, meta_json, level, is_read) VALUES (:entity, :rid, :title, :message, :meta, :level, 0)');
+            $notifStmt->execute([
+                ':entity' => 'contributor',
+                ':rid' => $contributorId,
+                ':title' => $title,
+                ':message' => $message,
+                ':meta' => $meta,
+                ':level' => $level
+            ]);
+        }
+
+        $pdo->commit();
+
+        echo json_encode([
+            'success' => true,
+            'status' => $newStatus,
+            'message' => 'Withdraw request updated'
+        ]);
+    } catch (Throwable $e) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        $msg = 'Failed to update withdraw request';
+        $dbg = $e->getMessage();
+        failResponse(500, $msg . ': ' . $dbg);
     }
-
-    $sql = "UPDATE withdraw_requests
-            SET status = :new_status{$updatedAtSet}
-            WHERE {$where}
-              AND LOWER(COALESCE(status, 'pending')) = 'pending'
-            LIMIT 1";
-
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute($params);
-
-    if ($stmt->rowCount() < 1) {
-        failResponse(409, 'Request already processed or not found');
-    }
-
-    echo json_encode([
-        'success' => true,
-        'status' => $newStatus,
-        'message' => 'Withdraw request updated'
-    ]);
 } catch (Throwable $e) {
     failResponse(500, 'Failed to update withdraw request');
 }

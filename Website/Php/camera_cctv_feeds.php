@@ -65,6 +65,11 @@ function ensureCctvTable(PDO $pdo): void {
     if (!$startedCol || !$startedCol->fetch(PDO::FETCH_ASSOC)) {
         $pdo->exec("ALTER TABLE camera_cctv_feeds ADD COLUMN active_started_at DATETIME DEFAULT NULL AFTER accumulated_seconds");
     }
+
+    $payoutCol = $pdo->query("SHOW COLUMNS FROM camera_cctv_feeds LIKE 'payout_count'");
+    if (!$payoutCol || !$payoutCol->fetch(PDO::FETCH_ASSOC)) {
+        $pdo->exec("ALTER TABLE camera_cctv_feeds ADD COLUMN payout_count INT UNSIGNED NOT NULL DEFAULT 0 AFTER accumulated_seconds");
+    }
 }
 
 function normalizeHours(string $raw): string {
@@ -98,7 +103,8 @@ function generateNextFeedLabel(PDO $pdo, int $userId): string {
 }
 
 function hourlyRateForFeedType(string $feedType): int {
-    return strtolower($feedType) === 'live' ? 100 : 60;
+    // 20 BDT per 30 minutes = 40 BDT per hour
+    return 40;
 }
 
 function computeAccruedSeconds(array $row): int {
