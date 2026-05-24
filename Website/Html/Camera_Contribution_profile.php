@@ -87,6 +87,7 @@ try {
   <link rel="stylesheet" href="../css/Camera_Contribution_profile.css?v=20260406f">
   <link rel="stylesheet" href="../css/post_modal_shared.css?v=20260409a">
   <link rel="stylesheet" href="../css/notifications_shared.css">
+  <link rel="stylesheet" href="../css/button_theme_shared.css?v=20260503a">
 </head>
 <body>
   <header class="navbar">
@@ -348,76 +349,6 @@ try {
           <li class="notifications-empty">Loading notifications...</li>
         </ul>
       </div>
-      <div class="notifications">
-  <div class="redzone">
-  <h4>Red Zone Alerts</h4>
-  <ul>
-    <li><span>Badda: Fire risk</span><span>Today</span></li>
-    <li><span>Kuril: Accident zone</span><span>1 hr ago</span></li>
-    <li><span>Gulshan-2: Snatching alert</span><span>Yesterday</span></li>
-    <li><span>Rampura: Traffic heavy</span><span>30 min ago</span></li>
-  </ul>
-
-  <button class="redzone-btn"
-    onclick="window.location.href='../Html/RedZone.html';">
-    Open Red Zone Map
-  </button>
-</div>
-</div>
-<style>.redzone {
-  border: 1px solid #ffd4d4;
-  background: linear-gradient(135deg, #fff7f7, #ffecec);
-  padding: 14px;
-  border-radius: 12px;
-  margin-top: 12px;
-}
-
-.redzone h4 {
-  margin-bottom: 10px;
-  color: #c0392b;
-  font-weight: 700;
-}
-
-.redzone ul {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 10px 0;
-}
-
-.redzone ul li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #ffffff;
-  border-left: 4px solid #e74c3c;
-  padding: 8px 10px;
-  border-radius: 8px;
-  margin-bottom: 6px;
-  font-size: 14px;
-}
-
-.redzone ul li span:last-child {
-  font-size: 12px;
-  color: #888;
-}
-
-.redzone-btn {
-  width: 100%;
-  background: #e74c3c;
-  color: white;
-  border: none;
-  padding: 8px;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: 0.3s;
-}
-
-.redzone-btn:hover {
-  background: #c0392b;
-}
-</style>
-    </div>
   </div>
 
 <div id="notificationsDrawerBackdrop" class="notifications-drawer-backdrop"></div>
@@ -436,5 +367,6 @@ try {
 <script src="../javascrpit/post_interactions_shared.js?v=20260409e"></script>
 <script src="../javascrpit/notifications_shared.js"></script>
 </html>
+
 
 

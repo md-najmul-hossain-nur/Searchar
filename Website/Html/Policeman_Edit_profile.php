@@ -108,6 +108,7 @@ if (!$user) {
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <link rel="stylesheet" href="../css/Policeman_Edit_profile.css?v=20260405bg">
+  <link rel="stylesheet" href="../css/button_theme_shared.css?v=20260503a">
 </head>
 <body>
   <header class="navbar">
@@ -122,7 +123,7 @@ if (!$user) {
     </div>
 
     <div class="back-button-container">
-      <a href="../Html/Policeman_profile.php" class="back-btn">â† Back</a>
+      <a href="../Html/Policeman_profile.php" class="back-btn">&#8592; Back</a>
     </div>
 
     <?php if (!empty($error ?? '')): ?>
@@ -348,4 +349,5 @@ if (!$user) {
 </style>
 </body>
 </html>
+
 

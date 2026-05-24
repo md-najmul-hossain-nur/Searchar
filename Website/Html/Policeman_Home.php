@@ -541,6 +541,7 @@ try {
     }
   </style>
   
+  <link rel="stylesheet" href="../css/button_theme_shared.css?v=20260503a">
 </head>
 <body data-current-user-name="<?= e($user['full_name'] ?? 'Policeman') ?>">
  <header class="navbar" style="display:flex; align-items:center; justify-content:space-between; padding:10px; position:fixed; top:0; left:0; right:0; z-index:2000; background:#fff;">
@@ -585,7 +586,7 @@ try {
 
   <!-- Broadcast Link (Hidden until approved) -->
   <div id="broadcastLink" style="display:none;">
-    <a href="../Html/BroadCast.html" target="_blank" class="broadcast-btn">Join Broadcast</a>
+    <a href="../Html/BroadCast.php" target="_blank" class="broadcast-btn">Join Broadcast</a>
   </div>
 </div>
 
@@ -619,8 +620,8 @@ try {
   <h2 class="case-section-title">Investigation Cases</h2>
   <p class="case-section-desc">Track investigation cases in one place. Open all current cases or view solved case history.</p>
   <div class="case-section-actions">
-    <button id="openAllCasesBtn" type="button" class="case-section-btn view">📂 View All Cases</button>
-    <button id="openSolvedCasesBtn" type="button" class="case-section-btn history">✅ Solved Case History</button>
+    <button id="openAllCasesBtn" type="button" class="case-section-btn view">&#128193; View All Cases</button>
+    <button id="openSolvedCasesBtn" type="button" class="case-section-btn history">&#9989; Solved Case History</button>
   </div>
 </div>
 
@@ -759,7 +760,7 @@ try {
 <div id="casePreviewModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:4100; align-items:center; justify-content:center; padding:16px;">
   <div style="width:min(650px,95vw); background:#fff; border-radius:12px; box-shadow:0 12px 28px rgba(0,0,0,.24); overflow:hidden;">
     <div style="background:linear-gradient(90deg,#dc2626,#ef4444); color:#fff; padding:12px 14px; display:flex; justify-content:space-between; align-items:center;">
-      <strong style="font-size:17px;">📢 Case Billboard Preview</strong>
+      <strong style="font-size:17px;">&#128226; Case Billboard Preview</strong>
       <button type="button" id="casePreviewClose" style="border:none; background:rgba(255,255,255,.2); color:#fff; width:32px; height:32px; border-radius:7px; cursor:pointer; font-size:18px;">&times;</button>
     </div>
     <div style="padding:14px;">
@@ -1241,87 +1242,7 @@ try {
   </article>
 </div>
 
-<!-- Missing Person Investigation Popup -->
-<div id="missingFormModal" class="missing-modal">
-  <div class="missing-modal-content">
-    <span class="missing-close" onclick="closeMissingForm()">&times;</span>
-    <h2>Police Missing Person Investigation Form</h2>
-
-    <form id="missingForm" action="../Php/save_missing_person.php" method="POST" enctype="multipart/form-data">
-      <input type="hidden" name="return_to" value="Policeman_Home.php">
-      <h3>Personal Details</h3>
-      <label>Full Name</label>
-      <input type="text" name="full_name" required>
-
-      <label>Nickname / Alias</label>
-      <input type="text" name="nickname">
-
-      <label>Gender</label>
-      <select name="gender" required>
-        <option value="">Select Gender</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-        <option value="Other">Other</option>
-      </select>
-
-      <label>Age</label>
-      <input type="number" name="age" min="1" required>
-
-      <label>Physical Description (Height / Dress / Marks)</label>
-      <input type="text" name="physical_description" placeholder="E.g., 5'6, blue shirt, scar on left hand">
-
-      <label>Photo Upload</label>
-      <input type="file" id="personPhotoInput" name="person_photo" accept="image/*" required>
-      <div id="personPhotoPreviewWrap" class="person-photo-preview-wrap" style="display:none;">
-        <p class="person-photo-preview-title">Photo Preview</p>
-        <img id="personPhotoPreview" class="person-photo-preview" src="" alt="Missing Person Photo Preview">
-      </div>
-
-      <h3>Last Seen Information</h3>
-      <label>Last Seen Date</label>
-      <input type="date" name="last_seen_date" required>
-
-      <label>Last Seen Location</label>
-      <input type="text" name="last_seen_location" placeholder="E.g., Dhanmondi 27, Dhaka" required>
-
-      <label>Approximate Time</label>
-      <input type="text" name="last_seen_time" placeholder="E.g., 6:30 PM">
-
-      <h3>Health & Mental Condition</h3>
-      <label>Mental Condition</label>
-      <select name="mental_condition">
-        <option value="Stable">Stable</option>
-        <option value="Depression">Depression</option>
-        <option value="Autism">Autism</option>
-        <option value="Memory Loss">Memory Loss</option>
-      </select>
-
-      <label>Medical Notes</label>
-      <input type="text" name="medical_notes" placeholder="E.g., Needs regular medicine">
-
-      <h3>Officer / Reporter Contact</h3>
-      <label>Reporting Officer Name</label>
-      <input type="text" name="reporter_name" required>
-
-      <label>Official Contact Number</label>
-      <input type="tel" name="reporter_mobile" required>
-
-      <label>Source Relation</label>
-      <input type="text" name="relationship" placeholder="E.g., Witness / Family / Field Team">
-
-      <h3>Consent</h3>
-      <label>
-        <input type="checkbox" name="consent" value="1" required> I confirm this information is verified for investigation use.
-      </label>
-
-      <div class="modal-actions">
-        <button type="button" onclick="closeMissingForm()" class="cancel-btn">Cancel</button>
-        <button type="submit" class="submit-btn">Submit Investigation Report</button>
-      </div>
-    </form>
-  </div>
-</div>
-
+<!-- Missing Person Investigation Popup moved to page end to avoid stacking context issues -->
  <style>.advert {
   border: 1px solid #eee;
   padding: 10px;
@@ -1417,23 +1338,6 @@ try {
   background: #c0392b;
 }
 </style>
-<div class="Calender-section">
-  <div class="calendar-container">
-    <h2 class="calendar-title">Calendar</h2>
-    <p class="calendar-info">Select a date to add your events. Use the arrows to navigate months.</p>
-  </div>
-  <div class="calendar-header">
-    <button id="prevMonth">&lt;</button>
-    <h2 id="monthYear"></h2>
-    <button id="nextMonth">&gt;</button>
-  </div>
-
-  <div class="calendar-weekdays"></div>  <!-- Add this -->
-
-  <div class="calendar-grid" id="calendarGrid"></div>
-</div>
-
-
 <!-- Event Modal -->
 <div id="myEventModal" class="my-event-modal" style="display:none;">
   <div class="event-modal-content">
@@ -1502,7 +1406,89 @@ try {
       </div>
     </section>
   </div>
+
 </aside>
+
+    <!-- Missing Person Investigation Popup moved here to avoid stacking context issues -->
+    <div id="missingFormModal" class="missing-modal">
+      <div class="missing-modal-content">
+        <span class="missing-close" onclick="closeMissingForm()">&times;</span>
+        <h2>Police Missing Person Investigation Form</h2>
+
+        <form id="missingForm" action="../Php/save_missing_person.php" method="POST" enctype="multipart/form-data">
+          <input type="hidden" name="return_to" value="Policeman_Home.php">
+          <h3>Personal Details</h3>
+          <label>Full Name</label>
+          <input type="text" name="full_name" required>
+
+          <label>Nickname / Alias</label>
+          <input type="text" name="nickname">
+
+          <label>Gender</label>
+          <select name="gender" required>
+            <option value="">Select Gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+
+          <label>Age</label>
+          <input type="number" name="age" min="1" required>
+
+          <label>Physical Description (Height / Dress / Marks)</label>
+          <input type="text" name="physical_description" placeholder="E.g., 5'6, blue shirt, scar on left hand">
+
+          <label>Photo Upload</label>
+          <input type="file" id="personPhotoInput" name="person_photo" accept="image/*" required>
+          <div id="personPhotoPreviewWrap" class="person-photo-preview-wrap" style="display:none;">
+            <p class="person-photo-preview-title">Photo Preview</p>
+            <img id="personPhotoPreview" class="person-photo-preview" src="" alt="Missing Person Photo Preview">
+          </div>
+
+          <h3>Last Seen Information</h3>
+          <label>Last Seen Date</label>
+          <input type="date" name="last_seen_date" required>
+
+          <label>Last Seen Location</label>
+          <input type="text" name="last_seen_location" placeholder="E.g., Dhanmondi 27, Dhaka" required>
+
+          <label>Approximate Time</label>
+          <input type="text" name="last_seen_time" placeholder="E.g., 6:30 PM">
+
+          <h3>Health & Mental Condition</h3>
+          <label>Mental Condition</label>
+          <select name="mental_condition">
+            <option value="Stable">Stable</option>
+            <option value="Depression">Depression</option>
+            <option value="Autism">Autism</option>
+            <option value="Memory Loss">Memory Loss</option>
+          </select>
+
+          <label>Medical Notes</label>
+          <input type="text" name="medical_notes" placeholder="E.g., Needs regular medicine">
+
+          <h3>Officer / Reporter Contact</h3>
+          <label>Reporting Officer Name</label>
+          <input type="text" name="reporter_name" required>
+
+          <label>Official Contact Number</label>
+          <input type="tel" name="reporter_mobile" required>
+
+          <label>Source Relation</label>
+          <input type="text" name="relationship" placeholder="E.g., Witness / Family / Field Team">
+
+          <h3>Consent</h3>
+          <label>
+            <input type="checkbox" name="consent" value="1" required> I confirm this information is verified for investigation use.
+          </label>
+
+          <div class="modal-actions">
+            <button type="button" onclick="closeMissingForm()" class="cancel-btn">Cancel</button>
+            <button type="submit" class="submit-btn">Submit Investigation Report</button>
+          </div>
+        </form>
+      </div>
+    </div>
 
     </body>
       <script src="../javascrpit/Policeman_Home.js?v=20260410e"></script>
@@ -1511,4 +1497,5 @@ try {
       <script src="../javascrpit/messenger_shared.js"></script>
 
 </html>
+
 

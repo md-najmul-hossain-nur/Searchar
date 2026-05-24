@@ -31,13 +31,12 @@
 
 .messenger-backdrop {
   position: fixed;
-  top: 104px;
+  top: 92px;
   right: 0;
   left: 0;
   bottom: 0;
-  background: linear-gradient(180deg, rgba(12, 19, 33, 0.2) 0%, rgba(12, 19, 33, 0.58) 100%);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
+  /* semi-transparent overlay without blur (user prefers no blur) */
+  background: linear-gradient(180deg, rgba(12, 19, 33, 0.18) 0%, rgba(12, 19, 33, 0.6) 100%);
   border-top-left-radius: 18px;
   border-bottom-left-radius: 18px;
   z-index: 1265;
@@ -55,7 +54,7 @@
 
 .messenger-drawer {
   position: fixed;
-  top: 104px;
+  top: 92px;
   bottom: 8px;
   right: -520px;
   width: min(520px, 94vw);

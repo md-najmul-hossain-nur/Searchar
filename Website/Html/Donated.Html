@@ -10,6 +10,7 @@
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
   />
+  <link rel="stylesheet" href="../css/button_theme_shared.css?v=20260503a">
 </head>
 <body>
   <header class="navbar">
@@ -26,13 +27,23 @@
   </header>
   <main class="donation-main">
     <section class="donation-hero">
+      <div class="hero-backdrop"></div>
       <div class="donation-hero-content">
-        <span class="hero-badge animate-text" data-delay="0">Support Emergency Response</span>
-        <h1 class="donation-title animate-text" data-delay="0.08">Your Donation Saves Lives</h1>
+        <span class="hero-kicker animate-text" data-delay="0">Emergency Response Fund</span>
+        <h1 class="donation-title animate-text" data-delay="0.08">Turn urgency into action.</h1>
         <p class="donation-desc animate-text" data-delay="0.16">
-          Every verified contribution helps SEARCHAR support rescue teams, emergency supplies, and community safety activities.
+          Verified donations keep rescue teams moving, supplies stocked, and neighborhoods safer when every minute matters.
         </p>
-        <div class="hero-quick-stats animate-text" data-delay="0.24">
+        <div class="hero-actions animate-text" data-delay="0.22">
+          <a class="hero-primary" href="#donation-form">Donate Now</a>
+          <a class="hero-secondary" href="#hero-video">Watch Story</a>
+        </div>
+        <div class="hero-trust animate-text" data-delay="0.28">
+          <span class="hero-chip">Live verification</span>
+          <span class="hero-chip">Rapid response teams</span>
+          <span class="hero-chip">Community-first</span>
+        </div>
+        <div class="hero-quick-stats animate-text" data-delay="0.34">
           <article>
             <h3>2,500+</h3>
             <p>Families Assisted</p>
@@ -47,28 +58,20 @@
           </article>
         </div>
       </div>
-      <div class="hero-glow"></div>
-    </section>
-
-    <section class="impact-section">
-      <h2 class="animate-text" data-delay="0">Where Your Money Goes</h2>
-      <div class="impact-grid">
-        <article class="impact-card animate-text" data-delay="0.08">
-          <h3>Emergency Medical Aid</h3>
-          <p>Immediate first-aid kits, ambulance support, and urgent medical transport.</p>
-        </article>
-        <article class="impact-card animate-text" data-delay="0.14">
-          <h3>Rescue Operations</h3>
-          <p>Field teams, equipment fuel, and volunteer deployment in critical areas.</p>
-        </article>
-        <article class="impact-card animate-text" data-delay="0.2">
-          <h3>Relief Support</h3>
-          <p>Food, clean water, shelter materials, and basic safety supplies.</p>
-        </article>
+      <div class="donation-hero-media animate-text" data-delay="0.18">
+        <div class="hero-media-panel">
+          <div class="hero-video-frame">
+            <video class="hero-video" id="hero-video" autoplay loop playsinline controls preload="auto">
+              <source src="../Video/DONATION PROMO.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="hero-media-caption">Every second counts. Your support powers the next rescue.</div>
+        </div>
       </div>
     </section>
 
-    <section class="donation-form-section">
+
+    <section class="donation-form-section" id="donation-form">
       <div class="donation-form-card animate-text" data-delay="0.08">
         <div class="form-head animate-text" data-delay="0.14">
           <span class="form-head-tag">Donation Verification</span>
@@ -79,7 +82,7 @@
         <form class="donation-form" id="donationForm">
           <p class="payment-instruction">
             📱 Send your donation to <strong>Bkash: 01743094595</strong><br>
-            তারপর নিচে Transaction ID (TXID) দিন।
+            Then enter your Transaction ID (TXID) below.
           </p>
 
           <div class="form-grid">
@@ -93,6 +96,19 @@
             </div>
           </div>
 
+          <div class="form-grid">
+            <div class="field-group">
+              <label for="donor-mobile">Mobile Number</label>
+              <input type="tel" id="donor-mobile" name="mobile" required placeholder="Enter your mobile number">
+            </div>
+            <div class="field-group">
+              <label for="donation-amount">Donation Amount (BDT)</label>
+              <input type="number" id="donation-amount" name="amount" min="1" step="1" required placeholder="Enter amount">
+            </div>
+          </div>
+
+          <input type="hidden" id="receiver-number" name="receiver_number" value="01743094595">
+
           <div class="field-group">
             <label for="txid">Transaction ID (TXID)</label>
             <input type="text" id="txid" name="txid" required placeholder="Example: 8H6D7K2P9X">
@@ -103,62 +119,27 @@
             <textarea id="donation-message" name="message" rows="3" placeholder="Write a short message"></textarea>
           </div>
 
+          <div class="checkbox-row">
+            <label class="checkbox-field">
+              <input type="checkbox" id="donation-anonymous" name="anonymous" value="1">
+              Donate anonymously
+            </label>
+          </div>
+
+          <p class="form-alert" id="donation-alert" role="status" aria-live="polite"></p>
           <button type="submit" class="donate-btn">Confirm Donation</button>
-          <p class="secure-note">🔒 Your donation info is used only for verification and transparency.</p>
+          <p class="secure-note">Your donation info is used only for verification and transparency.</p>
         </form>
       </div>
     </section>
   </main>
 
-  <footer class="site-footer">
-    <div class="footer-container">
-      <div class="footer-col">
-        <div class="footer-title">ABOUT US</div>
-        <div class="footer-about">
-          This website is developed by <strong>Light Seekers</strong>, a group of students from the <strong>Department of CSE</strong>, <em>United International University</em>.
-        </div>
+  <div id="site-footer-placeholder"></div>
 
-        <div class="footer-contact">
-          <span><i class="fa fa-map-marker"></i> United City, Madani Avenue, Badda</span>
-          <span><i class="fa fa-envelope"></i> mnajmulhossainnur@gmail.com</span>
-        </div>
-      </div>
-
-      <div class="footer-col">
-        <div class="footer-title">WHAT WE DO</div>
-        <p style="margin-top: 10px; color: #ccc; font-size: 14px;">
-          We are Light Seekers, a CSE team from UIU, building impactful projects in gaming, robotics, and micro-eCommerce to solve real-life problems.
-          Want to know more?
-        </p>
-        <div class="footer-social">
-          <a href="https://www.youtube.com/@najmu-lhossain-nur" target="_blank" title="Visit our YouTube Channel">
-            <i class="fa fa-youtube-play" style="font-size: 24px; color: #FF0000;"></i>
-          </a>
-          <a href="https://www.facebook.com/profile.php?id=61578891052858" target="_blank" title="Visit our Facebook">
-            <i class="fa fa-facebook-official" style="font-size: 24px; color: #4267B2;"></i>
-          </a>
-        </div>
-      </div>
-
-      <div class="footer-calendar">
-        <div class="footer-calendar-title">CALENDAR</div>
-        <table class="footer-calendar-table" id="calendar">
-          <thead>
-            <tr>
-              <th colspan="7" id="calendarHeader" style="background: #1a232a; color: #fff;"></th>
-            </tr>
-            <tr>
-              <th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th><th>S</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-  </footer>
-
+  <script src="../javascrpit/footer_loader.js"></script>
   <script src="../javascrpit/Donated.js"></script>
 </body>
 
 </html>
+
 

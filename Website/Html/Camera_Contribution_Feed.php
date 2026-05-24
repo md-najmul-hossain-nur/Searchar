@@ -26,8 +26,17 @@ function timeAgo(?string $dateTime): string {
     return date('d M Y', $ts);
 }
 
-  function hourlyRate(string $feedType): int {
-    return strtolower($feedType) === 'live' ? 100 : 60;
+  function hourlyRateByCameraCount(int $cameraCount): int {
+    if ($cameraCount <= 1) return 20;
+    if ($cameraCount === 2) return 15;
+    if ($cameraCount === 3) return 10;
+    return 5;
+  }
+
+  function truncateText(string $value, int $limit = 120): string {
+    $value = trim($value);
+    if (mb_strlen($value) <= $limit) return $value;
+    return mb_substr($value, 0, $limit - 3) . '...';
   }
 
   function accruedSeconds(array $feed): int {
@@ -126,6 +135,7 @@ $profileLocationParts = array_filter([
   (string)($user['country'] ?? ''),
 ]);
 $cameraLocation = !empty($profileLocationParts) ? implode(', ', $profileLocationParts) : 'Unknown Location';
+$cameraLocation = truncateText($cameraLocation, 140);
 $streamType = 'Live Stream';
 
 $totalFeeds = count($cctvFeeds);
@@ -133,14 +143,49 @@ $liveReadyCount = 0;
 $totalEarnings = 0.0;
 $runningHourlyRate = 0;
 foreach ($cctvFeeds as $feed) {
-  $rate = hourlyRate((string)($feed['feed_type'] ?? 'recorded'));
-  $earned = (accruedSeconds($feed) / 3600) * $rate;
-  $totalEarnings += $earned;
   if ((int)($feed['is_active'] ?? 0) === 1) {
     $liveReadyCount++;
-    $runningHourlyRate += $rate;
   }
 }
+
+$ratePerCamera = hourlyRateByCameraCount($liveReadyCount);
+
+foreach ($cctvFeeds as $feed) {
+  $isActive = (int)($feed['is_active'] ?? 0) === 1;
+  $mediaType = (string)($feed['feed_type'] ?? 'live');
+  $hasStream = false;
+  if ($mediaType === 'live') {
+    $hasStream = trim((string)($feed['live_url'] ?? '')) !== '';
+  } else {
+    $hasStream = trim((string)($feed['video_path'] ?? '')) !== '';
+  }
+  $rate = ($isActive && $hasStream) ? $ratePerCamera : 0;
+  $earned = (accruedSeconds($feed) / 3600) * $rate;
+  $totalEarnings += $earned;
+}
+
+$runningHourlyRate = $liveReadyCount * $ratePerCamera;
+
+$nextPayoutSeconds = null;
+foreach ($cctvFeeds as $feed) {
+  if ((int)($feed['is_active'] ?? 0) !== 1) {
+    continue;
+  }
+  $acc = accruedSeconds($feed);
+  $remaining = 1800 - ($acc % 1800);
+  if ($remaining === 1800) {
+    $remaining = 0;
+  }
+  if ($nextPayoutSeconds === null || $remaining < $nextPayoutSeconds) {
+    $nextPayoutSeconds = $remaining;
+  }
+}
+
+if ($liveReadyCount === 0) {
+  $nextPayoutSeconds = null;
+}
+
+$streamType = $liveReadyCount > 0 ? 'Live Stream' : 'Recorded Feed';
 
 $latestFeed = $cctvFeeds[0] ?? null;
 $latestMedia = '';
@@ -161,16 +206,18 @@ if ($latestFeed) {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>SearchAR - Camera Contribution Feed</title>
+  <title>Searchar - Camera Contribution Feed</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Private camera feed dashboard for camera contributors.">
   <link rel="icon" type="image/png" href="../Images/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../css/Camera_Contribution_Feed.css">
+  <link rel="stylesheet" href="../css/button_theme_shared.css?v=20260503a">
 </head>
 <body>
-  <a href="#main" class="skip-link">Skip to main content</a>
-
   <nav class="navbar" role="navigation" aria-label="Main Navigation">
     <div class="navbar-logo">
       <a href="../Html/Camera_Contribution_Home.php">
@@ -178,7 +225,6 @@ if ($latestFeed) {
       </a>
     </div>
     <div class="navbar-user-actions">
-      <span class="navbar-user-email"><?= e($emailText) ?></span>
       <button class="navbar-donate" type="button" onclick="window.location.href='../Php/logout.php';">
         LOG OUT
         <img src="../Images/import.gif" alt="Logout" class="logout-gif">
@@ -194,7 +240,7 @@ if ($latestFeed) {
           <p class="subtitle">Only you can see this page and your own camera feed data.</p>
         </div>
         <button class="back-btn" aria-label="Go back" onclick="window.location.href='../Html/Camera_Contribution_Home.php'">
-          <span aria-hidden="true">â†</span> Back
+          <span aria-hidden="true">&larr;</span> Back
         </button>
       </div>
     </header>
@@ -208,8 +254,8 @@ if ($latestFeed) {
           <div class="user-stats">
             <span><?= (int)$totalFeeds ?> <small>Total Feeds</small></span>
             <span><?= (int)$liveReadyCount ?> <small>Live Ready</small></span>
-            <span>à§³<?= e(number_format($totalEarnings, 2)) ?> <small>Total Earnings</small></span>
-            <span>à§³<?= (int)$runningHourlyRate ?>/hr <small>Running Rate</small></span>
+            <span>&#2547;<?= e(number_format($totalEarnings, 2)) ?> <small>Total Earnings</small></span>
+            <span>&#2547;<?= (int)$runningHourlyRate ?>/hr <small>Running Rate</small></span>
           </div>
         </div>
       </div>
@@ -217,6 +263,27 @@ if ($latestFeed) {
         <span class="side-title">Location</span>
         <span class="side-value"><?= e($cameraLocation) ?></span>
         <span class="side-meta"><?= e($streamType) ?></span>
+      </div>
+    </section>
+
+    <section class="payout-panel" aria-label="Payout summary">
+      <div class="payout-head">
+        <h2>Stream Earnings Summary</h2>
+        <p>Key payout and stream details are separated for quick reading.</p>
+      </div>
+      <div class="payout-grid">
+        <div class="payout-card">
+          <span class="payout-label">Next payout in</span>
+          <span class="payout-value" id="payoutCountdown" data-next-payout="<?= e($nextPayoutSeconds !== null ? (string)$nextPayoutSeconds : '') ?>">--:--</span>
+        </div>
+        <div class="payout-card">
+          <span class="payout-label">Stream type</span>
+          <span class="payout-value"><?= e($streamType) ?></span>
+        </div>
+        <div class="payout-card">
+          <span class="payout-label">Running rate</span>
+          <span class="payout-value">&#2547;<?= (int)$runningHourlyRate ?>/hr</span>
+        </div>
       </div>
     </section>
 
@@ -237,7 +304,9 @@ if ($latestFeed) {
             $isActive = (int)($feed['is_active'] ?? 0) === 1;
             $statusText = $isActive ? 'Active' : 'Closed';
             $statusClass = $isActive ? 'status-approved' : 'status-rejected';
-            $rate = hourlyRate($mediaType);
+            $isActive = (int)($feed['is_active'] ?? 0) === 1;
+            $hasStream = $mediaType === 'live' ? ($liveUrl !== '') : ($mediaPath !== '');
+            $rate = ($isActive && $hasStream) ? $ratePerCamera : 0;
             $earned = (accruedSeconds($feed) / 3600) * $rate;
           ?>
           <article class="camera-card">
@@ -261,7 +330,7 @@ if ($latestFeed) {
               <span class="camera-title"><?= e((string)($feed['feed_label'] ?? 'CCTV Feed')) ?></span>
               <span class="camera-time"><i class="fa-regular fa-clock"></i> <?= e(timeAgo((string)($feed['created_at'] ?? ''))) ?></span>
               <p class="camera-caption"><?= e((string)($feed['camera_location'] ?? 'Location not set')) ?></p>
-              <p class="camera-earning">Earned: à§³<?= e(number_format($earned, 2)) ?> Â· Rate: à§³<?= (int)$rate ?>/hr Â· <?= e(ucfirst($scope)) ?></p>
+              <p class="camera-earning">Earned: &#2547;<?= e(number_format($earned, 2)) ?> &middot; Rate: <?= ($isActive && $hasStream) ? ('&#2547;' . (int)$rate . '/hr') : ($isActive ? 'No stream' : 'Paused') ?> &middot; <?= e(ucfirst($scope)) ?></p>
               <div class="feed-controls">
                 <form method="post" action="../Php/camera_cctv_feeds.php">
                   <input type="hidden" name="action" value="toggle">
@@ -277,48 +346,10 @@ if ($latestFeed) {
                   <button type="submit" class="feed-action-btn danger">Remove</button>
                 </form>
               </div>
-              <?php if ($mediaType === 'live' && $liveUrl !== ''): ?>
-                <a class="live-link" href="<?= e($liveUrl) ?>" target="_blank" rel="noopener">Open live source</a>
-              <?php endif; ?>
             </div>
           </article>
         <?php endforeach; ?>
       <?php endif; ?>
-    </section>
-
-    <section class="broadcast" aria-label="Latest feed broadcast">
-      <div class="broadcast-video">
-        <div class="video-header">
-          <span class="broadcast-title">Latest Feed Preview</span>
-        </div>
-
-        <?php if ($latestMedia !== '' && $latestMediaType === 'recorded'): ?>
-          <div class="video-player">
-            <video class="video-preview" controls preload="metadata">
-              <source src="<?= e($latestMedia) ?>" type="video/mp4">
-            </video>
-          </div>
-        <?php elseif ($latestMedia !== '' && $latestMediaType === 'live'): ?>
-          <div class="video-player">
-            <video class="video-preview live-video" controls muted playsinline preload="metadata" data-live-src="<?= e($latestMedia) ?>" title="Latest live CCTV preview"></video>
-          </div>
-        <?php elseif ($latestMedia !== ''): ?>
-          <div class="video-player">
-            <img src="<?= e($latestMedia) ?>" alt="Latest feed" class="video-img">
-          </div>
-        <?php else: ?>
-          <div class="video-player no-preview">No media preview available</div>
-        <?php endif; ?>
-
-        <div class="ai-title">Feed Summary</div>
-        <button class="secondary-btn" type="button" aria-label="Latest post info">
-          <span><?= $latestFeed ? e(timeAgo((string)($latestFeed['created_at'] ?? ''))) : 'No source yet' ?></span>
-          <span class="badge"><?= (int)$totalFeeds ?></span>
-        </button>
-        <?php if ($latestText !== ''): ?>
-          <p class="latest-caption"><?= nl2br(e($latestText)) ?></p>
-        <?php endif; ?>
-      </div>
     </section>
   </main>
 
@@ -326,4 +357,5 @@ if ($latestFeed) {
   <script src="../javascrpit/Camera_Contribution_Feed.js"></script>
 </body>
 </html>
+
 
