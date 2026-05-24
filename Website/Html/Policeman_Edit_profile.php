@@ -123,7 +123,7 @@ if (!$user) {
     </div>
 
     <div class="back-button-container">
-      <a href="../Html/Policeman_profile.php" class="back-btn">Ã¢â€ Â Back</a>
+      <a href="../Html/Policeman_profile.php" class="back-btn">&#8592; Back</a>
     </div>
 
     <?php if (!empty($error ?? '')): ?>
