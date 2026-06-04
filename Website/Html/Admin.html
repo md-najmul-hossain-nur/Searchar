@@ -2736,14 +2736,8 @@
         <aside class="messenger-list">
           <div class="messenger-list-title">All</div>
           <input type="text" class="messenger-search" placeholder="Search" aria-label="Search chats">
-          <div class="messenger-contact">
-            <div class="avatar">
-              <img src="../Images/businessman.gif" alt="Admin Logo" class="admin-avatar-img" onerror="this.onerror=null;this.src='../Images/demo_pic/profile.jpg';">
-            </div>
-            <div>
-              <strong>Admin Desk</strong>
-              <small>Announcements and updates</small>
-            </div>
+          <div class="messenger-conversation-list">
+            <div class="messenger-empty-state">No conversations yet.</div>
           </div>
         </aside>
 
@@ -2758,7 +2752,7 @@
             </div>
           </div>
           <div class="messenger-chat-feed">
-            <p class="messenger-bubble support">Hi, this is Admin Desk. How can we help you today?</p>
+            <div class="messenger-empty-state">No messages yet. Start the conversation.</div>
           </div>
           <div class="messenger-composer">
             <input id="messengerInput" class="messenger-input" type="text" placeholder="Type a message..." autocomplete="off">

@@ -13,6 +13,7 @@ DROP TABLE IF EXISTS `traffic_logs`;
 DROP TABLE IF EXISTS `chatbot_comment_templates`;
 DROP TABLE IF EXISTS `chatbot_admin_replies`;
 DROP TABLE IF EXISTS `chatbot_logs`;
+DROP TABLE IF EXISTS `chat_broadcasts`;
 DROP TABLE IF EXISTS `camera_cctv_feeds`;
 DROP TABLE IF EXISTS `withdraw_requests`;
 DROP TABLE IF EXISTS `donations`;
@@ -465,6 +466,19 @@ CREATE TABLE `messages` (
 	KEY `idx_messages_conversation` (`conversation_id`),
 	KEY `idx_messages_sender` (`sender_id`),
 	KEY `idx_messages_receiver` (`receiver_role`, `receiver_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `chat_broadcasts` (
+	`broadcast_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+	`sender_role` VARCHAR(80) NOT NULL DEFAULT 'admin',
+	`sender_id` INT UNSIGNED NOT NULL DEFAULT 0,
+	`target_role` VARCHAR(80) NOT NULL,
+	`message` TEXT NOT NULL,
+	`delivered_count` INT UNSIGNED NOT NULL DEFAULT 0,
+	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY (`broadcast_id`),
+	KEY `idx_chat_broadcasts_target` (`target_role`),
+	KEY `idx_chat_broadcasts_created` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `donations` (
