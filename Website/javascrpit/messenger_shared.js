@@ -221,10 +221,11 @@
   }
 
   function renderMessages(messages) {
-    if (!el.feed) return;
+    const feedEl = el.feed || admin.feed;
+    if (!feedEl) return;
     const me = state.me || { user_id: 0, role: 'user' };
     const rows = Array.isArray(messages) ? messages : [];
-    el.feed.innerHTML = rows.length
+    feedEl.innerHTML = rows.length
       ? rows.map((message) => {
           const mine = Number(message.sender_id || 0) === Number(me.user_id) && String(message.sender_role || '').toLowerCase() === String(me.role || '').toLowerCase();
           const time = fmtTime(message.created_at);
@@ -238,11 +239,11 @@
       : '<div class="messenger-empty-state">No messages yet. Start the conversation.</div>';
 
     requestAnimationFrame(() => {
-      el.feed.scrollTop = el.feed.scrollHeight;
+      feedEl.scrollTop = feedEl.scrollHeight;
     });
 
-    if (admin.feed) {
-      admin.feed.innerHTML = el.feed.innerHTML;
+    if (admin.feed && feedEl !== admin.feed) {
+      admin.feed.innerHTML = feedEl.innerHTML;
     }
   }
 
@@ -301,10 +302,13 @@
 
   function updateHeader() {
     const active = state.currentConversation || null;
-    if (!el.title || !el.subtitle) return;
     if (state.me?.role === 'admin') {
-      el.title.textContent = active ? displayNameForConversation(active) : 'Chat Management';
-      el.subtitle.textContent = active ? conversationSubtitle(active) : 'All conversations';
+      if (el.title) {
+        el.title.textContent = active ? displayNameForConversation(active) : 'Chat Management';
+      }
+      if (el.subtitle) {
+        el.subtitle.textContent = active ? conversationSubtitle(active) : 'All conversations';
+      }
       if (admin.title) {
         admin.title.textContent = active ? displayNameForConversation(active) : 'Select a conversation';
       }
@@ -313,8 +317,12 @@
       }
       return;
     }
-    el.title.textContent = 'Admin Desk';
-    el.subtitle.textContent = active ? conversationSubtitle(active) : 'Active now';
+    if (el.title) {
+      el.title.textContent = 'Admin Desk';
+    }
+    if (el.subtitle) {
+      el.subtitle.textContent = active ? conversationSubtitle(active) : 'Active now';
+    }
     if (admin.title) {
       admin.title.textContent = 'Chat Management';
     }
@@ -397,6 +405,7 @@
   }
 
   function bindDrawerEvents() {
+    if (!hasMessengerUi) return;
     el.fab.addEventListener('click', async () => {
       openDrawer();
       await boot();
@@ -451,6 +460,7 @@
   }
 
   function openDrawer() {
+    if (!hasMessengerUi) return;
     el.drawer.classList.add('open');
     el.backdrop.classList.add('open');
     el.drawer.setAttribute('aria-hidden', 'false');
@@ -460,6 +470,7 @@
   }
 
   function closeDrawer() {
+    if (!hasMessengerUi) return;
     el.drawer.classList.remove('open');
     el.backdrop.classList.remove('open');
     el.drawer.setAttribute('aria-hidden', 'true');

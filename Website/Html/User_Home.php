@@ -1373,6 +1373,8 @@ try {
       <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
       <script src="../javascrpit/User_Home.js?v=20260406b"></script>
       <script src="../javascrpit/post_interactions_shared.js?v=20260406d"></script>
+      <script src="../javascrpit/notifications_shared.js"></script>
+      <script src="../javascrpit/messenger_shared.js"></script>
     </body>
 
 </html>
