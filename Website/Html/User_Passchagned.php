@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h2>Change Your Password</h2>
 
         <div class="back-button-container">
-          <a href="../Html/User_profile.php" class="back-btn">Ã¢â€ Â Back</a>
+          <a href="../Html/User_profile.php" class="back-btn">Back</a>
         </div>
 
         <?php if (!empty($error)): ?>

@@ -226,7 +226,7 @@ if (!$user) {
 
     <!-- Back Button -->
     <div class="back-button-container">
-      <a href="../Html/User_profile.php" class="back-btn">â† Back</a>
+      <a href="../Html/User_profile.php" class="back-btn">Back</a>
     </div>
 
     <form class="edit-profile-form" method="POST" enctype="multipart/form-data">
