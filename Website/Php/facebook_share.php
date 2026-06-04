@@ -77,6 +77,7 @@ function publishPostToFacebook(array $postRow, array $facebookConfig): array
     }
 
     $message = trim((string)($postRow['text'] ?? ''));
+    $footer = "\n\nPublished by SearcharPageAPI";
     $mediaUpload = resolveFacebookMediaUpload($postRow);
 
     $endpoint = 'feed';
@@ -88,16 +89,16 @@ function publishPostToFacebook(array $postRow, array $facebookConfig): array
         if ($message === '') {
             $message = 'New post from Searchar';
         }
-        $payload['message'] = $message;
+        $payload['message'] = $message . $footer;
     } elseif ($mediaUpload['type'] === 'image') {
         $endpoint = 'photos';
-        $payload['caption'] = $message;
+        $payload['caption'] = $message . $footer;
         $payload['source'] = function_exists('curl_file_create')
             ? curl_file_create($mediaUpload['path'])
             : new CURLFile($mediaUpload['path']);
     } elseif ($mediaUpload['type'] === 'video') {
         $endpoint = 'videos';
-        $payload['description'] = $message;
+        $payload['description'] = $message . $footer;
         $payload['source'] = function_exists('curl_file_create')
             ? curl_file_create($mediaUpload['path'])
             : new CURLFile($mediaUpload['path']);
@@ -150,5 +151,6 @@ function publishPostToFacebook(array $postRow, array $facebookConfig): array
         'shared' => true,
         'post_id' => $decoded['id'] ?? null,
         'endpoint' => $endpoint,
+        'response' => is_array($decoded) ? $decoded : null,
     ];
 }

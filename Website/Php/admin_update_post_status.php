@@ -408,6 +408,16 @@ try {
             ];
             error_log('admin_update_post_status: Facebook publish failed for post ' . $postId . ' - ' . $facebookError->getMessage());
         }
+        // Persist shared post id/payload when available
+        try {
+            if (is_array($facebookShareResult) && !empty($facebookShareResult['shared']) && !empty($facebookShareResult['post_id'])) {
+                $upd = $pdo->prepare("UPDATE posts SET is_share = 1, shared_post_id = :spid, shared_payload = :payload WHERE id = :id");
+                $payloadJson = json_encode($facebookShareResult, JSON_UNESCAPED_UNICODE);
+                $upd->execute([':spid' => $facebookShareResult['post_id'], ':payload' => $payloadJson, ':id' => $postId]);
+            }
+        } catch (Throwable $persistErr) {
+            error_log('admin_update_post_status: Failed to persist Facebook share for post ' . $postId . ' - ' . $persistErr->getMessage());
+        }
     } elseif ($shareRequested && $shareAnonymous) {
         error_log('admin_update_post_status: Facebook share skipped for anonymous post ' . $postId);
     }

@@ -437,6 +437,36 @@ CREATE TABLE `auth_users` (
 	KEY `idx_auth_provider` (`provider`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE `conversations` (
+	`id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+	`user_id` INT UNSIGNED NOT NULL,
+	`role` VARCHAR(80) NOT NULL,
+	`last_message_at` TIMESTAMP NULL DEFAULT NULL,
+	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	PRIMARY KEY (`id`),
+	UNIQUE KEY `uq_conversation_user_role` (`user_id`, `role`),
+	KEY `idx_conversations_user_role` (`user_id`, `role`),
+	KEY `idx_conversations_last_message` (`last_message_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `messages` (
+	`id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+	`conversation_id` BIGINT UNSIGNED NOT NULL,
+	`sender_role` VARCHAR(80) NOT NULL,
+	`sender_id` INT UNSIGNED NOT NULL,
+	`receiver_role` VARCHAR(80) NOT NULL DEFAULT 'admin',
+	`receiver_id` INT UNSIGNED NOT NULL DEFAULT 0,
+	`message` TEXT DEFAULT NULL,
+	`content` TEXT DEFAULT NULL,
+	`is_read` TINYINT(1) NOT NULL DEFAULT 0,
+	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY (`id`),
+	KEY `idx_messages_conversation` (`conversation_id`),
+	KEY `idx_messages_sender` (`sender_id`),
+	KEY `idx_messages_receiver` (`receiver_role`, `receiver_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE `donations` (
 	`donation_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 	`donor_name` VARCHAR(150) DEFAULT NULL,
