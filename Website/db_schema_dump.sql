@@ -468,18 +468,19 @@ CREATE TABLE `messages` (
 	KEY `idx_messages_receiver` (`receiver_role`, `receiver_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE `chat_broadcasts` (
-	`broadcast_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-	`sender_role` VARCHAR(80) NOT NULL DEFAULT 'admin',
-	`sender_id` INT UNSIGNED NOT NULL DEFAULT 0,
-	`target_role` VARCHAR(80) NOT NULL,
-	`message` TEXT NOT NULL,
-	`delivered_count` INT UNSIGNED NOT NULL DEFAULT 0,
-	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	PRIMARY KEY (`broadcast_id`),
-	KEY `idx_chat_broadcasts_target` (`target_role`),
-	KEY `idx_chat_broadcasts_created` (`created_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE messages (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  sender_role VARCHAR(40) NOT NULL,
+  sender_id INT UNSIGNED NOT NULL,
+  receiver_role VARCHAR(40) NOT NULL,
+  receiver_id INT UNSIGNED NOT NULL,
+  message TEXT NOT NULL,
+  is_read TINYINT(1) DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_messages_receiver (receiver_role, receiver_id),
+  KEY idx_messages_sender (sender_role, sender_id),
+  KEY idx_messages_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `donations` (
 	`donation_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
