@@ -16,7 +16,7 @@
   <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
   <!-- Main CSS -->
   <link rel="stylesheet" href="../css/Admin.css">
-  <link rel="stylesheet" href="../css/messenger_shared.css">
+  
   
 </head>
 <body>
@@ -71,6 +71,9 @@
   </li>
   <li data-section="reports">
     <span class="icon"><i class="fa-solid fa-file-lines"></i></span> Reports
+  </li>
+  <li data-section="chat-management">
+    <span class="icon"><i class="fa-solid fa-comments"></i></span> Chat Management
   </li>
   <li data-section="chatbot-logs">
     <span class="icon"><i class="fa-solid fa-comments"></i></span> Chatbot Logs
@@ -970,6 +973,41 @@
       <tr><td colspan="4">No chatbot logs yet.</td></tr>
     </tbody>
   </table>
+</div>
+
+<div id="chat-management" class="main-section">
+  <h2>Chat Management</h2>
+  <div class="chat-management-toolbar">
+    <input id="chat-management-search" type="text" placeholder="Search users or roles" aria-label="Search chats">
+    <select id="chat-management-role-filter" aria-label="Filter by role">
+      <option value="all">All roles</option>
+      <option value="user">User</option>
+      <option value="police">Policeman</option>
+      <option value="volunteer">Volunteer</option>
+      <option value="contributor">Cameraman</option>
+    </select>
+    <button type="button" class="btn-refresh" id="chat-management-refresh">Refresh</button>
+  </div>
+  <div class="chat-management-grid">
+    <aside class="chat-management-list-pane">
+      <div id="chat-management-list" class="chat-management-list"></div>
+    </aside>
+    <section class="chat-management-thread-pane">
+      <div class="chat-management-thread-header">
+        <div>
+          <strong id="chat-management-title">Select a conversation</strong>
+          <small id="chat-management-subtitle">All user chats appear here.</small>
+        </div>
+      </div>
+      <div id="chat-management-feed" class="chat-management-feed">
+        <div class="messenger-empty-state">Select a conversation to view messages.</div>
+      </div>
+      <div class="chat-management-composer">
+        <input id="chat-management-input" type="text" placeholder="Type a reply to the selected user..." autocomplete="off">
+        <button type="button" id="chat-management-send" class="btn-refresh">Send</button>
+      </div>
+    </section>
+  </div>
 </div>
 
 <div id="controls" class="main-section">
@@ -2684,55 +2722,6 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
       <script src="../javascrpit/Admin.js?v=20260405e"></script>
 
-    <!-- Messenger FAB + Drawer (reused shared markup) -->
-    <button type="button" id="messengerFab" class="messenger-fab" aria-label="Open Messenger" title="Messenger">
-      <i class="fa fa-comments" aria-hidden="true"></i>
-    </button>
-    <div id="messengerBackdrop" class="messenger-backdrop" aria-hidden="true"></div>
-    <aside id="messengerDrawer" class="messenger-drawer" aria-hidden="true">
-      <div class="messenger-drawer-header">
-        <h3>Messenger</h3>
-        <button type="button" id="messengerClose" class="messenger-close" aria-label="Close">&times;</button>
-      </div>
-      <div class="messenger-layout">
-        <aside class="messenger-list">
-          <div class="messenger-list-title">All</div>
-          <input type="text" class="messenger-search" placeholder="Search" aria-label="Search chats">
-          <div class="messenger-contact">
-            <div class="avatar">
-              <img src="../Images/businessman.gif" alt="Admin Logo" class="admin-avatar-img" onerror="this.onerror=null;this.src='../Images/demo_pic/profile.jpg';">
-            </div>
-            <div>
-              <strong>Admin Desk</strong>
-              <small>Announcements and updates</small>
-            </div>
-          </div>
-        </aside>
-
-        <section class="messenger-chat">
-          <div class="messenger-chat-top">
-            <div class="avatar online">
-              <img src="../Images/businessman.gif" alt="Admin Logo" class="admin-avatar-img" onerror="this.onerror=null;this.src='../Images/demo_pic/profile.jpg';">
-            </div>
-            <div>
-              <strong>Admin Desk</strong>
-              <small>Active now</small>
-            </div>
-          </div>
-          <div class="messenger-chat-feed">
-            <p class="messenger-bubble support">Hi, this is Admin Desk. How can we help you today?</p>
-          </div>
-          <div class="messenger-composer">
-            <input id="messengerInput" class="messenger-input" type="text" placeholder="Type a message..." autocomplete="off">
-            <button type="button" class="messenger-send" aria-label="Send">
-              <i class="fa fa-paper-plane" aria-hidden="true"></i>
-            </button>
-          </div>
-        </section>
-      </div>
-    </aside>
-
-    <script src="../javascrpit/messenger_shared.js"></script>
 </body>
 </html>
 

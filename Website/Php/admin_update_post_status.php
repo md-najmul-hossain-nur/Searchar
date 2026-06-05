@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/facebook_share.php';
 
 function tableExists(PDO $pdo, string $table): bool {
     $stmt = $pdo->prepare("SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :t LIMIT 1");
@@ -112,7 +113,7 @@ try {
         $pdo->exec("ALTER TABLE posts ADD COLUMN report_closed_at DATETIME DEFAULT NULL AFTER reported_at");
     }
 
-    $postStmt = $pdo->prepare('SELECT id, author_role, author_id, author_name, category, text, media_path, media_json, share_anonymous, status, report_status, created_at FROM posts WHERE id = :id LIMIT 1');
+    $postStmt = $pdo->prepare('SELECT id, author_role, author_id, author_name, category, text, media_path, media_json, media_type, share_facebook, share_anonymous, status, report_status, created_at FROM posts WHERE id = :id LIMIT 1');
     $postStmt->execute([':id' => $postId]);
     $postRow = $postStmt->fetch(PDO::FETCH_ASSOC);
     if (!$postRow) {
@@ -388,9 +389,43 @@ try {
         ]);
     }
 
+    $facebookShareResult = [
+        'attempted' => false,
+        'shared' => false,
+        'skipped' => true,
+    ];
+
+    $shareRequested = (int)($postRow['share_facebook'] ?? 0) === 1;
+    $shareAnonymous = (int)($postRow['share_anonymous'] ?? 0) === 1;
+    if ($shareRequested && !$shareAnonymous) {
+        try {
+            $facebookShareResult = publishPostToFacebook($postRow, loadFacebookPageConfig());
+        } catch (Throwable $facebookError) {
+            $facebookShareResult = [
+                'attempted' => true,
+                'shared' => false,
+                'error' => $facebookError->getMessage(),
+            ];
+            error_log('admin_update_post_status: Facebook publish failed for post ' . $postId . ' - ' . $facebookError->getMessage());
+        }
+        // Persist shared post id/payload when available
+        try {
+            if (is_array($facebookShareResult) && !empty($facebookShareResult['shared']) && !empty($facebookShareResult['post_id'])) {
+                $upd = $pdo->prepare("UPDATE posts SET is_share = 1, shared_post_id = :spid, shared_payload = :payload WHERE id = :id");
+                $payloadJson = json_encode($facebookShareResult, JSON_UNESCAPED_UNICODE);
+                $upd->execute([':spid' => $facebookShareResult['post_id'], ':payload' => $payloadJson, ':id' => $postId]);
+            }
+        } catch (Throwable $persistErr) {
+            error_log('admin_update_post_status: Failed to persist Facebook share for post ' . $postId . ' - ' . $persistErr->getMessage());
+        }
+    } elseif ($shareRequested && $shareAnonymous) {
+        error_log('admin_update_post_status: Facebook share skipped for anonymous post ' . $postId);
+    }
+
     echo json_encode([
         'success' => true,
         'status' => $targetStatus,
+        'facebook_share' => $facebookShareResult,
     ]);
 } catch (Throwable $e) {
     error_log('admin_update_post_status error: ' . $e->getMessage());

@@ -1219,52 +1219,7 @@ try {
   <div class="notifications-drawer-footer"></div>
 </aside>
 
-<button type="button" id="messengerFab" class="messenger-fab" aria-label="Open Messenger" title="Messenger">
-  <i class="fa fa-comments" aria-hidden="true"></i>
-</button>
-<div id="messengerBackdrop" class="messenger-backdrop" aria-hidden="true"></div>
-<aside id="messengerDrawer" class="messenger-drawer" aria-hidden="true">
-  <div class="messenger-drawer-header">
-    <h3>Messenger</h3>
-    <button type="button" id="messengerClose" class="messenger-close" aria-label="Close">&times;</button>
-  </div>
-  <div class="messenger-layout">
-    <aside class="messenger-list">
-      <div class="messenger-list-title">All</div>
-      <input type="text" class="messenger-search" placeholder="Search" aria-label="Search chats">
-      <div class="messenger-contact">
-        <div class="avatar">
-          <img src="../Images/businessman.gif" alt="Admin Logo" class="admin-avatar-img" onerror="this.onerror=null;this.src='../Images/demo_pic/profile.jpg';">
-        </div>
-        <div>
-          <strong>Admin Desk</strong>
-          <small>Announcements and updates</small>
-        </div>
-      </div>
-    </aside>
 
-    <section class="messenger-chat">
-      <div class="messenger-chat-top">
-        <div class="avatar online">
-          <img src="../Images/businessman.gif" alt="Admin Logo" class="admin-avatar-img" onerror="this.onerror=null;this.src='../Images/demo_pic/profile.jpg';">
-        </div>
-        <div>
-          <strong>Admin Desk</strong>
-          <small>Active now</small>
-        </div>
-      </div>
-      <div class="messenger-chat-feed">
-        <p class="messenger-bubble support">Hi, this is Admin Desk. How can we help you today?</p>
-      </div>
-      <div class="messenger-composer">
-        <input id="messengerInput" class="messenger-input" type="text" placeholder="Type a message..." autocomplete="off">
-        <button type="button" class="messenger-send" aria-label="Send">
-          <i class="fa fa-paper-plane" aria-hidden="true"></i>
-        </button>
-      </div>
-    </section>
-  </div>
-</aside>
     <!-- Donation modal moved here to avoid clipping by sticky sidebars -->
     <div id="donationModal" class="donation-modal" aria-hidden="true">
       <div class="donation-modal-content" role="dialog" aria-modal="true" aria-labelledby="donationModalTitle">
@@ -1373,6 +1328,8 @@ try {
       <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
       <script src="../javascrpit/User_Home.js?v=20260406b"></script>
       <script src="../javascrpit/post_interactions_shared.js?v=20260406d"></script>
+      <script src="../javascrpit/notifications_shared.js"></script>
+      <script src="../javascrpit/messenger_shared.js"></script>
     </body>
 
 </html>
