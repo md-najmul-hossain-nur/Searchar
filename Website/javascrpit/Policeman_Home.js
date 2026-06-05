@@ -1,4 +1,4 @@
-﻿const requestBroadcastBtn = document.getElementById('requestBroadcastBtn');
+const requestBroadcastBtn = document.getElementById('requestBroadcastBtn');
 const broadcastStatus = document.getElementById('broadcastStatus');
 const broadcastLink = document.getElementById('broadcastLink');
 let broadcastPollTimer = null;
@@ -795,7 +795,7 @@ function openCasePreview(payload) {
   if (casePreviewExtra) casePreviewExtra.textContent = payload.extra_details || '';
 
   if (casePreviewAutoThumb) {
-    casePreviewAutoThumb.innerHTML = `${payload.case_no || 'Case'}<br>${payload.type || 'Alert'}`;
+    casePreviewAutoThumb.innerHTML = `No Image Provided<br><span style="font-size:13px; opacity:0.8; margin-top:4px; display:inline-block;">${payload.case_no || 'Case'} • ${payload.type || 'Alert'}</span>`;
   }
 
   if (casePreviewImage) {

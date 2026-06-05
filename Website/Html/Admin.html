@@ -43,7 +43,7 @@
           <span class="icon"><i class="fa-solid fa-people-group"></i></span> Missing Persons
         </li>
         <li data-section="ai">
-          <span class="icon"><i class="fa-solid fa-robot"></i></span> AI Detection Logs
+          <span class="icon"><i class="fa-solid fa-robot"></i></span> AI Investigation Search
         </li>
         <li data-section="crime">
           <span class="icon"><i class="fa-solid fa-video"></i></span> Crime Reporting
@@ -456,48 +456,60 @@
     </div>
 
     <div id="ai" class="main-section">
-      <h2>AI Detection Logs</h2>
-      <div class="filters-bar">
-        <input type="text" placeholder="Search by Camera/Case ID">
-        <input type="date">
-        <input type="date">
-        <input type="number" placeholder="Confidence % ├óΓÇ░┬Ñ" style="width:110px;">
-        <select>
-          <option>Status</option>
-        </select>
-        <button>Filter</button>
+      <h2>AI Investigation Search</h2>
+      <div class="ai-investigation-panel">
+        <div class="ai-search-config">
+          <div class="ai-upload-box">
+            <label for="ai-reference-image" class="ai-upload-label">
+              <i class="fa-solid fa-cloud-arrow-up" style="font-size: 24px; color: var(--primary);"></i>
+              <span style="display:block; margin-top: 8px;">Upload Suspect/Target Image</span>
+            </label>
+            <input type="file" id="ai-reference-image" accept="image/*" hidden onchange="previewAiImage(this)">
+            <div id="ai-reference-preview" class="ai-image-preview hidden">
+              <img id="ai-preview-img" src="" alt="Preview">
+              <button class="ai-remove-preview" onclick="removeAiImage()">&times;</button>
+            </div>
+          </div>
+          
+          <div class="ai-search-tabs">
+            <button class="ai-tab-btn active" data-tab="social" onclick="switchAiTab('social')">Website Posts Search</button>
+            <button class="ai-tab-btn" data-tab="cctv" onclick="switchAiTab('cctv')">CCTV Area Search</button>
+          </div>
+          
+          <div class="ai-tab-content active" id="ai-tab-social">
+            <p class="ai-hint">Search for matches across user posts, videos, and images on our platform.</p>
+            <input type="text" placeholder="Keywords (Optional)" class="ai-input-full">
+          </div>
+          
+          <div class="ai-tab-content hidden" id="ai-tab-cctv">
+            <p class="ai-hint">Search local CCTVs within a specific area.</p>
+            <input type="text" placeholder="Enter Area or Landmark (e.g., Gulshan 1)" class="ai-input-full">
+            <input type="number" placeholder="Radius (km) e.g., 5" class="ai-input-full" style="margin-top: 10px;">
+          </div>
+          
+          <button class="ai-run-search-btn" onclick="runAiSearch()"><i class="fa-solid fa-magnifying-glass"></i> Run AI Search</button>
+        </div>
+        
+        <div class="ai-search-results">
+          <h3>Detection Results</h3>
+          <div class="ai-results-grid" id="ai-results-grid">
+            <div class="ai-empty-state">Upload an image and run search to see results...</div>
+            <!-- Results will be populated here by JS -->
+          </div>
+        </div>
       </div>
-      <table class="styled-table">
-        <thead>
-          <tr>
-            <th>Date & Time</th>
-            <th>Camera ID</th>
-            <th>Confidence %</th>
-            <th>Matched Case</th>
-            <th>Snapshot</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="ai-table-body">
-          <tr>
-            <td>2025-07-27 12:40</td>
-            <td>CCTV-21</td>
-            <td>92%</td>
-            <td>MP1001</td>
-            <td>[img]</td>
-            <td>Verified</td>
-            <td>
-              <button>Verify</button>
-              <button>Attach to Case</button>
-              <button>Notify</button>
-            </td>
-          </tr>
-          <!-- More rows... -->
-        </tbody>
-      </table>
-      <div id="ai-graphs" style="height:130px;background:#f6f6f6;margin-top:18px;">
-        <span>Detections per day, False positive rate, Match success graph</span>
+      
+      <!-- Modal for Confirming Source -->
+      <div id="ai-confirm-modal" class="ai-modal hidden">
+        <div class="ai-modal-content">
+          <h3>Confirm Detection Source</h3>
+          <p>Please select where this detection was confirmed from:</p>
+          <div class="ai-source-options">
+            <button class="ai-source-btn" onclick="confirmAiSource('Website Post')"><i class="fa-solid fa-file-lines" style="color:#1877F2;"></i> Website Post</button>
+            <button class="ai-source-btn" onclick="confirmAiSource('CCTV')"><i class="fa-solid fa-video" style="color:var(--primary);"></i> CCTV Camera</button>
+          </div>
+          <button class="ghost ai-modal-close-btn" onclick="closeAiConfirmModal()">Cancel</button>
+        </div>
       </div>
     </div>
 
@@ -1323,7 +1335,7 @@
       const setTrend = (el, pct, baseText, periodLabel) => {
         if (!el) return;
         el.classList.remove('up', 'down');
-        const arrow = pct > 0 ? '├óΓÇáΓÇÿ' : pct < 0 ? '├óΓÇáΓÇ£' : '├óΓÇáΓÇÖ';
+        const arrow = pct > 0 ? '↑' : pct < 0 ? '↓' : '→';
         if (pct > 0) el.classList.add('up');
         if (pct < 0) el.classList.add('down');
         el.textContent = `${arrow} ${pct.toFixed(2)}% ${periodLabel} | ${baseText}`;

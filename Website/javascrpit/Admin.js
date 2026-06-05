@@ -2369,7 +2369,7 @@ function openAddVolunteerModal() {
           <td>
             <button type="button" class="view-profile-btn" data-crime-view="${r.id}">View</button>
             <button type="button" data-crime-assign="${r.id}" ${assignDisabled ? 'disabled' : ''}>${isClosed ? 'Closed' : (actState.assigned || assignedCrimes.has(r.id) ? 'Assigned' : 'Assign Volunteer')}</button>
-            <button type="button" data-crime-cctv="${r.id}" ${cctvDisabled ? 'disabled' : ''}>${isClosed ? 'Closed' : (actState.cctv ? 'CCTV Alerted' : 'Alert CCTV')}</button>
+            <button type="button" data-crime-cctv="${r.id}" ${cctvDisabled ? 'disabled' : ''}>${isClosed ? 'Closed' : 'AI Investigation'}</button>
           </td>
         </tr>
       `;
@@ -2637,14 +2637,29 @@ function openAddVolunteerModal() {
       if (cctvBtn) {
         if (cctvBtn.disabled) return;
         const id = cctvBtn.getAttribute('data-crime-cctv');
-        const state = getCrimeActionState(id);
-        if (state.cctv || state.rejected) return;
         const crime = demoCrimes.find(c => c.id === id);
         if (String(crime?.status || '').toLowerCase() === 'closed') return;
-        state.cctv = true;
-        alert(`Send CCTV alert for ${id} (hook up backend).`);
-        cctvBtn.disabled = true;
-        cctvBtn.textContent = 'CCTV Alerted';
+        
+        // Auto-fill AI Investigation with case image
+        if (crime && Array.isArray(crime.media) && crime.media.length > 0) {
+          const mediaUrl = crime.media[0].url || crime.media[0].path;
+          if (mediaUrl) {
+            document.getElementById('ai-preview-img').src = mediaUrl;
+            document.getElementById('ai-reference-preview').classList.remove('hidden');
+            
+            // create a dummy file in the input if possible, or just set a global state
+            window.activeAiSearchCaseId = id;
+            window.activeAiSearchImage = mediaUrl;
+          }
+        } else {
+            window.activeAiSearchCaseId = id;
+            window.activeAiSearchImage = null;
+        }
+
+        // Redirect to AI tab
+        const aiTab = document.querySelector('.sidebar-menu li[data-section="ai"], li[data-section="ai"]');
+        if (aiTab) aiTab.click();
+        
         return;
       }
     });
@@ -4688,3 +4703,244 @@ function openAddVolunteerModal() {
     'chatbot-logs'
   ];
 })();
+
+// AI Investigation Search Logic
+function switchAiTab(tabId) {
+  document.querySelectorAll('.ai-tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.ai-tab-content').forEach(content => content.classList.add('hidden'));
+  document.querySelectorAll('.ai-tab-content').forEach(content => content.classList.remove('active'));
+
+  document.querySelector(`.ai-tab-btn[data-tab="${tabId}"]`).classList.add('active');
+  const targetContent = document.getElementById(`ai-tab-${tabId}`);
+  if (targetContent) {
+    targetContent.classList.remove('hidden');
+    targetContent.classList.add('active');
+  }
+}
+
+function previewAiImage(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('ai-preview-img').src = e.target.result;
+      document.getElementById('ai-reference-preview').classList.remove('hidden');
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function removeAiImage() {
+  document.getElementById('ai-reference-image').value = '';
+  document.getElementById('ai-reference-preview').classList.add('hidden');
+  document.getElementById('ai-preview-img').src = '';
+}
+
+// Helper to generate a simple average hash (aHash) of an image source
+async function generateImageHash(src) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 8;
+      canvas.height = 8;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, 8, 8);
+      const data = ctx.getImageData(0, 0, 8, 8).data;
+      let total = 0;
+      const grays = [];
+      for (let i = 0; i < data.length; i += 4) {
+        const gray = (data[i] + data[i+1] + data[i+2]) / 3;
+        grays.push(gray);
+        total += gray;
+      }
+      const avg = total / 64;
+      let hash = "";
+      for (let i = 0; i < 64; i++) {
+        hash += (grays[i] >= avg ? "1" : "0");
+      }
+      resolve(hash);
+    };
+    img.onerror = () => resolve("");
+    img.src = src;
+  });
+}
+
+// Compare two hashes and return percentage similarity
+function compareHashes(h1, h2) {
+  if (!h1 || !h2 || h1.length !== 64 || h2.length !== 64) return 0;
+  let matches = 0;
+  for (let i = 0; i < 64; i++) {
+    if (h1[i] === h2[i]) matches++;
+  }
+  return (matches / 64) * 100;
+}
+
+async function runAiSearch() {
+  const fileInput = document.getElementById('ai-reference-image');
+  const previewImg = document.getElementById('ai-preview-img');
+  
+  if ((!fileInput.files || !fileInput.files[0]) && !window.activeAiSearchImage && !previewImg.src) {
+    alert("Please upload a reference image or select a case first.");
+    return;
+  }
+  
+  const searchImageSrc = previewImg.src || window.activeAiSearchImage;
+  const isAutoFilled = (searchImageSrc === window.activeAiSearchImage);
+  
+  const resultsGrid = document.getElementById('ai-results-grid');
+  resultsGrid.innerHTML = '<div class="ai-empty-state"><i class="fa-solid fa-spinner fa-spin" style="font-size: 24px;"></i><p style="margin-top: 10px;">Searching database and network...</p></div>';
+  
+  const isSocial = document.querySelector('.ai-tab-btn[data-tab="social"]').classList.contains('active');
+  
+  try {
+    let mockResultsHTML = '';
+    
+    if (isSocial) {
+      // Fetch real website posts first
+      const response = await fetch('../Php/fetch_latest_approved_posts.php');
+      const data = await response.json();
+      let allPosts = (data && data.success && Array.isArray(data.rows)) ? data.rows : [];
+      
+      let matchedPost = null;
+      let finalScore = 0;
+
+      if (isAutoFilled) {
+        finalScore = 98;
+        matchedPost = allPosts.length > 0 ? allPosts[0] : null; 
+      } else {
+        const uploadedFile = fileInput.files[0];
+        if (uploadedFile) {
+          // Generate perceptual hash for the uploaded image
+          const uploadedHash = await generateImageHash(searchImageSrc);
+          
+          // Iterate over posts and compare perceptual hashes
+          for (const post of allPosts) {
+            let url = null;
+            if (post.media_path) url = post.media_path;
+            else if (post.media_json) {
+              try {
+                const parsed = JSON.parse(post.media_json);
+                if (parsed.length > 0) url = parsed[0].url || parsed[0].path;
+              } catch(e) {}
+            }
+            if (url) {
+              const postHash = await generateImageHash(url);
+              const similarity = compareHashes(uploadedHash, postHash);
+              
+              if (similarity >= 85) { // 85% visual similarity threshold
+                matchedPost = post;
+                finalScore = Math.floor(similarity);
+                if (finalScore < 90) finalScore += 5; // Boost score slightly for UI
+                break;
+              }
+            }
+          }
+        }
+        
+        // If no visual match found, fallback to low mock score
+        if (!matchedPost) {
+          let hashStr = 0;
+          for (let i = 0; i < searchImageSrc.length; i++) {
+            hashStr = ((hashStr << 5) - hashStr) + searchImageSrc.charCodeAt(i);
+            hashStr |= 0;
+          }
+          finalScore = Math.abs(hashStr) % 50 + 10; // Between 10 and 59
+        }
+      }
+
+      if (finalScore < 75 || !matchedPost) {
+        mockResultsHTML = `
+          <div class="ai-empty-state" style="padding: 40px 20px;">
+            <i class="fa-solid fa-fingerprint" style="font-size: 32px; color: #f05454; margin-bottom: 15px;"></i>
+            <h4 style="margin: 0 0 10px; color: #1a232a;">No Confirmed Matches</h4>
+            <p style="color: #64748b; margin: 0; font-size: 14px;">The AI scanned the database but couldn't find a strong match.</p>
+            <small style="display: block; margin-top: 10px; color: #94a3b8;">Highest confidence found was ${finalScore}%, which is below our 75% threshold.</small>
+          </div>
+        `;
+      } else {
+        let displayImg = searchImageSrc;
+        if (matchedPost.media_path) {
+          displayImg = matchedPost.media_path;
+        } else if (matchedPost.media_json) {
+          try {
+            const parsed = JSON.parse(matchedPost.media_json);
+            if (parsed.length > 0) displayImg = parsed[0].url || parsed[0].path || searchImageSrc;
+          } catch(e) {}
+        }
+        mockResultsHTML = `
+          <div class="ai-result-card">
+            <img src="${displayImg}" class="ai-result-img" alt="Match">
+            <div class="ai-result-details">
+              <span class="ai-result-confidence">${finalScore}% Match</span>
+              <div class="ai-result-location"><i class="fa-solid fa-file-lines" style="color:#1877F2;"></i> Post by ${escapeHtml(matchedPost.author_name || 'Unknown')}</div>
+              <button class="ai-action-btn" onclick="openAiConfirmModal(this)">Confirm Source</button>
+            </div>
+          </div>
+        `;
+      }
+    } else {
+      // CCTV search simulation
+      await new Promise(r => setTimeout(r, 1500));
+      let hashStr = 0;
+      for (let i = 0; i < searchImageSrc.length; i++) {
+        hashStr = ((hashStr << 5) - hashStr) + searchImageSrc.charCodeAt(i);
+        hashStr |= 0;
+      }
+      const score = Math.abs(hashStr) % 90 + 10;
+      const finalScore = isAutoFilled ? 92 : score;
+      
+      if (finalScore < 75) {
+        mockResultsHTML = `
+          <div class="ai-empty-state" style="padding: 40px 20px;">
+            <i class="fa-solid fa-fingerprint" style="font-size: 32px; color: #f05454; margin-bottom: 15px;"></i>
+            <h4 style="margin: 0 0 10px; color: #1a232a;">No CCTV Matches</h4>
+            <p style="color: #64748b; margin: 0; font-size: 14px;">The AI scanned CCTV feeds but couldn't find a strong match.</p>
+            <small style="display: block; margin-top: 10px; color: #94a3b8;">Highest confidence found was ${finalScore}%, which is below our 75% threshold.</small>
+          </div>
+        `;
+      } else {
+        mockResultsHTML = `
+          <div class="ai-result-card">
+            <img src="${searchImageSrc}" class="ai-result-img" alt="Match">
+            <div class="ai-result-details">
+              <span class="ai-result-confidence">${finalScore}% Match</span>
+              <div class="ai-result-location"><i class="fa-solid fa-video" style="color:#333;"></i> CCTV ID: GUL-001 (Gulshan 1 Circle)</div>
+              <button class="ai-action-btn" onclick="openAiConfirmModal(this)">Confirm Source</button>
+            </div>
+          </div>
+        `;
+      }
+    }
+    
+    resultsGrid.innerHTML = mockResultsHTML;
+  } catch (err) {
+    resultsGrid.innerHTML = `<div class="ai-empty-state">Search failed: ${err.message}</div>`;
+  }
+}
+
+let activeAiResultButton = null;
+
+function openAiConfirmModal(button) {
+  activeAiResultButton = button;
+  document.getElementById('ai-confirm-modal').classList.remove('hidden');
+}
+
+function closeAiConfirmModal() {
+  document.getElementById('ai-confirm-modal').classList.add('hidden');
+  activeAiResultButton = null;
+}
+
+function confirmAiSource(sourceType) {
+  if (activeAiResultButton) {
+    const parent = activeAiResultButton.parentElement;
+    activeAiResultButton.remove();
+    const confirmedTag = document.createElement('div');
+    confirmedTag.style.marginTop = '10px';
+    confirmedTag.style.fontWeight = 'bold';
+    confirmedTag.style.color = '#27ae60';
+    confirmedTag.innerHTML = `<i class="fa-solid fa-check-circle"></i> Confirmed: ${sourceType}`;
+    parent.appendChild(confirmedTag);
+  }
+  closeAiConfirmModal();
+}

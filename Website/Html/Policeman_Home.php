@@ -280,7 +280,7 @@ try {
             $path = trim((string)$mediaItem);
             if ($path === '') continue;
             if (preg_match('/\.(jpg|jpeg|png|webp|gif)$/i', $path)) {
-              $imageUrl = '../' . ltrim($path, '/');
+              $imageUrl = str_starts_with($path, '../') ? $path : '../' . ltrim($path, '/');
               break;
             }
           }
@@ -288,7 +288,7 @@ try {
       }
 
       if ($imageUrl === '' && $mediaPath !== '' && ($mediaType === 'image' || preg_match('/\.(jpg|jpeg|png|webp|gif)$/i', $mediaPath))) {
-        $imageUrl = '../' . ltrim($mediaPath, '/');
+        $imageUrl = str_starts_with($mediaPath, '../') ? $mediaPath : '../' . ltrim($mediaPath, '/');
       }
 
       $detailsText = trim((string)($row['text'] ?? 'Case details pending'));
