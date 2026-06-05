@@ -231,9 +231,9 @@ try {
 
     <!-- Certificate Display -->
     <div id="certificate-unlock" class="certificate-box hidden" aria-live="polite" data-volunteer-name="<?= e($volunteer['full_name'] ?? 'Volunteer') ?>">
-      <p id="certificate-message">ðŸŽ‰ Congratulations! Youâ€™ve reached <strong>Silver Responder</strong>!</p>
+      <p id="certificate-message">🎉 Congratulations! You've reached <strong>Silver Responder</strong>!</p>
       <div class="certificate-actions">
-        <button id="view-certificate-btn" class="view-certificate-btn" type="button">ðŸ… Certificate</button>
+        <button id="view-certificate-btn" class="view-certificate-btn" type="button">🏅 Certificate</button>
       </div>
     </div>
   </div>

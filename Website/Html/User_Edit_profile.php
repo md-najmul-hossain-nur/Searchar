@@ -178,7 +178,7 @@ $country = trim((string)($_POST['country'] ?? ''));
       }
 
 
-      // âœ… Redirect to profile page after successful save
+        // Redirect to profile page after successful save
       header("Location: ../Html/User_profile.php");
       exit;
     }

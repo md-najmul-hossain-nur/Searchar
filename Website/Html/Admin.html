@@ -107,26 +107,26 @@
       <div class="dashboard-cards">
         <div class="card">
           <div class="card-title">TRAFFIC</div>
-          <div class="card-value" id="traffic-value">â€”</div>
-          <div class="card-meta up" id="traffic-meta">Loading trafficâ€¦</div>
+          <div class="card-value" id="traffic-value">Loading...</div>
+          <div class="card-meta up" id="traffic-meta">Loading traffic...</div>
           <div class="card-icon card-icon-red"><i class="fa-solid fa-chart-line"></i></div>
         </div>
         <div class="card">
           <div class="card-title">NEW USERS</div>
-          <div class="card-value" id="new-users-value">â€”</div>
-          <div class="card-meta down" id="new-users-meta">Loading countsâ€¦</div>
+          <div class="card-value" id="new-users-value">Loading...</div>
+          <div class="card-meta down" id="new-users-meta">Loading counts...</div>
           <div class="card-icon card-icon-orange"><i class="fa-solid fa-user-plus"></i></div>
         </div>
         <div class="card">
           <div class="card-title">CAMERA CONNECTION</div>
-          <div class="card-value" id="camera-conn-value">â€”</div>
-          <div class="card-meta down" id="camera-conn-meta">Loading camera totalâ€¦</div>
+          <div class="card-value" id="camera-conn-value">Loading...</div>
+          <div class="card-meta down" id="camera-conn-meta">Loading camera total...</div>
           <div class="card-icon card-icon-pink"><i class="fa-solid fa-video"></i></div>
         </div>
         <div class="card">
           <div class="card-title">AI PERFORMANCE</div>
           <div class="card-value">49,65%</div>
-          <div class="card-meta up">â†‘ 12% <span>Since last month</span></div>
+          <div class="card-meta up">↑ 12% <span>Since last month</span></div>
           <div class="card-icon card-icon-blue"><i class="fa-solid fa-brain"></i></div>
         </div>
       </div>
@@ -165,7 +165,7 @@
         <div class="action-queue-card">
           <div class="st-header">
             <span>Action Queue (Pending Approvals)</span>
-            <div class="action-queue-summary" id="action-queue-summary">Loadingâ€¦</div>
+            <div class="action-queue-summary" id="action-queue-summary">Loading...</div>
           </div>
           <table class="st-table action-queue-table">
             <thead>
@@ -179,7 +179,7 @@
               </tr>
             </thead>
             <tbody id="admin-action-queue-body">
-              <tr><td colspan="6">Loading pending actionsâ€¦</td></tr>
+              <tr><td colspan="6">Loading pending actions...</td></tr>
             </tbody>
           </table>
 
@@ -436,7 +436,7 @@
     <input type="text" placeholder="Search by Camera/Case ID">
     <input type="date">
     <input type="date">
-    <input type="number" placeholder="Confidence % â‰¥" style="width:110px;">
+          <input type="number" placeholder="Confidence % ≥" style="width:110px;">
     <select><option>Status</option></select>
     <button>Filter</button>
   </div>
@@ -643,7 +643,7 @@
       </tr>
     </thead>
     <tbody id="crime-table-body">
-      <tr><td colspan="9">Loading crime reportsâ€¦</td></tr>
+      <tr><td colspan="9">Loading crime reports...</td></tr>
     </tbody>
   </table>
   </div>
@@ -705,7 +705,7 @@
       </thead>
       <tbody id="volunteer-mission-body">
         <tr>
-          <td>Rafiq A. â€¢ <a href="#" target="_blank" rel="noopener">View Profile</a></td>
+          <td>Rafiq A. • <a href="#" target="_blank" rel="noopener">View Profile</a></td>
           <td>Missing Child Assistance</td>
           <td>2025-08-03</td>
           <td>Dhaka</td>
@@ -924,8 +924,8 @@
       </button>
     </div>
     <div class="assign-modal__context">
-      <div><strong>Case:</strong> <span id="assign-case-id">â€”</span></div>
-      <div><strong>Landmark:</strong> <span id="assign-case-landmark">â€”</span></div>
+      <div><strong>Case:</strong> <span id="assign-case-id">Select a case</span></div>
+      <div><strong>Landmark:</strong> <span id="assign-case-landmark">Location pending</span></div>
     </div>
     <div class="assign-modal__mission">
       <label for="assign-mission-type"><strong>Mission Type</strong></label>
@@ -1232,7 +1232,7 @@
       const setTrend = (el, pct, baseText, periodLabel) => {
         if (!el) return;
         el.classList.remove('up', 'down');
-        const arrow = pct > 0 ? 'â†‘' : pct < 0 ? 'â†“' : 'â†’';
+      const arrow = pct > 0 ? '↑' : pct < 0 ? '↓' : '→';
         if (pct > 0) el.classList.add('up');
         if (pct < 0) el.classList.add('down');
         el.textContent = `${arrow} ${pct.toFixed(2)}% ${periodLabel} | ${baseText}`;
@@ -1385,7 +1385,7 @@
         email: 'Email',
         mobile: 'Mobile',
         phone: 'Phone',
-        date_of_birth: 'Date Of Birth',
+        date_of_birth: 'Date of Birth',
         role: 'Role',
         location: 'Location',
         city: 'City',
@@ -1399,14 +1399,14 @@
         designation: 'Designation',
         station: 'Station',
         status: 'Status',
-        media_path: 'Media Path',
-        media_json: 'Media Files',
-        media_type: 'Media Type',
-        share_facebook: 'Share Facebook',
-        share_anonymous: 'Share Anonymous',
-        is_share: 'Is Share',
+        media_path: 'Uploaded Media Path',
+        media_json: 'Attached Evidence Files',
+        media_type: 'Evidence Media Category',
+        share_facebook: 'Shared on Facebook',
+        share_anonymous: 'Anonymous Share',
+        is_share: 'Shared Post',
         shared_post_id: 'Shared Post ID',
-        shared_payload: 'Shared Payload'
+        shared_payload: 'Shared Post Details'
       };
 
       const imageKeys = new Set(['nid_photo', 'profile_photo', 'cover_photo']);
@@ -1525,7 +1525,7 @@
 
       const renderMediaPreview = (files, label) => {
         if (!files.length) {
-          return `<div class="profile-modal__row"><div class="profile-modal__label">${label}</div><div class="profile-modal__value">â€”</div></div>`;
+          return `<div class="profile-modal__row"><div class="profile-modal__label">${label}</div><div class="profile-modal__value">Not provided</div></div>`;
         }
 
         const itemsHtml = files.map((file, index) => {
@@ -1549,13 +1549,13 @@
 
       const html = entries.map(([key, value]) => {
         const label = labelMap[key] || key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-        const val = value === null || value === undefined || value === '' ? 'â€”' : String(value);
+        const val = value === null || value === undefined || value === '' ? 'Not provided' : String(value);
         if (editMode && editableKeys.has(key)) {
-          const inputVal = val === 'â€”' ? '' : val;
+          const inputVal = val === 'Not provided' ? '' : val;
           const inputType = key === 'date_of_birth' ? 'date' : (key === 'email' ? 'email' : 'text');
           return `<div class="profile-modal__row"><div class="profile-modal__label">${label}</div><div class="profile-modal__value"><input type="${inputType}" class="profile-modal__input" data-edit-key="${key}" value="${escapeHtml(inputVal)}" /></div></div>`;
         }
-        if (imageKeys.has(key) && val !== 'â€”' && isImagePath(val)) {
+        if (imageKeys.has(key) && val !== 'Not provided' && isImagePath(val)) {
           const imageEntity = key === 'profile_photo'
             ? (String(profile?.profile_photo_entity || '').trim() || entity)
             : entity;
@@ -1855,13 +1855,13 @@
         const entity = 'users';
         const recordId = r.user_id || '';
         const isCombo = Boolean(r.is_combo);
-        const name = r.name || 'â€”';
+        const name = r.name || 'Name unavailable';
         const displayName = isCombo
           ? `${escapeHtml(name)} <span class="status-active" style="margin-left:6px; font-size:11px; padding:2px 8px;">Combo</span>`
           : escapeHtml(name);
-        const email = r.email || 'â€”';
-        const phone = r.phone || 'â€”';
-        const location = r.location || 'â€”';
+        const email = r.email || 'Email not provided';
+        const phone = r.phone || 'Phone not provided';
+        const location = r.location || 'Location not provided';
         const role = r.role || 'User';
         const warnedByAdmin = Boolean(r.warned_by_admin);
         const profileData = serializeProfile({
@@ -1924,13 +1924,13 @@
       }
 
       const html = rows.map(r => {
-        const name = escapeHtml(r.full_name || 'â€”');
-        const email = escapeHtml(r.email || 'â€”');
-        const mobile = escapeHtml(r.mobile || 'â€”');
-        const volunteerId = escapeHtml(r.volunteer_id || 'â€”');
+        const name = escapeHtml(r.full_name || 'Name unavailable');
+        const email = escapeHtml(r.email || 'Email not provided');
+        const mobile = escapeHtml(r.mobile || 'Mobile not provided');
+        const volunteerId = escapeHtml(r.volunteer_id || 'Volunteer ID pending');
         const occupation = escapeHtml(r.occupation || 'Community Volunteer');
         const availability = escapeHtml(r.availability || 'Flexible');
-        const reviewedAt = escapeHtml(r.reviewed_at || r.created_at || 'â€”');
+        const reviewedAt = escapeHtml(r.reviewed_at || r.created_at || 'Review date pending');
 
         return `
           <tr>
@@ -1938,7 +1938,7 @@
             <td>${email}</td>
             <td>${mobile}</td>
             <td>${volunteerId}</td>
-            <td>${occupation} â€¢ ${availability}</td>
+            <td>${occupation} • ${availability}</td>
             <td>${reviewedAt}</td>
           </tr>
         `;
@@ -1988,12 +1988,12 @@
         return `
           <article class="volunteer-approver-item">
             <div class="volunteer-approver-item-top">
-              <strong>VA-${String(applicationId).padStart(3, '0')} â€¢ ${escapeHtml(r.full_name || 'â€”')}</strong>
+              <strong>VA-${String(applicationId).padStart(3, '0')} • ${escapeHtml(r.full_name || 'Name unavailable')}</strong>
               <span class="${statusClass}">${statusLabel}</span>
             </div>
-            <p>Email: ${escapeHtml(r.email || 'â€”')} | Mobile: ${escapeHtml(r.mobile || 'â€”')}</p>
-            <p>Note: ${escapeHtml(r.note || r.review_note || 'â€”')}</p>
-            <p>Submitted: ${escapeHtml(r.created_at || 'â€”')}</p>
+            <p>Email: ${escapeHtml(r.email || 'Email not provided')} | Mobile: ${escapeHtml(r.mobile || 'Mobile not provided')}</p>
+            <p>Note: ${escapeHtml(r.note || r.review_note || 'No note added')}</p>
+            <p>Submitted: ${escapeHtml(r.created_at || 'Submission date pending')}</p>
             <div class="volunteer-approver-item-actions">${actionHtml}</div>
           </article>
         `;
@@ -2103,13 +2103,13 @@
       const html = rows.map(r => {
         const entity = 'volunteers';
         const recordId = r.volunteer_id || '';
-        const name = r.name || 'â€”';
-        const location = r.location || 'â€”';
-        const contact = r.contact || 'â€”';
-        const joinDate = r.join_date || 'â€”';
-        const lastActive = r.last_active || 'â€”';
-        const missions = r.total_missions || 'â€”';
-        const rank = r.rank || 'â€”';
+        const name = r.name || 'Name unavailable';
+        const location = r.location || 'Location not provided';
+        const contact = r.contact || 'Contact not provided';
+        const joinDate = r.join_date || 'Join date pending';
+        const lastActive = r.last_active || 'No recent activity';
+        const missions = r.total_missions || 'No missions yet';
+        const rank = r.rank || 'Rank not assigned';
         const warnedByAdmin = Boolean(r.warned_by_admin);
         const profileData = serializeProfile({
           __title: 'Volunteer Profile',
@@ -2163,16 +2163,16 @@
       const html = rows.map(r => {
         const entity = 'camera_contributors';
         const recordId = r.camera_id || '';
-        const cameraId = r.camera_id || 'â€”';
-        const location = r.location || 'â€”';
-        const ownerName = r.name || 'â€”';
+        const cameraId = r.camera_id || 'Camera ID pending';
+        const location = r.location || 'Location not provided';
+        const ownerName = r.name || 'Owner name unavailable';
         const statusText = (r.status || 'Online');
         const statusClass = (statusText || '').toLowerCase() === 'online' || (statusText || '').toLowerCase() === 'active'
           ? 'status-active'
           : 'status-pending';
         const warnedByAdmin = Boolean(r.warned_by_admin);
-        const fps = r.fps || 'â€”';
-        const lastChecked = r.last_checked || r.updated_at || r.created_at || 'â€”';
+        const fps = r.fps || 'FPS not reported';
+        const lastChecked = r.last_checked || r.updated_at || r.created_at || 'Last check pending';
         const profileData = serializeProfile({
           __title: 'Camera Contributor Profile',
           __entity: 'camera_contributors',
@@ -2363,10 +2363,10 @@
       const html = rows.map(r => {
         const entity = 'policemen';
         const recordId = r.police_id || '';
-        const name = r.full_name || r.name || 'â€”';
-        const badge = r.badge_id || 'â€”';
+        const name = r.full_name || r.name || 'Name unavailable';
+        const badge = r.badge_id || 'Badge ID pending';
         const designation = r.designation || 'Officer';
-        const station = r.station || r.city || 'â€”';
+        const station = r.station || r.city || 'Station not provided';
         const statusClass = (r.status || 'active').toLowerCase() === 'inactive' ? 'status-pending' : 'status-active';
         const statusText = (r.status || 'Active');
         const warnedByAdmin = Boolean(r.warned_by_admin);
@@ -2459,7 +2459,7 @@
       window.__leafletMaps[elId] = map;
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: 'Â© OpenStreetMap contributors'
+          attribution: '© OpenStreetMap contributors'
       }).addTo(map);
 
       const parseCoord = (value) => {

@@ -105,7 +105,7 @@ if (!$user) {
     </div>
 
     <div class="back-button-container">
-      <a href="../Html/Camera_Contribution_profile.php" class="back-btn">Ã¢â€ Â Back</a>
+      <a href="../Html/Camera_Contribution_profile.php" class="back-btn">← Back</a>
     </div>
 
     <form class="edit-profile-form" method="POST" enctype="multipart/form-data">
