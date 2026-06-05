@@ -1,10 +1,11 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>Searchar</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Font Awesome (if you need icons later) -->
+  <!-- Font Awesome (if you need icons later) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <!-- Leaflet CSS -->
@@ -16,8 +17,8 @@
   <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
   <!-- Main CSS -->
   <link rel="stylesheet" href="../css/Admin.css">
-  
-  
+
+
 </head>
 
 <body>
@@ -30,50 +31,54 @@
     <div class="sidebar-section">
       <div class="sidebar-title">ADMIN LAYOUT PAGES</div>
       <ul>
-        <li class="active" data-section="dashboard"><span class="icon"><i class="fa-solid fa-chart-column"></i></span> Dashboard</li>
+        <li class="active" data-section="dashboard"><span class="icon"><i class="fa-solid fa-chart-column"></i></span>
+          Dashboard</li>
         <li data-section="tables"><span class="icon"><i class="fa-solid fa-table-list"></i></span> Tables</li>
       </ul>
     </div>
     <div class="sidebar-section">
       <div class="sidebar-title">ADMIN FEATURES</div>
-     <ul>
-  <li data-section="missing">
-    <span class="icon"><i class="fa-solid fa-people-group"></i></span> Missing Persons
-  </li>
-  <li data-section="ai">
-    <span class="icon"><i class="fa-solid fa-robot"></i></span> AI Detection Logs
-  </li>
-  <li data-section="crime">
-    <span class="icon"><i class="fa-solid fa-video"></i></span> Crime Reporting
-  </li>
-  <li data-section="admin-post">
-    <span class="icon"><i class="fa-solid fa-pen-to-square"></i></span> Admin Post
-  </li>
-  <li data-section="post-control">
-    <span class="icon"><i class="fa-solid fa-clipboard-check"></i></span> Post Control
-  </li>
-  <li data-section="volunteer-approver">
-    <span class="icon"><i class="fa-solid fa-handshake-angle"></i></span> Volunteer Approver
-  </li> 
-  <li data-section="donations">
-    <span class="icon"><i class="fa-solid fa-hand-holding-dollar"></i></span> Donations Control
-  </li>
-  <li data-section="broadcast">
-    <span class="icon"><i class="fa-solid fa-bullhorn"></i></span> Broadcast & Camera Videos
-  </li>
-  <li data-section="volunteer">
-    <span class="icon"><i class="fa-solid fa-handshake-angle"></i></span> Volunteer Missions
-  </li>
-  <li data-section="withdraw">
-    <span class="icon"><i class="fa-solid fa-money-bill-transfer"></i></span> Withdraw Control
-  </li>
-  <li data-section="review">
-    <span class="icon"><i class="fa-solid fa-star-half-stroke"></i></span> Review
-  </li>
-  <li data-section="reports">
-    <span class="icon"><i class="fa-solid fa-file-lines"></i></span> Reports
-  </li>
-</ul>
+      <ul>
+        <li data-section="missing">
+          <span class="icon"><i class="fa-solid fa-people-group"></i></span> Missing Persons
+        </li>
+        <li data-section="ai">
+          <span class="icon"><i class="fa-solid fa-robot"></i></span> AI Detection Logs
+        </li>
+        <li data-section="crime">
+          <span class="icon"><i class="fa-solid fa-video"></i></span> Crime Reporting
+        </li>
+        <li data-section="admin-post">
+          <span class="icon"><i class="fa-solid fa-pen-to-square"></i></span> Admin Post
+        </li>
+        <li data-section="post-control">
+          <span class="icon"><i class="fa-solid fa-clipboard-check"></i></span> Post Control
+        </li>
+        <li data-section="volunteer-approver">
+          <span class="icon"><i class="fa-solid fa-handshake-angle"></i></span> Volunteer Approver
+        </li>
+        <li data-section="donations">
+          <span class="icon"><i class="fa-solid fa-hand-holding-dollar"></i></span> Donations Control
+        </li>
+        <li data-section="broadcast">
+          <span class="icon"><i class="fa-solid fa-bullhorn"></i></span> Broadcast & Camera Videos
+        </li>
+        <li data-section="volunteer">
+          <span class="icon"><i class="fa-solid fa-handshake-angle"></i></span> Volunteer Missions
+        </li>
+        <li data-section="withdraw">
+          <span class="icon"><i class="fa-solid fa-money-bill-transfer"></i></span> Withdraw Control
+        </li>
+        <li data-section="review">
+          <span class="icon"><i class="fa-solid fa-star-half-stroke"></i></span> Review
+        </li>
+        <li data-section="reports">
+          <span class="icon"><i class="fa-solid fa-file-lines"></i></span> Reports
+        </li>
+        <li data-section="chatbot-logs">
+          <span class="icon"><i class="fa-solid fa-comments"></i></span> Chatbot Logs
+        </li>
+      </ul>
 
     </div>
   </div>
@@ -83,8 +88,9 @@
       <div class="navbar-search">
         <div class="global-smart-search">
           <div class="global-smart-search-field">
-            <i class="fa-solid fa-magnifying-glass" ></i>
-            <input id="global-smart-search" type="text" placeholder="Quick search" aria-label="Quick smart search" title="Quick search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input id="global-smart-search" type="text" placeholder="Quick search" aria-label="Quick smart search"
+              title="Quick search">
           </div>
         </div>
         <img class="navbar-avatar" id="admin-avatar" src="../Images/businessman.gif" alt="User Avatar">
@@ -95,7 +101,7 @@
           </button>
         </div>
       </div>
-      
+
     </div>
     <!-- Dashboard Section -->
     <div id="dashboard" class="main-section active">
@@ -174,771 +180,900 @@
               </tr>
             </thead>
             <tbody id="admin-action-queue-body">
-              <tr><td colspan="6">Loading pending actions...</td></tr>
+              <tr>
+                <td colspan="6">Loading pending actions...</td>
+              </tr>
             </tbody>
           </table>
 
         </div>
       </div>
     </div>
-  <!-- Tables Section -->
-<div id="tables" class="main-section">
+    <!-- Tables Section -->
+    <div id="tables" class="main-section">
 
-  <div class="tables-visibility-box" id="tables-visibility-box">
-    <div class="tables-visibility-title">Show Tables</div>
-    <div class="tables-visibility-chips">
-      <label class="tables-visibility-chip tables-visibility-chip--all">
-        <input type="checkbox" id="tables-visibility-all" checked>
-        All
-      </label>
-      <label class="tables-visibility-chip">
-        <input type="checkbox" class="table-visibility-checkbox" data-table-target="users-table-section" checked>
-        Users
-      </label>
-      <label class="tables-visibility-chip">
-        <input type="checkbox" class="table-visibility-checkbox" data-table-target="combo-table-section" checked>
-        User + Volunteer Combo
-      </label>
-      <label class="tables-visibility-chip">
-        <input type="checkbox" class="table-visibility-checkbox" data-table-target="volunteers-table-section" checked>
-        Volunteers
-      </label>
-      <label class="tables-visibility-chip">
-        <input type="checkbox" class="table-visibility-checkbox" data-table-target="cctv-table-section" checked>
-        CCTV Management
-      </label>
-      <label class="tables-visibility-chip">
-        <input type="checkbox" class="table-visibility-checkbox" data-table-target="police-table-section" checked>
-        Police Officer Profiles
-      </label>
-    </div>
-    <p class="tables-visibility-hint">
-      Select one or more options to show only those tables. Uncheck to hide any table section.
-    </p>
-    <p id="table-selection-empty-note" class="tables-visibility-empty" style="display:none;">Select at least one table to display.</p>
-  </div>
-
-  <!-- Users Table -->
-  <div id="users-table-section">
-  <h2>Users Table</h2>
-  <div class="filters-bar">
-    <input id="user-filter-text" type="text" placeholder="Search by name/email/location" style="min-width: 320px;">
-  </div>
-  <table class="styled-table">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Phone Number</th>
-        <th>Location</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="users-table-body">
-      <tr><td colspan="5">Loading...</td></tr>
-    </tbody>
-  </table>
-  </div>
-
-  <!-- Combo Table (User + Volunteer Approved) -->
-  <div id="combo-table-section">
-  <div class="tables-divider"></div>
-  <h2>Combo Accounts (User + Volunteer)</h2>
-  <div class="filters-bar">
-    <input id="combo-filter-text" type="text" placeholder="Search by name/email/mobile" style="min-width: 320px;">
-  </div>
-  <table class="styled-table">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Mobile</th>
-        <th>Volunteer ID</th>
-        <th>Features</th>
-        <th>Approved At</th>
-      </tr>
-    </thead>
-    <tbody id="combo-table-body">
-      <tr><td colspan="6">Loading...</td></tr>
-    </tbody>
-  </table>
-  </div>
-
-  <!-- Volunteers Table -->
-  <div id="volunteers-table-section">
-  <div class="tables-divider"></div>
-  <h2>Volunteers</h2>
-  <div class="filters-bar">
-    <input id="vol-filter-text" type="text" placeholder="Search by name/location">
-    <select id="vol-filter-status">
-      <option value="">Status</option>
-      <option value="active">Active</option>
-      <option value="inactive">Inactive</option>
-    </select>
-    <select id="vol-filter-rank">
-      <option value="">Rank</option>
-      <option value="gold">Gold</option>
-      <option value="silver">Silver</option>
-      <option value="bronze">Bronze</option>
-    </select>
-  </div>
-  <table class="styled-table">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Location</th>
-        <th>Contact</th>
-        <th>Join Date</th>
-        <th>Last Active</th>
-        <th>Total Missions</th>
-        <th>Rank</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="volunteers-table-body">
-      <tr><td colspan="8">Loading...</td></tr>
-    </tbody>
-  </table>
-  <div id="volunteer-map" style="height:320px; margin-top:18px; background:#f8f8f8;"></div>
-  </div>
-
-  <!-- CCTV Management Table -->
-  <div id="cctv-table-section">
-  <div class="tables-divider"></div>
-  <h2>CCTV Management</h2>
-  <div class="filters-bar">
-    <input id="cctv-filter-text" type="text" placeholder="Search by location/camera ID">
-    <select id="cctv-filter-status">
-      <option value="">Status</option>
-      <option value="online">Online</option>
-      <option value="offline">Offline</option>
-      <option value="inactive">Inactive</option>
-    </select>
-  </div>
-  <table class="styled-table">
-    <thead>
-      <tr>
-        <th>Camera ID</th>
-        <th>Location</th>
-        <th>Status</th>
-        <th>FPS</th>
-        <th>Owner Name</th>
-        <th>Last Checked</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="cctv-table-body">
-      <tr><td colspan="7">Loading...</td></tr>
-    </tbody>
-  </table>
-  <div id="cctv-map" style="height:320px; margin-top:18px; background:#f8f8f8;"></div>
-  <div class="widget-bar">
-    <div class="widget">Active Cameras: <span>00</span></div>
-    <div class="widget">Top Zones: <span>---</span></div>
-  </div>
-  </div>
-
-  <!-- Police Officer Profiles Table -->
-  <div id="police-table-section">
-  <div class="tables-divider"></div>
-  <h2>Police Officer Profiles</h2>
-  <p>List of verified police officers</p>
-  <div class="table-actions-bar" style="margin-bottom: 12px;">
-    <button class="add-btn" onclick="addOfficer()">Add Officer</button>
-  </div>
-  <table class="styled-table">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Badge ID</th>
-        <th>Role</th>
-        <th>Zone</th>
-        <th>Status</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody id="policemen-table-body">
-      <tr><td colspan="6">Loading...</td></tr>
-    </tbody>
-  </table>
-  </div>
-</div>
-
-   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Leaflet CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<div id="maps" class="main-section">
-  <h2>Maps Page</h2>
-
-  <div class="search-container">
-    <input type="text" id="searchInput" placeholder="Enter a location..." />
-    <button onclick="searchLocation()"> Search</button>
-    <button onclick="goToCurrentLocation()"> Current Location</button>
-  </div>
-
-  <div id="map"></div>
-</div>
-
-  <!-- Admin Dashboard Sections Skeleton -->
-<div id="missing" class="main-section">
-  <h2>Missing Persons</h2>
-  <div class="analytics-widgets">
-    <!-- Analytics: total active, resolved this month, avg. resolution time -->
-    <div class="widget">Total Active Cases: <span id="missing-total-active">00</span></div>
-    <div class="widget">Resolved Cases (Month): <span id="missing-resolved-month">00</span></div>
-    <div class="widget">Avg. Resolution Time: <span id="missing-avg-resolution">00d 00h</span></div>
-  </div>
-  <div class="filters-bar">
-    <select id="missing-filter-status">
-      <option value="">Status</option>
-      <option value="open">Open</option>
-      <option value="active">Active</option>
-      <option value="under_review">Under Review</option>
-      <option value="found">Found</option>
-      <option value="resolved">Resolved</option>
-      <option value="closed">Closed</option>
-    </select>
-    <input id="missing-filter-location" type="text" placeholder="Location">
-    <input id="missing-filter-min-age" type="number" placeholder="Min Age" style="width:90px;">
-    <input id="missing-filter-max-age" type="number" placeholder="Max Age" style="width:90px;">
-    <select id="missing-filter-gender">
-      <option value="">Gender</option>
-      <option value="male">Male</option>
-      <option value="female">Female</option>
-      <option value="other">Other</option>
-    </select>
-    <input id="missing-filter-date-from" type="date">
-    <input id="missing-filter-date-to" type="date">
-  </div>
-  <table class="styled-table">
-    <thead>
-      <tr>
-        <th>Report ID</th><th>Name</th><th>Age</th><th>Gender</th><th>Last Seen</th>
-        <th>Status</th><th>Submitted By</th><th>Date Submitted</th><th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="missing-table-body">
-      <tr><td colspan="9">Loading missing person reports...</td></tr>
-    </tbody>
-  </table>
-</div>
-
-<div id="ai" class="main-section">
-  <h2>AI Detection Logs</h2>
-  <div class="filters-bar">
-    <input type="text" placeholder="Search by Camera/Case ID">
-    <input type="date">
-    <input type="date">
-          <input type="number" placeholder="Confidence % ≥" style="width:110px;">
-    <select><option>Status</option></select>
-    <button>Filter</button>
-  </div>
-  <table class="styled-table">
-    <thead>
-      <tr>
-        <th>Date & Time</th><th>Camera ID</th><th>Confidence %</th>
-        <th>Matched Case</th><th>Snapshot</th><th>Status</th><th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="ai-table-body">
-      <tr>
-        <td>2025-07-27 12:40</td><td>CCTV-21</td><td>92%</td>
-        <td>MP1001</td><td>[img]</td>
-        <td>Verified</td>
-        <td>
-          <button>Verify</button>
-          <button>Attach to Case</button>
-          <button>Notify</button>
-        </td>
-      </tr>
-      <!-- More rows... -->
-    </tbody>
-  </table>
-  <div id="ai-graphs" style="height:130px;background:#f6f6f6;margin-top:18px;">
-    <span>Detections per day, False positive rate, Match success graph</span>
-  </div>
-</div>
-
-<div id="admin-post" class="main-section">
-  <h2>Admin Post</h2>
-  <div id="admin-post-composer" class="admin-post-card">
-    <div class="admin-post-grid">
-      <div class="admin-post-field admin-post-field--message">
-        <label for="admin-post-text">Post Message</label>
-        <input type="text" id="admin-post-text" placeholder="Write admin update...">
+      <div class="tables-visibility-box" id="tables-visibility-box">
+        <div class="tables-visibility-title">Show Tables</div>
+        <div class="tables-visibility-chips">
+          <label class="tables-visibility-chip tables-visibility-chip--all">
+            <input type="checkbox" id="tables-visibility-all" checked>
+            All
+          </label>
+          <label class="tables-visibility-chip">
+            <input type="checkbox" class="table-visibility-checkbox" data-table-target="users-table-section" checked>
+            Users
+          </label>
+          <label class="tables-visibility-chip">
+            <input type="checkbox" class="table-visibility-checkbox" data-table-target="combo-table-section" checked>
+            User + Volunteer Combo
+          </label>
+          <label class="tables-visibility-chip">
+            <input type="checkbox" class="table-visibility-checkbox" data-table-target="volunteers-table-section"
+              checked>
+            Volunteers
+          </label>
+          <label class="tables-visibility-chip">
+            <input type="checkbox" class="table-visibility-checkbox" data-table-target="cctv-table-section" checked>
+            CCTV Management
+          </label>
+          <label class="tables-visibility-chip">
+            <input type="checkbox" class="table-visibility-checkbox" data-table-target="police-table-section" checked>
+            Police Officer Profiles
+          </label>
+        </div>
+        <p class="tables-visibility-hint">
+          Select one or more options to show only those tables. Uncheck to hide any table section.
+        </p>
+        <p id="table-selection-empty-note" class="tables-visibility-empty" style="display:none;">Select at least one
+          table to display.</p>
       </div>
 
-      <div class="admin-post-field admin-post-field--media">
-        <label for="admin-post-media">Image / Video</label>
-        <div class="admin-post-file-wrap">
-          <label for="admin-post-media" class="admin-post-file-btn">Choose File</label>
-          <span id="admin-post-media-name" class="admin-post-file-name">No file chosen</span>
-          <input type="file" id="admin-post-media" accept="image/*,video/*">
+      <!-- Users Table -->
+      <div id="users-table-section">
+        <h2>Users Table</h2>
+        <div class="filters-bar">
+          <input id="user-filter-text" type="text" placeholder="Search by name/email/location"
+            style="min-width: 320px;">
+        </div>
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone Number</th>
+              <th>Location</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-table-body">
+            <tr>
+              <td colspan="5">Loading...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Combo Table (User + Volunteer Approved) -->
+      <div id="combo-table-section">
+        <div class="tables-divider"></div>
+        <h2>Combo Accounts (User + Volunteer)</h2>
+        <div class="filters-bar">
+          <input id="combo-filter-text" type="text" placeholder="Search by name/email/mobile" style="min-width: 320px;">
+        </div>
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Mobile</th>
+              <th>Volunteer ID</th>
+              <th>Features</th>
+              <th>Approved At</th>
+            </tr>
+          </thead>
+          <tbody id="combo-table-body">
+            <tr>
+              <td colspan="6">Loading...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Volunteers Table -->
+      <div id="volunteers-table-section">
+        <div class="tables-divider"></div>
+        <h2>Volunteers</h2>
+        <div class="filters-bar">
+          <input id="vol-filter-text" type="text" placeholder="Search by name/location">
+          <select id="vol-filter-status">
+            <option value="">Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+          <select id="vol-filter-rank">
+            <option value="">Rank</option>
+            <option value="gold">Gold</option>
+            <option value="silver">Silver</option>
+            <option value="bronze">Bronze</option>
+          </select>
+        </div>
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Location</th>
+              <th>Contact</th>
+              <th>Join Date</th>
+              <th>Last Active</th>
+              <th>Total Missions</th>
+              <th>Rank</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="volunteers-table-body">
+            <tr>
+              <td colspan="8">Loading...</td>
+            </tr>
+          </tbody>
+        </table>
+        <div id="volunteer-map" style="height:320px; margin-top:18px; background:#f8f8f8;"></div>
+      </div>
+
+      <!-- CCTV Management Table -->
+      <div id="cctv-table-section">
+        <div class="tables-divider"></div>
+        <h2>CCTV Management</h2>
+        <div class="filters-bar">
+          <input id="cctv-filter-text" type="text" placeholder="Search by location/camera ID">
+          <select id="cctv-filter-status">
+            <option value="">Status</option>
+            <option value="online">Online</option>
+            <option value="offline">Offline</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Camera ID</th>
+              <th>Location</th>
+              <th>Status</th>
+              <th>FPS</th>
+              <th>Owner Name</th>
+              <th>Last Checked</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="cctv-table-body">
+            <tr>
+              <td colspan="7">Loading...</td>
+            </tr>
+          </tbody>
+        </table>
+        <div id="cctv-map" style="height:320px; margin-top:18px; background:#f8f8f8;"></div>
+        <div class="widget-bar">
+          <div class="widget">Active Cameras: <span>00</span></div>
+          <div class="widget">Top Zones: <span>---</span></div>
         </div>
       </div>
 
-      <div class="admin-post-field admin-post-field--category">
-        <label for="admin-post-category">Category</label>
-        <select id="admin-post-category">
-          <option value="general">General</option>
-          <option value="alert">Alert</option>
-          <option value="missing_person">Missing Person</option>
-          <option value="criminal_found">Criminal Found</option>
+      <!-- Police Officer Profiles Table -->
+      <div id="police-table-section">
+        <div class="tables-divider"></div>
+        <h2>Police Officer Profiles</h2>
+        <p>List of verified police officers</p>
+        <div class="table-actions-bar" style="margin-bottom: 12px;">
+          <button class="add-btn" onclick="addOfficer()">Add Officer</button>
+        </div>
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Badge ID</th>
+              <th>Role</th>
+              <th>Zone</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="policemen-table-body">
+            <tr>
+              <td colspan="6">Loading...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <div id="maps" class="main-section">
+      <h2>Maps Page</h2>
+
+      <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Enter a location..." />
+        <button onclick="searchLocation()"> Search</button>
+        <button onclick="goToCurrentLocation()"> Current Location</button>
+      </div>
+
+      <div id="map"></div>
+    </div>
+
+    <!-- Admin Dashboard Sections Skeleton -->
+    <div id="missing" class="main-section">
+      <h2>Missing Persons</h2>
+      <div class="analytics-widgets">
+        <!-- Analytics: total active, resolved this month, avg. resolution time -->
+        <div class="widget">Total Active Cases: <span id="missing-total-active">00</span></div>
+        <div class="widget">Resolved Cases (Month): <span id="missing-resolved-month">00</span></div>
+        <div class="widget">Avg. Resolution Time: <span id="missing-avg-resolution">00d 00h</span></div>
+      </div>
+      <div class="filters-bar">
+        <select id="missing-filter-status">
+          <option value="">Status</option>
+          <option value="open">Open</option>
+          <option value="active">Active</option>
+          <option value="under_review">Under Review</option>
+          <option value="found">Found</option>
+          <option value="resolved">Resolved</option>
+          <option value="closed">Closed</option>
         </select>
-      </div>
-
-      <div class="admin-post-field admin-post-field--toggle">
-        <label class="admin-post-checkbox">
-          <input type="checkbox" id="admin-post-share-facebook" checked>
-          <span>Share to Facebook</span>
-        </label>
-      </div>
-    </div>
-
-    <div id="admin-post-media-preview" class="admin-post-media-preview">Media preview will appear here</div>
-
-    <div class="admin-post-actions">
-      <button type="button" id="admin-post-submit" class="approve-btn">Publish Admin Post</button>
-    </div>
-  </div>
-  <div class="section-table-block">
-    <p style="margin:0; color:#4b5563; font-weight:600;">Published admin posts are auto-approved and visible in User, Volunteer, Policeman, and Camera feeds.</p>
-  </div>
-  <div class="section-table-block">
-    <h3 style="margin:0 0 10px; color:#1f2937;">Admin Post Activity</h3>
-    <table class="styled-table" id="admin-post-activity-table">
-      <thead>
-        <tr>
-          <th>Post ID</th>
-          <th>Message</th>
-          <th>Category</th>
-          <th>Likes</th>
-          <th>Comments</th>
-          <th>Share</th>
-          <th>Latest Comments</th>
-          <th>Published</th>
-        </tr>
-      </thead>
-      <tbody id="admin-post-activity-body">
-        <tr><td colspan="8">Loading admin posts...</td></tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<div id="post-control" class="main-section">
-  <h2>Post Control</h2>
-  <div class="filters-bar">
-    <input type="text" id="post-filter-keyword" placeholder="Post title/category">
-    <select id="post-filter-status">
-      <option value="all">All Status</option>
-      <option value="pending">Pending</option>
-      <option value="approved">Approved</option>
-      <option value="rejected">Rejected</option>
-    </select>
-    <div class="post-role-filters" id="post-role-filters">
-      <span class="post-role-filters__label">Role Filter</span>
-      <div class="post-role-filters__chips">
-        <label class="post-role-chip post-role-chip--all"><input type="checkbox" name="post-filter-role-all" value="all" checked> All</label>
-        <label class="post-role-chip"><input type="checkbox" name="post-filter-role" value="user" checked> User</label>
-        <label class="post-role-chip"><input type="checkbox" name="post-filter-role" value="volunteer" checked> Volunteer</label>
-        <label class="post-role-chip"><input type="checkbox" name="post-filter-role" value="policeman" checked> Policeman</label>
-        <label class="post-role-chip"><input type="checkbox" name="post-filter-role" value="camera_contribution" checked> Camera Contribution</label>
-      </div>
-      <div class="post-role-filters__hint">Select one or more roles. Choose All to show every role post.</div>
-    </div>
-    <input type="date" id="post-filter-from">
-    <input type="date" id="post-filter-to">
-  </div>
-  <div class="section-table-block">
-    <table class="styled-table" id="post-control-table">
-      <thead>
-        <tr>
-          <th>Post ID</th><th>Category</th><th>Posted By</th>
-          <th>Role</th><th>Share Facebook</th><th>Share Anonymous</th><th>Status</th><th>Submitted</th><th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="post-control-body">
-        <tr><td colspan="9">Loading posts...</td></tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-<div id="crime" class="main-section">
-  <h2>Crime Reporting</h2>
-  <div class="filters-bar crime-filters">
-    <input id="crime-filter-text" type="text" placeholder="Search by case, type, landmark">
-    <select id="crime-filter-type">
-      <option value="">Type</option>
-      <option value="theft">Theft</option>
-      <option value="robbery">Robbery</option>
-      <option value="assault">Assault</option>
-      <option value="vandalism">Vandalism</option>
-      <option value="arson">Arson</option>
-      <option value="missing_person">Missing Person</option>
-      <option value="other">Other</option>
-    </select>
-    <select id="crime-filter-severity">
-      <option value="">Severity</option>
-      <option value="low">Low</option>
-      <option value="medium">Medium</option>
-      <option value="high">High</option>
-      <option value="critical">Critical</option>
-    </select>
-    <select id="crime-filter-status">
-      <option value="">Status</option>
-      <option value="new">New</option>
-      <option value="actioned">Actioned</option>
-      <option value="closed">Closed</option>
-    </select>
-    <input id="crime-filter-from" type="datetime-local">
-    <input id="crime-filter-to" type="datetime-local">
-    <button type="button" id="crime-filter-reset" class="ghost">Reset</button>
-  </div>
-  <div class="crime-toggles">
-    <label><input type="checkbox" id="crime-toggle-heatmap"> Heatmap</label>
-    <label><input type="checkbox" id="crime-toggle-last24"> Last 24h only</label>
-    <label><input type="checkbox" id="crime-toggle-closed" checked> Show closed</label>
-  </div>
-  <div class="crime-map-toggle-bar">
-    <div class="crime-map-toggle-text">Map + proximity tools (toggle)</div>
-    <button type="button" id="crime-map-toggle" class="ghost">Show map</button>
-  </div>
-  <div class="crime-hint crime-hint-banner">Map pins are colored by severity; switch to heatmap to see hotspots.</div>
-  <div id="crime-map-wrapper" class="crime-grid hidden">
-    <div class="crime-map-panel">
-      <div id="crime-map"></div>
-      <div class="crime-legend">
-        <span><span class="legend-dot legend-low"></span>Low</span>
-        <span><span class="legend-dot legend-medium"></span>Medium</span>
-        <span><span class="legend-dot legend-high"></span>High</span>
-        <span><span class="legend-dot legend-critical"></span>Critical</span>
-        <span><span class="legend-dot legend-recent"></span>Recent (&lt;24h)</span>
-      </div>
-    </div>
-  </div>
-  <div class="tables-divider"></div>
-  <div class="crime-table-head">
-    <div class="crime-stats">
-      <span id="crime-stat-new" class="pill pill-open">New: 0</span>
-      <span id="crime-stat-review" class="pill pill-review">Actioned (Assigned): 0</span>
-      <span id="crime-stat-actioned" class="pill pill-actioned">Actioned: 0</span>
-      <span id="crime-stat-closed" class="pill pill-closed">Closed: 0</span>
-    </div>
-  </div>
-  <div class="crime-table-block">
-  <h3 class="crime-table-title">Crime Case Table</h3>
-  <table class="styled-table" id="crime-table">
-    <thead>
-      <tr>
-        <th>Case</th><th>Type</th><th>Severity</th><th>Landmark</th><th>Status</th>
-        <th>Submitted</th><th>Media</th><th>Reporter</th><th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="crime-table-body">
-      <tr><td colspan="9">Loading crime reports...</td></tr>
-    </tbody>
-  </table>
-  </div>
-</div>
-
-<div id="donations" class="main-section">
-  <h2>Donations Control</h2>
-  <div class="filters-bar" id="donations-filters">
-    <input id="donations-filter-text" type="text" placeholder="Search donor, email, mobile, TxID, amount, message">
-    <button type="button" id="donations-filter-reset" class="ghost">Reset</button>
-  </div>
-  <div class="section-table-block">
-    <table class="styled-table">
-      <thead>
-        <tr>
-          <th>Donor Name</th><th>Email</th><th>Mobile</th><th>TxID</th><th>Amount</th><th>Date</th><th>Anonymous</th>
-          <th>Message</th><th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="donations-table-body">
-        <tr><td colspan="9">Loading donations...</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="widget-bar">
-    <div class="widget">Total Donations: <span id="donations-total-amount">à§³0.00</span></div>
-  </div>
-  <div class="donations-actions">
-    <button class="btn-export-donations"><i class="fa-solid fa-file-export"></i> Export Report</button>
-  </div>
-</div>
-<div id="volunteer" class="main-section">
-  <h2>Volunteer Missions</h2>
-  <div class="filters-bar" id="volunteer-filters">
-    <input id="volunteer-filter-text" type="text" placeholder="Search volunteer, mission, location">
-    <select id="volunteer-filter-status">
-      <option value="">Status</option>
-      <option value="assigned">Assigned</option>
-      <option value="accepted">Accepted</option>
-      <option value="rejected_busy">Rejected (Busy)</option>
-      <option value="completed">Completed</option>
-    </select>
-    <button type="button" id="volunteer-filter-reset" class="ghost">Reset</button>
-  </div>
-  <div class="section-table-block">
-    <table class="styled-table">
-      <thead>
-        <tr>
-          <th>Volunteer Profile</th>
-          <th>Mission Title</th>
-          <th>Assigned On</th>
-          <th>Location</th>
-          <th>Rank</th>
-          <th>Points</th>
-          <th>Status</th>
-          <th>Proof</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody id="volunteer-mission-body">
-        <tr>
-          <td>Rafiq A. • <a href="#" target="_blank" rel="noopener">View Profile</a></td>
-          <td>Missing Child Assistance</td>
-          <td>2025-08-03</td>
-          <td>Dhaka</td>
-          <td>Silver Responder</td>
-          <td>220</td>
-          <td><span class="status-approved">Completed</span></td>
-          <td><a href="#">View Proof</a></td>
-          <td><button type="button" class="ghost">Mark Complete +50XP</button></td>
-        </tr>
-        <!-- More rows... -->
-      </tbody>
-    </table>
-  </div>
-  <div class="widget-bar">
-    <div class="widget">Total Missions: <span id="volunteer-total-missions">0</span></div>
-    <div class="widget">This Month: <span id="volunteer-this-month">0</span></div>
-  </div>
-</div>
-
-<div id="volunteer-approver" class="main-section">
-  <h2>Volunteer Approver</h2>
-  <div id="volunteer-approver-panel" class="volunteer-approver-panel">
-    <div class="volunteer-approver-head">
-      <h4>Volunteer Approver</h4>
-      <div class="filters-bar" style="margin:0; padding:0; box-shadow:none; background:transparent;">
-        <input id="vol-approver-filter-text" type="text" placeholder="Search by name/email/mobile" style="min-width: 240px;">
-        <select id="vol-approver-filter-status">
-          <option value="pending">Pending</option>
-          <option value="approved">Approved</option>
-          <option value="rejected">Rejected</option>
-          <option value="all">All</option>
+        <input id="missing-filter-location" type="text" placeholder="Location">
+        <input id="missing-filter-min-age" type="number" placeholder="Min Age" style="width:90px;">
+        <input id="missing-filter-max-age" type="number" placeholder="Max Age" style="width:90px;">
+        <select id="missing-filter-gender">
+          <option value="">Gender</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
         </select>
+        <input id="missing-filter-date-from" type="date">
+        <input id="missing-filter-date-to" type="date">
       </div>
-    </div>
-    <div id="volunteer-approver-list" class="volunteer-approver-list">
-      <div class="volunteer-approver-empty">Loading volunteer applications...</div>
-    </div>
-  </div>
-</div>
-
-<div id="withdraw" class="main-section">
-  <h2>Withdraw Control</h2>
-  <div class="filters-bar" id="withdraw-filters">
-    <input id="withdraw-filter-text" type="text" placeholder="Search volunteer or amount">
-    <select id="withdraw-filter-status">
-      <option value="">Status</option>
-      <option value="pending">Pending</option>
-      <option value="approved">Approved</option>
-      <option value="rejected">Rejected</option>
-    </select>
-    <button type="button" id="withdraw-filter-reset" class="ghost">Reset</button>
-  </div>
-    <div class="section-table-block">
       <table class="styled-table">
         <thead>
           <tr>
-            <th>Cameraman Name</th>
-            <th>Withdrawal Amount</th>
+            <th>Report ID</th>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Gender</th>
+            <th>Last Seen</th>
             <th>Status</th>
-            <th>Request Date</th>
+            <th>Submitted By</th>
+            <th>Date Submitted</th>
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody id="withdraw-table-body">
+        <tbody id="missing-table-body">
           <tr>
-            <td>Arif Hasan</td>
-            <td>à§³500</td>
-            <td><span class="status-pending">Pending</span></td>
-            <td>2025-08-09</td>
+            <td colspan="9">Loading missing person reports...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="ai" class="main-section">
+      <h2>AI Detection Logs</h2>
+      <div class="filters-bar">
+        <input type="text" placeholder="Search by Camera/Case ID">
+        <input type="date">
+        <input type="date">
+        <input type="number" placeholder="Confidence % ≥" style="width:110px;">
+        <select>
+          <option>Status</option>
+        </select>
+        <button>Filter</button>
+      </div>
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>Date & Time</th>
+            <th>Camera ID</th>
+            <th>Confidence %</th>
+            <th>Matched Case</th>
+            <th>Snapshot</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="ai-table-body">
+          <tr>
+            <td>2025-07-27 12:40</td>
+            <td>CCTV-21</td>
+            <td>92%</td>
+            <td>MP1001</td>
+            <td>[img]</td>
+            <td>Verified</td>
             <td>
-              <button>Approve</button>
-              <button>Reject</button>
+              <button>Verify</button>
+              <button>Attach to Case</button>
+              <button>Notify</button>
             </td>
           </tr>
           <!-- More rows... -->
         </tbody>
       </table>
+      <div id="ai-graphs" style="height:130px;background:#f6f6f6;margin-top:18px;">
+        <span>Detections per day, False positive rate, Match success graph</span>
+      </div>
     </div>
-  <div class="widget-bar">
-    <div class="widget">Total Withdrawals: <span id="withdraw-total-amount">à§³0.00</span></div>
-    <div class="widget">Pending Requests: <span id="withdraw-pending-count">0</span></div>
-  </div>
-  <div class="withdraw-actions">
-    <button class="btn-export-report"><i class="fa-solid fa-file-export"></i> Export Report</button>
-  </div>
-</div>
 
-<div id="broadcast" class="main-section">
-  <div class="broadcast-header">
-    <h2>Broadcast Requests & Camera Videos</h2>
-    <div class="admin-section-toolbar">
-      <a class="admin-refresh-btn broadcast-open-btn" href="../Html/BroadCast.php">Open Broadcast Desk</a>
-    </div>
-  </div>
-  <div class="filters-bar" id="broadcast-filters">
-    <input id="broadcast-filter-text" type="text" placeholder="Search title, message, area">
-    <button type="button" id="broadcast-filter-reset" class="ghost">Reset</button>
-  </div>
-  <div class="section-table-block">
-    <h3 class="section-subtitle">Broadcast Requests</h3>
-    <table class="styled-table">
-      <thead>
-        <tr>
-          <th>Police Officer</th>
-          <th>Station</th>
-          <th>Reason</th>
-          <th>Requested On</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="broadcast-request-body">
-        <tr>
-          <td colspan="6">Loading broadcast requests...</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="section-table-block broadcast-video-section">
-    <h3 class="section-subtitle">Camera Video Submissions</h3>
-    <table class="styled-table">
-      <thead>
-        <tr>
-          <th>Cameraman</th>
-          <th>Video</th>
-          <th>Location</th>
-          <th>Sent On</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="camera-video-table-body">
-        <tr>
-          <td colspan="5">Loading camera videos...</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+    <div id="admin-post" class="main-section">
+      <h2>Admin Post</h2>
+      <div id="admin-post-composer" class="admin-post-card">
+        <div class="admin-post-grid">
+          <div class="admin-post-field admin-post-field--message">
+            <label for="admin-post-text">Post Message</label>
+            <input type="text" id="admin-post-text" placeholder="Write admin update...">
+          </div>
 
-<div id="review" class="main-section">
-  <h2>Review</h2>
-  <div class="filters-bar" id="review-filters">
-    <input id="review-filter-text" type="text" placeholder="Search user, module, note">
-    <select id="review-filter-status">
-      <option value="">Status</option>
-      <option value="pending">Pending</option>
-      <option value="in progress">In Progress</option>
-      <option value="completed">Completed</option>
-    </select>
-    <button type="button" id="review-filter-reset" class="ghost">Reset</button>
-  </div>
-  <div class="section-table-block">
-    <table class="styled-table">
-      <thead>
-        <tr>
-          <th>Review ID</th>
-          <th>Requested By</th>
-          <th>Module</th>
-          <th>Priority</th>
-          <th>Status</th>
-          <th>Created On</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="review-table-body">
-        <tr>
-          <td>RV-001</td>
-          <td>Kamal Hasan</td>
-          <td>Post Control</td>
-          <td>High</td>
-          <td><span class="status-pending">Pending</span></td>
-          <td>2026-02-28</td>
-          <td><button type="button">Open</button></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+          <div class="admin-post-field admin-post-field--media">
+            <label for="admin-post-media">Image / Video</label>
+            <div class="admin-post-file-wrap">
+              <label for="admin-post-media" class="admin-post-file-btn">Choose File</label>
+              <span id="admin-post-media-name" class="admin-post-file-name">No file chosen</span>
+              <input type="file" id="admin-post-media" accept="image/*,video/*">
+            </div>
+          </div>
 
-<div id="reports" class="main-section">
-  <h2>Reports</h2>
-  <div class="filters-bar" id="reports-filters">
-    <input id="reports-filter-text" type="text" placeholder="Search report ID, user, category, status">
-    <button type="button" id="reports-filter-reset" class="ghost">Reset</button>
-  </div>
-  <div class="section-table-block">
-    <table class="styled-table">
-      <thead>
-        <tr>
-          <th>Report ID</th>
-          <th>Post</th>
-          <th>Reporter</th>
-          <th>Reported User</th>
-          <th>Category</th>
-          <th>Status</th>
-          <th>Submitted</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="reports-table-body">
-        <tr>
-          <td colspan="7">Loading post reports...</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+          <div class="admin-post-field admin-post-field--category">
+            <label for="admin-post-category">Category</label>
+            <select id="admin-post-category">
+              <option value="general">General</option>
+              <option value="alert">Alert</option>
+              <option value="missing_person">Missing Person</option>
+              <option value="criminal_found">Criminal Found</option>
+            </select>
+          </div>
 
-<!-- Crime assign volunteer modal -->
-<div id="crime-assign-modal" class="profile-modal" onclick="if(event.target===this) closeCrimeAssignModal()">
-  <div class="profile-modal__card">
-    <div class="profile-modal__header">
-      <div class="profile-modal__title">Assign Volunteers</div>
-      <button class="profile-modal__close" type="button" onclick="closeCrimeAssignModal()" aria-label="Close">
-        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-      </button>
+          <div class="admin-post-field admin-post-field--toggle">
+            <label class="admin-post-checkbox">
+              <input type="checkbox" id="admin-post-share-facebook" checked>
+              <span>Share to Facebook</span>
+            </label>
+          </div>
+        </div>
+
+        <div id="admin-post-media-preview" class="admin-post-media-preview">Media preview will appear here</div>
+
+        <div class="admin-post-actions">
+          <button type="button" id="admin-post-submit" class="approve-btn">Publish Admin Post</button>
+        </div>
+      </div>
+      <div class="section-table-block">
+        <p style="margin:0; color:#4b5563; font-weight:600;">Published admin posts are auto-approved and visible in
+          User, Volunteer, Policeman, and Camera feeds.</p>
+      </div>
+      <div class="section-table-block">
+        <h3 style="margin:0 0 10px; color:#1f2937;">Admin Post Activity</h3>
+        <table class="styled-table" id="admin-post-activity-table">
+          <thead>
+            <tr>
+              <th>Post ID</th>
+              <th>Message</th>
+              <th>Category</th>
+              <th>Likes</th>
+              <th>Comments</th>
+              <th>Share</th>
+              <th>Latest Comments</th>
+              <th>Published</th>
+            </tr>
+          </thead>
+          <tbody id="admin-post-activity-body">
+            <tr>
+              <td colspan="8">Loading admin posts...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-    <div class="assign-modal__context">
-      <div><strong>Case:</strong> <span id="assign-case-id">Select a case</span></div>
-      <div><strong>Landmark:</strong> <span id="assign-case-landmark">Location pending</span></div>
+
+    <div id="post-control" class="main-section">
+      <h2>Post Control</h2>
+      <div class="filters-bar">
+        <input type="text" id="post-filter-keyword" placeholder="Post title/category">
+        <select id="post-filter-status">
+          <option value="all">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+        </select>
+        <div class="post-role-filters" id="post-role-filters">
+          <span class="post-role-filters__label">Role Filter</span>
+          <div class="post-role-filters__chips">
+            <label class="post-role-chip post-role-chip--all"><input type="checkbox" name="post-filter-role-all"
+                value="all" checked> All</label>
+            <label class="post-role-chip"><input type="checkbox" name="post-filter-role" value="user" checked>
+              User</label>
+            <label class="post-role-chip"><input type="checkbox" name="post-filter-role" value="volunteer" checked>
+              Volunteer</label>
+            <label class="post-role-chip"><input type="checkbox" name="post-filter-role" value="policeman" checked>
+              Policeman</label>
+            <label class="post-role-chip"><input type="checkbox" name="post-filter-role" value="camera_contribution"
+                checked> Camera Contribution</label>
+          </div>
+          <div class="post-role-filters__hint">Select one or more roles. Choose All to show every role post.</div>
+        </div>
+        <input type="date" id="post-filter-from">
+        <input type="date" id="post-filter-to">
+      </div>
+      <div class="section-table-block">
+        <table class="styled-table" id="post-control-table">
+          <thead>
+            <tr>
+              <th>Post ID</th>
+              <th>Category</th>
+              <th>Posted By</th>
+              <th>Role</th>
+              <th>Share Facebook</th>
+              <th>Share Anonymous</th>
+              <th>Status</th>
+              <th>Submitted</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="post-control-body">
+            <tr>
+              <td colspan="9">Loading posts...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-    <div class="assign-modal__mission">
-      <label for="assign-mission-type"><strong>Mission Type</strong></label>
-      <select id="assign-mission-type">
-        <option value="locate_verify">Locate & Verify Alert</option>
-        <option value="collect_evidence">Collect Evidence (Photo/Video)</option>
-        <option value="suspect_watch">Suspect Watch & Report</option>
-        <option value="assist_police">Assist Police Response</option>
-      </select>
+    <div id="crime" class="main-section">
+      <h2>Crime Reporting</h2>
+      <div class="filters-bar crime-filters">
+        <input id="crime-filter-text" type="text" placeholder="Search by case, type, landmark">
+        <select id="crime-filter-type">
+          <option value="">Type</option>
+          <option value="theft">Theft</option>
+          <option value="robbery">Robbery</option>
+          <option value="assault">Assault</option>
+          <option value="vandalism">Vandalism</option>
+          <option value="arson">Arson</option>
+          <option value="missing_person">Missing Person</option>
+          <option value="other">Other</option>
+        </select>
+        <select id="crime-filter-severity">
+          <option value="">Severity</option>
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+          <option value="critical">Critical</option>
+        </select>
+        <select id="crime-filter-status">
+          <option value="">Status</option>
+          <option value="new">New</option>
+          <option value="actioned">Actioned</option>
+          <option value="closed">Closed</option>
+        </select>
+        <input id="crime-filter-from" type="datetime-local">
+        <input id="crime-filter-to" type="datetime-local">
+        <button type="button" id="crime-filter-reset" class="ghost">Reset</button>
+      </div>
+      <div class="crime-toggles">
+        <label><input type="checkbox" id="crime-toggle-heatmap"> Heatmap</label>
+        <label><input type="checkbox" id="crime-toggle-last24"> Last 24h only</label>
+        <label><input type="checkbox" id="crime-toggle-closed" checked> Show closed</label>
+      </div>
+      <div class="crime-map-toggle-bar">
+        <div class="crime-map-toggle-text">Map + proximity tools (toggle)</div>
+        <button type="button" id="crime-map-toggle" class="ghost">Show map</button>
+      </div>
+      <div class="crime-hint crime-hint-banner">Map pins are colored by severity; switch to heatmap to see hotspots.
+      </div>
+      <div id="crime-map-wrapper" class="crime-grid hidden">
+        <div class="crime-map-panel">
+          <div id="crime-map"></div>
+          <div class="crime-legend">
+            <span><span class="legend-dot legend-low"></span>Low</span>
+            <span><span class="legend-dot legend-medium"></span>Medium</span>
+            <span><span class="legend-dot legend-high"></span>High</span>
+            <span><span class="legend-dot legend-critical"></span>Critical</span>
+            <span><span class="legend-dot legend-recent"></span>Recent (&lt;24h)</span>
+          </div>
+        </div>
+      </div>
+      <div class="tables-divider"></div>
+      <div class="crime-table-head">
+        <div class="crime-stats">
+          <span id="crime-stat-new" class="pill pill-open">New: 0</span>
+          <span id="crime-stat-review" class="pill pill-review">Actioned (Assigned): 0</span>
+          <span id="crime-stat-actioned" class="pill pill-actioned">Actioned: 0</span>
+          <span id="crime-stat-closed" class="pill pill-closed">Closed: 0</span>
+        </div>
+      </div>
+      <div class="crime-table-block">
+        <h3 class="crime-table-title">Crime Case Table</h3>
+        <table class="styled-table" id="crime-table">
+          <thead>
+            <tr>
+              <th>Case</th>
+              <th>Type</th>
+              <th>Severity</th>
+              <th>Landmark</th>
+              <th>Status</th>
+              <th>Submitted</th>
+              <th>Media</th>
+              <th>Reporter</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="crime-table-body">
+            <tr>
+              <td colspan="9">Loading crime reports...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-    <p class="assign-modal__radius-note"><strong>Available from database:</strong> all available volunteers and volunteer-plus accounts are shown below.</p>
-    <div class="assign-list" id="assign-volunteer-list">Loading…</div>
-    <div class="assign-actions">
-      <button type="button" class="primary" id="assign-confirm-btn">Assign Selected</button>
-      <button type="button" class="secondary" onclick="closeCrimeAssignModal()">Cancel</button>
+
+    <div id="donations" class="main-section">
+      <h2>Donations Control</h2>
+      <div class="filters-bar" id="donations-filters">
+        <input id="donations-filter-text" type="text" placeholder="Search donor, email, mobile, TxID, amount, message">
+        <button type="button" id="donations-filter-reset" class="ghost">Reset</button>
+      </div>
+      <div class="section-table-block">
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Donor Name</th>
+              <th>Email</th>
+              <th>Mobile</th>
+              <th>TxID</th>
+              <th>Amount</th>
+              <th>Date</th>
+              <th>Anonymous</th>
+              <th>Message</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="donations-table-body">
+            <tr>
+              <td colspan="9">Loading donations...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="widget-bar">
+        <div class="widget">Total Donations: <span id="donations-total-amount">à§³0.00</span></div>
+      </div>
+      <div class="donations-actions">
+        <button class="btn-export-donations"><i class="fa-solid fa-file-export"></i> Export Report</button>
+      </div>
+    </div>
+    <div id="volunteer" class="main-section">
+      <h2>Volunteer Missions</h2>
+      <div class="filters-bar" id="volunteer-filters">
+        <input id="volunteer-filter-text" type="text" placeholder="Search volunteer, mission, location">
+        <select id="volunteer-filter-status">
+          <option value="">Status</option>
+          <option value="assigned">Assigned</option>
+          <option value="accepted">Accepted</option>
+          <option value="rejected_busy">Rejected (Busy)</option>
+          <option value="completed">Completed</option>
+        </select>
+        <button type="button" id="volunteer-filter-reset" class="ghost">Reset</button>
+      </div>
+      <div class="section-table-block">
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Volunteer Profile</th>
+              <th>Mission Title</th>
+              <th>Assigned On</th>
+              <th>Location</th>
+              <th>Rank</th>
+              <th>Points</th>
+              <th>Status</th>
+              <th>Proof</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="volunteer-mission-body">
+            <tr>
+              <td>Rafiq A. • <a href="#" target="_blank" rel="noopener">View Profile</a></td>
+              <td>Missing Child Assistance</td>
+              <td>2025-08-03</td>
+              <td>Dhaka</td>
+              <td>Silver Responder</td>
+              <td>220</td>
+              <td><span class="status-approved">Completed</span></td>
+              <td><a href="#">View Proof</a></td>
+              <td><button type="button" class="ghost">Mark Complete +50XP</button></td>
+            </tr>
+            <!-- More rows... -->
+          </tbody>
+        </table>
+      </div>
+      <div class="widget-bar">
+        <div class="widget">Total Missions: <span id="volunteer-total-missions">0</span></div>
+        <div class="widget">This Month: <span id="volunteer-this-month">0</span></div>
+      </div>
+    </div>
+
+    <div id="volunteer-approver" class="main-section">
+      <h2>Volunteer Approver</h2>
+      <div id="volunteer-approver-panel" class="volunteer-approver-panel">
+        <div class="volunteer-approver-head">
+          <h4>Volunteer Approver</h4>
+          <div class="filters-bar" style="margin:0; padding:0; box-shadow:none; background:transparent;">
+            <input id="vol-approver-filter-text" type="text" placeholder="Search by name/email/mobile"
+              style="min-width: 240px;">
+            <select id="vol-approver-filter-status">
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+              <option value="all">All</option>
+            </select>
+          </div>
+        </div>
+        <div id="volunteer-approver-list" class="volunteer-approver-list">
+          <div class="volunteer-approver-empty">Loading volunteer applications...</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="withdraw" class="main-section">
+      <h2>Withdraw Control</h2>
+      <div class="filters-bar" id="withdraw-filters">
+        <input id="withdraw-filter-text" type="text" placeholder="Search volunteer or amount">
+        <select id="withdraw-filter-status">
+          <option value="">Status</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+        </select>
+        <button type="button" id="withdraw-filter-reset" class="ghost">Reset</button>
+      </div>
+      <div class="section-table-block">
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Cameraman Name</th>
+              <th>Withdrawal Amount</th>
+              <th>Status</th>
+              <th>Request Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="withdraw-table-body">
+            <tr>
+              <td>Arif Hasan</td>
+              <td>à§³500</td>
+              <td><span class="status-pending">Pending</span></td>
+              <td>2025-08-09</td>
+              <td>
+                <button>Approve</button>
+                <button>Reject</button>
+              </td>
+            </tr>
+            <!-- More rows... -->
+          </tbody>
+        </table>
+      </div>
+      <div class="widget-bar">
+        <div class="widget">Total Withdrawals: <span id="withdraw-total-amount">à§³0.00</span></div>
+        <div class="widget">Pending Requests: <span id="withdraw-pending-count">0</span></div>
+      </div>
+      <div class="withdraw-actions">
+        <button class="btn-export-report"><i class="fa-solid fa-file-export"></i> Export Report</button>
+      </div>
+    </div>
+
+    <div id="broadcast" class="main-section">
+      <div class="broadcast-header">
+        <h2>Broadcast Requests & Camera Videos</h2>
+        <div class="admin-section-toolbar">
+          <a class="admin-refresh-btn broadcast-open-btn" href="../Html/BroadCast.php">Open Broadcast Desk</a>
+        </div>
+      </div>
+      <div class="filters-bar" id="broadcast-filters">
+        <input id="broadcast-filter-text" type="text" placeholder="Search title, message, area">
+        <button type="button" id="broadcast-filter-reset" class="ghost">Reset</button>
+      </div>
+      <div class="section-table-block">
+        <h3 class="section-subtitle">Broadcast Requests</h3>
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Police Officer</th>
+              <th>Station</th>
+              <th>Reason</th>
+              <th>Requested On</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="broadcast-request-body">
+            <tr>
+              <td colspan="6">Loading broadcast requests...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="section-table-block broadcast-video-section">
+        <h3 class="section-subtitle">Camera Video Submissions</h3>
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Cameraman</th>
+              <th>Video</th>
+              <th>Location</th>
+              <th>Sent On</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="camera-video-table-body">
+            <tr>
+              <td colspan="5">Loading camera videos...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="review" class="main-section">
+      <h2>Review</h2>
+      <div class="filters-bar" id="review-filters">
+        <input id="review-filter-text" type="text" placeholder="Search user, module, note">
+        <select id="review-filter-status">
+          <option value="">Status</option>
+          <option value="pending">Pending</option>
+          <option value="in progress">In Progress</option>
+          <option value="completed">Completed</option>
+        </select>
+        <button type="button" id="review-filter-reset" class="ghost">Reset</button>
+      </div>
+      <div class="section-table-block">
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Review ID</th>
+              <th>Requested By</th>
+              <th>Module</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th>Created On</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="review-table-body">
+            <tr>
+              <td>RV-001</td>
+              <td>Kamal Hasan</td>
+              <td>Post Control</td>
+              <td>High</td>
+              <td><span class="status-pending">Pending</span></td>
+              <td>2026-02-28</td>
+              <td><button type="button">Open</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div id="chatbot-logs" class="main-section">
+      <h2>Chatbot Logs</h2>
+      <div class="filters-bar chatbot-logs-actions">
+        <input id="chatbot-log-filter" type="text" placeholder="Search by question or reply" style="min-width: 320px;">
+        <button type="button" class="btn-refresh" id="chatbot-log-refresh">Refresh</button>
+        <button type="button" class="btn-export-report" id="chatbot-log-clear">Clear Logs</button>
+      </div>
+      <div class="chatbot-template-manager">
+        <div class="chatbot-template-manager__title">Dropdown Comments</div>
+        <div class="chatbot-template-manager__controls">
+          <input id="chatbot-template-input" type="text" placeholder="Add a new quick comment">
+          <button type="button" class="btn-refresh" id="chatbot-template-add">+ Add Comment</button>
+        </div>
+        <div id="chatbot-template-list" class="chatbot-template-list"></div>
+      </div>
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>User Question</th>
+            <th>Bot Reply</th>
+            <th>Admin Comment</th>
+          </tr>
+        </thead>
+        <tbody id="chatbot-logs-body">
+          <tr>
+            <td colspan="4">No chatbot logs yet.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="controls" class="main-section">
+      <h2>Website & App Controls</h2>
+      <div class="setting-section">
+        <h4>Manage Pages</h4>
+        <button>Homepage</button>
+        <button>About</button>
+        <button>Terms & Policies</button>
+      </div>
+      <div class="setting-section">
+        <h4>App Features</h4>
+        <label><input type="checkbox" checked> Donations</label>
+        <label><input type="checkbox" checked> Live Camera Access</label>
+        <label><input type="checkbox"> Volunteer Registration</label>
+      </div>
+      <div class="setting-section">
+        <h4>QR Code Generator</h4>
+        <button>Generate for App Download</button>
+        <button>Generate for Report Link</button>
+      </div>
+      <div class="setting-section">
+        <h4>Maintenance Mode</h4>
+        <button>Enable Maintenance</button>
+        <span style="color: #d35400;">Currently: Off</span>
+      </div>
     </div>
   </div>
-</div>
+  <div id="reports" class="main-section">
+    <h2>Reports</h2>
+    <div class="filters-bar" id="reports-filters">
+      <input id="reports-filter-text" type="text" placeholder="Search report ID, user, category, status">
+      <button type="button" id="reports-filter-reset" class="ghost">Reset</button>
+    </div>
+    <div class="section-table-block">
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>Report ID</th>
+            <th>Post</th>
+            <th>Reporter</th>
+            <th>Reported User</th>
+            <th>Category</th>
+            <th>Status</th>
+            <th>Submitted</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="reports-table-body">
+          <tr>
+            <td colspan="7">Loading post reports...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Crime assign volunteer modal -->
+  <div id="crime-assign-modal" class="profile-modal" onclick="if(event.target===this) closeCrimeAssignModal()">
+    <div class="profile-modal__card">
+      <div class="profile-modal__header">
+        <div class="profile-modal__title">Assign Volunteers</div>
+        <button class="profile-modal__close" type="button" onclick="closeCrimeAssignModal()" aria-label="Close">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="assign-modal__context">
+        <div><strong>Case:</strong> <span id="assign-case-id">Select a case</span></div>
+        <div><strong>Landmark:</strong> <span id="assign-case-landmark">Location pending</span></div>
+      </div>
+      <div class="assign-modal__mission">
+        <label for="assign-mission-type"><strong>Mission Type</strong></label>
+        <select id="assign-mission-type">
+          <option value="locate_verify">Locate & Verify Alert</option>
+          <option value="collect_evidence">Collect Evidence (Photo/Video)</option>
+          <option value="suspect_watch">Suspect Watch & Report</option>
+          <option value="assist_police">Assist Police Response</option>
+        </select>
+      </div>
+      <p class="assign-modal__radius-note"><strong>Available from database:</strong> all available volunteers and
+        volunteer-plus accounts are shown below.</p>
+      <div class="assign-list" id="assign-volunteer-list">Loading…</div>
+      <div class="assign-actions">
+        <button type="button" class="primary" id="assign-confirm-btn">Assign Selected</button>
+        <button type="button" class="secondary" onclick="closeCrimeAssignModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
 
 
   <div id="profile-modal" class="profile-modal" onclick="if(event.target===this) closeProfileModal()">
@@ -967,18 +1102,70 @@
         </button>
       </div>
       <div class="profile-modal__grid">
-        <div class="profile-modal__row"><div class="profile-modal__label">Full Name</div><div class="profile-modal__value"><input type="text" id="add-officer-full-name" class="profile-modal__input" placeholder="Officer full name"></div></div>
-        <div class="profile-modal__row"><div class="profile-modal__label">Email</div><div class="profile-modal__value"><input type="email" id="add-officer-email" class="profile-modal__input" placeholder="officer@email.com"></div></div>
-        <div class="profile-modal__row"><div class="profile-modal__label">Mobile</div><div class="profile-modal__value"><input type="text" id="add-officer-mobile" class="profile-modal__input" placeholder="01XXXXXXXXX"></div></div>
-        <div class="profile-modal__row"><div class="profile-modal__label">NID Number</div><div class="profile-modal__value"><input type="text" id="add-officer-nid" class="profile-modal__input" placeholder="NID number"></div></div>
-        <div class="profile-modal__row"><div class="profile-modal__label">Date Of Birth</div><div class="profile-modal__value"><input type="date" id="add-officer-dob" class="profile-modal__input"></div></div>
-        <div class="profile-modal__row"><div class="profile-modal__label">Gender</div><div class="profile-modal__value"><select id="add-officer-gender" class="profile-modal__input"><option value="">Select gender</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select></div></div>
-        <div class="profile-modal__row"><div class="profile-modal__label">Badge ID</div><div class="profile-modal__value"><input type="text" id="add-officer-badge" class="profile-modal__input" placeholder="Badge ID"></div></div>
-        <div class="profile-modal__row"><div class="profile-modal__label">Designation</div><div class="profile-modal__value"><input type="text" id="add-officer-designation" class="profile-modal__input" placeholder="Designation"></div></div>
-        <div class="profile-modal__row"><div class="profile-modal__label">Station</div><div class="profile-modal__value"><input type="text" id="add-officer-station" class="profile-modal__input" placeholder="Station"></div></div>
-        <div class="profile-modal__row"><div class="profile-modal__label">City</div><div class="profile-modal__value"><input type="text" id="add-officer-city" class="profile-modal__input" placeholder="City (optional)"></div></div>
-        <div class="profile-modal__row"><div class="profile-modal__label">Country</div><div class="profile-modal__value"><input type="text" id="add-officer-country" class="profile-modal__input" placeholder="Country (optional)"></div></div>
-        <div class="profile-modal__row"><div class="profile-modal__label">Password</div><div class="profile-modal__value"><input type="password" id="add-officer-password" class="profile-modal__input" placeholder="Minimum 6 chars"></div></div>
+        <div class="profile-modal__row">
+          <div class="profile-modal__label">Full Name</div>
+          <div class="profile-modal__value"><input type="text" id="add-officer-full-name" class="profile-modal__input"
+              placeholder="Officer full name"></div>
+        </div>
+        <div class="profile-modal__row">
+          <div class="profile-modal__label">Email</div>
+          <div class="profile-modal__value"><input type="email" id="add-officer-email" class="profile-modal__input"
+              placeholder="officer@email.com"></div>
+        </div>
+        <div class="profile-modal__row">
+          <div class="profile-modal__label">Mobile</div>
+          <div class="profile-modal__value"><input type="text" id="add-officer-mobile" class="profile-modal__input"
+              placeholder="01XXXXXXXXX"></div>
+        </div>
+        <div class="profile-modal__row">
+          <div class="profile-modal__label">NID Number</div>
+          <div class="profile-modal__value"><input type="text" id="add-officer-nid" class="profile-modal__input"
+              placeholder="NID number"></div>
+        </div>
+        <div class="profile-modal__row">
+          <div class="profile-modal__label">Date Of Birth</div>
+          <div class="profile-modal__value"><input type="date" id="add-officer-dob" class="profile-modal__input">
+          </div>
+        </div>
+        <div class="profile-modal__row">
+          <div class="profile-modal__label">Gender</div>
+          <div class="profile-modal__value"><select id="add-officer-gender" class="profile-modal__input">
+              <option value="">Select gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select></div>
+        </div>
+        <div class="profile-modal__row">
+          <div class="profile-modal__label">Badge ID</div>
+          <div class="profile-modal__value"><input type="text" id="add-officer-badge" class="profile-modal__input"
+              placeholder="Badge ID"></div>
+        </div>
+        <div class="profile-modal__row">
+          <div class="profile-modal__label">Designation</div>
+          <div class="profile-modal__value"><input type="text" id="add-officer-designation" class="profile-modal__input"
+              placeholder="Designation"></div>
+        </div>
+        <div class="profile-modal__row">
+          <div class="profile-modal__label">Station</div>
+          <div class="profile-modal__value"><input type="text" id="add-officer-station" class="profile-modal__input"
+              placeholder="Station"></div>
+        </div>
+        <div class="profile-modal__row">
+          <div class="profile-modal__label">City</div>
+          <div class="profile-modal__value"><input type="text" id="add-officer-city" class="profile-modal__input"
+              placeholder="City (optional)"></div>
+        </div>
+        <div class="profile-modal__row">
+          <div class="profile-modal__label">Country</div>
+          <div class="profile-modal__value"><input type="text" id="add-officer-country" class="profile-modal__input"
+              placeholder="Country (optional)"></div>
+        </div>
+        <div class="profile-modal__row">
+          <div class="profile-modal__label">Password</div>
+          <div class="profile-modal__value"><input type="password" id="add-officer-password"
+              class="profile-modal__input" placeholder="Minimum 6 chars"></div>
+        </div>
       </div>
       <div class="profile-modal__footer">
         <button type="button" class="profile-modal__btn success" id="add-officer-submit-btn">Add Officer</button>
@@ -991,42 +1178,42 @@
 
 
   <script>
-      // Simple modal helpers for CCTV actions
-      function openCctvView(id) {
-        alert(`View CCTV ${id}`);
+    // Simple modal helpers for CCTV actions
+    function openCctvView(id) {
+      alert(`View CCTV ${id}`);
+    }
+
+    function openCctvEdit(id) {
+      const newLoc = prompt(`Edit CCTV ${id}\nEnter new location:`, '');
+      if (newLoc !== null) {
+        alert(`Saved CCTV ${id} with location: ${newLoc}`);
       }
+    }
 
-      function openCctvEdit(id) {
-        const newLoc = prompt(`Edit CCTV ${id}\nEnter new location:`, '');
-        if (newLoc !== null) {
-          alert(`Saved CCTV ${id} with location: ${newLoc}`);
-        }
+    function openCctvDeactivate(id) {
+      const ok = confirm(`Deactivate CCTV ${id}?`);
+      if (ok) {
+        alert(`CCTV ${id} deactivated.`);
       }
+    }
 
-      function openCctvDeactivate(id) {
-        const ok = confirm(`Deactivate CCTV ${id}?`);
-        if (ok) {
-          alert(`CCTV ${id} deactivated.`);
-        }
-      }
+    function initAvatarPanel() {
+      const trigger = document.getElementById('admin-avatar');
+      const panel = document.getElementById('avatar-panel');
+      if (!trigger || !panel) return;
 
-      function initAvatarPanel() {
-        const trigger = document.getElementById('admin-avatar');
-        const panel = document.getElementById('avatar-panel');
-        if (!trigger || !panel) return;
+      const close = () => panel.classList.remove('open');
+      const toggle = () => panel.classList.toggle('open');
 
-        const close = () => panel.classList.remove('open');
-        const toggle = () => panel.classList.toggle('open');
+      trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggle();
+      });
 
-        trigger.addEventListener('click', (e) => {
-          e.stopPropagation();
-          toggle();
-        });
-
-        panel.addEventListener('click', (e) => e.stopPropagation());
-        document.addEventListener('click', close);
-        window.addEventListener('resize', close);
-      }
+      panel.addEventListener('click', (e) => e.stopPropagation());
+      document.addEventListener('click', close);
+      window.addEventListener('resize', close);
+    }
 
     initAvatarPanel();
 
@@ -1136,7 +1323,7 @@
       const setTrend = (el, pct, baseText, periodLabel) => {
         if (!el) return;
         el.classList.remove('up', 'down');
-      const arrow = pct > 0 ? '↑' : pct < 0 ? '↓' : '→';
+        const arrow = pct > 0 ? '↑' : pct < 0 ? '↓' : '→';
         if (pct > 0) el.classList.add('up');
         if (pct < 0) el.classList.add('down');
         el.textContent = `${arrow} ${pct.toFixed(2)}% ${periodLabel} | ${baseText}`;
@@ -1374,7 +1561,7 @@
       const forceReadOnlyByTitle = String(title || '').toLowerCase().includes('volunteer mission profile');
       const effectiveReadOnly = readOnly || forceReadOnlyByTitle;
       const editableKeys = new Set(editableFieldsByEntity[entity] || []);
-  const hasMediaJson = Boolean(profile && profile.media_json);
+      const hasMediaJson = Boolean(profile && profile.media_json);
 
       const hasFullName = Boolean(profile && profile.full_name);
       const hasName = Boolean(profile && profile.name);
@@ -2148,7 +2335,7 @@
       if (text) text.addEventListener('input', filterCameras);
       if (status) status.addEventListener('change', filterCameras);
     }
-// Withdrawals rendering + actions
+    // Withdrawals rendering + actions
     function renderWithdrawalsTable(rows) {
       console.debug('admin:renderWithdrawalsTable rows', rows && rows.length);
       const tbody = document.getElementById('withdraw-table-body');
@@ -2363,7 +2550,7 @@
       window.__leafletMaps[elId] = map;
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© OpenStreetMap contributors'
+        attribution: '© OpenStreetMap contributors'
       }).addTo(map);
 
       const parseCoord = (value) => {
@@ -2425,7 +2612,7 @@
 
       try {
         localStorage.setItem('admin_tables_visible_sections', JSON.stringify(selectedTargets));
-      } catch (_err) {}
+      } catch (_err) { }
     }
 
     function bindTablesVisibilityControls() {
@@ -2437,7 +2624,7 @@
         const raw = localStorage.getItem('admin_tables_visible_sections');
         const parsed = raw ? JSON.parse(raw) : null;
         if (Array.isArray(parsed)) restoredTargets = new Set(parsed);
-      } catch (_err) {}
+      } catch (_err) { }
 
       if (restoredTargets) {
         checkboxes.forEach(cb => {
@@ -2455,69 +2642,69 @@
 
     bindTablesVisibilityControls();
 
-  loadDashboardCounts();
+    loadDashboardCounts();
 
-  const modalEditBtn = document.getElementById('profile-edit-btn');
-  const modalSaveBtn = document.getElementById('profile-save-btn');
-  const modalCancelBtn = document.getElementById('profile-cancel-btn');
-  const addOfficerSubmitBtn = document.getElementById('add-officer-submit-btn');
+    const modalEditBtn = document.getElementById('profile-edit-btn');
+    const modalSaveBtn = document.getElementById('profile-save-btn');
+    const modalCancelBtn = document.getElementById('profile-cancel-btn');
+    const addOfficerSubmitBtn = document.getElementById('add-officer-submit-btn');
 
-  if (addOfficerSubmitBtn) {
-    addOfficerSubmitBtn.addEventListener('click', submitAddOfficerForm);
-  }
+    if (addOfficerSubmitBtn) {
+      addOfficerSubmitBtn.addEventListener('click', submitAddOfficerForm);
+    }
 
-  if (modalEditBtn) {
-    modalEditBtn.addEventListener('click', () => {
-      if (currentProfile) openProfileModal(currentProfile, true);
-    });
-  }
-
-  if (modalCancelBtn) {
-    modalCancelBtn.addEventListener('click', () => {
-      if (isEditMode && currentProfile) {
-        openProfileModal(currentProfile, false);
-      } else {
-        closeProfileModal();
-      }
-    });
-  }
-
-  if (modalSaveBtn) {
-    modalSaveBtn.addEventListener('click', async () => {
-      if (!currentProfile || !currentProfile.__entity || !currentProfile.__id) return;
-
-      const inputs = Array.from(document.querySelectorAll('#profile-modal-grid [data-edit-key]'));
-      const updates = {};
-      inputs.forEach(input => {
-        const key = input.dataset.editKey;
-        if (!key) return;
-        updates[key] = input.value.trim();
+    if (modalEditBtn) {
+      modalEditBtn.addEventListener('click', () => {
+        if (currentProfile) openProfileModal(currentProfile, true);
       });
+    }
 
-      try {
-        const res = await fetch('../Php/admin_update_profile.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'same-origin',
-          body: JSON.stringify({
-            entity: currentProfile.__entity,
-            id: currentProfile.__id,
-            updates
-          })
+    if (modalCancelBtn) {
+      modalCancelBtn.addEventListener('click', () => {
+        if (isEditMode && currentProfile) {
+          openProfileModal(currentProfile, false);
+        } else {
+          closeProfileModal();
+        }
+      });
+    }
+
+    if (modalSaveBtn) {
+      modalSaveBtn.addEventListener('click', async () => {
+        if (!currentProfile || !currentProfile.__entity || !currentProfile.__id) return;
+
+        const inputs = Array.from(document.querySelectorAll('#profile-modal-grid [data-edit-key]'));
+        const updates = {};
+        inputs.forEach(input => {
+          const key = input.dataset.editKey;
+          if (!key) return;
+          updates[key] = input.value.trim();
         });
 
-        const json = await res.json();
-        if (!json || !json.success) throw new Error(json?.error || 'Update failed');
+        try {
+          const res = await fetch('../Php/admin_update_profile.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+              entity: currentProfile.__entity,
+              id: currentProfile.__id,
+              updates
+            })
+          });
 
-        alert('Profile updated successfully.');
-        closeProfileModal();
-        window.location.reload();
-      } catch (e) {
-        console.error('Profile update failed', e);
-        alert('Could not update profile.');
-      }
-    });
-  }
+          const json = await res.json();
+          if (!json || !json.success) throw new Error(json?.error || 'Update failed');
+
+          alert('Profile updated successfully.');
+          closeProfileModal();
+          window.location.reload();
+        } catch (e) {
+          console.error('Profile update failed', e);
+          alert('Could not update profile.');
+        }
+      });
+    }
 
     async function loadAdminData() {
       // Users table (only users)
@@ -2624,8 +2811,8 @@
   </script>
   <!-- Chart.js CDN for demo chart drawing (remove if you use your own chart lib) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-      <script src="../javascrpit/Admin.js?v=20260405e"></script>
+  <script src="../javascrpit/Admin.js?v=20260405e"></script>
 
 </body>
-</html>
 
+</html>
