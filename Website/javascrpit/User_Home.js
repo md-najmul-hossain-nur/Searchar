@@ -1498,11 +1498,7 @@ const notificationsDrawer = document.getElementById('notificationsDrawer');
 const notificationsDrawerBackdrop = document.getElementById('notificationsDrawerBackdrop');
 const notificationsDrawerClose = document.getElementById('notificationsDrawerClose');
 const notificationsDrawerFooter = notificationsDrawer ? notificationsDrawer.querySelector('.notifications-drawer-footer') : null;
-const messengerFab = document.getElementById('messengerFab');
-const messengerDrawer = document.getElementById('messengerDrawer');
-const messengerBackdrop = document.getElementById('messengerBackdrop');
-const messengerClose = document.getElementById('messengerClose');
-const messengerInput = document.getElementById('messengerInput');
+// messenger removed
 let notificationsCache = [];
 
 function formatRelativeTime(createdAt, fallback) {
@@ -1817,32 +1813,6 @@ function closeNotificationsDrawer() {
   notificationsDrawer.setAttribute('aria-hidden', 'true');
 }
 
-function openMessengerDrawer() {
-  if (!messengerDrawer || !messengerBackdrop) return;
-  messengerDrawer.classList.add('open');
-  messengerBackdrop.classList.add('open');
-  messengerDrawer.setAttribute('aria-hidden', 'false');
-  if (messengerInput) {
-    messengerInput.focus();
-  }
-}
-
-function closeMessengerDrawer() {
-  if (!messengerDrawer || !messengerBackdrop) return;
-
-  const active = document.activeElement;
-  if (active && messengerDrawer.contains(active) && typeof active.blur === 'function') {
-    active.blur();
-  }
-
-  messengerDrawer.classList.remove('open');
-  messengerBackdrop.classList.remove('open');
-  messengerDrawer.setAttribute('aria-hidden', 'true');
-
-  if (messengerFab && typeof messengerFab.focus === 'function') {
-    messengerFab.focus();
-  }
-}
 
 if (notificationsSeeMoreBtn) {
   notificationsSeeMoreBtn.addEventListener('click', openNotificationsDrawer);
@@ -1856,17 +1826,6 @@ if (notificationsDrawerBackdrop) {
   notificationsDrawerBackdrop.addEventListener('click', closeNotificationsDrawer);
 }
 
-if (messengerFab) {
-  messengerFab.addEventListener('click', openMessengerDrawer);
-}
-
-if (messengerClose) {
-  messengerClose.addEventListener('click', closeMessengerDrawer);
-}
-
-if (messengerBackdrop) {
-  messengerBackdrop.addEventListener('click', closeMessengerDrawer);
-}
 
 ensureMarkAllReadButton();
 
@@ -1892,7 +1851,7 @@ document.addEventListener('keydown', function (event) {
     closeMissionModal();
     closeDonationPopup();
     closeNotificationsDrawer();
-    closeMessengerDrawer();
+    
   }
 });
 

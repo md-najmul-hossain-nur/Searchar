@@ -5,7 +5,7 @@ session_start();
 header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/db.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     http_response_code(405);
     echo json_encode(['success' => false, 'error' => 'Method not allowed']);
     exit;
@@ -50,6 +50,10 @@ if (isset($_POST['share_facebook'])) {
 $share_anonymous = 0;
 if (isset($_POST['share_anonymous'])) {
     $share_anonymous = ($_POST['share_anonymous'] === '1' || $_POST['share_anonymous'] === 'true') ? 1 : 0;
+}
+
+if ($share_anonymous === 1 && $share_fb === 1) {
+    $share_fb = 0;
 }
 
 // handle file upload (optional)
@@ -311,7 +315,13 @@ try {
         ':post_id' => $postId,
     ]);
 
-    echo json_encode(['success' => true, 'message' => 'Saved']);
+    echo json_encode([
+        'success' => true,
+        'message' => 'Saved',
+        'post_id' => $postId,
+        'share_facebook' => $share_fb,
+        'share_anonymous' => $share_anonymous,
+    ]);
     exit;
 
 } catch (Exception $e) {

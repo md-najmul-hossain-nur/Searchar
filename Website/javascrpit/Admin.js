@@ -271,7 +271,8 @@ loadCameraSeries();
         { terms: ['volunteer', 'volunteer missions'], id: 'volunteer' },
         { terms: ['withdraw', 'withdraw control'], id: 'withdraw' },
         { terms: ['review'], id: 'review' },
-        { terms: ['report', 'reports'], id: 'reports' }
+        { terms: ['report', 'reports'], id: 'reports' },
+        { terms: ['chat', 'chat management', 'messenger'], id: 'chat-management' }
       ];
 
       const direct = sectionNameMap.find(s => s.terms.some(t => t.includes(q) || q.includes(t)));
@@ -603,6 +604,26 @@ document.addEventListener('click', function (event) {
 
       if (typeof applyPostControlFilters === 'function') {
         applyPostControlFilters();
+      }
+
+      // Surface Facebook share result if present
+      try {
+        const fb = json.facebook_share;
+        if (fb) {
+          if (fb.shared) {
+            alert('Facebook: shared successfully' + (fb.post_id ? ' (id: ' + fb.post_id + ')' : ''));
+            if (row) {
+              row.dataset.sharedPostId = fb.post_id || '';
+              row.dataset.sharedPayload = JSON.stringify(fb);
+            }
+          } else if (fb.attempted && !fb.shared) {
+            alert('Facebook share attempted but failed: ' + (fb.error || fb.message || 'Unknown error'));
+          } else if (fb.skipped) {
+            // intentionally skipped (missing config or anonymous); no alert
+          }
+        }
+      } catch (e) {
+        console.error('Failed to parse facebook_share result', e);
       }
     })
     .catch(err => {
@@ -972,6 +993,9 @@ document.addEventListener('click', function (event) {
     const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
     if (sectionId === 'post-control' && postControlActionInFlight === 0) {
       loadPostRows();
+    }
+    if (sectionId === 'chat-management' && window.SearcharChat && typeof window.SearcharChat.refresh === 'function') {
+      window.SearcharChat.refresh().catch(() => {});
     }
   });
 
@@ -3831,6 +3855,13 @@ function openAddVolunteerModal() {
     }
   });
 
+  document.addEventListener('admin:refresh-section', function (event) {
+    const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
+    if (sectionId === 'chat-management' && window.SearcharChat && typeof window.SearcharChat.refresh === 'function') {
+      window.SearcharChat.refresh().catch(() => {});
+    }
+  });
+
   loadReports();
 
   document.addEventListener('admin:refresh-section', (event) => {
@@ -4394,6 +4425,7 @@ function openAddVolunteerModal() {
     'withdraw',
     'review',
     'reports',
+    'chat-management',
     'chatbot-logs'
   ];
 })();
