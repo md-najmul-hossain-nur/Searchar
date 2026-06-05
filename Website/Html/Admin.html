@@ -979,29 +979,38 @@
   <h2>Chat Management</h2>
   <div class="chat-management-toolbar">
     <input id="chat-management-search" type="text" placeholder="Search users or roles" aria-label="Search chats">
-    <select id="chat-management-role-filter" aria-label="Filter by role">
+        <select id="chat-management-role-filter" aria-label="Filter by role">
       <option value="all">All roles</option>
       <option value="user">User</option>
       <option value="police">Policeman</option>
-      <option value="volunteer">Volunteer</option>
+          <option value="volunteer">Volunteer</option>
       <option value="contributor">Cameraman</option>
-    </select>
+        </select>
     <button type="button" class="btn-refresh" id="chat-management-refresh">Refresh</button>
-  </div>
+      </div>
   <div class="chat-management-grid">
     <aside class="chat-management-list-pane">
       <div id="chat-management-list" class="chat-management-list"></div>
     </aside>
-    <section class="chat-management-thread-pane">
-      <div class="chat-management-thread-header">
-        <div>
-          <strong id="chat-management-title">Select a conversation</strong>
-          <small id="chat-management-subtitle">All user chats appear here.</small>
+
+    <section class="admin-messenger-thread">
+      <header class="admin-messenger-thread-header">
+        <div class="admin-messenger-thread-user">
+          <img src="../Images/default-profile.gif" alt="Selected conversation">
+          <span>
+            <strong id="chat-management-title">Rafiya Hossain Barsha</strong>
+            <small id="chat-management-subtitle">Police • rh.barsha</small>
+          </span>
         </div>
-      </div>
+        <div class="admin-messenger-actions">
+          <button type="button" aria-label="Voice call"><i class="fa-solid fa-phone"></i></button>
+          <button type="button" aria-label="Video call"><i class="fa-solid fa-video"></i></button>
+          <button type="button" aria-label="Conversation info"><i class="fa-solid fa-circle-info"></i></button>
+          <button type="button" id="chat-management-refresh" aria-label="Refresh"><i class="fa-solid fa-rotate"></i></button>
+        </div>
       <div id="chat-management-feed" class="chat-management-feed">
         <div class="messenger-empty-state">Select a conversation to view messages.</div>
-      </div>
+          </div>
       <div class="chat-management-composer">
         <input id="chat-management-input" type="text" placeholder="Type a reply to the selected user..." autocomplete="off">
         <button type="button" id="chat-management-send" class="btn-refresh">Send</button>
