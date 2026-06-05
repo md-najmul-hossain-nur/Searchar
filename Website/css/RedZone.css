@@ -87,6 +87,13 @@
   animation: adImageFloat 2.8s ease-in-out infinite;
 }
 
+video.ad-thumb {
+  max-height: none !important;
+  width: 100% !important;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+}
+
 .ad-thumb-small {
   object-fit: cover;
   max-height: 74px;

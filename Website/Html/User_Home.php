@@ -1106,10 +1106,10 @@ try {
 
   <article class="ad-card ad-card-primary">
     <small>Sponsored</small>
-    <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_f8ba3ae7.jpg" alt="Camera plan" class="ad-thumb">
-    <h5 class="ad-title-animate">Secure Home Camera Plan</h5>
-    <p>Protect your area with live monitoring and instant alerts.</p>
-    <a href="#!">Learn More</a>
+    <video src="../Video/DONATION PROMO.mp4" class="ad-thumb" autoplay muted loop playsinline></video>
+    <h5 class="ad-title-animate">Support Our Cause</h5>
+    <p>Your donation helps us find missing persons and support volunteers.</p>
+    <a href="#!">Donate Now</a>
   </article>
 
   <article class="ad-card">

@@ -17,7 +17,7 @@
   <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
   <!-- Main CSS -->
   <link rel="stylesheet" href="../css/Admin.css">
-
+  <link rel="stylesheet" href="../css/messenger_shared.css">
 
 </head>
 
@@ -108,26 +108,26 @@
       <div class="dashboard-cards">
         <div class="card">
           <div class="card-title">TRAFFIC</div>
-          <div class="card-value" id="traffic-value">Loading...</div>
-          <div class="card-meta up" id="traffic-meta">Loading traffic...</div>
+          <div class="card-value" id="traffic-value">0</div>
+          <div class="card-meta up" id="traffic-meta">Loading traffic data...</div>
           <div class="card-icon card-icon-red"><i class="fa-solid fa-chart-line"></i></div>
         </div>
         <div class="card">
           <div class="card-title">NEW USERS</div>
-          <div class="card-value" id="new-users-value">Loading...</div>
-          <div class="card-meta down" id="new-users-meta">Loading counts...</div>
+          <div class="card-value" id="new-users-value">0</div>
+          <div class="card-meta down" id="new-users-meta">Loading user counts...</div>
           <div class="card-icon card-icon-orange"><i class="fa-solid fa-user-plus"></i></div>
         </div>
         <div class="card">
           <div class="card-title">CAMERA CONNECTION</div>
-          <div class="card-value" id="camera-conn-value">Loading...</div>
+          <div class="card-value" id="camera-conn-value">0</div>
           <div class="card-meta down" id="camera-conn-meta">Loading camera total...</div>
           <div class="card-icon card-icon-pink"><i class="fa-solid fa-video"></i></div>
         </div>
         <div class="card">
           <div class="card-title">AI PERFORMANCE</div>
-          <div class="card-value">49,65%</div>
-          <div class="card-meta up">↑ 12% <span>Since last month</span></div>
+          <div class="card-value">49.65%</div>
+          <div class="card-meta up">Increased 12% <span>Since last month</span></div>
           <div class="card-icon card-icon-blue"><i class="fa-solid fa-brain"></i></div>
         </div>
       </div>
@@ -166,7 +166,7 @@
         <div class="action-queue-card">
           <div class="st-header">
             <span>Action Queue (Pending Approvals)</span>
-            <div class="action-queue-summary" id="action-queue-summary">Loading...</div>
+            <div class="action-queue-summary" id="action-queue-summary">Loading├óΓé¼┬ª</div>
           </div>
           <table class="st-table action-queue-table">
             <thead>
@@ -181,7 +181,7 @@
             </thead>
             <tbody id="admin-action-queue-body">
               <tr>
-                <td colspan="6">Loading pending actions...</td>
+                <td colspan="6">Loading pending actions├óΓé¼┬ª</td>
               </tr>
             </tbody>
           </table>
@@ -461,7 +461,7 @@
         <input type="text" placeholder="Search by Camera/Case ID">
         <input type="date">
         <input type="date">
-        <input type="number" placeholder="Confidence % ≥" style="width:110px;">
+        <input type="number" placeholder="Confidence % ├óΓÇ░┬Ñ" style="width:110px;">
         <select>
           <option>Status</option>
         </select>
@@ -704,7 +704,7 @@
           </thead>
           <tbody id="crime-table-body">
             <tr>
-              <td colspan="9">Loading crime reports...</td>
+              <td colspan="9">Loading crime reports├óΓé¼┬ª</td>
             </tr>
           </tbody>
         </table>
@@ -740,7 +740,7 @@
         </table>
       </div>
       <div class="widget-bar">
-        <div class="widget">Total Donations: <span id="donations-total-amount">à§³0.00</span></div>
+        <div class="widget">Total Donations: <span id="donations-total-amount">├á┬º┬│0.00</span></div>
       </div>
       <div class="donations-actions">
         <button class="btn-export-donations"><i class="fa-solid fa-file-export"></i> Export Report</button>
@@ -776,7 +776,7 @@
           </thead>
           <tbody id="volunteer-mission-body">
             <tr>
-              <td>Rafiq A. • <a href="#" target="_blank" rel="noopener">View Profile</a></td>
+              <td>Rafiq A. ├óΓé¼┬ó <a href="#" target="_blank" rel="noopener">View Profile</a></td>
               <td>Missing Child Assistance</td>
               <td>2025-08-03</td>
               <td>Dhaka</td>
@@ -844,7 +844,7 @@
           <tbody id="withdraw-table-body">
             <tr>
               <td>Arif Hasan</td>
-              <td>à§³500</td>
+              <td>├á┬º┬│500</td>
               <td><span class="status-pending">Pending</span></td>
               <td>2025-08-09</td>
               <td>
@@ -857,7 +857,7 @@
         </table>
       </div>
       <div class="widget-bar">
-        <div class="widget">Total Withdrawals: <span id="withdraw-total-amount">à§³0.00</span></div>
+        <div class="widget">Total Withdrawals: <span id="withdraw-total-amount">├á┬º┬│0.00</span></div>
         <div class="widget">Pending Requests: <span id="withdraw-pending-count">0</span></div>
       </div>
       <div class="withdraw-actions">
@@ -956,6 +956,68 @@
         </table>
       </div>
     </div>
+
+    <div id="reports" class="main-section">
+      <h2>Reports</h2>
+      <div class="filters-bar" id="reports-filters">
+        <input id="reports-filter-text" type="text" placeholder="Search report ID, user, category, status">
+        <button type="button" id="reports-filter-reset" class="ghost">Reset</button>
+      </div>
+      <div class="section-table-block">
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Report ID</th>
+              <th>Post</th>
+              <th>Reporter</th>
+              <th>Reported User</th>
+              <th>Category</th>
+              <th>Status</th>
+              <th>Submitted</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="reports-table-body">
+            <tr>
+              <td colspan="7">Loading post reports...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Crime assign volunteer modal -->
+    <div id="crime-assign-modal" class="profile-modal" onclick="if(event.target===this) closeCrimeAssignModal()">
+      <div class="profile-modal__card">
+        <div class="profile-modal__header">
+          <div class="profile-modal__title">Assign Volunteers</div>
+          <button class="profile-modal__close" type="button" onclick="closeCrimeAssignModal()" aria-label="Close">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="assign-modal__context">
+          <div><strong>Case:</strong> <span id="assign-case-id">├óΓé¼ΓÇ¥</span></div>
+          <div><strong>Landmark:</strong> <span id="assign-case-landmark">├óΓé¼ΓÇ¥</span></div>
+        </div>
+        <div class="assign-modal__mission">
+          <label for="assign-mission-type"><strong>Mission Type</strong></label>
+          <select id="assign-mission-type">
+            <option value="locate_verify">Locate & Verify Alert</option>
+            <option value="collect_evidence">Collect Evidence (Photo/Video)</option>
+            <option value="suspect_watch">Suspect Watch & Report</option>
+            <option value="assist_police">Assist Police Response</option>
+          </select>
+        </div>
+        <p class="assign-modal__radius-note"><strong>Available from database:</strong> all available volunteers and
+          volunteer-plus accounts are shown below.</p>
+        <div class="assign-list" id="assign-volunteer-list">LoadingΓÇª</div>
+        <div class="assign-actions">
+          <button type="button" class="primary" id="assign-confirm-btn">Assign Selected</button>
+          <button type="button" class="secondary" onclick="closeCrimeAssignModal()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
     <div id="chatbot-logs" class="main-section">
       <h2>Chatbot Logs</h2>
       <div class="filters-bar chatbot-logs-actions">
@@ -1014,67 +1076,6 @@
       </div>
     </div>
   </div>
-  <div id="reports" class="main-section">
-    <h2>Reports</h2>
-    <div class="filters-bar" id="reports-filters">
-      <input id="reports-filter-text" type="text" placeholder="Search report ID, user, category, status">
-      <button type="button" id="reports-filter-reset" class="ghost">Reset</button>
-    </div>
-    <div class="section-table-block">
-      <table class="styled-table">
-        <thead>
-          <tr>
-            <th>Report ID</th>
-            <th>Post</th>
-            <th>Reporter</th>
-            <th>Reported User</th>
-            <th>Category</th>
-            <th>Status</th>
-            <th>Submitted</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="reports-table-body">
-          <tr>
-            <td colspan="7">Loading post reports...</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Crime assign volunteer modal -->
-  <div id="crime-assign-modal" class="profile-modal" onclick="if(event.target===this) closeCrimeAssignModal()">
-    <div class="profile-modal__card">
-      <div class="profile-modal__header">
-        <div class="profile-modal__title">Assign Volunteers</div>
-        <button class="profile-modal__close" type="button" onclick="closeCrimeAssignModal()" aria-label="Close">
-          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-        </button>
-      </div>
-      <div class="assign-modal__context">
-        <div><strong>Case:</strong> <span id="assign-case-id">Select a case</span></div>
-        <div><strong>Landmark:</strong> <span id="assign-case-landmark">Location pending</span></div>
-      </div>
-      <div class="assign-modal__mission">
-        <label for="assign-mission-type"><strong>Mission Type</strong></label>
-        <select id="assign-mission-type">
-          <option value="locate_verify">Locate & Verify Alert</option>
-          <option value="collect_evidence">Collect Evidence (Photo/Video)</option>
-          <option value="suspect_watch">Suspect Watch & Report</option>
-          <option value="assist_police">Assist Police Response</option>
-        </select>
-      </div>
-      <p class="assign-modal__radius-note"><strong>Available from database:</strong> all available volunteers and
-        volunteer-plus accounts are shown below.</p>
-      <div class="assign-list" id="assign-volunteer-list">Loading…</div>
-      <div class="assign-actions">
-        <button type="button" class="primary" id="assign-confirm-btn">Assign Selected</button>
-        <button type="button" class="secondary" onclick="closeCrimeAssignModal()">Cancel</button>
-      </div>
-    </div>
-  </div>
-
 
   <div id="profile-modal" class="profile-modal" onclick="if(event.target===this) closeProfileModal()">
     <div class="profile-modal__card">
@@ -1124,8 +1125,7 @@
         </div>
         <div class="profile-modal__row">
           <div class="profile-modal__label">Date Of Birth</div>
-          <div class="profile-modal__value"><input type="date" id="add-officer-dob" class="profile-modal__input">
-          </div>
+          <div class="profile-modal__value"><input type="date" id="add-officer-dob" class="profile-modal__input"></div>
         </div>
         <div class="profile-modal__row">
           <div class="profile-modal__label">Gender</div>
@@ -1323,7 +1323,7 @@
       const setTrend = (el, pct, baseText, periodLabel) => {
         if (!el) return;
         el.classList.remove('up', 'down');
-        const arrow = pct > 0 ? '↑' : pct < 0 ? '↓' : '→';
+        const arrow = pct > 0 ? '├óΓÇáΓÇÿ' : pct < 0 ? '├óΓÇáΓÇ£' : '├óΓÇáΓÇÖ';
         if (pct > 0) el.classList.add('up');
         if (pct < 0) el.classList.add('down');
         el.textContent = `${arrow} ${pct.toFixed(2)}% ${periodLabel} | ${baseText}`;
@@ -1476,7 +1476,7 @@
         email: 'Email',
         mobile: 'Mobile',
         phone: 'Phone',
-        date_of_birth: 'Date of Birth',
+        date_of_birth: 'Date Of Birth',
         role: 'Role',
         location: 'Location',
         city: 'City',
@@ -1490,14 +1490,14 @@
         designation: 'Designation',
         station: 'Station',
         status: 'Status',
-        media_path: 'Uploaded Media Path',
-        media_json: 'Attached Evidence Files',
-        media_type: 'Evidence Media Category',
-        share_facebook: 'Shared on Facebook',
-        share_anonymous: 'Anonymous Share',
-        is_share: 'Shared Post',
+        media_path: 'Media Path',
+        media_json: 'Media Files',
+        media_type: 'Media Type',
+        share_facebook: 'Share Facebook',
+        share_anonymous: 'Share Anonymous',
+        is_share: 'Is Share',
         shared_post_id: 'Shared Post ID',
-        shared_payload: 'Shared Post Details'
+        shared_payload: 'Shared Payload'
       };
 
       const imageKeys = new Set(['nid_photo', 'profile_photo', 'cover_photo']);
@@ -1567,13 +1567,25 @@
       const hasName = Boolean(profile && profile.name);
       const hasMobile = Boolean(profile && profile.mobile);
       const hasPhone = Boolean(profile && profile.phone);
-      const entries = Object.entries(profile || {}).filter(([key]) => {
+      const entries = Object.entries(profile || {}).filter(([key, value]) => {
         if (hiddenKeys.has(key)) return false;
         if (key === 'name' && hasFullName) return false;
         if (key === 'full_name' && !hasFullName && hasName) return false;
         if (key === 'phone' && hasMobile) return false;
         if (key === 'mobile' && !hasMobile && hasPhone) return false;
         if (key === 'media_path' && hasMediaJson) return false;
+        
+        const isValEmpty = value === null || value === undefined || String(value).trim() === '';
+        if (isValEmpty && (!editMode || !editableKeys.has(key))) {
+            const hideIfEmpty = new Set([
+              'media_json', 'media_type', 'media_path', 
+              'admin_action_note', 'share_facebook', 'share_anonymous', 
+              'is_share', 'shared_post_id', 'shared_payload', 
+              'post_text', 'target_preview_text', 'payment_number'
+            ]);
+            if (hideIfEmpty.has(key)) return false;
+        }
+
         return true;
       });
 
@@ -1616,7 +1628,7 @@
 
       const renderMediaPreview = (files, label) => {
         if (!files.length) {
-          return `<div class="profile-modal__row"><div class="profile-modal__label">${label}</div><div class="profile-modal__value">Not provided</div></div>`;
+          return `<div class="profile-modal__row"><div class="profile-modal__label">${label}</div><div class="profile-modal__value">├óΓé¼ΓÇ¥</div></div>`;
         }
 
         const itemsHtml = files.map((file, index) => {
@@ -1640,13 +1652,13 @@
 
       const html = entries.map(([key, value]) => {
         const label = labelMap[key] || key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-        const val = value === null || value === undefined || value === '' ? 'Not provided' : String(value);
+        const val = value === null || value === undefined || value === '' ? '├óΓé¼ΓÇ¥' : String(value);
         if (editMode && editableKeys.has(key)) {
-          const inputVal = val === 'Not provided' ? '' : val;
+          const inputVal = val === '├óΓé¼ΓÇ¥' ? '' : val;
           const inputType = key === 'date_of_birth' ? 'date' : (key === 'email' ? 'email' : 'text');
           return `<div class="profile-modal__row"><div class="profile-modal__label">${label}</div><div class="profile-modal__value"><input type="${inputType}" class="profile-modal__input" data-edit-key="${key}" value="${escapeHtml(inputVal)}" /></div></div>`;
         }
-        if (imageKeys.has(key) && val !== 'Not provided' && isImagePath(val)) {
+        if (imageKeys.has(key) && val !== '├óΓé¼ΓÇ¥' && isImagePath(val)) {
           const imageEntity = key === 'profile_photo'
             ? (String(profile?.profile_photo_entity || '').trim() || entity)
             : entity;
@@ -1946,13 +1958,13 @@
         const entity = 'users';
         const recordId = r.user_id || '';
         const isCombo = Boolean(r.is_combo);
-        const name = r.name || 'Name unavailable';
+        const name = r.name || '├óΓé¼ΓÇ¥';
         const displayName = isCombo
           ? `${escapeHtml(name)} <span class="status-active" style="margin-left:6px; font-size:11px; padding:2px 8px;">Combo</span>`
           : escapeHtml(name);
-        const email = r.email || 'Email not provided';
-        const phone = r.phone || 'Phone not provided';
-        const location = r.location || 'Location not provided';
+        const email = r.email || '├óΓé¼ΓÇ¥';
+        const phone = r.phone || '├óΓé¼ΓÇ¥';
+        const location = r.location || '├óΓé¼ΓÇ¥';
         const role = r.role || 'User';
         const warnedByAdmin = Boolean(r.warned_by_admin);
         const profileData = serializeProfile({
@@ -2015,13 +2027,13 @@
       }
 
       const html = rows.map(r => {
-        const name = escapeHtml(r.full_name || 'Name unavailable');
-        const email = escapeHtml(r.email || 'Email not provided');
-        const mobile = escapeHtml(r.mobile || 'Mobile not provided');
-        const volunteerId = escapeHtml(r.volunteer_id || 'Volunteer ID pending');
+        const name = escapeHtml(r.full_name || '├óΓé¼ΓÇ¥');
+        const email = escapeHtml(r.email || '├óΓé¼ΓÇ¥');
+        const mobile = escapeHtml(r.mobile || '├óΓé¼ΓÇ¥');
+        const volunteerId = escapeHtml(r.volunteer_id || '├óΓé¼ΓÇ¥');
         const occupation = escapeHtml(r.occupation || 'Community Volunteer');
         const availability = escapeHtml(r.availability || 'Flexible');
-        const reviewedAt = escapeHtml(r.reviewed_at || r.created_at || 'Review date pending');
+        const reviewedAt = escapeHtml(r.reviewed_at || r.created_at || '├óΓé¼ΓÇ¥');
 
         return `
           <tr>
@@ -2029,7 +2041,7 @@
             <td>${email}</td>
             <td>${mobile}</td>
             <td>${volunteerId}</td>
-            <td>${occupation} • ${availability}</td>
+            <td>${occupation} ├óΓé¼┬ó ${availability}</td>
             <td>${reviewedAt}</td>
           </tr>
         `;
@@ -2079,12 +2091,12 @@
         return `
           <article class="volunteer-approver-item">
             <div class="volunteer-approver-item-top">
-              <strong>VA-${String(applicationId).padStart(3, '0')} • ${escapeHtml(r.full_name || 'Name unavailable')}</strong>
+              <strong>VA-${String(applicationId).padStart(3, '0')} ├óΓé¼┬ó ${escapeHtml(r.full_name || '├óΓé¼ΓÇ¥')}</strong>
               <span class="${statusClass}">${statusLabel}</span>
             </div>
-            <p>Email: ${escapeHtml(r.email || 'Email not provided')} | Mobile: ${escapeHtml(r.mobile || 'Mobile not provided')}</p>
-            <p>Note: ${escapeHtml(r.note || r.review_note || 'No note added')}</p>
-            <p>Submitted: ${escapeHtml(r.created_at || 'Submission date pending')}</p>
+            <p>Email: ${escapeHtml(r.email || '├óΓé¼ΓÇ¥')} | Mobile: ${escapeHtml(r.mobile || '├óΓé¼ΓÇ¥')}</p>
+            <p>Note: ${escapeHtml(r.note || r.review_note || '├óΓé¼ΓÇ¥')}</p>
+            <p>Submitted: ${escapeHtml(r.created_at || '├óΓé¼ΓÇ¥')}</p>
             <div class="volunteer-approver-item-actions">${actionHtml}</div>
           </article>
         `;
@@ -2194,13 +2206,13 @@
       const html = rows.map(r => {
         const entity = 'volunteers';
         const recordId = r.volunteer_id || '';
-        const name = r.name || 'Name unavailable';
-        const location = r.location || 'Location not provided';
-        const contact = r.contact || 'Contact not provided';
-        const joinDate = r.join_date || 'Join date pending';
-        const lastActive = r.last_active || 'No recent activity';
-        const missions = r.total_missions || 'No missions yet';
-        const rank = r.rank || 'Rank not assigned';
+        const name = r.name || '├óΓé¼ΓÇ¥';
+        const location = r.location || '├óΓé¼ΓÇ¥';
+        const contact = r.contact || '├óΓé¼ΓÇ¥';
+        const joinDate = r.join_date || '├óΓé¼ΓÇ¥';
+        const lastActive = r.last_active || '├óΓé¼ΓÇ¥';
+        const missions = r.total_missions || '├óΓé¼ΓÇ¥';
+        const rank = r.rank || '├óΓé¼ΓÇ¥';
         const warnedByAdmin = Boolean(r.warned_by_admin);
         const profileData = serializeProfile({
           __title: 'Volunteer Profile',
@@ -2254,16 +2266,16 @@
       const html = rows.map(r => {
         const entity = 'camera_contributors';
         const recordId = r.camera_id || '';
-        const cameraId = r.camera_id || 'Camera ID pending';
-        const location = r.location || 'Location not provided';
-        const ownerName = r.name || 'Owner name unavailable';
+        const cameraId = r.camera_id || '├óΓé¼ΓÇ¥';
+        const location = r.location || '├óΓé¼ΓÇ¥';
+        const ownerName = r.name || '├óΓé¼ΓÇ¥';
         const statusText = (r.status || 'Online');
         const statusClass = (statusText || '').toLowerCase() === 'online' || (statusText || '').toLowerCase() === 'active'
           ? 'status-active'
           : 'status-pending';
         const warnedByAdmin = Boolean(r.warned_by_admin);
-        const fps = r.fps || 'FPS not reported';
-        const lastChecked = r.last_checked || r.updated_at || r.created_at || 'Last check pending';
+        const fps = r.fps || '├óΓé¼ΓÇ¥';
+        const lastChecked = r.last_checked || r.updated_at || r.created_at || '├óΓé¼ΓÇ¥';
         const profileData = serializeProfile({
           __title: 'Camera Contributor Profile',
           __entity: 'camera_contributors',
@@ -2344,16 +2356,16 @@
         setRows(tbody, '<tr><td colspan="5">No withdrawal requests found.</td></tr>');
         const totalEl = document.getElementById('withdraw-total-amount');
         const pendingEl = document.getElementById('withdraw-pending-count');
-        if (totalEl) totalEl.textContent = '৳0.00';
+        if (totalEl) totalEl.textContent = 'αº│0.00';
         if (pendingEl) pendingEl.textContent = '0';
         return;
       }
 
       const html = rows.map(r => {
         const id = r.id || '';
-        const name = escapeHtml(r.contributor_name || (`User #${r.contributor_id || '—'}`));
+        const name = escapeHtml(r.contributor_name || (`User #${r.contributor_id || 'ΓÇö'}`));
         const amountNum = Number(r.amount || 0);
-        const amountStr = '৳' + amountNum.toFixed(2);
+        const amountStr = 'αº│' + amountNum.toFixed(2);
         const status = String(r.status || 'pending').toLowerCase();
         const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
         const statusClass = status === 'approved' ? 'status-approved' : (status === 'rejected' ? 'status-rejected' : 'status-pending');
@@ -2375,7 +2387,7 @@
       const pendingCount = rows.filter(rr => String(rr.status || '').toLowerCase() === 'pending').length;
       const totalEl = document.getElementById('withdraw-total-amount');
       const pendingEl = document.getElementById('withdraw-pending-count');
-      if (totalEl) totalEl.textContent = `৳${total.toFixed(2)}`;
+      if (totalEl) totalEl.textContent = `αº│${total.toFixed(2)}`;
       if (pendingEl) pendingEl.textContent = String(pendingCount);
 
       // bind approve/reject buttons
@@ -2454,10 +2466,10 @@
       const html = rows.map(r => {
         const entity = 'policemen';
         const recordId = r.police_id || '';
-        const name = r.full_name || r.name || 'Name unavailable';
-        const badge = r.badge_id || 'Badge ID pending';
+        const name = r.full_name || r.name || '├óΓé¼ΓÇ¥';
+        const badge = r.badge_id || '├óΓé¼ΓÇ¥';
         const designation = r.designation || 'Officer';
-        const station = r.station || r.city || 'Station not provided';
+        const station = r.station || r.city || '├óΓé¼ΓÇ¥';
         const statusClass = (r.status || 'active').toLowerCase() === 'inactive' ? 'status-pending' : 'status-active';
         const statusText = (r.status || 'Active');
         const warnedByAdmin = Boolean(r.warned_by_admin);
@@ -2550,7 +2562,7 @@
       window.__leafletMaps[elId] = map;
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
+        attribution: '├é┬⌐ OpenStreetMap contributors'
       }).addTo(map);
 
       const parseCoord = (value) => {
@@ -2643,6 +2655,7 @@
     bindTablesVisibilityControls();
 
     loadDashboardCounts();
+    setInterval(loadDashboardCounts, 30000);
 
     const modalEditBtn = document.getElementById('profile-edit-btn');
     const modalSaveBtn = document.getElementById('profile-save-btn');
@@ -2812,7 +2825,6 @@
   <!-- Chart.js CDN for demo chart drawing (remove if you use your own chart lib) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="../javascrpit/Admin.js?v=20260405e"></script>
-
 </body>
 
 </html>

@@ -3701,6 +3701,13 @@ body.donation-modal-open {
   animation: adImageFloat 2.8s ease-in-out infinite;
 }
 
+.advert video.ad-thumb {
+  max-height: none !important;
+  width: 100% !important;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+}
+
 .advert .ad-thumb-small {
   object-fit: cover;
   max-height: 74px;
