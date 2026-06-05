@@ -1106,7 +1106,7 @@ try {
 
   <article class="ad-card ad-card-primary">
     <small>Sponsored</small>
-    <video src="../Video/DONATION PROMO.mp4" class="ad-thumb" autoplay muted loop playsinline></video>
+    <video src="../Video/DONATION PROMO.mp4" class="ad-thumb" autoplay muted loop playsinline controls></video>
     <h5 class="ad-title-animate">Support Our Cause</h5>
     <p>Your donation helps us find missing persons and support volunteers.</p>
     <a href="#!">Donate Now</a>
