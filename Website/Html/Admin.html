@@ -73,9 +73,6 @@
   <li data-section="reports">
     <span class="icon"><i class="fa-solid fa-file-lines"></i></span> Reports
   </li>
-    <li data-section="chatbot-logs">
-    <span class="icon"><i class="fa-solid fa-comments"></i></span> Chatbot Logs
-  </li>
 </ul>
 
     </div>
@@ -939,99 +936,6 @@
     <div class="assign-actions">
       <button type="button" class="primary" id="assign-confirm-btn">Assign Selected</button>
       <button type="button" class="secondary" onclick="closeCrimeAssignModal()">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<div id="chatbot-logs" class="main-section">
-  <h2>Chatbot Logs</h2>
-  <div class="filters-bar chatbot-logs-actions">
-    <input id="chatbot-log-filter" type="text" placeholder="Search by question or reply" style="min-width: 320px;">
-    <button type="button" class="btn-refresh" id="chatbot-log-refresh">Refresh</button>
-    <button type="button" class="btn-export-report" id="chatbot-log-clear">Clear Logs</button>
-  </div>
-  <div class="chatbot-template-manager">
-    <div class="chatbot-template-manager__title">Dropdown Comments</div>
-    <div class="chatbot-template-manager__controls">
-      <input id="chatbot-template-input" type="text" placeholder="Add a new quick comment">
-      <button type="button" class="btn-refresh" id="chatbot-template-add">+ Add Comment</button>
-    </div>
-    <div id="chatbot-template-list" class="chatbot-template-list"></div>
-  </div>
-  <table class="styled-table">
-    <thead>
-      <tr>
-        <th>Time</th>
-        <th>User Question</th>
-        <th>Bot Reply</th>
-        <th>Admin Comment</th>
-      </tr>
-    </thead>
-    <tbody id="chatbot-logs-body">
-      <tr><td colspan="4">No chatbot logs yet.</td></tr>
-    </tbody>
-  </table>
-</div>
-
-<div id="chat-management" class="main-section active">
-  <button type="button" id="chat-management-launcher" class="chat-management-launcher" aria-label="Open chat management" aria-controls="chat-management-drawer" aria-expanded="false">
-    <i class="fa-solid fa-robot" aria-hidden="true"></i>
-  </button>
-
-  <div id="chat-management-drawer" class="chat-management-drawer" aria-hidden="true">
-    <div class="chat-management-panel" role="dialog" aria-modal="true" aria-label="Chat management">
-      <button type="button" id="chat-management-close" class="chat-management-close" aria-label="Close chat management">
-        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-      </button>
-
-      <div class="admin-messenger-shell">
-        <aside class="admin-messenger-sidebar">
-          <div class="admin-messenger-account">
-            <strong>searchar_admin</strong>
-          </div>
-
-          <div class="admin-messenger-tabs" aria-label="Messenger filters">
-            <button type="button" class="active">Primary</button>
-            <button type="button">Police</button>
-            <button type="button">Volunteer</button>
-          </div>
-
-          <div class="admin-messenger-search">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input id="chat-management-search" type="text" placeholder="Search" aria-label="Search conversations">
-            <select id="chat-management-role-filter" aria-label="Filter by role">
-              <option value="all">All</option>
-              <option value="police">Police</option>
-              <option value="volunteer">Volunteer</option>
-            </select>
-          </div>
-
-          <div id="chat-management-list" class="admin-messenger-list">
-            <div class="admin-messenger-empty">Loading chats...</div>
-          </div>
-        </aside>
-
-        <section class="admin-messenger-thread">
-          <header class="admin-messenger-thread-header">
-            <div class="admin-messenger-thread-user">
-              <img src="../Images/default-profile.gif" alt="Selected conversation">
-              <span>
-                <strong id="chat-management-title">Select conversation</strong>
-                <small id="chat-management-subtitle">Volunteer or Police</small>
-              </span>
-            </div>
-          </header>
-
-          <div id="chat-management-feed" class="admin-messenger-feed">
-            <div class="admin-messenger-date">Select a chat to view DB messages</div>
-          </div>
-
-          <div class="admin-messenger-composer">
-            <input id="chat-management-input" type="text" placeholder="Message..." autocomplete="off">
-            <button type="button" id="chat-management-send" class="admin-messenger-send">Send</button>
-          </div>
-        </section>
-      </div>
     </div>
   </div>
 </div>

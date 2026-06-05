@@ -1164,47 +1164,6 @@ try {
 </aside>
 
 
-<button type="button" id="volunteer-admin-chat-launcher" class="volunteer-admin-chat-launcher" aria-label="Open admin chat" aria-controls="volunteer-admin-chat-drawer" aria-expanded="false">
-  <i class="fa-solid fa-robot" aria-hidden="true"></i>
-</button>
-
-<div id="volunteer-admin-chat-drawer" class="volunteer-admin-chat-drawer" aria-hidden="true">
-  <section class="volunteer-admin-chat-panel" role="dialog" aria-modal="true" aria-label="Volunteer admin chat">
-    <header class="volunteer-admin-chat-header">
-      <div class="volunteer-admin-chat-profile">
-        <img src="../Images/default-profile.gif" alt="SEARCHAR Admin">
-        <span>
-          <strong>SEARCHAR Admin</strong>
-          <small>Admin support</small>
-        </span>
-      </div>
-      <button type="button" id="volunteer-admin-chat-close" class="volunteer-admin-chat-close" aria-label="Close admin chat">
-        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-      </button>
-    </header>
-
-    <div id="volunteer-admin-chat-feed" class="volunteer-admin-chat-feed">
-      <div class="volunteer-admin-chat-date">Today</div>
-      <div class="volunteer-admin-chat-row incoming">
-        <img src="../Images/default-profile.gif" alt="">
-        <div class="volunteer-admin-chat-stack">
-          <p>Hi, volunteer team update ekhane dite paro.</p>
-        </div>
-      </div>
-      <div class="volunteer-admin-chat-row outgoing">
-        <div class="volunteer-admin-chat-stack">
-          <p>Sure admin, mission update share kortesi.</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="volunteer-admin-chat-composer">
-      <input id="volunteer-admin-chat-input" type="text" placeholder="Message admin..." autocomplete="off">
-      <button type="button" id="volunteer-admin-chat-send" class="volunteer-admin-chat-send">Send</button>
-    </div>
-  </section>
-</div>
-
 
     <!-- Volunteer Mission Modal moved here to avoid stacking context issues -->
     <div id="volunteerMissionModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="missionModalTitle" tabindex="-1">
@@ -1240,7 +1199,6 @@ try {
       <script src="../javascrpit/Volunteer_Home.js?v=20260409g"></script>
       <script src="../javascrpit/post_interactions_shared.js?v=20260406d"></script>
        <script src="../javascrpit/notifications_shared.js"></script>
-      <script src="../javascrpit/messenger_shared.js"></script>
 
 </html>
 

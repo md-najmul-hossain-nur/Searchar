@@ -6,6 +6,7 @@ require_once __DIR__ . '/admin_chat_common.php';
 
 try {
     adminChatEnsureTable($pdo);
+    $storage = adminChatStorage($pdo);
     $raw = file_get_contents('php://input') ?: '';
     $payload = json_decode($raw, true);
     if (!is_array($payload)) {
@@ -22,30 +23,62 @@ try {
     if ($senderRole === 'admin') {
         $participantRole = adminChatNormalizeRole((string)($payload['participant_role'] ?? ''));
         $participantId = (int)($payload['participant_id'] ?? 0);
-        if (!in_array($participantRole, ['volunteer', 'police'], true) || $participantId <= 0) {
+        if (!in_array($participantRole, ['volunteer', 'police', 'contributor'], true) || $participantId <= 0) {
             adminChatJson(['success' => false, 'error' => 'Participant missing'], 422);
         }
-        $readByAdmin = 1;
-        $readByParticipant = 0;
         $senderId = 0;
     } else {
         [$participantRole, $participantId] = adminChatRequireParticipant();
-        $readByAdmin = 0;
-        $readByParticipant = 1;
     }
 
-    $stmt = $pdo->prepare("INSERT INTO admin_chat_messages
-        (participant_role, participant_id, sender_role, sender_id, message_text, is_read_by_admin, is_read_by_participant)
-        VALUES (:participant_role, :participant_id, :sender_role, :sender_id, :message_text, :read_admin, :read_participant)");
-    $stmt->execute([
-        ':participant_role' => $participantRole,
-        ':participant_id' => $participantId,
-        ':sender_role' => $senderRole,
-        ':sender_id' => max(0, $senderId),
-        ':message_text' => $text,
-        ':read_admin' => $readByAdmin,
-        ':read_participant' => $readByParticipant,
-    ]);
+    if ($storage === 'messages_conversation') {
+        $conversationId = adminChatGetConversationId($pdo, $participantRole, $participantId, true);
+        $receiverRole = $senderRole === 'admin' ? $participantRole : 'admin';
+        $receiverId = $senderRole === 'admin' ? $participantId : 0;
+
+        $stmt = $pdo->prepare("INSERT INTO messages
+            (conversation_id, sender_role, sender_id, receiver_role, receiver_id, message, is_read)
+            VALUES (:conversation_id, :sender_role, :sender_id, :receiver_role, :receiver_id, :message, 0)");
+        $stmt->execute([
+            ':conversation_id' => $conversationId,
+            ':sender_role' => $senderRole,
+            ':sender_id' => max(0, $senderId),
+            ':receiver_role' => $receiverRole,
+            ':receiver_id' => $receiverId,
+            ':message' => $text,
+        ]);
+
+        $touch = $pdo->prepare('UPDATE conversations SET last_message_at = NOW() WHERE id = :id');
+        $touch->execute([':id' => $conversationId]);
+    } elseif ($storage === 'messages_legacy') {
+        $receiverRole = $senderRole === 'admin' ? $participantRole : 'admin';
+        $receiverId = $senderRole === 'admin' ? $participantId : 0;
+        $stmt = $pdo->prepare("INSERT INTO messages
+            (sender_role, sender_id, receiver_role, receiver_id, message, is_read, created_at)
+            VALUES (:sender_role, :sender_id, :receiver_role, :receiver_id, :message, 0, NOW())");
+        $stmt->execute([
+            ':sender_role' => $senderRole,
+            ':sender_id' => max(0, $senderId),
+            ':receiver_role' => $receiverRole,
+            ':receiver_id' => $receiverId,
+            ':message' => $text,
+        ]);
+    } else {
+        $readByAdmin = $senderRole === 'admin' ? 1 : 0;
+        $readByParticipant = $senderRole === 'admin' ? 0 : 1;
+        $stmt = $pdo->prepare("INSERT INTO admin_chat_messages
+            (participant_role, participant_id, sender_role, sender_id, message_text, is_read_by_admin, is_read_by_participant)
+            VALUES (:participant_role, :participant_id, :sender_role, :sender_id, :message_text, :read_admin, :read_participant)");
+        $stmt->execute([
+            ':participant_role' => $participantRole,
+            ':participant_id' => $participantId,
+            ':sender_role' => $senderRole,
+            ':sender_id' => max(0, $senderId),
+            ':message_text' => $text,
+            ':read_admin' => $readByAdmin,
+            ':read_participant' => $readByParticipant,
+        ]);
+    }
 
     adminChatJson([
         'success' => true,

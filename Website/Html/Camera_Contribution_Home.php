@@ -147,7 +147,7 @@ try {
    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
 </head>
-<body>
+<body data-current-user-name="<?= e($user['full_name'] ?? 'Contributor') ?>">
  <header class="navbar" style="display:flex; align-items:center; justify-content:space-between; padding:10px; position:sticky; top:0; z-index:2000; background:#fff;">
   <!-- Left: Logo -->
   <div class="navbar-logo">
@@ -575,6 +575,36 @@ try {
   <div class="notifications-drawer-footer"></div>
 </aside>
 
+
+<button type="button" id="camera-admin-chat-launcher" class="camera-admin-chat-launcher" aria-label="Open admin chat" aria-controls="camera-admin-chat-drawer" aria-expanded="false">
+  <i class="fa-solid fa-robot" aria-hidden="true"></i>
+</button>
+
+<div id="camera-admin-chat-drawer" class="camera-admin-chat-drawer" aria-hidden="true" data-admin-chat>
+  <section class="camera-admin-chat-panel" role="dialog" aria-modal="true" aria-label="Contributor admin chat">
+    <header class="camera-admin-chat-header">
+      <div class="camera-admin-chat-profile">
+        <img src="../Images/default-profile.gif" alt="SEARCHAR Admin">
+        <span>
+          <strong>SEARCHAR Admin</strong>
+          <small>Admin support desk</small>
+        </span>
+      </div>
+      <button type="button" id="camera-admin-chat-close" class="camera-admin-chat-close" aria-label="Close admin chat">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    </header>
+
+    <div id="camera-admin-chat-feed" class="camera-admin-chat-feed" data-admin-chat-feed>
+      <div class="camera-admin-chat-date">No messages yet</div>
+    </div>
+
+    <div class="camera-admin-chat-composer">
+      <input id="camera-admin-chat-input" data-admin-chat-input type="text" placeholder="Message admin..." autocomplete="off">
+      <button type="button" id="camera-admin-chat-send" data-admin-chat-send class="camera-admin-chat-send">Send</button>
+    </div>
+  </section>
+</div>
 
 
     <!-- Withdrawal Modal (moved here to avoid stacking context issues) -->

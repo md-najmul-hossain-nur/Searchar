@@ -1362,47 +1362,6 @@ try {
 </aside>
 
 
-<button type="button" id="police-admin-chat-launcher" class="police-admin-chat-launcher" aria-label="Open admin chat" aria-controls="police-admin-chat-drawer" aria-expanded="false">
-  <i class="fa-solid fa-robot" aria-hidden="true"></i>
-</button>
-
-<div id="police-admin-chat-drawer" class="police-admin-chat-drawer" aria-hidden="true">
-  <section class="police-admin-chat-panel" role="dialog" aria-modal="true" aria-label="Police admin chat">
-    <header class="police-admin-chat-header">
-      <div class="police-admin-chat-profile">
-        <img src="../Images/default-profile.gif" alt="SEARCHAR Admin">
-        <span>
-          <strong>SEARCHAR Admin</strong>
-          <small>Admin command desk</small>
-        </span>
-      </div>
-      <button type="button" id="police-admin-chat-close" class="police-admin-chat-close" aria-label="Close admin chat">
-        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-      </button>
-    </header>
-
-    <div id="police-admin-chat-feed" class="police-admin-chat-feed">
-      <div class="police-admin-chat-date">Today</div>
-      <div class="police-admin-chat-row incoming">
-        <img src="../Images/default-profile.gif" alt="">
-        <div class="police-admin-chat-stack">
-          <p>Officer, case update ekhane admin ke dite parben.</p>
-        </div>
-      </div>
-      <div class="police-admin-chat-row outgoing">
-        <div class="police-admin-chat-stack">
-          <p>Received admin, investigation update pathacchi.</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="police-admin-chat-composer">
-      <input id="police-admin-chat-input" type="text" placeholder="Message admin..." autocomplete="off">
-      <button type="button" id="police-admin-chat-send" class="police-admin-chat-send">Send</button>
-    </div>
-  </section>
-</div>
-
 
     <!-- Missing Person Investigation Popup moved here to avoid stacking context issues -->
     <div id="missingFormModal" class="missing-modal">
@@ -1489,7 +1448,6 @@ try {
       <script src="../javascrpit/Policeman_Home.js?v=20260410e"></script>
       <script src="../javascrpit/post_interactions_shared.js?v=20260406d"></script>
       <script src="../javascrpit/notifications_shared.js"></script>
-      <script src="../javascrpit/messenger_shared.js"></script>
 
 </html>
 

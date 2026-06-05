@@ -4455,6 +4455,7 @@ function openAddVolunteerModal() {
   const feed = document.getElementById('chat-management-feed');
   const title = document.getElementById('chat-management-title');
   const subtitle = document.getElementById('chat-management-subtitle');
+  const headerAvatar = document.querySelector('.admin-messenger-thread-user img');
   const input = document.getElementById('chat-management-input');
   const sendBtn = document.getElementById('chat-management-send');
   const searchInput = document.getElementById('chat-management-search');
@@ -4503,7 +4504,7 @@ function openAddVolunteerModal() {
       const unread = Number(item.unread_count || 0);
       const badge = unread > 0 ? `<b class="admin-messenger-unread">${unread}</b>` : '';
       return `
-        <button type="button" class="admin-messenger-contact${active}" data-chat-role="${escapeHtml(item.participant_role)}" data-chat-id="${Number(item.participant_id)}">
+        <button type="button" class="admin-messenger-contact${active}" data-chat-role="${escapeHtml(item.participant_role)}" data-chat-id="${Number(item.participant_id)}" data-chat-avatar="${escapeHtml(item.profile_photo || '../Images/default-profile.gif')}">
           <img src="${escapeHtml(item.profile_photo || '../Images/default-profile.gif')}" alt="${escapeHtml(item.participant_name)}">
           <span>
             <strong>${escapeHtml(item.participant_name || 'Unknown')}</strong>
@@ -4522,13 +4523,19 @@ function openAddVolunteerModal() {
     }
 
     feed.innerHTML = messages.map(message => {
-      const mine = Boolean(message.is_mine);
-      const avatar = mine ? '' : '<img src="../Images/default-profile.gif" alt="">';
+      const senderRole = String(message.sender_role || '').toLowerCase();
+      const mine = senderRole === 'admin' || Boolean(message.is_mine);
+      const participantAvatar = selected?.profile_photo || '../Images/default-profile.gif';
+      const avatar = mine ? '' : `<img src="${escapeHtml(participantAvatar)}" alt="">`;
+      const senderLabel = mine ? 'You' : (selected?.participant_label || 'Participant');
+      const sentAt = shortTime(message.created_at);
       return `
         <div class="admin-message-row ${mine ? 'outgoing' : 'incoming'}">
           ${avatar}
           <div class="admin-message-stack">
+            <span class="admin-message-sender">${escapeHtml(senderLabel)}</span>
             <p>${escapeHtml(message.message_text)}</p>
+            <small class="admin-message-time">${escapeHtml(sentAt)}</small>
           </div>
         </div>
       `;
@@ -4543,7 +4550,7 @@ function openAddVolunteerModal() {
     return json;
   }
 
-  async function loadConversations(keepSelection = true) {
+  async function loadConversations(keepSelection = true, refreshMessages = true) {
     const params = new URLSearchParams();
     const role = roleFilter ? roleFilter.value : 'all';
     const search = searchInput ? searchInput.value.trim() : '';
@@ -4551,6 +4558,7 @@ function openAddVolunteerModal() {
     if (search) params.set('search', search);
 
     try {
+      params.set('as_admin', '1');
       const json = await fetchJson(`../Php/admin_chat_conversations.php?${params.toString()}`);
       conversations = Array.isArray(json.data) ? json.data : [];
       if (keepSelection && selected) {
@@ -4559,11 +4567,11 @@ function openAddVolunteerModal() {
         selected = conversations[0] || null;
       }
       renderConversations();
-      if (selected) {
+      if (selected && refreshMessages) {
         await loadMessages();
       } else {
         title.textContent = 'Select conversation';
-        subtitle.textContent = 'Volunteer or Police';
+        subtitle.textContent = 'Volunteer, Police, or Contributor';
         feed.innerHTML = '<div class="admin-messenger-date">No chat messages yet</div>';
       }
     } catch (error) {
@@ -4575,10 +4583,15 @@ function openAddVolunteerModal() {
     if (!selected) return;
     title.textContent = selected.participant_name || 'Unknown';
     subtitle.textContent = `${selected.participant_label} • ID ${selected.participant_id}`;
+    if (headerAvatar) {
+      headerAvatar.src = selected.profile_photo || '../Images/default-profile.gif';
+      headerAvatar.alt = selected.participant_name || 'Selected conversation';
+    }
     const params = new URLSearchParams({
       participant_role: selected.participant_role,
       participant_id: String(selected.participant_id)
     });
+    params.set('as_admin', '1');
     const json = await fetchJson(`../Php/admin_chat_messages.php?${params.toString()}`);
     renderMessages(Array.isArray(json.data) ? json.data : []);
   }
@@ -4599,7 +4612,8 @@ function openAddVolunteerModal() {
         body: JSON.stringify({
           participant_role: selected.participant_role,
           participant_id: selected.participant_id,
-          message: text
+          message: text,
+          as_admin: 1
         })
       });
       await loadConversations(true);
@@ -4619,11 +4633,12 @@ function openAddVolunteerModal() {
       participant_role: btn.getAttribute('data-chat-role'),
       participant_id: Number(btn.getAttribute('data-chat-id')),
       participant_name: btn.querySelector('strong')?.textContent || 'Unknown',
-      participant_label: btn.querySelector('small')?.textContent?.split('•')[0]?.trim() || 'Participant'
+      participant_label: btn.querySelector('small')?.textContent?.split('•')[0]?.trim() || 'Participant',
+      profile_photo: btn.getAttribute('data-chat-avatar') || '../Images/default-profile.gif'
     };
     renderConversations();
     await loadMessages();
-    await loadConversations(true);
+    await loadConversations(true, false);
   });
 
   sendBtn.addEventListener('click', sendMessage);
@@ -4634,15 +4649,15 @@ function openAddVolunteerModal() {
     }
   });
 
-  if (searchInput) searchInput.addEventListener('input', () => loadConversations(false));
-  if (roleFilter) roleFilter.addEventListener('change', () => loadConversations(false));
+  if (searchInput) searchInput.addEventListener('input', () => loadConversations(false, true));
+  if (roleFilter) roleFilter.addEventListener('change', () => loadConversations(false, true));
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
       tabs.forEach(btn => btn.classList.remove('active'));
       tab.classList.add('active');
       const label = tab.textContent.trim().toLowerCase();
-      if (roleFilter) roleFilter.value = label === 'police' || label === 'volunteer' ? label : 'all';
-      loadConversations(false);
+      if (roleFilter) roleFilter.value = ['police', 'volunteer', 'contributor'].includes(label) ? label : 'all';
+      loadConversations(false, true);
     });
   });
 
