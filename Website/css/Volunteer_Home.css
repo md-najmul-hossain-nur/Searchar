@@ -2216,3 +2216,40 @@ body.mission-modal-open {
 .redzone-btn:hover {
   background: #c0392b;
 }
+
+.advert .ad-card-slider {
+  padding-top: 10px;
+}
+
+.advert .ad-slider-container {
+  width: 100% !important;
+  max-height: none !important;
+  aspect-ratio: 16/9;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid #dbe7f3;
+  margin: 8px 0 9px;
+  background: #ffffff;
+}
+
+.advert .ad-slider-track {
+  display: flex;
+  width: 400%;
+  height: 100%;
+  animation: adSlideImages 16s infinite;
+}
+
+.advert .ad-slider-track img {
+  width: 25%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@keyframes adSlideImages {
+  0%, 20% { transform: translateX(0%); }
+  25%, 45% { transform: translateX(-25%); }
+  50%, 70% { transform: translateX(-50%); }
+  75%, 95% { transform: translateX(-75%); }
+  100% { transform: translateX(0%); }
+}

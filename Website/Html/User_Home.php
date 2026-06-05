@@ -1112,12 +1112,19 @@ try {
     <a href="#!">Donate Now</a>
   </article>
 
-  <article class="ad-card">
+  <article class="ad-card ad-card-slider">
     <small>Partner Offer</small>
-    <img src="../Images/WhatsApp Image 2025-07-31 at 12.44.00_b3223d89.jpg" alt="Training offer" class="ad-thumb ad-thumb-small">
-    <h5 class="ad-title-animate delay">Emergency First Aid Training</h5>
-    <p>Join the weekend session and earn a verified safety badge.</p>
-    <a href="#!">Book Seat</a>
+    <div class="ad-slider-container">
+      <div class="ad-slider-track">
+        <img src="../Images/logo.png" alt="Searchar Logo">
+        <img src="../Images/makeachange.jpg" alt="Light Seekers">
+        <img src="../Images/together.jpg" alt="Together">
+        <img src="../Images/resuce.jpg" alt="Rescue">
+      </div>
+    </div>
+    <h5 class="ad-title-animate delay">Community Safety Campaign</h5>
+    <p>Together we can make a difference. Learn how to assist in missing person searches and emergencies.</p>
+    <a href="#!">Join Campaign</a>
   </article>
 </div>
 

@@ -2548,3 +2548,29 @@ legend {
     padding-right: 0;
   }
 }
+
+.advert .ad-card-slider {
+  padding-top: 10px;
+}
+.advert .ad-slider-container {
+  width: 100% !important;
+  max-height: none !important;
+  aspect-ratio: 16/9;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid #dbe7f3;
+  margin: 8px 0 9px;
+  background: #ffffff;
+}
+.advert .ad-slider-track {
+  display: flex;
+  width: 400%;
+  height: 100%;
+  animation: adSlideImages 16s infinite;
+}
+.advert .ad-slider-track img {
+  width: 25%;
+  height: 100%;
+  object-fit: cover;
+}
