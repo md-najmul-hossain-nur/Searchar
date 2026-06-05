@@ -1316,3 +1316,40 @@ function filterPosts(category) {
     }
   });
 }
+
+(function initPoliceAdminChatDrawer() {
+  const launcher = document.getElementById('police-admin-chat-launcher');
+  const drawer = document.getElementById('police-admin-chat-drawer');
+  const closeBtn = document.getElementById('police-admin-chat-close');
+  const input = document.getElementById('police-admin-chat-input');
+
+  if (!launcher || !drawer || !closeBtn) return;
+
+  function setOpen(isOpen) {
+    drawer.classList.toggle('is-open', isOpen);
+    drawer.setAttribute('aria-hidden', String(!isOpen));
+    launcher.setAttribute('aria-expanded', String(isOpen));
+
+    if (isOpen) {
+      setTimeout(() => input?.focus(), 220);
+    } else {
+      launcher.focus();
+    }
+  }
+
+  launcher.addEventListener('click', () => {
+    setOpen(!drawer.classList.contains('is-open'));
+  });
+
+  closeBtn.addEventListener('click', () => setOpen(false));
+
+  drawer.addEventListener('click', (event) => {
+    if (event.target === drawer) setOpen(false);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && drawer.classList.contains('is-open')) {
+      setOpen(false);
+    }
+  });
+})();

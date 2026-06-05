@@ -73,10 +73,7 @@
   <li data-section="reports">
     <span class="icon"><i class="fa-solid fa-file-lines"></i></span> Reports
   </li>
-  <li data-section="chat-management">
-    <span class="icon"><i class="fa-solid fa-comments"></i></span> Chat Management
-  </li>
-  <li data-section="chatbot-logs">
+    <li data-section="chatbot-logs">
     <span class="icon"><i class="fa-solid fa-comments"></i></span> Chatbot Logs
   </li>
 </ul>
@@ -977,105 +974,116 @@
 </div>
 
 <div id="chat-management" class="main-section active">
-  <div class="admin-messenger-shell">
-    <aside class="admin-messenger-sidebar">
-      <div class="admin-messenger-account">
-        <strong>searchar_admin</strong>
-      </div>
+  <button type="button" id="chat-management-launcher" class="chat-management-launcher" aria-label="Open chat management" aria-controls="chat-management-drawer" aria-expanded="false">
+    <i class="fa-solid fa-robot" aria-hidden="true"></i>
+  </button>
 
-      <div class="admin-messenger-tabs" aria-label="Messenger filters">
-        <button type="button" class="active">Primary</button>
-        <button type="button">Police</button>
-        <button type="button">Volunteer</button>
-      </div>
+  <div id="chat-management-drawer" class="chat-management-drawer" aria-hidden="true">
+    <div class="chat-management-panel" role="dialog" aria-modal="true" aria-label="Chat management">
+      <button type="button" id="chat-management-close" class="chat-management-close" aria-label="Close chat management">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
 
-      <div class="admin-messenger-search">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input id="chat-management-search" type="text" placeholder="Search" aria-label="Search conversations">
-        <select id="chat-management-role-filter" aria-label="Filter by role">
-          <option value="all">All</option>
-          <option value="police">Police</option>
-          <option value="volunteer">Volunteer</option>
-        </select>
-      </div>
-
-      <div id="chat-management-list" class="admin-messenger-list">
-        <button type="button" class="admin-messenger-contact active">
-          <img src="../Images/default-profile.gif" alt="Rafiya Hossain Barsha">
-          <span>
-            <strong>Rafiya Hossain Barsha</strong>
-            <small>Police • Liked a message · 5w</small>
-          </span>
-        </button>
-        <button type="button" class="admin-messenger-contact">
-          <img src="../Images/businessman.gif" alt="Officer Rahman">
-          <span>
-            <strong>Officer Rahman</strong>
-            <small>Police • New case update · 12m</small>
-          </span>
-        </button>
-        <button type="button" class="admin-messenger-contact">
-          <img src="../Images/message.gif" alt="Volunteer Arefin">
-          <span>
-            <strong>Volunteer Arefin</strong>
-            <small>Volunteer • Mission proof sent · 1h</small>
-          </span>
-        </button>
-        <button type="button" class="admin-messenger-contact">
-          <img src="../Images/default-profile.gif" alt="Tanji Hasan">
-          <span>
-            <strong>Tanji Hasan Sawan</strong>
-            <small>Volunteer • Audio call ended · 8w</small>
-          </span>
-        </button>
-      </div>
-    </aside>
-
-    <section class="admin-messenger-thread">
-      <header class="admin-messenger-thread-header">
-        <div class="admin-messenger-thread-user">
-          <img src="../Images/default-profile.gif" alt="Selected conversation">
-          <span>
-            <strong id="chat-management-title">Rafiya Hossain Barsha</strong>
-            <small id="chat-management-subtitle">Police • rh.barsha</small>
-          </span>
-        </div>
-
-      </header>
-
-      <div id="chat-management-feed" class="admin-messenger-feed">
-        <div class="admin-message-row incoming">
-          <img src="../Images/default-profile.gif" alt="">
-          <div class="admin-message-stack">
-            <p>Admin, missing report er location update lagbe.</p>
-            <p>Case ta urgent.</p>
+      <div class="admin-messenger-shell">
+        <aside class="admin-messenger-sidebar">
+          <div class="admin-messenger-account">
+            <strong>searchar_admin</strong>
           </div>
-        </div>
-        <div class="admin-message-row outgoing">
-          <div class="admin-message-stack">
-            <p>Okay, ami police team ke assign kortesi.</p>
-          </div>
-        </div>
-        <div class="admin-messenger-date">Today, 12:46</div>
-        <div class="admin-message-row incoming">
-          <img src="../Images/default-profile.gif" alt="">
-          <div class="admin-message-stack">
-            <p>Volunteer team ready ase.</p>
-          </div>
-        </div>
-        <div class="admin-message-row outgoing">
-          <div class="admin-message-stack">
-            <p>Great. CCTV area verify kore update dao.</p>
-            <span class="admin-message-reaction">👍</span>
-          </div>
-        </div>
-      </div>
 
-      <div class="admin-messenger-composer">
-        <input id="chat-management-input" type="text" placeholder="Message..." autocomplete="off">
-        <button type="button" id="chat-management-send" class="admin-messenger-send">Send</button>
+          <div class="admin-messenger-tabs" aria-label="Messenger filters">
+            <button type="button" class="active">Primary</button>
+            <button type="button">Police</button>
+            <button type="button">Volunteer</button>
+          </div>
+
+          <div class="admin-messenger-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input id="chat-management-search" type="text" placeholder="Search" aria-label="Search conversations">
+            <select id="chat-management-role-filter" aria-label="Filter by role">
+              <option value="all">All</option>
+              <option value="police">Police</option>
+              <option value="volunteer">Volunteer</option>
+            </select>
+          </div>
+
+          <div id="chat-management-list" class="admin-messenger-list">
+            <button type="button" class="admin-messenger-contact active">
+              <img src="../Images/default-profile.gif" alt="Rafiya Hossain Barsha">
+              <span>
+                <strong>Rafiya Hossain Barsha</strong>
+                <small>Police • Liked a message · 5w</small>
+              </span>
+            </button>
+            <button type="button" class="admin-messenger-contact">
+              <img src="../Images/businessman.gif" alt="Officer Rahman">
+              <span>
+                <strong>Officer Rahman</strong>
+                <small>Police • New case update · 12m</small>
+              </span>
+            </button>
+            <button type="button" class="admin-messenger-contact">
+              <img src="../Images/message.gif" alt="Volunteer Arefin">
+              <span>
+                <strong>Volunteer Arefin</strong>
+                <small>Volunteer • Mission proof sent · 1h</small>
+              </span>
+            </button>
+            <button type="button" class="admin-messenger-contact">
+              <img src="../Images/default-profile.gif" alt="Tanji Hasan">
+              <span>
+                <strong>Tanji Hasan Sawan</strong>
+                <small>Volunteer • Audio call ended · 8w</small>
+              </span>
+            </button>
+          </div>
+        </aside>
+
+        <section class="admin-messenger-thread">
+          <header class="admin-messenger-thread-header">
+            <div class="admin-messenger-thread-user">
+              <img src="../Images/default-profile.gif" alt="Selected conversation">
+              <span>
+                <strong id="chat-management-title">Rafiya Hossain Barsha</strong>
+                <small id="chat-management-subtitle">Police • rh.barsha</small>
+              </span>
+            </div>
+          </header>
+
+          <div id="chat-management-feed" class="admin-messenger-feed">
+            <div class="admin-message-row incoming">
+              <img src="../Images/default-profile.gif" alt="">
+              <div class="admin-message-stack">
+                <p>Admin, missing report er location update lagbe.</p>
+                <p>Case ta urgent.</p>
+              </div>
+            </div>
+            <div class="admin-message-row outgoing">
+              <div class="admin-message-stack">
+                <p>Okay, ami police team ke assign kortesi.</p>
+              </div>
+            </div>
+            <div class="admin-messenger-date">Today, 12:46</div>
+            <div class="admin-message-row incoming">
+              <img src="../Images/default-profile.gif" alt="">
+              <div class="admin-message-stack">
+                <p>Volunteer team ready ase.</p>
+              </div>
+            </div>
+            <div class="admin-message-row outgoing">
+              <div class="admin-message-stack">
+                <p>Great. CCTV area verify kore update dao.</p>
+                <span class="admin-message-reaction">👍</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-messenger-composer">
+            <input id="chat-management-input" type="text" placeholder="Message..." autocomplete="off">
+            <button type="button" id="chat-management-send" class="admin-messenger-send">Send</button>
+          </div>
+        </section>
       </div>
-    </section>
+    </div>
   </div>
 </div>
 

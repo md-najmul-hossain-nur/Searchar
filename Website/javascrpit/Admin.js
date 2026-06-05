@@ -4409,6 +4409,47 @@ function openAddVolunteerModal() {
   refreshLogs();
 })();
 
+(function () {
+  const launcher = document.getElementById('chat-management-launcher');
+  const drawer = document.getElementById('chat-management-drawer');
+  const closeBtn = document.getElementById('chat-management-close');
+  const input = document.getElementById('chat-management-input');
+
+  if (!launcher || !drawer || !closeBtn) return;
+
+  function setDrawerOpen(isOpen) {
+    drawer.classList.toggle('is-open', isOpen);
+    drawer.setAttribute('aria-hidden', String(!isOpen));
+    launcher.setAttribute('aria-expanded', String(isOpen));
+
+    if (isOpen) {
+      setTimeout(() => input?.focus(), 220);
+    } else {
+      launcher.focus();
+    }
+  }
+
+  launcher.addEventListener('click', function () {
+    setDrawerOpen(!drawer.classList.contains('is-open'));
+  });
+
+  closeBtn.addEventListener('click', function () {
+    setDrawerOpen(false);
+  });
+
+  drawer.addEventListener('click', function (event) {
+    if (event.target === drawer) {
+      setDrawerOpen(false);
+    }
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && drawer.classList.contains('is-open')) {
+      setDrawerOpen(false);
+    }
+  });
+})();
+
 // Global auto refresh heartbeat for all major admin sections.
 (function () {
   const refreshSections = [
