@@ -1147,10 +1147,10 @@ try {
     <small>Partner Offer</small>
     <div class="ad-slider-container">
       <div class="ad-slider-track">
-        <img src="../Images/logo.png" alt="Searchar Logo">
-        <img src="../Images/makeachange.jpg" alt="Light Seekers">
+        <img src="../Images/searchar_gen_1_1780673767692.png" alt="Volunteer Rescue Team">
+        <img src="../Images/searchar_gen_2_1780673784234.png" alt="Community Safety Patrol">
+        <img src="../Images/makeachange.jpg" alt="Make a Change">
         <img src="../Images/together.jpg" alt="Together">
-        <img src="../Images/resuce.jpg" alt="Rescue">
       </div>
     </div>
     <h5 class="ad-title-animate delay">Community Safety Campaign</h5>
