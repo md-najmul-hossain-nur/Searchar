@@ -219,7 +219,7 @@ function normalizeBrokenUtf8(?string $text): string {
   }
 
   // Fix common mojibake when UTF-8 bytes were decoded as latin1/cp1252.
-  if (preg_match('/Ã°Å¸|Ãƒ.|Ã¢.|Ã¯Â¸|Ã‚./u', $value) !== 1) {
+  if (preg_match('/\x{00C3}\x{00B0}\x{00C5}\x{00B8}|\x{00C3}\x{0192}.|\x{00C3}\x{00A2}.|\x{00C3}\x{00AF}\x{00C2}\x{00B8}|\x{00C3}\x{201A}./u', $value) !== 1) {
     return $value;
   }
 

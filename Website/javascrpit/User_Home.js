@@ -1583,7 +1583,7 @@ function normalizeNotificationText(value) {
   const text = String(value || '');
   if (!text) return '';
 
-  const looksBroken = /ðŸ|Ã.|â.|ï¸|Â./.test(text);
+  const looksBroken = /\u00f0\u0178|\u00c3.|\u00e2.|\u00ef\u00b8|\u00c2./.test(text);
   if (!looksBroken || typeof TextDecoder === 'undefined') {
     return text;
   }

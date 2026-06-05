@@ -37,8 +37,8 @@
     const text = String(value || '');
     if (!text) return '';
 
-    // Decode common mojibake when UTF-8 bytes were interpreted as latin1 (e.g. "ðŸ›¡ï¸").
-    const looksBroken = /ðŸ|Ã.|â.|ï¸|Â./.test(text);
+    // Decode common mojibake when UTF-8 bytes were interpreted as latin1.
+    const looksBroken = /\u00f0\u0178|\u00c3.|\u00e2.|\u00ef\u00b8|\u00c2./.test(text);
     if (!looksBroken || typeof TextDecoder === 'undefined') {
       return text;
     }
