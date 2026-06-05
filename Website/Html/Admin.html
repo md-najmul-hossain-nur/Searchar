@@ -15,7 +15,7 @@
   <!-- Leaflet Heatmap plugin -->
   <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
   <!-- Main CSS -->
-  <link rel="stylesheet" href="../css/Admin.css">
+  <link rel="stylesheet" href="../css/Admin.css?v=20260605-chat-ui">
   
   
 </head>
@@ -976,21 +976,74 @@
 </div>
 
 <div id="chat-management" class="main-section">
-  <h2>Chat Management</h2>
-  <div class="chat-management-toolbar">
-    <input id="chat-management-search" type="text" placeholder="Search users or roles" aria-label="Search chats">
-        <select id="chat-management-role-filter" aria-label="Filter by role">
-      <option value="all">All roles</option>
-      <option value="user">User</option>
-      <option value="police">Policeman</option>
-          <option value="volunteer">Volunteer</option>
-      <option value="contributor">Cameraman</option>
-        </select>
-    <button type="button" class="btn-refresh" id="chat-management-refresh">Refresh</button>
+  <div class="admin-messenger-shell">
+    <aside class="admin-messenger-sidebar">
+      <div class="admin-messenger-account">
+        <strong>searchar_admin</strong>
+        <button type="button" aria-label="New message"><i class="fa-regular fa-pen-to-square"></i></button>
       </div>
-  <div class="chat-management-grid">
-    <aside class="chat-management-list-pane">
-      <div id="chat-management-list" class="chat-management-list"></div>
+
+      <div class="admin-messenger-tabs" aria-label="Messenger filters">
+        <button type="button" class="active">Primary</button>
+        <button type="button">Police</button>
+        <button type="button">Volunteer</button>
+      </div>
+
+      <div class="admin-messenger-search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input id="chat-management-search" type="text" placeholder="Search" aria-label="Search conversations">
+        <select id="chat-management-role-filter" aria-label="Filter by role">
+          <option value="all">All</option>
+          <option value="police">Police</option>
+          <option value="volunteer">Volunteer</option>
+        </select>
+      </div>
+
+      <div class="admin-messenger-stories" aria-label="Quick contacts">
+        <article>
+          <img src="../Images/default-profile.gif" alt="Your note">
+          <span>Your note</span>
+        </article>
+        <article>
+          <img src="../Images/businessman.gif" alt="Police contact">
+          <span>Police Team</span>
+        </article>
+        <article>
+          <img src="../Images/message.gif" alt="Volunteer contact">
+          <span>Volunteer</span>
+        </article>
+      </div>
+
+      <div id="chat-management-list" class="admin-messenger-list">
+        <button type="button" class="admin-messenger-contact active">
+          <img src="../Images/default-profile.gif" alt="Rafiya Hossain Barsha">
+          <span>
+            <strong>Rafiya Hossain Barsha</strong>
+            <small>Police • Liked a message · 5w</small>
+          </span>
+        </button>
+        <button type="button" class="admin-messenger-contact">
+          <img src="../Images/businessman.gif" alt="Officer Rahman">
+          <span>
+            <strong>Officer Rahman</strong>
+            <small>Police • New case update · 12m</small>
+          </span>
+        </button>
+        <button type="button" class="admin-messenger-contact">
+          <img src="../Images/message.gif" alt="Volunteer Arefin">
+          <span>
+            <strong>Volunteer Arefin</strong>
+            <small>Volunteer • Mission proof sent · 1h</small>
+          </span>
+        </button>
+        <button type="button" class="admin-messenger-contact">
+          <img src="../Images/default-profile.gif" alt="Tanji Hasan">
+          <span>
+            <strong>Tanji Hasan Sawan</strong>
+            <small>Volunteer • Audio call ended · 8w</small>
+          </span>
+        </button>
+      </div>
     </aside>
 
     <section class="admin-messenger-thread">
@@ -1008,12 +1061,43 @@
           <button type="button" aria-label="Conversation info"><i class="fa-solid fa-circle-info"></i></button>
           <button type="button" id="chat-management-refresh" aria-label="Refresh"><i class="fa-solid fa-rotate"></i></button>
         </div>
-      <div id="chat-management-feed" class="chat-management-feed">
-        <div class="messenger-empty-state">Select a conversation to view messages.</div>
+      </header>
+
+      <div id="chat-management-feed" class="admin-messenger-feed">
+        <div class="admin-message-row incoming">
+          <img src="../Images/default-profile.gif" alt="">
+          <div class="admin-message-stack">
+            <p>Admin, missing report er location update lagbe.</p>
+            <p>Case ta urgent.</p>
           </div>
-      <div class="chat-management-composer">
-        <input id="chat-management-input" type="text" placeholder="Type a reply to the selected user..." autocomplete="off">
-        <button type="button" id="chat-management-send" class="btn-refresh">Send</button>
+        </div>
+        <div class="admin-message-row outgoing">
+          <div class="admin-message-stack">
+            <p>Okay, ami police team ke assign kortesi.</p>
+          </div>
+        </div>
+        <div class="admin-messenger-date">Today, 12:46</div>
+        <div class="admin-message-row incoming">
+          <img src="../Images/default-profile.gif" alt="">
+          <div class="admin-message-stack">
+            <p>Volunteer team ready ase.</p>
+          </div>
+        </div>
+        <div class="admin-message-row outgoing">
+          <div class="admin-message-stack">
+            <p>Great. CCTV area verify kore update dao.</p>
+            <span class="admin-message-reaction">👍</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-messenger-composer">
+        <button type="button" aria-label="Emoji"><i class="fa-regular fa-face-smile"></i></button>
+        <input id="chat-management-input" type="text" placeholder="Message..." autocomplete="off">
+        <button type="button" aria-label="Voice message"><i class="fa-solid fa-microphone"></i></button>
+        <button type="button" aria-label="Attach image"><i class="fa-regular fa-image"></i></button>
+        <button type="button" aria-label="Sticker"><i class="fa-regular fa-note-sticky"></i></button>
+        <button type="button" id="chat-management-send" class="admin-messenger-send">Send</button>
       </div>
     </section>
   </div>
