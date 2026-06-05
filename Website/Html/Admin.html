@@ -15,10 +15,11 @@
   <!-- Leaflet Heatmap plugin -->
   <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
   <!-- Main CSS -->
-  <link rel="stylesheet" href="../css/Admin.css?v=20260605-chat-ui">
+  <link rel="stylesheet" href="../css/Admin.css">
   
   
 </head>
+
 <body>
   <div class="sidebar">
     <div class="sidebar-header">
@@ -975,12 +976,11 @@
   </table>
 </div>
 
-<div id="chat-management" class="main-section">
+<div id="chat-management" class="main-section active">
   <div class="admin-messenger-shell">
     <aside class="admin-messenger-sidebar">
       <div class="admin-messenger-account">
         <strong>searchar_admin</strong>
-        <button type="button" aria-label="New message"><i class="fa-regular fa-pen-to-square"></i></button>
       </div>
 
       <div class="admin-messenger-tabs" aria-label="Messenger filters">
@@ -997,21 +997,6 @@
           <option value="police">Police</option>
           <option value="volunteer">Volunteer</option>
         </select>
-      </div>
-
-      <div class="admin-messenger-stories" aria-label="Quick contacts">
-        <article>
-          <img src="../Images/default-profile.gif" alt="Your note">
-          <span>Your note</span>
-        </article>
-        <article>
-          <img src="../Images/businessman.gif" alt="Police contact">
-          <span>Police Team</span>
-        </article>
-        <article>
-          <img src="../Images/message.gif" alt="Volunteer contact">
-          <span>Volunteer</span>
-        </article>
       </div>
 
       <div id="chat-management-list" class="admin-messenger-list">
@@ -1055,12 +1040,7 @@
             <small id="chat-management-subtitle">Police • rh.barsha</small>
           </span>
         </div>
-        <div class="admin-messenger-actions">
-          <button type="button" aria-label="Voice call"><i class="fa-solid fa-phone"></i></button>
-          <button type="button" aria-label="Video call"><i class="fa-solid fa-video"></i></button>
-          <button type="button" aria-label="Conversation info"><i class="fa-solid fa-circle-info"></i></button>
-          <button type="button" id="chat-management-refresh" aria-label="Refresh"><i class="fa-solid fa-rotate"></i></button>
-        </div>
+
       </header>
 
       <div id="chat-management-feed" class="admin-messenger-feed">
@@ -1092,43 +1072,13 @@
       </div>
 
       <div class="admin-messenger-composer">
-        <button type="button" aria-label="Emoji"><i class="fa-regular fa-face-smile"></i></button>
         <input id="chat-management-input" type="text" placeholder="Message..." autocomplete="off">
-        <button type="button" aria-label="Voice message"><i class="fa-solid fa-microphone"></i></button>
-        <button type="button" aria-label="Attach image"><i class="fa-regular fa-image"></i></button>
-        <button type="button" aria-label="Sticker"><i class="fa-regular fa-note-sticky"></i></button>
         <button type="button" id="chat-management-send" class="admin-messenger-send">Send</button>
       </div>
     </section>
   </div>
 </div>
 
-<div id="controls" class="main-section">
-  <h2>Website & App Controls</h2>
-  <div class="setting-section">
-    <h4>Manage Pages</h4>
-    <button>Homepage</button>
-    <button>About</button>
-    <button>Terms & Policies</button>
-  </div>
-  <div class="setting-section">
-    <h4>App Features</h4>
-    <label><input type="checkbox" checked> Donations</label>
-    <label><input type="checkbox" checked> Live Camera Access</label>
-    <label><input type="checkbox"> Volunteer Registration</label>
-  </div>
-  <div class="setting-section">
-    <h4>QR Code Generator</h4>
-    <button>Generate for App Download</button>
-    <button>Generate for Report Link</button>
-  </div>
-  <div class="setting-section">
-    <h4>Maintenance Mode</h4>
-    <button>Enable Maintenance</button>
-    <span style="color: #d35400;">Currently: Off</span>
-  </div>
-</div>
-  </div>
 
   <div id="profile-modal" class="profile-modal" onclick="if(event.target===this) closeProfileModal()">
     <div class="profile-modal__card">
