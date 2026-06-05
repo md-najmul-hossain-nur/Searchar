@@ -1500,3 +1500,90 @@ function filterPosts(category) {
     }
   });
 })();
+
+(function initVolunteerAdminDbChat() {
+  const feed = document.getElementById('volunteer-admin-chat-feed');
+  const input = document.getElementById('volunteer-admin-chat-input');
+  const sendBtn = document.getElementById('volunteer-admin-chat-send');
+
+  if (!feed || !input || !sendBtn) return;
+
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, ch => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[ch]));
+  }
+
+  async function fetchJson(url, options) {
+    const res = await fetch(url, { credentials: 'same-origin', cache: 'no-store', ...options });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || !json.success) throw new Error(json.error || 'Chat request failed');
+    return json;
+  }
+
+  function renderMessages(messages) {
+    if (!messages.length) {
+      feed.innerHTML = '<div class="volunteer-admin-chat-date">No messages yet</div>';
+      return;
+    }
+
+    feed.innerHTML = messages.map(message => {
+      const mine = Boolean(message.is_mine);
+      const avatar = mine ? '' : '<img src="../Images/default-profile.gif" alt="">';
+      return `
+        <div class="volunteer-admin-chat-row ${mine ? 'outgoing' : 'incoming'}">
+          ${avatar}
+          <div class="volunteer-admin-chat-stack">
+            <p>${escapeHtml(message.message_text)}</p>
+          </div>
+        </div>
+      `;
+    }).join('');
+    feed.scrollTop = feed.scrollHeight;
+  }
+
+  async function loadMessages() {
+    try {
+      const json = await fetchJson('../Php/admin_chat_messages.php');
+      renderMessages(Array.isArray(json.data) ? json.data : []);
+    } catch (error) {
+      feed.innerHTML = `<div class="volunteer-admin-chat-date">${escapeHtml(error.message)}</div>`;
+    }
+  }
+
+  async function sendMessage() {
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    sendBtn.disabled = true;
+    try {
+      await fetchJson('../Php/admin_chat_send.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text })
+      });
+      await loadMessages();
+    } catch (error) {
+      alert(error.message);
+      input.value = text;
+    } finally {
+      sendBtn.disabled = false;
+      input.focus();
+    }
+  }
+
+  sendBtn.addEventListener('click', sendMessage);
+  input.addEventListener('keydown', event => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      sendMessage();
+    }
+  });
+
+  loadMessages();
+  setInterval(loadMessages, 4000);
+})();

@@ -4450,6 +4450,209 @@ function openAddVolunteerModal() {
   });
 })();
 
+(function initAdminDbChat() {
+  const list = document.getElementById('chat-management-list');
+  const feed = document.getElementById('chat-management-feed');
+  const title = document.getElementById('chat-management-title');
+  const subtitle = document.getElementById('chat-management-subtitle');
+  const input = document.getElementById('chat-management-input');
+  const sendBtn = document.getElementById('chat-management-send');
+  const searchInput = document.getElementById('chat-management-search');
+  const roleFilter = document.getElementById('chat-management-role-filter');
+  const tabs = Array.from(document.querySelectorAll('.admin-messenger-tabs button'));
+
+  if (!list || !feed || !title || !subtitle || !input || !sendBtn) return;
+
+  let selected = null;
+  let conversations = [];
+  let refreshTimer = null;
+
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, ch => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[ch]));
+  }
+
+  function shortTime(value) {
+    if (!value) return '';
+    const date = new Date(String(value).replace(' ', 'T'));
+    if (Number.isNaN(date.getTime())) return '';
+    const diff = Date.now() - date.getTime();
+    if (diff < 60000) return 'now';
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}m`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h`;
+    return `${Math.floor(diff / 86400000)}d`;
+  }
+
+  function selectedKey(item) {
+    return `${item.participant_role}:${item.participant_id}`;
+  }
+
+  function renderConversations() {
+    if (!conversations.length) {
+      list.innerHTML = '<div class="admin-messenger-empty">No chat messages yet.</div>';
+      return;
+    }
+
+    list.innerHTML = conversations.map(item => {
+      const active = selected && selectedKey(selected) === selectedKey(item) ? ' active' : '';
+      const unread = Number(item.unread_count || 0);
+      const badge = unread > 0 ? `<b class="admin-messenger-unread">${unread}</b>` : '';
+      return `
+        <button type="button" class="admin-messenger-contact${active}" data-chat-role="${escapeHtml(item.participant_role)}" data-chat-id="${Number(item.participant_id)}">
+          <img src="${escapeHtml(item.profile_photo || '../Images/default-profile.gif')}" alt="${escapeHtml(item.participant_name)}">
+          <span>
+            <strong>${escapeHtml(item.participant_name || 'Unknown')}</strong>
+            <small>${escapeHtml(item.participant_label)} • ${escapeHtml(item.last_message || '')} · ${shortTime(item.last_at)}</small>
+          </span>
+          ${badge}
+        </button>
+      `;
+    }).join('');
+  }
+
+  function renderMessages(messages) {
+    if (!messages.length) {
+      feed.innerHTML = '<div class="admin-messenger-date">No messages yet</div>';
+      return;
+    }
+
+    feed.innerHTML = messages.map(message => {
+      const mine = Boolean(message.is_mine);
+      const avatar = mine ? '' : '<img src="../Images/default-profile.gif" alt="">';
+      return `
+        <div class="admin-message-row ${mine ? 'outgoing' : 'incoming'}">
+          ${avatar}
+          <div class="admin-message-stack">
+            <p>${escapeHtml(message.message_text)}</p>
+          </div>
+        </div>
+      `;
+    }).join('');
+    feed.scrollTop = feed.scrollHeight;
+  }
+
+  async function fetchJson(url, options) {
+    const res = await fetch(url, { credentials: 'same-origin', cache: 'no-store', ...options });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || !json.success) throw new Error(json.error || 'Chat request failed');
+    return json;
+  }
+
+  async function loadConversations(keepSelection = true) {
+    const params = new URLSearchParams();
+    const role = roleFilter ? roleFilter.value : 'all';
+    const search = searchInput ? searchInput.value.trim() : '';
+    if (role && role !== 'all') params.set('role', role);
+    if (search) params.set('search', search);
+
+    try {
+      const json = await fetchJson(`../Php/admin_chat_conversations.php?${params.toString()}`);
+      conversations = Array.isArray(json.data) ? json.data : [];
+      if (keepSelection && selected) {
+        selected = conversations.find(item => selectedKey(item) === selectedKey(selected)) || selected;
+      } else {
+        selected = conversations[0] || null;
+      }
+      renderConversations();
+      if (selected) {
+        await loadMessages();
+      } else {
+        title.textContent = 'Select conversation';
+        subtitle.textContent = 'Volunteer or Police';
+        feed.innerHTML = '<div class="admin-messenger-date">No chat messages yet</div>';
+      }
+    } catch (error) {
+      list.innerHTML = `<div class="admin-messenger-empty">${escapeHtml(error.message)}</div>`;
+    }
+  }
+
+  async function loadMessages() {
+    if (!selected) return;
+    title.textContent = selected.participant_name || 'Unknown';
+    subtitle.textContent = `${selected.participant_label} • ID ${selected.participant_id}`;
+    const params = new URLSearchParams({
+      participant_role: selected.participant_role,
+      participant_id: String(selected.participant_id)
+    });
+    const json = await fetchJson(`../Php/admin_chat_messages.php?${params.toString()}`);
+    renderMessages(Array.isArray(json.data) ? json.data : []);
+  }
+
+  async function sendMessage() {
+    if (!selected) {
+      alert('Select a conversation first.');
+      return;
+    }
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    sendBtn.disabled = true;
+    try {
+      await fetchJson('../Php/admin_chat_send.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          participant_role: selected.participant_role,
+          participant_id: selected.participant_id,
+          message: text
+        })
+      });
+      await loadConversations(true);
+    } catch (error) {
+      alert(error.message);
+      input.value = text;
+    } finally {
+      sendBtn.disabled = false;
+      input.focus();
+    }
+  }
+
+  list.addEventListener('click', async event => {
+    const btn = event.target.closest('[data-chat-role][data-chat-id]');
+    if (!btn) return;
+    selected = {
+      participant_role: btn.getAttribute('data-chat-role'),
+      participant_id: Number(btn.getAttribute('data-chat-id')),
+      participant_name: btn.querySelector('strong')?.textContent || 'Unknown',
+      participant_label: btn.querySelector('small')?.textContent?.split('•')[0]?.trim() || 'Participant'
+    };
+    renderConversations();
+    await loadMessages();
+    await loadConversations(true);
+  });
+
+  sendBtn.addEventListener('click', sendMessage);
+  input.addEventListener('keydown', event => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      sendMessage();
+    }
+  });
+
+  if (searchInput) searchInput.addEventListener('input', () => loadConversations(false));
+  if (roleFilter) roleFilter.addEventListener('change', () => loadConversations(false));
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(btn => btn.classList.remove('active'));
+      tab.classList.add('active');
+      const label = tab.textContent.trim().toLowerCase();
+      if (roleFilter) roleFilter.value = label === 'police' || label === 'volunteer' ? label : 'all';
+      loadConversations(false);
+    });
+  });
+
+  loadConversations(false);
+  refreshTimer = setInterval(() => {
+    loadConversations(true);
+  }, 4000);
+  window.addEventListener('beforeunload', () => clearInterval(refreshTimer));
+})();
+
 // Global auto refresh heartbeat for all major admin sections.
 (function () {
   const refreshSections = [

@@ -3555,7 +3555,7 @@ h4 {
 .admin-messenger-contact {
   width: 100%;
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr);
+  grid-template-columns: 48px minmax(0, 1fr) auto;
   gap: 12px;
   align-items: center;
   border: none;
@@ -3602,6 +3602,26 @@ h4 {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.admin-messenger-unread {
+  min-width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #f75c3c;
+  color: #fff;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.admin-messenger-empty {
+  padding: 18px 12px;
+  color: #667085;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
 }
 
 .admin-messenger-thread {
@@ -3830,7 +3850,7 @@ h4 {
   }
 
   .admin-messenger-contact {
-    grid-template-columns: 42px minmax(0, 1fr);
+    grid-template-columns: 42px minmax(0, 1fr) auto;
     gap: 10px;
     padding: 9px;
   }
