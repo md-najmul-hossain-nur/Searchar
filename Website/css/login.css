@@ -1270,3 +1270,121 @@ back-toggle-btn:hover {
 .form:hover .auth-panel-title {
   letter-spacing: -0.02em;
 }
+
+/* Forgot Password Modal */
+.fp-modal {
+  position: fixed;
+  z-index: 2000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  animation: fadeIn 0.3s forwards;
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+.fp-modal-content {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  padding: 30px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 420px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  transform: translateY(20px);
+  animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes slideUp {
+  to { transform: translateY(0); }
+}
+
+.fp-close {
+  position: absolute;
+  right: 20px;
+  top: 15px;
+  font-size: 28px;
+  color: #777;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.fp-close:hover {
+  color: #f75c3c;
+}
+
+.fp-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.5rem;
+  color: #1a232a;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.fp-desc {
+  font-size: 0.95rem;
+  color: #555;
+  margin-bottom: 25px;
+}
+
+.fp-input-group {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.fp-input {
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 1rem;
+  background-color: #f8f9fa;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.fp-input:focus {
+  border-color: #f75c3c;
+  background-color: #fff;
+  box-shadow: 0 0 0 4px rgba(247, 92, 60, 0.1);
+}
+
+.fp-btn {
+  width: 100%;
+  padding: 14px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #f75c3c, #e3471c);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(247, 92, 60, 0.3);
+}
+
+.fp-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(247, 92, 60, 0.4);
+}
+
+.fp-btn-success {
+  background: linear-gradient(135deg, #28a745, #218838);
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.fp-btn-success:hover {
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+}

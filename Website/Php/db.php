@@ -14,7 +14,7 @@ try {
 
 if (!function_exists('isDuplicateContact')) {
     function isDuplicateContact(PDO $pdo, ?string $email, ?string $mobile, ?string $nid = null): bool {
-        $tables = ['users', 'policemen', 'volunteers', 'camera_contributors'];
+        $tables = ['users', 'policemen', 'volunteers', 'camera_contributors', 'admins'];
         
         foreach ($tables as $table) {
             $conditions = [];
@@ -43,12 +43,7 @@ if (!function_exists('isDuplicateContact')) {
             }
         }
         
-        // Check hardcoded admin email/phone
-        $adminEmail = 'mnajmulhossainnur@gmail.com';
-        $adminPhone = '01743094595';
-        if (!empty($email) && strcasecmp($email, $adminEmail) === 0) return true;
-        if (!empty($mobile) && $mobile === $adminPhone) return true;
-        
+        // Hardcoded checks removed since admin accounts are now in the admins table.
         return false;
     }
 }

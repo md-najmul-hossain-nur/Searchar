@@ -36,25 +36,10 @@ if (empty($login_input) || empty($password)) {
     exit();
 }
 
-// Admin credentials
-$adminEmail = 'mnajmulhossainnur@gmail.com';
-$adminPhone = '01743094595';
-$adminPassword = '12345678';
-
-$adminPhoneCandidates = buildPhoneCandidates($login_input);
-$loginOk = (
-    strcasecmp($login_input, $adminEmail) === 0 ||
-    in_array($adminPhone, $adminPhoneCandidates, true)
-) && $password === $adminPassword;
-
-if ($loginOk) {
-    $_SESSION['user_id'] = 0;
-    $_SESSION['role'] = 'admin';
-    header("Location: ../Html/Admin.html?login=success");
-    exit();
-}
+// Hardcoded admin checks removed; handled by roleTableMap below.
 
 $roleTableMap = [
+    'admin'       => ['table' => 'admins', 'id_col' => 'admin_id', 'home' => '../Html/Admin.html'],
     'user'        => ['table' => 'users', 'id_col' => 'user_id', 'home' => '../Html/User_Home.php'],
     'police'      => ['table' => 'policemen', 'id_col' => 'police_id', 'home' => '../Html/Policeman_Home.php'],
     'volunteer'   => ['table' => 'volunteers', 'id_col' => 'volunteer_id', 'home' => '../Html/Volunteer_Home.php'],
@@ -110,6 +95,9 @@ try {
     // Successful login
     $_SESSION['user_id'] = $foundUser[$roleTableMap[$foundRole]['id_col']];
     $_SESSION['role'] = $foundRole;
+    if ($foundRole === 'admin') {
+        $_SESSION['admin_role'] = $foundUser['role'] ?? 'sub_admin';
+    }
     $home_page = $roleTableMap[$foundRole]['home'];
     header("Location: $home_page?login=success");
     exit();

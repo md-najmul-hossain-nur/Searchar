@@ -88,7 +88,7 @@
       </button>
 
       <!-- Sign Up Prompt -->
-      <p></p>
+      <p style="margin-top:10px;"><b onclick="openForgotPasswordModal()" class="pointer" style="color:#007bff; font-weight:600;">Forgot Password?</b></p>
       <p>
         <span>Don't have an account?</span>
         <b onclick="toggle()" class="pointer">Sign up here</b>
@@ -140,6 +140,43 @@
 	</div>
 
     <script src="../javascrpit/login.js?v=20260405b"></script>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgot-password-modal" class="fp-modal" style="display:none;">
+      <div class="fp-modal-content">
+        <span class="fp-close" onclick="closeForgotPasswordModal()">&times;</span>
+        
+        <!-- Step 1: Request Code -->
+        <div id="fp-step-1" class="fp-step active">
+          <h3 class="fp-title">Forgot Password</h3>
+          <p class="fp-desc">Enter your registered email address to receive a verification code.</p>
+          <div class="fp-input-group">
+            <input type="email" id="fp-email" class="fp-input" placeholder="Your Email" required>
+          </div>
+          <button class="fp-btn" onclick="requestPasswordReset()">Send Code</button>
+        </div>
+
+        <!-- Step 2: Verify Code -->
+        <div id="fp-step-2" class="fp-step" style="display:none;">
+          <h3 class="fp-title">Verify Code</h3>
+          <p class="fp-desc">We sent a 6-digit code to your email.</p>
+          <div class="fp-input-group">
+            <input type="text" id="fp-code" class="fp-input" placeholder="6-digit code" required>
+          </div>
+          <button class="fp-btn" onclick="verifyPasswordCode()">Verify Code</button>
+        </div>
+
+        <!-- Step 3: Reset Password -->
+        <div id="fp-step-3" class="fp-step" style="display:none;">
+          <h3 class="fp-title">New Password</h3>
+          <p class="fp-desc">Enter your new password below.</p>
+          <div class="fp-input-group">
+            <input type="password" id="fp-new-password" class="fp-input" placeholder="New Password" required>
+          </div>
+          <button class="fp-btn fp-btn-success" onclick="resetPassword()">Update Password</button>
+        </div>
+      </div>
+    </div>
 </body>
 
 <script>
