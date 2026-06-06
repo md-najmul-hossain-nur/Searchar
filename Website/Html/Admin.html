@@ -1975,7 +1975,7 @@
           ? `${escapeHtml(name)} <span class="status-active" style="margin-left:6px; font-size:11px; padding:2px 8px;">Combo</span>`
           : escapeHtml(name);
         const email = r.email || 'N/A';
-        const phone = r.phone || \'01XXXXXXXXX\';
+        const phone = r.phone || '01XXXXXXXXX';
         const location = r.location || 'N/A';
         const role = r.role || 'User';
         const warnedByAdmin = Boolean(r.warned_by_admin);
@@ -2041,7 +2041,7 @@
       const html = rows.map(r => {
         const name = escapeHtml(r.full_name || 'N/A');
         const email = escapeHtml(r.email || 'N/A');
-        const mobile = escapeHtml(r.mobile || \'01XXXXXXXXX\');
+        const mobile = escapeHtml(r.mobile || '01XXXXXXXXX');
         const volunteerId = escapeHtml(r.volunteer_id || 'N/A');
         const occupation = escapeHtml(r.occupation || 'Community Volunteer');
         const availability = escapeHtml(r.availability || 'Flexible');
@@ -2106,7 +2106,7 @@
               <strong>VA-${String(applicationId).padStart(3, '0')} ├óΓé¼┬ó ${escapeHtml(r.full_name || 'N/A')}</strong>
               <span class="${statusClass}">${statusLabel}</span>
             </div>
-            <p>Email: ${escapeHtml(r.email || 'N/A')} | Mobile: ${escapeHtml(r.mobile || \'01XXXXXXXXX\')}</p>
+            <p>Email: ${escapeHtml(r.email || 'N/A')} | Mobile: ${escapeHtml(r.mobile || '01XXXXXXXXX')}</p>
             <p>Note: ${escapeHtml(r.note || r.review_note || 'N/A')}</p>
             <p>Submitted: ${escapeHtml(r.created_at || 'N/A')}</p>
             <div class="volunteer-approver-item-actions">${actionHtml}</div>
@@ -2220,7 +2220,7 @@
         const recordId = r.volunteer_id || '';
         const name = r.name || 'N/A';
         const location = r.location || 'N/A';
-        const contact = r.contact || \'01XXXXXXXXX\';
+        const contact = r.contact || '01XXXXXXXXX';
         const joinDate = r.join_date || 'N/A';
         const lastActive = r.last_active || 'N/A';
         const missions = r.total_missions || 'N/A';

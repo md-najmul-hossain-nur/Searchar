@@ -2899,7 +2899,7 @@ function openAddVolunteerModal() {
             <tr>
               <td>${esc(d.donor_name || 'Anonymous')}</td>
               <td>${esc(d.donor_email || 'N/A')}</td>
-              <td>${esc(d.sender_mobile || \'01XXXXXXXXX\')}</td>
+              <td>${esc(d.sender_mobile || '01XXXXXXXXX')}</td>
               <td>${esc(d.tx_id || 'N/A')}</td>
               <td>৳${esc(Number(d.amount || 0).toFixed(2))}</td>
               <td>${esc(fmtDate(d.date))}</td>
@@ -2913,7 +2913,7 @@ function openAddVolunteerModal() {
             btn.addEventListener('click', () => {
               const donorName = String(btn.getAttribute('data-donor-name') || 'Anonymous');
               const donorEmail = String(btn.getAttribute('data-donation-email') || '').trim() || 'N/A';
-              const donorMobile = String(btn.getAttribute('data-donation-mobile\') || \'\').trim() || \'01XXXXXXXXX\';
+              const donorMobile = String(btn.getAttribute('data-donation-mobile') || '').trim() || '01XXXXXXXXX';
               const donationTxId = String(btn.getAttribute('data-donation-txid') || '').trim() || 'N/A';
               const amount = String(btn.getAttribute('data-donation-amount') || '0.00');
               const dateText = String(btn.getAttribute('data-donation-date') || '');
