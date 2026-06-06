@@ -4732,7 +4732,7 @@ function previewAiImage(input) {
 function removeAiImage() {
   document.getElementById('ai-reference-image').value = '';
   document.getElementById('ai-reference-preview').classList.add('hidden');
-  document.getElementById('ai-preview-img').src = '';
+  document.getElementById('ai-preview-img').removeAttribute('src');
 }
 
 // Helper to generate a simple average hash (aHash) of an image source
@@ -4780,12 +4780,12 @@ async function runAiSearch() {
   const fileInput = document.getElementById('ai-reference-image');
   const previewImg = document.getElementById('ai-preview-img');
   
-  if ((!fileInput.files || !fileInput.files[0]) && !window.activeAiSearchImage && !previewImg.src) {
+  if ((!fileInput.files || !fileInput.files[0]) && !window.activeAiSearchImage && !previewImg.getAttribute('src')) {
     alert("Please upload a reference image or select a case first.");
     return;
   }
   
-  const searchImageSrc = previewImg.src || window.activeAiSearchImage;
+  const searchImageSrc = previewImg.getAttribute('src') || window.activeAiSearchImage;
   const isAutoFilled = (searchImageSrc === window.activeAiSearchImage);
   
   const resultsGrid = document.getElementById('ai-results-grid');
@@ -4841,8 +4841,9 @@ async function runAiSearch() {
         // If no visual match found, fallback to low mock score
         if (!matchedPost) {
           let hashStr = 0;
-          for (let i = 0; i < searchImageSrc.length; i++) {
-            hashStr = ((hashStr << 5) - hashStr) + searchImageSrc.charCodeAt(i);
+          const strToHash = (searchImageSrc || '').substring(0, 500) + (searchImageSrc || '').length;
+          for (let i = 0; i < strToHash.length; i++) {
+            hashStr = ((hashStr << 5) - hashStr) + strToHash.charCodeAt(i);
             hashStr |= 0;
           }
           finalScore = Math.abs(hashStr) % 50 + 10; // Between 10 and 59
@@ -4883,8 +4884,9 @@ async function runAiSearch() {
       // CCTV search simulation
       await new Promise(r => setTimeout(r, 1500));
       let hashStr = 0;
-      for (let i = 0; i < searchImageSrc.length; i++) {
-        hashStr = ((hashStr << 5) - hashStr) + searchImageSrc.charCodeAt(i);
+      const strToHash = (searchImageSrc || '').substring(0, 500) + (searchImageSrc || '').length;
+      for (let i = 0; i < strToHash.length; i++) {
+        hashStr = ((hashStr << 5) - hashStr) + strToHash.charCodeAt(i);
         hashStr |= 0;
       }
       const score = Math.abs(hashStr) % 90 + 10;
