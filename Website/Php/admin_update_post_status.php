@@ -345,6 +345,11 @@ try {
             ]);
         }
 
+        if (isset($_SESSION['user_id'])) {
+            $logStmt = $pdo->prepare("INSERT INTO admin_logs (admin_id, action_type, details) VALUES (?, ?, ?)");
+            $logStmt->execute([$_SESSION['user_id'], 'Rejected Post', "Rejected post ID: $postId"]);
+        }
+
         echo json_encode([
             'success' => true,
             'status' => 'deleted',
@@ -420,6 +425,11 @@ try {
         }
     } elseif ($shareRequested && $shareAnonymous) {
         error_log('admin_update_post_status: Facebook share skipped for anonymous post ' . $postId);
+    }
+
+    if (isset($_SESSION['user_id'])) {
+        $logStmt = $pdo->prepare("INSERT INTO admin_logs (admin_id, action_type, details) VALUES (?, ?, ?)");
+        $logStmt->execute([$_SESSION['user_id'], 'Approved Post', "Approved post ID: $postId ($targetStatus)"]);
     }
 
     echo json_encode([

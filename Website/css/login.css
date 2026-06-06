@@ -1333,6 +1333,18 @@ back-toggle-btn:hover {
   font-weight: 700;
 }
 
+.fp-step {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.fp-step.active {
+  display: flex;
+}
+
 .fp-desc {
   font-size: 0.95rem;
   color: #555;

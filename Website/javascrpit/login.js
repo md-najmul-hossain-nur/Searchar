@@ -704,8 +704,8 @@ document.addEventListener('click', function (event) {
 let resetEmail = '';
 
 function openForgotPasswordModal() {
-  document.getElementById('forgot-password-modal').style.display = 'block';
-  document.getElementById('fp-step-1').style.display = 'block';
+  document.getElementById('forgot-password-modal').style.display = 'flex';
+  document.getElementById('fp-step-1').style.display = 'flex';
   document.getElementById('fp-step-2').style.display = 'none';
   document.getElementById('fp-step-3').style.display = 'none';
   document.getElementById('fp-email').value = '';
@@ -733,7 +733,7 @@ async function requestPasswordReset() {
     if (data.success) {
       resetEmail = email;
       document.getElementById('fp-step-1').style.display = 'none';
-      document.getElementById('fp-step-2').style.display = 'block';
+      document.getElementById('fp-step-2').style.display = 'flex';
     } else {
       alert("Error: " + data.error);
     }
@@ -758,7 +758,7 @@ async function verifyPasswordCode() {
     const data = await res.json();
     if (data.success) {
       document.getElementById('fp-step-2').style.display = 'none';
-      document.getElementById('fp-step-3').style.display = 'block';
+      document.getElementById('fp-step-3').style.display = 'flex';
     } else {
       alert("Error: " + data.error);
     }
