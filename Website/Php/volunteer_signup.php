@@ -55,11 +55,11 @@ try {
     }
 
     // -----------------------------
-    // Duplicate check
+    // Duplicate check across all roles
     // -----------------------------
-    $exists = $pdo->prepare("SELECT 1 FROM volunteers WHERE email=? OR mobile=? OR nid_number=?");
-    $exists->execute([$email, $mobile, $nid]);
-    if ($exists->fetch()) throw new Exception("This Email, Mobile, or NID is already registered!");
+    if (isDuplicateContact($pdo, $email, $mobile, $nid)) {
+        throw new Exception("This Email, Mobile, or NID is already registered!");
+    }
 
     // -----------------------------
     // Password validation

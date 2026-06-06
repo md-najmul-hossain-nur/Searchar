@@ -64,10 +64,10 @@ try {
         if ($blk->fetch()) throw new Exception("This Email/Mobile has been blocked by admin.");
     }
 
-    // Check uniqueness
-    $exists = $pdo->prepare("SELECT 1 FROM policemen WHERE email=? OR mobile=? OR nid_number=?");
-    $exists->execute([$email, $mobile, $nid]);
-    if ($exists->fetch()) throw new Exception("This Email, Mobile, or NID is already registered!");
+    // Check uniqueness across all roles
+    if (isDuplicateContact($pdo, $email, $mobile, $nid)) {
+        throw new Exception("This Email, Mobile, or NID is already registered!");
+    }
 
     // Password checks
     if ($_POST['password'] !== $_POST['confirm_password']) throw new Exception("Passwords do not match!");

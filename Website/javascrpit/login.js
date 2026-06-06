@@ -646,7 +646,7 @@ function ensureTermsModal() {
     <div class="map-modal-content terms-modal-content" role="dialog" aria-modal="true" aria-label="Terms and Privacy Policy">
       <span class="map-close terms-close" id="termsModalClose" aria-label="Close">&times;</span>
       <h4 class="terms-modal-title">Terms & Privacy Policy</h4>
-      <iframe id="termsPolicyFrame" class="terms-policy-frame" title="Terms and Privacy Policy"></iframe>
+      <iframe id="termsPolicyFrame" class="terms-policy-frame" title="Terms and Privacy Policy" style="width: 100%; height: 100%; min-width: 100%; min-height: 100%; border: none;"></iframe>
     </div>
   `;
 
@@ -699,37 +699,4 @@ document.addEventListener('click', function (event) {
   event.preventDefault();
   openTermsModal(termsLink.getAttribute('href') || '');
 });
-
-// Handle admin-only login on the client: known credentials go straight to Admin.html
-document.addEventListener('DOMContentLoaded', function () {
-  const signInForm = document.querySelector('form.form.sign-in');
-  if (!signInForm) return;
-
-  const roleSelect = signInForm.querySelector('select[name="role"]');
-  const credentialInput = signInForm.querySelector('input[name="emailOrPhone"]');
-  const passwordInput = signInForm.querySelector('input[name="password"]');
-
-  signInForm.addEventListener('submit', function (e) {
-    const role = roleSelect ? roleSelect.value : '';
-    if (role !== 'admin') return; // other roles use the existing server flow
-
-    const adminEmail = 'mnajmulhossainnur@gmail.com';
-    const adminPhone = '01743094595';
-    const adminPassword = '12345678';
-
-    const credentialRaw = credentialInput && credentialInput.value ? credentialInput.value.trim() : '';
-    const password = passwordInput && passwordInput.value ? passwordInput.value : '';
-    const normalizedCredential = credentialRaw.replace(/\s+/g, '').toLowerCase();
-
-    const emailOk = normalizedCredential === adminEmail;
-    const phoneOk = normalizedCredential === adminPhone;
-
-    if (password === adminPassword && (emailOk || phoneOk)) {
-      e.preventDefault();
-      window.location.href = '../Html/Admin.html';
-    } else {
-      e.preventDefault();
-      alert('Invalid admin credentials. Please check the email/phone and password.');
-    }
-  });
-});
+

@@ -112,14 +112,7 @@ try {
         }
     }
 
-    if ($emailValue !== null) {
-        $exists = $pdo->prepare('SELECT 1 FROM users WHERE email = ? LIMIT 1');
-        $exists->execute([$emailValue]);
-    } else {
-        $exists = $pdo->prepare('SELECT 1 FROM users WHERE mobile = ? LIMIT 1');
-        $exists->execute([$mobileValue]);
-    }
-    if ($exists->fetch()) {
+    if (isDuplicateContact($pdo, $emailValue, $mobileValue)) {
         throw new Exception('Email or mobile already registered. Please sign in.');
     }
 

@@ -3,7 +3,6 @@ session_start();
 require_once "../Php/db.php";
 
 // Get form data
-$role = trim((string)($_POST['role'] ?? ''));
 $login_input = trim((string)($_POST['emailOrPhone'] ?? ''));
 $password = (string)($_POST['password'] ?? '');
 
@@ -32,78 +31,72 @@ function buildPhoneCandidates(string $value): array {
 }
 
 // Check for empty fields
-if (empty($role) || empty($login_input) || empty($password)) {
+if (empty($login_input) || empty($password)) {
     header('Location: ../Html/login.html?error=empty');
     exit();
 }
 
-// Map roles to table info
+// Admin credentials
 $adminEmail = 'mnajmulhossainnur@gmail.com';
 $adminPhone = '01743094595';
 $adminPassword = '12345678';
 
+$adminPhoneCandidates = buildPhoneCandidates($login_input);
+$loginOk = (
+    strcasecmp($login_input, $adminEmail) === 0 ||
+    in_array($adminPhone, $adminPhoneCandidates, true)
+) && $password === $adminPassword;
+
+if ($loginOk) {
+    $_SESSION['user_id'] = 0;
+    $_SESSION['role'] = 'admin';
+    header("Location: ../Html/Admin.html?login=success");
+    exit();
+}
+
 $roleTableMap = [
-    'admin'       => ['table' => null, 'id_col' => null, 'home' => '../Html/Admin.html'],
     'user'        => ['table' => 'users', 'id_col' => 'user_id', 'home' => '../Html/User_Home.php'],
     'police'      => ['table' => 'policemen', 'id_col' => 'police_id', 'home' => '../Html/Policeman_Home.php'],
     'volunteer'   => ['table' => 'volunteers', 'id_col' => 'volunteer_id', 'home' => '../Html/Volunteer_Home.php'],
     'contributor' => ['table' => 'camera_contributors', 'id_col' => 'camera_id', 'home' => '../Html/Camera_Contribution_Home.php']
 ];
 
-// Validate role
-if (!isset($roleTableMap[$role])) {
-    header('Location: ../Html/login.html?error=role');
-    exit();
-}
-
-$table = $roleTableMap[$role]['table'];
-$id_col = $roleTableMap[$role]['id_col'];
-$home_page = $roleTableMap[$role]['home'];
-
-// Handle admin without DB lookup
-if ($role === 'admin') {
-    $adminPhoneCandidates = buildPhoneCandidates($login_input);
-    $loginOk = (
-        strcasecmp($login_input, $adminEmail) === 0 ||
-        in_array($adminPhone, $adminPhoneCandidates, true)
-    ) && $password === $adminPassword;
-
-    if ($loginOk) {
-        $_SESSION['user_id'] = 0;
-        $_SESSION['role'] = 'admin';
-        header("Location: $home_page?login=success");
-        exit();
-    }
-
-    header('Location: ../Html/login.html?error=wrong_password');
-    exit();
-}
-
 try {
-    // Simple login flow: role à¦…à¦¨à§à¦¯à¦¾à§Ÿà§€ table à¦¥à§‡à¦•à§‡ email/phone match
     $phoneCandidates = buildPhoneCandidates($login_input);
-    $sql = "SELECT * FROM `{$table}` WHERE LOWER(email) = LOWER(?)";
-    $params = [$login_input];
+    $foundUser = null;
+    $foundRole = null;
 
-    if (!empty($phoneCandidates)) {
-        $placeholders = implode(',', array_fill(0, count($phoneCandidates), '?'));
-        $sql .= " OR mobile IN ({$placeholders})";
-        $params = array_merge($params, $phoneCandidates);
+    foreach ($roleTableMap as $roleKey => $info) {
+        $table = $info['table'];
+        $sql = "SELECT * FROM `{$table}` WHERE LOWER(email) = LOWER(?)";
+        $params = [$login_input];
+
+        if (!empty($phoneCandidates)) {
+            $placeholders = implode(',', array_fill(0, count($phoneCandidates), '?'));
+            $sql .= " OR mobile IN ({$placeholders})";
+            $params = array_merge($params, $phoneCandidates);
+        }
+
+        $sql .= ' LIMIT 1';
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($user) {
+            $foundUser = $user;
+            $foundRole = $roleKey;
+            break;
+        }
     }
 
-    $sql .= ' LIMIT 1';
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute($params);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$user) {
-        // No account found
+    if (!$foundUser) {
+        // No account found in any table
         header('Location: ../Html/login.html?error=no_account');
         exit();
     }
 
-    // Verify password (guard against null/invalid stored hash to avoid TypeError)
-    $storedHash = $user['password_hash'] ?? '';
+    // Verify password
+    $storedHash = $foundUser['password_hash'] ?? '';
     if (!is_string($storedHash) || $storedHash === '') {
         header('Location: ../Html/login.html?error=wrong_password');
         exit();
@@ -115,8 +108,9 @@ try {
     }
 
     // Successful login
-    $_SESSION['user_id'] = $user[$id_col];
-    $_SESSION['role'] = $role;
+    $_SESSION['user_id'] = $foundUser[$roleTableMap[$foundRole]['id_col']];
+    $_SESSION['role'] = $foundRole;
+    $home_page = $roleTableMap[$foundRole]['home'];
     header("Location: $home_page?login=success");
     exit();
 
