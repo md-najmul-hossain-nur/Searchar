@@ -1,0 +1,29 @@
+1667: const val = value === null || value === undefined || value === '' ? '-' : String(value);
+1973: const name = r.name || '-';
+1977: const email = r.email || '-';
+1978: const phone = r.phone || '-';
+1979: const location = r.location || '-';
+2042: const name = escapeHtml(r.full_name || '-');
+2043: const email = escapeHtml(r.email || '-');
+2044: const mobile = escapeHtml(r.mobile || '-');
+2045: const volunteerId = escapeHtml(r.volunteer_id || '-');
+2048: const reviewedAt = escapeHtml(r.reviewed_at || r.created_at || '-');
+2106: <strong>VA-${String(applicationId).padStart(3, '0')} ├óΓé¼┬ó ${escapeHtml(r.full_name || '-')}</strong>
+2109: <p>Email: ${escapeHtml(r.email || '-')} | Mobile: ${escapeHtml(r.mobile || '-')}</p>
+2110: <p>Note: ${escapeHtml(r.note || r.review_note || '-')}</p>
+2111: <p>Submitted: ${escapeHtml(r.created_at || '-')}</p>
+2221: const name = r.name || '-';
+2222: const location = r.location || '-';
+2223: const contact = r.contact || '-';
+2224: const joinDate = r.join_date || '-';
+2225: const lastActive = r.last_active || '-';
+2226: const missions = r.total_missions || '-';
+2227: const rank = r.rank || '-';
+2281: const cameraId = r.camera_id || '-';
+2282: const location = r.location || '-';
+2283: const ownerName = r.name || '-';
+2289: const fps = r.fps || '-';
+2290: const lastChecked = r.last_checked || r.updated_at || r.created_at || '-';
+2481: const name = r.full_name || r.name || '-';
+2482: const badge = r.badge_id || '-';
+2484: const station = r.station || r.city || '-';

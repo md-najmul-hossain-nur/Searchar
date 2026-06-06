@@ -685,7 +685,7 @@ document.addEventListener('click', function (event) {
   }
 
   function formatDate(value) {
-    if (!value) return '—';
+    if (!value) return 'N/A';
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return escapeHtml(String(value));
     return date.toISOString().slice(0, 10);
@@ -693,7 +693,7 @@ document.addEventListener('click', function (event) {
 
   function titleCase(value) {
     const raw = String(value || '').trim();
-    if (!raw) return '—';
+    if (!raw) return 'N/A';
     return raw.charAt(0).toUpperCase() + raw.slice(1);
   }
 
@@ -737,7 +737,7 @@ document.addEventListener('click', function (event) {
 
       const detailRows = groupRows.map((row) => {
         const id = Number(row.id || 0);
-        const postIdText = id > 0 ? `PT-${String(id).padStart(3, '0')}` : '—';
+        const postIdText = id > 0 ? `PT-${String(id).padStart(3, '0')}` : 'N/A';
         const statusText = titleCase(row.status || 'pending');
         const reportStatus = String(row.report_status || 'not_reported').toLowerCase();
         const isReported = reportStatus === 'reported';
@@ -1121,7 +1121,7 @@ document.addEventListener('click', function (event) {
 
   function formatDateTime(value) {
     const date = new Date(value || '');
-    if (Number.isNaN(date.getTime())) return '—';
+    if (Number.isNaN(date.getTime())) return 'N/A';
     return date.toLocaleString();
   }
 
@@ -1335,7 +1335,7 @@ function openAddVolunteerModal() {
   }
 
   function formatDate(iso) {
-    if (!iso) return '—';
+    if (!iso) return 'N/A';
     const date = new Date(iso);
     if (Number.isNaN(date.getTime())) return escapeHtml(iso);
     return date.toISOString().slice(0, 10);
@@ -1371,19 +1371,19 @@ function openAddVolunteerModal() {
 
     tableBody.innerHTML = rows.map(row => {
       const reportId = Number(row.report_id || 0);
-      const labelId = reportId > 0 ? `MP${String(reportId).padStart(4, '0')}` : '—';
+      const labelId = reportId > 0 ? `MP${String(reportId).padStart(4, '0')}` : 'N/A';
       const lastSeen = [row.last_seen_location || '', row.last_seen_time || ''].filter(Boolean).join(', ');
       const actionable = isActionableStatus(row.status);
 
       return `
         <tr>
           <td>${escapeHtml(labelId)}</td>
-          <td>${escapeHtml(row.full_name || '—')}</td>
-          <td>${escapeHtml(row.age || '—')}</td>
-          <td>${escapeHtml(row.gender || '—')}</td>
-          <td>${escapeHtml(lastSeen || '—')}</td>
+          <td>${escapeHtml(row.full_name || 'N/A')}</td>
+          <td>${escapeHtml(row.age || 'N/A')}</td>
+          <td>${escapeHtml(row.gender || 'N/A')}</td>
+          <td>${escapeHtml(lastSeen || 'N/A')}</td>
           <td><span class="${statusClass(row.status)}">${escapeHtml(prettyStatus(row.status))}</span></td>
-          <td>${escapeHtml(row.reporter_name || '—')}</td>
+          <td>${escapeHtml(row.reporter_name || 'N/A')}</td>
           <td>${escapeHtml(formatDate(row.created_at))}</td>
           <td>
             <button type="button" class="view-profile-btn" data-missing-view="${reportId}">View</button>
@@ -1735,7 +1735,7 @@ function openAddVolunteerModal() {
       status: normalizedStatus || 'new',
       lat: Number(row?.lat ?? 23.8103),
       lng: Number(row?.lng ?? 90.4125),
-      landmark: row?.landmark || '—',
+      landmark: row?.landmark || 'N/A',
       submitted: row?.submitted || new Date().toISOString(),
       updated_at: row?.updated_at || new Date().toISOString(),
       media: Array.isArray(row?.media) ? row.media : [],
@@ -1893,7 +1893,7 @@ function openAddVolunteerModal() {
       status: payload.status || 'new',
       lat: payload.lat ?? coords.lat,
       lng: payload.lng ?? coords.lng,
-      landmark: payload.landmark || '—',
+      landmark: payload.landmark || 'N/A',
       submitted: now,
       updated_at: now,
       media: payload.media || [],
@@ -2097,7 +2097,7 @@ function openAddVolunteerModal() {
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${vol.name}</td>
-        <td>Crime response at ${landmark || '—'}</td>
+        <td>Crime response at ${landmark || 'N/A'}</td>
         <td>${new Date().toISOString().slice(0,10)}</td>
         <td>${vol.location}</td>
         <td><span class="status-approved">Assigned</span></td>
@@ -2129,7 +2129,7 @@ function openAddVolunteerModal() {
       ? { lat: Number(coords.lat), lng: Number(coords.lng) }
       : null;
     if (assignCaseIdEl) assignCaseIdEl.textContent = caseId;
-    if (assignCaseLandmarkEl) assignCaseLandmarkEl.textContent = landmark || '—';
+    if (assignCaseLandmarkEl) assignCaseLandmarkEl.textContent = landmark || 'N/A';
     if (assignList) {
       assignList.innerHTML = '<div class="assign-vol-meta" style="padding:8px;">Loading volunteers from database…</div>';
     }
@@ -2234,7 +2234,7 @@ function openAddVolunteerModal() {
   }
 
   function formatDateLocal(iso) {
-    if (!iso) return '—';
+    if (!iso) return 'N/A';
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return iso;
     return `${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
@@ -2281,9 +2281,9 @@ function openAddVolunteerModal() {
         <div style="font-weight:800; margin-bottom:4px;">${crime.id} • ${statusLabel(crime.status)}</div>
         <div><strong>Type:</strong> ${crime.type}</div>
         <div><strong>Severity:</strong> ${crime.severity}</div>
-        <div><strong>Landmark:</strong> ${crime.landmark || '—'}</div>
+        <div><strong>Landmark:</strong> ${crime.landmark || 'N/A'}</div>
         <div><strong>Submitted:</strong> ${formatDateLocal(crime.submitted)}</div>
-        <div><strong>Reporter:</strong> ${crime.anonymous ? 'Anonymous' : (crime.reporter || '—')}</div>
+        <div><strong>Reporter:</strong> ${crime.anonymous ? 'Anonymous' : (crime.reporter || 'N/A')}</div>
         <div><strong>Evidence:</strong><ul style="padding-left:18px; margin:6px 0 0;">${mediaList || '<li>None</li>'}</ul></div>
       </div>`;
 
@@ -2361,11 +2361,11 @@ function openAddVolunteerModal() {
           <td>${r.id}</td>
           <td>${r.type}</td>
           <td>${r.severity}</td>
-          <td>${r.landmark || '—'}</td>
+          <td>${r.landmark || 'N/A'}</td>
           <td>${statusBadge(r.status)}</td>
           <td>${formatDateLocal(r.submitted)}</td>
           <td>${mediaCount} file${mediaCount === 1 ? '' : 's'}</td>
-          <td>${r.anonymous ? 'Anonymous' : (r.reporter || '—')}</td>
+          <td>${r.anonymous ? 'Anonymous' : (r.reporter || 'N/A')}</td>
           <td>
             <button type="button" class="view-profile-btn" data-crime-view="${r.id}">View</button>
             <button type="button" data-crime-assign="${r.id}" ${assignDisabled ? 'disabled' : ''}>${isClosed ? 'Closed' : (actState.assigned || assignedCrimes.has(r.id) ? 'Assigned' : 'Assign Volunteer')}</button>
@@ -2512,7 +2512,7 @@ function openAddVolunteerModal() {
         proximityResults.innerHTML = hits.map(h => `
           <div class="proximity-hit">
             <strong>${h.id}</strong> • ${h.type} • ${h.distance.toFixed(2)} km<br>
-            ${h.landmark || '—'}
+            ${h.landmark || 'N/A'}
           </div>
         `).join('');
       }
@@ -2544,7 +2544,7 @@ function openAddVolunteerModal() {
       submitted: formatDateLocal(crime.submitted),
       updated_at: formatDateLocal(crime.updated_at),
       coordinates: `${crime.lat.toFixed(5)}, ${crime.lng.toFixed(5)}`,
-      reporter: crime.anonymous ? 'Anonymous' : (crime.reporter || '—'),
+      reporter: crime.anonymous ? 'Anonymous' : (crime.reporter || 'N/A'),
       description: crime.description || '',
       media_path: mediaFiles[0] || '',
       media_json: JSON.stringify(mediaFiles)
@@ -2734,7 +2734,7 @@ function openAddVolunteerModal() {
   }
 
   function fmtDate(v) {
-    if (!v) return '—';
+    if (!v) return 'N/A';
     const d = new Date(v);
     if (Number.isNaN(d.getTime())) return esc(v);
     return d.toLocaleString();
@@ -2810,11 +2810,11 @@ function openAddVolunteerModal() {
     broadcastRequestBody.innerHTML = rows.map((row) => {
       const requestId = Number(row.request_id || 0);
       const policeName = String(row.police_name || 'Police Officer');
-      const station = String(row.station || '—');
+      const station = String(row.station || 'N/A');
       const status = String(row.status || 'pending').toLowerCase();
       const statusHtml = broadcastRequestStatusChip(status);
       const createdAt = fmtDate(row.created_at || '');
-      const requestReason = String(row.request_reason || '').trim() || '—';
+      const requestReason = String(row.request_reason || '').trim() || 'N/A';
       const canAct = status === 'pending';
 
       return `
@@ -2898,13 +2898,13 @@ function openAddVolunteerModal() {
           donationsBody.innerHTML = donations.map(d => `
             <tr>
               <td>${esc(d.donor_name || 'Anonymous')}</td>
-              <td>${esc(d.donor_email || '—')}</td>
-              <td>${esc(d.sender_mobile || '—')}</td>
-              <td>${esc(d.tx_id || '—')}</td>
+              <td>${esc(d.donor_email || 'N/A')}</td>
+              <td>${esc(d.sender_mobile || \'01XXXXXXXXX\')}</td>
+              <td>${esc(d.tx_id || 'N/A')}</td>
               <td>৳${esc(Number(d.amount || 0).toFixed(2))}</td>
               <td>${esc(fmtDate(d.date))}</td>
               <td>${Number(d.anonymous || 0) === 1 ? 'Yes' : 'No'}</td>
-              <td>${esc(d.message || '—')}</td>
+              <td>${esc(d.message || 'N/A')}</td>
               <td><button type="button" data-donation-report="1" data-donor-name="${esc(d.donor_name || 'Anonymous')}" data-donation-email="${esc(d.donor_email || '')}" data-donation-mobile="${esc(d.sender_mobile || '')}" data-donation-txid="${esc(d.tx_id || '')}" data-donation-amount="${esc(Number(d.amount || 0).toFixed(2))}" data-donation-date="${esc(d.date || '')}" data-donation-anon="${esc(Number(d.anonymous || 0))}" data-donation-message="${esc(d.message || '')}">Report</button></td>
             </tr>
           `).join('');
@@ -2912,13 +2912,13 @@ function openAddVolunteerModal() {
           donationsBody.querySelectorAll('[data-donation-report]').forEach(btn => {
             btn.addEventListener('click', () => {
               const donorName = String(btn.getAttribute('data-donor-name') || 'Anonymous');
-              const donorEmail = String(btn.getAttribute('data-donation-email') || '').trim() || '—';
-              const donorMobile = String(btn.getAttribute('data-donation-mobile') || '').trim() || '—';
-              const donationTxId = String(btn.getAttribute('data-donation-txid') || '').trim() || '—';
+              const donorEmail = String(btn.getAttribute('data-donation-email') || '').trim() || 'N/A';
+              const donorMobile = String(btn.getAttribute('data-donation-mobile\') || \'\').trim() || \'01XXXXXXXXX\';
+              const donationTxId = String(btn.getAttribute('data-donation-txid') || '').trim() || 'N/A';
               const amount = String(btn.getAttribute('data-donation-amount') || '0.00');
               const dateText = String(btn.getAttribute('data-donation-date') || '');
               const anonymous = String(btn.getAttribute('data-donation-anon') || '0') === '1' ? 'Yes' : 'No';
-              const message = String(btn.getAttribute('data-donation-message') || '').trim() || '—';
+              const message = String(btn.getAttribute('data-donation-message') || '').trim() || 'N/A';
 
               const popup = window.open('', '_blank', 'width=760,height=640');
               if (!popup) {
@@ -2947,7 +2947,7 @@ function openAddVolunteerModal() {
           broadcastBody.innerHTML = broadcasts.map(b => `
             <tr>
               <td>${esc(b.title || 'Notice')}</td>
-              <td>${esc(b.message || '—')}</td>
+              <td>${esc(b.message || 'N/A')}</td>
               <td>All Areas</td>
               <td>${esc(b.recipient_entity || 'all')}</td>
               <td>${esc(fmtDate(b.created_at))}</td>
@@ -3030,8 +3030,8 @@ function openAddVolunteerModal() {
               completed_missions: done,
               busy_missions: busy,
               proofs_submitted: `${proofDone}/${missionCount}`,
-              latest_mission_title: latest?.mission_title || '—',
-              latest_mission_location: latest?.mission_location || '—',
+              latest_mission_title: latest?.mission_title || 'N/A',
+              latest_mission_location: latest?.mission_location || 'N/A',
               last_assigned_at: latest?.assigned_at || ''
             }));
 
@@ -3056,9 +3056,9 @@ function openAddVolunteerModal() {
                 <div class="${rowClass}">
                   <div><strong>${esc(m.mission_title || 'Mission')}</strong><br><small class="mission-case">${caseText}</small></div>
                   <div>${esc(fmtDate(m.assigned_at))}</div>
-                  <div>${esc(m.mission_location || '—')}</div>
+                  <div>${esc(m.mission_location || 'N/A')}</div>
                   <div>${stateHtml}</div>
-                  <div>${hasProof ? `<a href="${esc(missionProofUrl(m.proof_file))}" target="_blank" rel="noopener">View Proof</a>` : '—'}</div>
+                  <div>${hasProof ? `<a href="${esc(missionProofUrl(m.proof_file))}" target="_blank" rel="noopener">View Proof</a>` : 'N/A'}</div>
                   <div>${actionHtml}</div>
                 </div>
               `;
@@ -3072,7 +3072,7 @@ function openAddVolunteerModal() {
                 </td>
                 <td><strong>${esc(latest.mission_title || 'Mission')}</strong></td>
                 <td>${esc(fmtDate(latest.assigned_at))}</td>
-                <td>${esc(latest.mission_location || '—')}</td>
+                <td>${esc(latest.mission_location || 'N/A')}</td>
                 <td>${esc(g.volunteer_rank || 'Junior')}</td>
                 <td>${esc(Number(g.volunteer_points || 0))}</td>
                 <td>
@@ -3167,7 +3167,7 @@ function openAddVolunteerModal() {
             const label = String(row.feed_label || (row.feed_type ? `${row.feed_type} feed` : 'Camera Feed'));
             const location = String(row.camera_location || '').trim()
               || [row.street, row.city, row.country].map(v => String(v || '').trim()).filter(Boolean).join(', ')
-              || '—';
+              || 'N/A';
             const cameraman = String(row.cameraman_name || 'Camera Contributor');
             const sentOn = fmtDate(row.created_at);
             const videoCell = videoUrl
@@ -3201,7 +3201,7 @@ function openAddVolunteerModal() {
       if (cameraVideoBody) setNoData(cameraVideoBody, 5, 'Failed to load camera videos.');
       if (broadcastRequestBody) setNoData(broadcastRequestBody, 5, 'Failed to load broadcast requests.');
       if (donationsTotalAmount) donationsTotalAmount.textContent = '৳0.00';
-      if (donationsTopDonor) donationsTopDonor.textContent = '—';
+      if (donationsTopDonor) donationsTopDonor.textContent = 'N/A';
       if (withdrawTotalAmount) withdrawTotalAmount.textContent = '৳0.00';
       if (withdrawPendingCount) withdrawPendingCount.textContent = '0';
       if (volunteerTotalMissions) volunteerTotalMissions.textContent = '0';
@@ -3287,7 +3287,7 @@ function openAddVolunteerModal() {
   }
 
   function fmtDate(v) {
-    if (!v) return '—';
+    if (!v) return 'N/A';
     const d = new Date(v);
     if (Number.isNaN(d.getTime())) return esc(v);
     return d.toLocaleString();
@@ -3324,8 +3324,8 @@ function openAddVolunteerModal() {
       const type = String(row?.type || 'Task').trim() || 'Task';
       const actor = String(row?.submitted_by || 'Unknown').trim() || 'Unknown';
       const role = String(row?.actor_role || '').trim();
-      const itemRef = String(row?.item_ref || '—').trim() || '—';
-      const itemLabel = String(row?.item_label || '—').trim() || '—';
+      const itemRef = String(row?.item_ref || 'N/A').trim() || 'N/A';
+      const itemLabel = String(row?.item_label || 'N/A').trim() || 'N/A';
       const section = String(row?.section || '').trim().toLowerCase();
       const searchKey = String(row?.search_key || '').trim();
       const actionHtml = `<button type="button" class="ghost" data-queue-open="1" data-queue-type="${esc(type)}" data-queue-section="${esc(section)}" data-queue-search="${esc(searchKey)}" data-queue-ref="${esc(itemRef)}">Open</button>`;
@@ -3665,12 +3665,12 @@ function openAddVolunteerModal() {
 
   function titleCase(value) {
     const txt = String(value || '').trim();
-    if (!txt) return '—';
+    if (!txt) return 'N/A';
     return txt.charAt(0).toUpperCase() + txt.slice(1);
   }
 
   function formatDate(value) {
-    if (!value) return '—';
+    if (!value) return 'N/A';
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return esc(String(value));
     return date.toISOString().slice(0, 10);
@@ -3744,8 +3744,8 @@ function openAddVolunteerModal() {
       const source = String(row?.report_source || 'post').toLowerCase();
       const reportId = Number(row?.report_id || 0);
       const postId = Number(row?.post_id || 0);
-      const reportCode = reportId > 0 ? `PR-${String(reportId).padStart(4, '0')}` : '—';
-      const postCode = postId > 0 ? `PT-${String(postId).padStart(4, '0')}` : '—';
+      const reportCode = reportId > 0 ? `PR-${String(reportId).padStart(4, '0')}` : 'N/A';
+      const postCode = postId > 0 ? `PT-${String(postId).padStart(4, '0')}` : 'N/A';
       const profilePayload = encodeURIComponent(JSON.stringify(toProfilePayload(row)));
       const canReview = status === 'pending';
       const canResolve = status === 'pending' || status === 'under_review';
@@ -4069,7 +4069,7 @@ function openAddVolunteerModal() {
   }
 
   function formatTime(iso) {
-    if (!iso) return '—';
+    if (!iso) return 'N/A';
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return esc(iso);
     return d.toLocaleString();

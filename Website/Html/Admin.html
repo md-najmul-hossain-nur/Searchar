@@ -1008,8 +1008,8 @@
           </button>
         </div>
         <div class="assign-modal__context">
-          <div><strong>Case:</strong> <span id="assign-case-id">├óΓé¼ΓÇ¥</span></div>
-          <div><strong>Landmark:</strong> <span id="assign-case-landmark">├óΓé¼ΓÇ¥</span></div>
+          <div><strong>Case:</strong> <span id="assign-case-id">-</span></div>
+          <div><strong>Landmark:</strong> <span id="assign-case-landmark">-</span></div>
         </div>
         <div class="assign-modal__mission">
           <label for="assign-mission-type"><strong>Mission Type</strong></label>
@@ -1640,7 +1640,7 @@
 
       const renderMediaPreview = (files, label) => {
         if (!files.length) {
-          return `<div class="profile-modal__row"><div class="profile-modal__label">${label}</div><div class="profile-modal__value">├óΓé¼ΓÇ¥</div></div>`;
+          return `<div class="profile-modal__row"><div class="profile-modal__label">${label}</div><div class="profile-modal__value">-</div></div>`;
         }
 
         const itemsHtml = files.map((file, index) => {
@@ -1664,13 +1664,13 @@
 
       const html = entries.map(([key, value]) => {
         const label = labelMap[key] || key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-        const val = value === null || value === undefined || value === '' ? '├óΓé¼ΓÇ¥' : String(value);
+        const val = value === null || value === undefined || value === '' ? 'N/A' : String(value);
         if (editMode && editableKeys.has(key)) {
-          const inputVal = val === '├óΓé¼ΓÇ¥' ? '' : val;
+          const inputVal = val === '-' ? '' : val;
           const inputType = key === 'date_of_birth' ? 'date' : (key === 'email' ? 'email' : 'text');
           return `<div class="profile-modal__row"><div class="profile-modal__label">${label}</div><div class="profile-modal__value"><input type="${inputType}" class="profile-modal__input" data-edit-key="${key}" value="${escapeHtml(inputVal)}" /></div></div>`;
         }
-        if (imageKeys.has(key) && val !== '├óΓé¼ΓÇ¥' && isImagePath(val)) {
+        if (imageKeys.has(key) && val !== '-' && isImagePath(val)) {
           const imageEntity = key === 'profile_photo'
             ? (String(profile?.profile_photo_entity || '').trim() || entity)
             : entity;
@@ -1970,13 +1970,13 @@
         const entity = 'users';
         const recordId = r.user_id || '';
         const isCombo = Boolean(r.is_combo);
-        const name = r.name || '├óΓé¼ΓÇ¥';
+        const name = r.name || 'N/A';
         const displayName = isCombo
           ? `${escapeHtml(name)} <span class="status-active" style="margin-left:6px; font-size:11px; padding:2px 8px;">Combo</span>`
           : escapeHtml(name);
-        const email = r.email || '├óΓé¼ΓÇ¥';
-        const phone = r.phone || '├óΓé¼ΓÇ¥';
-        const location = r.location || '├óΓé¼ΓÇ¥';
+        const email = r.email || 'N/A';
+        const phone = r.phone || \'01XXXXXXXXX\';
+        const location = r.location || 'N/A';
         const role = r.role || 'User';
         const warnedByAdmin = Boolean(r.warned_by_admin);
         const profileData = serializeProfile({
@@ -2039,13 +2039,13 @@
       }
 
       const html = rows.map(r => {
-        const name = escapeHtml(r.full_name || '├óΓé¼ΓÇ¥');
-        const email = escapeHtml(r.email || '├óΓé¼ΓÇ¥');
-        const mobile = escapeHtml(r.mobile || '├óΓé¼ΓÇ¥');
-        const volunteerId = escapeHtml(r.volunteer_id || '├óΓé¼ΓÇ¥');
+        const name = escapeHtml(r.full_name || 'N/A');
+        const email = escapeHtml(r.email || 'N/A');
+        const mobile = escapeHtml(r.mobile || \'01XXXXXXXXX\');
+        const volunteerId = escapeHtml(r.volunteer_id || 'N/A');
         const occupation = escapeHtml(r.occupation || 'Community Volunteer');
         const availability = escapeHtml(r.availability || 'Flexible');
-        const reviewedAt = escapeHtml(r.reviewed_at || r.created_at || '├óΓé¼ΓÇ¥');
+        const reviewedAt = escapeHtml(r.reviewed_at || r.created_at || 'N/A');
 
         return `
           <tr>
@@ -2103,12 +2103,12 @@
         return `
           <article class="volunteer-approver-item">
             <div class="volunteer-approver-item-top">
-              <strong>VA-${String(applicationId).padStart(3, '0')} ├óΓé¼┬ó ${escapeHtml(r.full_name || '├óΓé¼ΓÇ¥')}</strong>
+              <strong>VA-${String(applicationId).padStart(3, '0')} ├óΓé¼┬ó ${escapeHtml(r.full_name || 'N/A')}</strong>
               <span class="${statusClass}">${statusLabel}</span>
             </div>
-            <p>Email: ${escapeHtml(r.email || '├óΓé¼ΓÇ¥')} | Mobile: ${escapeHtml(r.mobile || '├óΓé¼ΓÇ¥')}</p>
-            <p>Note: ${escapeHtml(r.note || r.review_note || '├óΓé¼ΓÇ¥')}</p>
-            <p>Submitted: ${escapeHtml(r.created_at || '├óΓé¼ΓÇ¥')}</p>
+            <p>Email: ${escapeHtml(r.email || 'N/A')} | Mobile: ${escapeHtml(r.mobile || \'01XXXXXXXXX\')}</p>
+            <p>Note: ${escapeHtml(r.note || r.review_note || 'N/A')}</p>
+            <p>Submitted: ${escapeHtml(r.created_at || 'N/A')}</p>
             <div class="volunteer-approver-item-actions">${actionHtml}</div>
           </article>
         `;
@@ -2218,13 +2218,13 @@
       const html = rows.map(r => {
         const entity = 'volunteers';
         const recordId = r.volunteer_id || '';
-        const name = r.name || '├óΓé¼ΓÇ¥';
-        const location = r.location || '├óΓé¼ΓÇ¥';
-        const contact = r.contact || '├óΓé¼ΓÇ¥';
-        const joinDate = r.join_date || '├óΓé¼ΓÇ¥';
-        const lastActive = r.last_active || '├óΓé¼ΓÇ¥';
-        const missions = r.total_missions || '├óΓé¼ΓÇ¥';
-        const rank = r.rank || '├óΓé¼ΓÇ¥';
+        const name = r.name || 'N/A';
+        const location = r.location || 'N/A';
+        const contact = r.contact || \'01XXXXXXXXX\';
+        const joinDate = r.join_date || 'N/A';
+        const lastActive = r.last_active || 'N/A';
+        const missions = r.total_missions || 'N/A';
+        const rank = r.rank || 'N/A';
         const warnedByAdmin = Boolean(r.warned_by_admin);
         const profileData = serializeProfile({
           __title: 'Volunteer Profile',
@@ -2278,16 +2278,16 @@
       const html = rows.map(r => {
         const entity = 'camera_contributors';
         const recordId = r.camera_id || '';
-        const cameraId = r.camera_id || '├óΓé¼ΓÇ¥';
-        const location = r.location || '├óΓé¼ΓÇ¥';
-        const ownerName = r.name || '├óΓé¼ΓÇ¥';
+        const cameraId = r.camera_id || 'N/A';
+        const location = r.location || 'N/A';
+        const ownerName = r.name || 'N/A';
         const statusText = (r.status || 'Online');
         const statusClass = (statusText || '').toLowerCase() === 'online' || (statusText || '').toLowerCase() === 'active'
           ? 'status-active'
           : 'status-pending';
         const warnedByAdmin = Boolean(r.warned_by_admin);
-        const fps = r.fps || '├óΓé¼ΓÇ¥';
-        const lastChecked = r.last_checked || r.updated_at || r.created_at || '├óΓé¼ΓÇ¥';
+        const fps = r.fps || 'N/A';
+        const lastChecked = r.last_checked || r.updated_at || r.created_at || 'N/A';
         const profileData = serializeProfile({
           __title: 'Camera Contributor Profile',
           __entity: 'camera_contributors',
@@ -2478,10 +2478,10 @@
       const html = rows.map(r => {
         const entity = 'policemen';
         const recordId = r.police_id || '';
-        const name = r.full_name || r.name || '├óΓé¼ΓÇ¥';
-        const badge = r.badge_id || '├óΓé¼ΓÇ¥';
+        const name = r.full_name || r.name || 'N/A';
+        const badge = r.badge_id || 'N/A';
         const designation = r.designation || 'Officer';
-        const station = r.station || r.city || '├óΓé¼ΓÇ¥';
+        const station = r.station || r.city || 'N/A';
         const statusClass = (r.status || 'active').toLowerCase() === 'inactive' ? 'status-pending' : 'status-active';
         const statusText = (r.status || 'Active');
         const warnedByAdmin = Boolean(r.warned_by_admin);
