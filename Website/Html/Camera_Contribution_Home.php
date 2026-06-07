@@ -469,10 +469,10 @@ try {
 <!-- Camera Contributor Panel -->
 <div class="camera-contributor-panel">
   <h4>Camera Contributor Panel</h4>
-  <p style="margin:6px 0 12px; color:#555; font-size:13px;">Start a live stream or upload a recorded feed to help community monitoring. You can view all your submitted feeds anytime.</p>
+  <p style="margin:6px 0 12px; color:#555; font-size:13px;">Start a webcam or upload a recorded feed to help community monitoring. You can view all your submitted feeds anytime.</p>
   
   <button id="startFeedBtn" class="camera-btn">
-    Start Live / Upload Recorded Feed
+    Webcam / Upload Recorded Feed
   </button>
   <button class="camera-btn" onclick="window.location.href='../Html/Camera_Contribution_Feed.php';">
     View Feed
@@ -484,14 +484,14 @@ try {
 <div id="camFeedFormModal" class="cam-form-popup">
   <div class="cam-form-content">
     <span class="cam-form-close">&times;</span>
-    <h3>Upload or Start Live Feed</h3>
+    <h3>Upload or Start Webcam Feed</h3>
     <p class="cam-form-subtitle">Add one by one, your camera name will auto increment (Camera 1, Camera 2, ...).</p>
 
     <form id="camFeedForm">
-      <!-- Live / Recorded Selection -->
+      <!-- Webcam / Recorded Selection -->
       <label>
-        <input type="radio" name="feedType" value="live" required checked>
-        Start Live Feed
+        <input type="radio" name="feedType" value="webcam" required checked>
+        Webcam
       </label>
       <label>
         <input type="radio" name="feedType" value="recorded" required>
@@ -502,30 +502,14 @@ try {
         Camera Name: <strong id="camAutoLabel">Camera 1</strong>
       </div>
 
-      <!-- URL input for Live -->
-      <div id="camLiveInputSection">
-        <label>
-          Stream Access Type
-          <select id="camStreamScope" name="stream_scope">
-            <option value="private">Private (owner permission)</option>
-            <option value="public">Public (open URL)</option>
-          </select>
-        </label>
-        <input type="url" id="camLiveURL" name="live_url" placeholder="Enter live video URL (MP4/HLS)">
-        <div class="cam-live-help">
-          <h5>Where to get a real Live CCTV URL?</h5>
-          <ul>
-            <li><strong>Private stream:</strong> collect URL from your own camera/NVR dashboard and keep owner permission.</li>
-            <li><strong>Public stream:</strong> ask provider for public playback URL (HLS <code>.m3u8</code> preferred).</li>
-            <li>Without owner permission, private CCTV access is not allowed.</li>
-          </ul>
-          <div class="cam-live-help-links">
-            <a href="https://www.earthcam.com/" target="_blank" rel="noopener">EarthCam</a>
-            <a href="https://www.skylinewebcams.com/" target="_blank" rel="noopener">Skyline Webcams</a>
-            <a href="https://www.livebeaches.com/" target="_blank" rel="noopener">Live Beaches</a>
-          </div>
-          <small>Tip: Public mode blocks local/private network URLs; Private mode allows owner-authorized internal URLs.</small>
+      <!-- Webcam Preview Section -->
+      <div id="camWebcamSection">
+        <div class="cam-webcam-preview-wrap">
+          <video id="camWebcamPreview" class="cam-webcam-preview" autoplay playsinline muted></video>
+          <div id="camWebcamPlaceholder" class="cam-webcam-placeholder">Webcam preview will appear here</div>
         </div>
+        <button type="button" id="camStartWebcamBtn" class="cam-secondary-btn">Start Webcam</button>
+        <small id="camWebcamStatus" class="cam-form-hint">Browser permission is required to preview your webcam.</small>
       </div>
 
       <!-- File Upload Section for Recorded -->
@@ -536,18 +520,6 @@ try {
           <video id="camRecordedPreview" class="cam-recorded-preview" controls preload="metadata"></video>
         </div>
       </div>
-
-      <label>
-        Estimated Duration
-        <select name="streaming_hours">
-          <option value="30min">Up to 30 min</option>
-          <option value="1to2h">1-2 hours</option>
-          <option value="2to6h">2-6 hours</option>
-          <option value="6to12h">6-12 hours</option>
-          <option value="12to24h">12-24 hours</option>
-          <option value="24plus">24+ hours</option>
-        </select>
-      </label>
 
       <label class="cam-owner-consent">
         <input type="checkbox" id="camPermissionConfirm" name="permission_confirmed" required>
@@ -582,36 +554,6 @@ try {
   <div class="notifications-drawer-footer"></div>
 </aside>
 
-
-<button type="button" id="camera-admin-chat-launcher" class="camera-admin-chat-launcher" aria-label="Open admin chat" aria-controls="camera-admin-chat-drawer" aria-expanded="false">
-  <i class="fa-solid fa-robot" aria-hidden="true"></i>
-</button>
-
-<div id="camera-admin-chat-drawer" class="camera-admin-chat-drawer" aria-hidden="true" data-admin-chat>
-  <section class="camera-admin-chat-panel" role="dialog" aria-modal="true" aria-label="Contributor admin chat">
-    <header class="camera-admin-chat-header">
-      <div class="camera-admin-chat-profile">
-        <img src="../Images/default-profile.gif" alt="SEARCHAR Admin">
-        <span>
-          <strong>SEARCHAR Admin</strong>
-          <small>Admin support desk</small>
-        </span>
-      </div>
-      <button type="button" id="camera-admin-chat-close" class="camera-admin-chat-close" aria-label="Close admin chat">
-        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-      </button>
-    </header>
-
-    <div id="camera-admin-chat-feed" class="camera-admin-chat-feed" data-admin-chat-feed>
-      <div class="camera-admin-chat-date">No messages yet</div>
-    </div>
-
-    <div class="camera-admin-chat-composer">
-      <input id="camera-admin-chat-input" data-admin-chat-input type="text" placeholder="Message admin..." autocomplete="off">
-      <button type="button" id="camera-admin-chat-send" data-admin-chat-send class="camera-admin-chat-send">Send</button>
-    </div>
-  </section>
-</div>
 
 
     <!-- Withdrawal Modal (moved here to avoid stacking context issues) -->

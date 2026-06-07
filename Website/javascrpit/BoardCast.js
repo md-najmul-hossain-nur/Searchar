@@ -143,9 +143,23 @@ function toYouTubeEmbedUrl(url) {
 }
 
 function renderStreamMarkup(feed) {
-  const isRecorded = String(feed.feed_type || '').toLowerCase() === 'recorded';
+  const feedType = String(feed.feed_type || '').toLowerCase();
+  const isRecorded = feedType === 'recorded';
+  const isWebcam = feedType === 'webcam';
   const videoUrl = String(feed.video_url || '');
   const liveUrl = String(feed.live_url || '');
+
+  if (isWebcam) {
+    return {
+      hasMedia: true,
+      html: `<div class="camera-stream-iframe" style="background:#000; display:flex; align-items:center; justify-content:center; color:#fff; width:100%; height:100%; text-align:center; min-height: 200px;">
+               <div>
+                 <i class="fa fa-video-camera" style="font-size:3rem; margin-bottom:10px;"></i>
+                 <br>Live Webcam Feed
+               </div>
+             </div>`
+    };
+  }
 
   if (isRecorded && videoUrl) {
     return {
@@ -154,7 +168,7 @@ function renderStreamMarkup(feed) {
     };
   }
 
-  if (!isRecorded && liveUrl) {
+  if (!isRecorded && !isWebcam && liveUrl) {
     const ytEmbed = toYouTubeEmbedUrl(liveUrl);
     if (ytEmbed) {
       return {

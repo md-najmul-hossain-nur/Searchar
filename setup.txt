@@ -1,0 +1,92 @@
+# SEARCHAR — Python Face Recognition Setup Steps
+
+## STEP 1 — Python 3.11 Install
+Download from: https://python.org/downloads
+- ✅ Add Python to PATH
+- ✅ Install for all users
+
+## STEP 2 — VS Code Terminal এ এই commands একটা একটা করে দাও
+
+### dlib install (pre-built, no compiler needed)
+```
+pip install dlib-bin
+```
+
+### face_recognition install
+```
+pip install face_recognition --no-deps
+```
+
+### বাকি dependencies
+```
+pip install face-recognition-models numpy Pillow click
+```
+
+### opencv + flask + mysql
+```
+pip install opencv-python flask mysql-connector-python
+```
+
+## STEP 3 — সব ঠিক আছে কিনা check করো
+```
+python -c "import dlib; import face_recognition; import cv2; import flask; import mysql.connector; print('ALL OK')"
+```
+✅ ALL OK দেখালে setup সম্পন্ন
+
+## STEP 4 — MySQL Connection Test
+test_db.py ফাইল বানাও project folder এ:
+
+```python
+import mysql.connector
+
+conn = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    password="",
+    database="searchar"
+)
+
+if conn.is_connected():
+    print("MySQL Connected OK!")
+
+cursor = conn.cursor()
+cursor.execute("SHOW TABLES")
+tables = cursor.fetchall()
+print("Tables found:")
+for t in tables:
+    print(" -", t[0])
+
+conn.close()
+```
+
+Terminal এ দাও:
+```
+python test_db.py
+```
+✅ MySQL Connected OK! দেখালে সব শেষ
+
+## DB Credentials (db.php থেকে)
+```
+host     = localhost
+user     = root
+password = (empty)
+database = searchar
+```
+
+## requirements.txt (project folder এ রাখো)
+```
+dlib-bin
+face_recognition
+opencv-python
+flask
+mysql-connector-python
+numpy
+Pillow
+click
+face-recognition-models
+```
+
+নতুন PC তে install করতে:
+```
+pip install -r requirements.txt --no-deps
+```

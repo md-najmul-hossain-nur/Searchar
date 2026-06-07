@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
 	const liveVideos = Array.from(document.querySelectorAll('.live-video'));
+	const webcamVideos = Array.from(document.querySelectorAll('.webcam-video'));
 
 	const initLiveVideo = (videoEl) => {
 		const sourceUrl = (videoEl.getAttribute('data-live-src') || '').trim();
@@ -39,6 +40,66 @@ document.addEventListener('DOMContentLoaded', () => {
 	if (liveVideos.length) {
 		liveVideos.forEach(initLiveVideo);
 	}
+
+	const initWebcamVideos = async () => {
+		if (!webcamVideos.length) return;
+
+		const states = Array.from(document.querySelectorAll('.webcam-preview-state'));
+		const restartBtns = Array.from(document.querySelectorAll('.start-webcam-btn'));
+		
+		let currentStream = null;
+
+		const setState = (text) => {
+			states.forEach((state) => {
+				if (!text) {
+					state.style.display = 'none';
+				} else {
+					state.style.display = 'block';
+					state.textContent = text;
+				}
+			});
+		};
+
+		const startCamera = async () => {
+			if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+				setState('Webcam preview is not supported in this browser.');
+				return;
+			}
+
+			try {
+				restartBtns.forEach(btn => btn.disabled = true);
+				setState('Requesting webcam permission...');
+
+				if (currentStream) {
+					currentStream.getTracks().forEach(t => t.stop());
+				}
+
+				currentStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+				webcamVideos.forEach((videoEl) => {
+					videoEl.srcObject = currentStream;
+					videoEl.play().catch(e => console.error('Play failed:', e));
+				});
+				setState('');
+				restartBtns.forEach(btn => btn.textContent = 'Restart Webcam');
+			} catch (error) {
+				console.error('Webcam error:', error);
+				setState('Webcam permission denied. Allow camera access to show preview.');
+			} finally {
+				restartBtns.forEach(btn => btn.disabled = false);
+			}
+		};
+
+		restartBtns.forEach(btn => {
+			btn.addEventListener('click', (e) => {
+				e.preventDefault();
+				startCamera();
+			});
+		});
+
+		startCamera();
+	};
+
+	initWebcamVideos();
 
 	const payoutEl = document.getElementById('payoutCountdown');
 	if (payoutEl) {

@@ -81,7 +81,10 @@ try {
         $profile_photo = save_upload($_FILES['profile_photo'], 'profile_', ['jpg','jpeg','png']);
     }
 
-    $cover_photo = save_upload($_FILES['cover_photo'], 'cover_', ['jpg','jpeg','png']);
+    $cover_photo = null;
+    if (!empty($_FILES['cover_photo']) && ($_FILES['cover_photo']['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
+        $cover_photo = save_upload($_FILES['cover_photo'], 'cover_', ['jpg','jpeg','png']);
+    }
 
     // Address fields
     $fields = ['street', 'city', 'postal', 'country', 'latitude', 'longitude'];

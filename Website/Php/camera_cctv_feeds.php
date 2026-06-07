@@ -277,7 +277,7 @@ try {
     }
 
     $feedLabel = trim((string)($_POST['feed_label'] ?? ''));
-    $feedType = strtolower(trim((string)($_POST['feed_type'] ?? 'live')));
+    $feedType = strtolower(trim((string)($_POST['feed_type'] ?? 'webcam')));
     $streamScope = normalizeScope((string)($_POST['stream_scope'] ?? 'private'));
     $cameraLocation = trim((string)($_POST['camera_location'] ?? ''));
     $streamingHours = normalizeHours((string)($_POST['streaming_hours'] ?? 'continuous'));
@@ -297,8 +297,8 @@ try {
         respond(['success' => false, 'error' => 'Camera name is too long (max 150 chars)'], 400);
     }
 
-    if (!in_array($feedType, ['live', 'recorded'], true)) {
-        $feedType = 'live';
+    if (!in_array($feedType, ['webcam', 'live', 'recorded'], true)) {
+        $feedType = 'webcam';
     }
 
     if ($cameraLocation === '') {
@@ -315,7 +315,9 @@ try {
     $liveUrl = null;
     $videoPath = null;
 
-    if ($feedType === 'live') {
+    if ($feedType === 'webcam') {
+        $streamScope = 'private';
+    } elseif ($feedType === 'live') {
         $candidateUrl = trim((string)($_POST['live_url'] ?? ''));
         if ($candidateUrl === '' || !filter_var($candidateUrl, FILTER_VALIDATE_URL)) {
             respond(['success' => false, 'error' => 'Valid live URL is required'], 400);

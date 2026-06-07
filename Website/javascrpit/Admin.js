@@ -115,206 +115,206 @@ legendChips.forEach(btn => {
 
 loadCameraSeries();
 
-    // Orders Chart
-    const ordersChart = new Chart(document.getElementById('ordersChart').getContext('2d'), {
-      type: 'bar',
-      data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
-        datasets: [
-          {
-            label: '2025',
-            data: [40, 60, 80, 70, 100, 30, 10],
-            backgroundColor: '#f59e0b',
-            borderColor: '#d97706',
-            borderWidth: 1,
-            borderRadius: 8,
-            maxBarThickness: 34,
-            categoryPercentage: 0.74,
-            barPercentage: 0.9
-          },
-          {
-            label: '2026',
-            data: [20, 50, 60, 30, 90, 25, 80],
-            backgroundColor: '#2563eb',
-            borderColor: '#1d4ed8',
-            borderWidth: 1,
-            borderRadius: 8,
-            maxBarThickness: 34,
-            categoryPercentage: 0.74,
-            barPercentage: 0.9
-          }
-        ]
+// Orders Chart
+const ordersChart = new Chart(document.getElementById('ordersChart').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+    datasets: [
+      {
+        label: '2025',
+        data: [40, 60, 80, 70, 100, 30, 10],
+        backgroundColor: '#f59e0b',
+        borderColor: '#d97706',
+        borderWidth: 1,
+        borderRadius: 8,
+        maxBarThickness: 34,
+        categoryPercentage: 0.74,
+        barPercentage: 0.9
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
+      {
+        label: '2026',
+        data: [20, 50, 60, 30, 90, 25, 80],
+        backgroundColor: '#2563eb',
+        borderColor: '#1d4ed8',
+        borderWidth: 1,
+        borderRadius: 8,
+        maxBarThickness: 34,
+        categoryPercentage: 0.74,
+        barPercentage: 0.9
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: {
+      duration: 1100,
+      easing: 'easeOutQuart',
+      delay(ctx) {
+        if (ctx.type !== 'data' || ctx.mode !== 'default') return 0;
+        return (ctx.dataIndex * 70) + (ctx.datasetIndex * 120);
+      }
+    },
+    transitions: {
+      active: {
         animation: {
-          duration: 1100,
-          easing: 'easeOutQuart',
-          delay(ctx) {
-            if (ctx.type !== 'data' || ctx.mode !== 'default') return 0;
-            return (ctx.dataIndex * 70) + (ctx.datasetIndex * 120);
-          }
-        },
-        transitions: {
-          active: {
-            animation: {
-              duration: 500,
-              easing: 'easeOutCubic'
-            }
-          }
-        },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: 'rgba(17, 24, 39, 0.92)',
-            titleColor: '#ffffff',
-            bodyColor: '#f9fafb',
-            padding: 10,
-            displayColors: true
-          }
-        },
-        scales: {
-          x: {
-            grid: { color: 'rgba(0,0,0,0.04)' },
-            ticks: { color: '#374151', font: { size: 12, weight: '700' } }
-          },
-          y: {
-            grid: { color: 'rgba(0,0,0,0.08)' },
-            ticks: { color: '#4b5563', font: { size: 12, weight: '600' }, stepSize: 20 },
-            beginAtZero: true,
-            min: 0,
-            max: 120
-          }
+          duration: 500,
+          easing: 'easeOutCubic'
         }
       }
-    });
-
-    const ordersLegendButtons = Array.from(document.querySelectorAll('#orders-legend .orders-legend-btn'));
-
-    function showAllOrdersYears() {
-      ordersChart.data.datasets.forEach(ds => {
-        ds.hidden = false;
-      });
-      ordersChart.update();
-      ordersLegendButtons.forEach(btn => btn.classList.add('active'));
-    }
-
-    function setOrdersYear(year) {
-      ordersChart.data.datasets.forEach(ds => {
-        ds.hidden = ds.label !== year;
-      });
-      ordersChart.update();
-      ordersLegendButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.year === year));
-    }
-
-    ordersLegendButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const year = btn.dataset.year;
-        if (!year) return;
-        setOrdersYear(year);
-      });
-    });
-
-    function resetOrdersDefaultView() {
-      showAllOrdersYears();
-    }
-
-    resetOrdersDefaultView();
-
-    window.addEventListener('pageshow', () => {
-      resetOrdersDefaultView();
-    });
-
-    function activateSection(sectionId) {
-      if (!sectionId) return false;
-      const section = document.getElementById(sectionId);
-      if (!section) return false;
-
-      document.querySelectorAll('.sidebar ul li').forEach(li => li.classList.remove('active'));
-      const sidebarItem = document.querySelector(`.sidebar ul li[data-section="${sectionId}"]`);
-      if (sidebarItem) sidebarItem.classList.add('active');
-
-      document.querySelectorAll('.main-section').forEach(sec => sec.classList.remove('active'));
-      section.classList.add('active');
-      document.dispatchEvent(new CustomEvent('admin:section-activated', {
-        detail: { sectionId }
-      }));
-      return true;
-    }
-
-    // Sidebar click logic
-    document.querySelectorAll('.sidebar ul li').forEach(function(item) {
-      item.addEventListener('click', function() {
-        activateSection(item.getAttribute('data-section'));
-      });
-    });
-
-    // Global search: table name / person name / phone => jump to matching section
-    const globalSearchInput = document.getElementById('global-smart-search') || document.querySelector('.navbar-search input');
-
-    function findMatchingSection(query) {
-      const q = String(query || '').trim().toLowerCase();
-      if (!q) return null;
-
-      const sectionNameMap = [
-        { terms: ['dashboard'], id: 'dashboard' },
-        { terms: ['tables'], id: 'tables' },
-        { terms: ['missing', 'missing persons'], id: 'missing' },
-        { terms: ['ai', 'ai detection logs'], id: 'ai' },
-        { terms: ['crime', 'crime reporting'], id: 'crime' },
-        { terms: ['admin post', 'admin update'], id: 'admin-post' },
-        { terms: ['post', 'post control'], id: 'post-control' },
-        { terms: ['donation', 'donations control'], id: 'donations' },
-        { terms: ['broadcast', 'notifications'], id: 'broadcast' },
-        { terms: ['volunteer approver', 'approver', 'approval'], id: 'volunteer-approver' },
-        { terms: ['volunteer', 'volunteer missions'], id: 'volunteer' },
-        { terms: ['withdraw', 'withdraw control'], id: 'withdraw' },
-        { terms: ['review'], id: 'review' },
-        { terms: ['report', 'reports'], id: 'reports' },
-        { terms: ['chat', 'chat management', 'messenger'], id: 'chat-management' }
-      ];
-
-      const direct = sectionNameMap.find(s => s.terms.some(t => t.includes(q) || q.includes(t)));
-      if (direct) return direct.id;
-
-      const sections = Array.from(document.querySelectorAll('.main-section'));
-      for (const sec of sections) {
-        const title = (sec.querySelector('h2')?.innerText || '').toLowerCase();
-        if (title.includes(q)) return sec.id;
-
-        const rowMatch = Array.from(sec.querySelectorAll('table tbody tr')).some(row => {
-          const text = (row.innerText || '').toLowerCase();
-          return text.includes(q);
-        });
-        if (rowMatch) return sec.id;
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: 'rgba(17, 24, 39, 0.92)',
+        titleColor: '#ffffff',
+        bodyColor: '#f9fafb',
+        padding: 10,
+        displayColors: true
       }
-
-      return null;
+    },
+    scales: {
+      x: {
+        grid: { color: 'rgba(0,0,0,0.04)' },
+        ticks: { color: '#374151', font: { size: 12, weight: '700' } }
+      },
+      y: {
+        grid: { color: 'rgba(0,0,0,0.08)' },
+        ticks: { color: '#4b5563', font: { size: 12, weight: '600' }, stepSize: 20 },
+        beginAtZero: true,
+        min: 0,
+        max: 120
+      }
     }
+  }
+});
 
-    if (globalSearchInput) {
-      let searchTimer = null;
+const ordersLegendButtons = Array.from(document.querySelectorAll('#orders-legend .orders-legend-btn'));
 
-      const runSearch = () => {
-        const q = globalSearchInput.value;
-        if (!q || q.trim().length < 2) return;
-        const matchedSection = findMatchingSection(q);
-        if (matchedSection) activateSection(matchedSection);
-      };
+function showAllOrdersYears() {
+  ordersChart.data.datasets.forEach(ds => {
+    ds.hidden = false;
+  });
+  ordersChart.update();
+  ordersLegendButtons.forEach(btn => btn.classList.add('active'));
+}
 
-      globalSearchInput.addEventListener('input', () => {
-        clearTimeout(searchTimer);
-        searchTimer = setTimeout(runSearch, 250);
-      });
+function setOrdersYear(year) {
+  ordersChart.data.datasets.forEach(ds => {
+    ds.hidden = ds.label !== year;
+  });
+  ordersChart.update();
+  ordersLegendButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.year === year));
+}
 
-      globalSearchInput.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') {
-          event.preventDefault();
-          runSearch();
-        }
-      });
+ordersLegendButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const year = btn.dataset.year;
+    if (!year) return;
+    setOrdersYear(year);
+  });
+});
+
+function resetOrdersDefaultView() {
+  showAllOrdersYears();
+}
+
+resetOrdersDefaultView();
+
+window.addEventListener('pageshow', () => {
+  resetOrdersDefaultView();
+});
+
+function activateSection(sectionId) {
+  if (!sectionId) return false;
+  const section = document.getElementById(sectionId);
+  if (!section) return false;
+
+  document.querySelectorAll('.sidebar ul li').forEach(li => li.classList.remove('active'));
+  const sidebarItem = document.querySelector(`.sidebar ul li[data-section="${sectionId}"]`);
+  if (sidebarItem) sidebarItem.classList.add('active');
+
+  document.querySelectorAll('.main-section').forEach(sec => sec.classList.remove('active'));
+  section.classList.add('active');
+  document.dispatchEvent(new CustomEvent('admin:section-activated', {
+    detail: { sectionId }
+  }));
+  return true;
+}
+
+// Sidebar click logic
+document.querySelectorAll('.sidebar ul li').forEach(function (item) {
+  item.addEventListener('click', function () {
+    activateSection(item.getAttribute('data-section'));
+  });
+});
+
+// Global search: table name / person name / phone => jump to matching section
+const globalSearchInput = document.getElementById('global-smart-search') || document.querySelector('.navbar-search input');
+
+function findMatchingSection(query) {
+  const q = String(query || '').trim().toLowerCase();
+  if (!q) return null;
+
+  const sectionNameMap = [
+    { terms: ['dashboard'], id: 'dashboard' },
+    { terms: ['tables'], id: 'tables' },
+    { terms: ['missing', 'missing persons'], id: 'missing' },
+    { terms: ['ai', 'ai detection logs'], id: 'ai' },
+    { terms: ['crime', 'crime reporting'], id: 'crime' },
+    { terms: ['admin post', 'admin update'], id: 'admin-post' },
+    { terms: ['post', 'post control'], id: 'post-control' },
+    { terms: ['donation', 'donations control'], id: 'donations' },
+    { terms: ['broadcast', 'notifications'], id: 'broadcast' },
+    { terms: ['volunteer approver', 'approver', 'approval'], id: 'volunteer-approver' },
+    { terms: ['volunteer', 'volunteer missions'], id: 'volunteer' },
+    { terms: ['withdraw', 'withdraw control'], id: 'withdraw' },
+    { terms: ['review'], id: 'review' },
+    { terms: ['report', 'reports'], id: 'reports' },
+    { terms: ['chat', 'chat management', 'messenger'], id: 'chat-management' }
+  ];
+
+  const direct = sectionNameMap.find(s => s.terms.some(t => t.includes(q) || q.includes(t)));
+  if (direct) return direct.id;
+
+  const sections = Array.from(document.querySelectorAll('.main-section'));
+  for (const sec of sections) {
+    const title = (sec.querySelector('h2')?.innerText || '').toLowerCase();
+    if (title.includes(q)) return sec.id;
+
+    const rowMatch = Array.from(sec.querySelectorAll('table tbody tr')).some(row => {
+      const text = (row.innerText || '').toLowerCase();
+      return text.includes(q);
+    });
+    if (rowMatch) return sec.id;
+  }
+
+  return null;
+}
+
+if (globalSearchInput) {
+  let searchTimer = null;
+
+  const runSearch = () => {
+    const q = globalSearchInput.value;
+    if (!q || q.trim().length < 2) return;
+    const matchedSection = findMatchingSection(q);
+    if (matchedSection) activateSection(matchedSection);
+  };
+
+  globalSearchInput.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(runSearch, 250);
+  });
+
+  globalSearchInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      runSearch();
     }
+  });
+}
 
 // Tables section visibility controls
 (function () {
@@ -487,7 +487,7 @@ document.addEventListener('click', function (event) {
             if (normalized) mediaUrls.push(normalized);
           });
         }
-      } catch (_err) {}
+      } catch (_err) { }
     }
 
     const normalizedMediaPath = toAbsoluteLike(mediaPathRaw);
@@ -995,7 +995,7 @@ document.addEventListener('click', function (event) {
       loadPostRows();
     }
     if (sectionId === 'chat-management' && window.SearcharChat && typeof window.SearcharChat.refresh === 'function') {
-      window.SearcharChat.refresh().catch(() => {});
+      window.SearcharChat.refresh().catch(() => { });
     }
   });
 
@@ -1135,10 +1135,10 @@ document.addEventListener('click', function (event) {
       const comments = Array.isArray(row.comments) ? row.comments : [];
       const commentsHtml = comments.length
         ? `<ul class="admin-post-activity-comments">${comments.map((commentRow) => {
-            const actor = escapeHtml(commentRow.actor_name || 'Someone');
-            const text = escapeHtml(commentRow.comment_text || '');
-            return `<li><strong>${actor}:</strong> ${text}</li>`;
-          }).join('')}</ul>`
+          const actor = escapeHtml(commentRow.actor_name || 'Someone');
+          const text = escapeHtml(commentRow.comment_text || '');
+          return `<li><strong>${actor}:</strong> ${text}</li>`;
+        }).join('')}</ul>`
         : '<span class="admin-post-activity-empty">No comments yet</span>';
 
       const shareHtml = Number(row.share_facebook || 0) === 1
@@ -1295,7 +1295,7 @@ function closeAILogModal() {
 const aiConfidence = document.getElementById('aiConfidence');
 const confidenceValue = document.getElementById('confidenceValue');
 if (aiConfidence && confidenceValue) {
-  aiConfidence.addEventListener('input', function() {
+  aiConfidence.addEventListener('input', function () {
     confidenceValue.innerText = aiConfidence.value + '%';
   });
 }
@@ -1938,35 +1938,35 @@ function openAddVolunteerModal() {
       const activeMissionIds = new Set(
         Array.isArray(miscJson?.missions)
           ? miscJson.missions
-              .filter((row) => {
-                const status = String(row?.status || '').toLowerCase();
-                const response = String(row?.response_status || '').toLowerCase();
-                return !['completed', 'rejected_busy', 'closed_by_police'].includes(status)
-                  && !['completed', 'rejected_busy', 'closed_by_police'].includes(response);
-              })
-              .map((row) => Number(row?.volunteer_id || 0))
-              .filter((id) => id > 0)
+            .filter((row) => {
+              const status = String(row?.status || '').toLowerCase();
+              const response = String(row?.response_status || '').toLowerCase();
+              return !['completed', 'rejected_busy', 'closed_by_police'].includes(status)
+                && !['completed', 'rejected_busy', 'closed_by_police'].includes(response);
+            })
+            .map((row) => Number(row?.volunteer_id || 0))
+            .filter((id) => id > 0)
           : []
       );
 
       const volunteers = Array.isArray(volJson?.data)
         ? volJson.data.map(v => ({
-            id: `VOL-${v.volunteer_id}`,
-            name: v.full_name || v.name || 'Volunteer',
-            location: normalizeAssignLocation(
-              [v.street, v.city, v.location]
-                .map(item => String(item || '').trim())
-                .filter(Boolean)
-                .join(', ')
-            ) || 'Dhaka',
-            status: String(v.status || '').toLowerCase() === 'busy' ? 'busy' : 'available',
-            role: 'volunteer',
-            recipient_entity: 'volunteer',
-            recipient_id: Number(v.volunteer_id || 0),
-            lat: Number(v.lat ?? v.latitude),
-            lng: Number(v.lng ?? v.lon ?? v.longitude),
-            profile_tag: 'Volunteer'
-          }))
+          id: `VOL-${v.volunteer_id}`,
+          name: v.full_name || v.name || 'Volunteer',
+          location: normalizeAssignLocation(
+            [v.street, v.city, v.location]
+              .map(item => String(item || '').trim())
+              .filter(Boolean)
+              .join(', ')
+          ) || 'Dhaka',
+          status: String(v.status || '').toLowerCase() === 'busy' ? 'busy' : 'available',
+          role: 'volunteer',
+          recipient_entity: 'volunteer',
+          recipient_id: Number(v.volunteer_id || 0),
+          lat: Number(v.lat ?? v.latitude),
+          lng: Number(v.lng ?? v.lon ?? v.longitude),
+          profile_tag: 'Volunteer'
+        }))
         : [];
 
       const volunteerById = new Map();
@@ -2038,7 +2038,7 @@ function openAddVolunteerModal() {
     }
   }
 
-  function updateAssignRadiusLabel(_value) {}
+  function updateAssignRadiusLabel(_value) { }
 
   function closeCrimeAssignModal() {
     if (assignModal) assignModal.classList.remove('open');
@@ -2098,7 +2098,7 @@ function openAddVolunteerModal() {
       tr.innerHTML = `
         <td>${vol.name}</td>
         <td>Crime response at ${landmark || 'N/A'}</td>
-        <td>${new Date().toISOString().slice(0,10)}</td>
+        <td>${new Date().toISOString().slice(0, 10)}</td>
         <td>${vol.location}</td>
         <td><span class="status-approved">Assigned</span></td>
         <td>Auto-added from Crime Reporting</td>
@@ -2639,27 +2639,60 @@ function openAddVolunteerModal() {
         const id = cctvBtn.getAttribute('data-crime-cctv');
         const crime = demoCrimes.find(c => c.id === id);
         if (String(crime?.status || '').toLowerCase() === 'closed') return;
-        
-        // Auto-fill AI Investigation with case image
+
         if (crime && Array.isArray(crime.media) && crime.media.length > 0) {
           const mediaUrl = crime.media[0].url || crime.media[0].path;
           if (mediaUrl) {
-            document.getElementById('ai-preview-img').src = mediaUrl;
-            document.getElementById('ai-reference-preview').classList.remove('hidden');
-            
-            // create a dummy file in the input if possible, or just set a global state
             window.activeAiSearchCaseId = id;
             window.activeAiSearchImage = mediaUrl;
+
+            const emptyRow = document.getElementById('empty-investigations');
+            if (emptyRow) emptyRow.style.display = 'none';
+
+            const tbody = document.getElementById('active-investigations-body');
+            let existingRow = document.getElementById(`investigation-row-${id}`);
+            
+            let resolvedMediaUrl = mediaUrl;
+            if (!resolvedMediaUrl.startsWith('http') && !resolvedMediaUrl.startsWith('data:') && !resolvedMediaUrl.startsWith('../')) {
+                resolvedMediaUrl = '../' + resolvedMediaUrl;
+            }
+            
+            if (!existingRow) {
+              const tr = document.createElement('tr');
+              tr.id = `investigation-row-${id}`;
+              tr.innerHTML = `
+                <td><strong>${id}</strong><br><small>${escapeHtml(crime.landmark || '')}</small></td>
+                <td><img src="${escapeHtml(resolvedMediaUrl)}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;"></td>
+                <td id="inv-status-${id}"><span class="status-pending">Ready</span></td>
+                <td>
+                  <button type="button" class="ghost" style="margin-right: 5px;" onclick="startPythonAISearch('${id}', '${resolvedMediaUrl}', 'posts')">Search in Posts</button>
+                  <button type="button" class="ghost" onclick="startPythonAISearch('${id}', '${resolvedMediaUrl}', 'cctv')">Search in CCTV</button>
+                </td>
+              `;
+              tbody.prepend(tr);
+              saveActiveInvestigations();
+            } else {
+              // Update the row just in case the image was broken previously
+              existingRow.querySelector('img').src = escapeHtml(resolvedMediaUrl);
+              const btns = existingRow.querySelectorAll('button');
+              if (btns.length >= 2) {
+                  btns[0].setAttribute('onclick', `startPythonAISearch('${id}', '${resolvedMediaUrl}', 'posts')`);
+                  btns[1].setAttribute('onclick', `startPythonAISearch('${id}', '${resolvedMediaUrl}', 'cctv')`);
+              }
+              // Highlight the existing row
+              existingRow.style.backgroundColor = '#f1f5f9';
+              setTimeout(() => { existingRow.style.backgroundColor = ''; }, 1500);
+              saveActiveInvestigations();
+            }
           }
         } else {
-            window.activeAiSearchCaseId = id;
-            window.activeAiSearchImage = null;
+          window.activeAiSearchCaseId = id;
+          window.activeAiSearchImage = null;
         }
 
-        // Redirect to AI tab
         const aiTab = document.querySelector('.sidebar-menu li[data-section="ai"], li[data-section="ai"]');
         if (aiTab) aiTab.click();
-        
+
         return;
       }
     });
@@ -3690,7 +3723,7 @@ function openAddVolunteerModal() {
         if (Array.isArray(arr) && arr.length > 0) {
           return `${arr.length} image${arr.length > 1 ? 's' : ''}`;
         }
-      } catch (_e) {}
+      } catch (_e) { }
     }
 
     if (type === 'video' && mediaPath) return 'Video';
@@ -3873,7 +3906,7 @@ function openAddVolunteerModal() {
   document.addEventListener('admin:refresh-section', function (event) {
     const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
     if (sectionId === 'chat-management' && window.SearcharChat && typeof window.SearcharChat.refresh === 'function') {
-      window.SearcharChat.refresh().catch(() => {});
+      window.SearcharChat.refresh().catch(() => { });
     }
   });
 
@@ -3926,7 +3959,7 @@ function openAddVolunteerModal() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `donations_${new Date().toISOString().slice(0,10)}.csv`;
+    link.download = `donations_${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -3963,7 +3996,7 @@ function openAddVolunteerModal() {
 
       const blob = await res.blob();
       const fileName = inferFileNameFromHeader(res.headers.get('content-disposition'))
-        || `donations_report_${new Date().toISOString().slice(0,10)}.csv`;
+        || `donations_report_${new Date().toISOString().slice(0, 10)}.csv`;
 
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -4010,7 +4043,7 @@ function openAddVolunteerModal() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `withdrawals_${new Date().toISOString().slice(0,10)}.csv`;
+    link.download = `withdrawals_${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -4721,7 +4754,7 @@ function switchAiTab(tabId) {
 function previewAiImage(input) {
   if (input.files && input.files[0]) {
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = function (e) {
       document.getElementById('ai-preview-img').src = e.target.result;
       document.getElementById('ai-reference-preview').classList.remove('hidden');
     };
@@ -4729,199 +4762,115 @@ function previewAiImage(input) {
   }
 }
 
-function removeAiImage() {
-  document.getElementById('ai-reference-image').value = '';
-  document.getElementById('ai-reference-preview').classList.add('hidden');
-  document.getElementById('ai-preview-img').removeAttribute('src');
-}
-
-// Helper to generate a simple average hash (aHash) of an image source
-async function generateImageHash(src) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.crossOrigin = "Anonymous";
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = 8;
-      canvas.height = 8;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, 8, 8);
-      const data = ctx.getImageData(0, 0, 8, 8).data;
-      let total = 0;
-      const grays = [];
-      for (let i = 0; i < data.length; i += 4) {
-        const gray = (data[i] + data[i+1] + data[i+2]) / 3;
-        grays.push(gray);
-        total += gray;
-      }
-      const avg = total / 64;
-      let hash = "";
-      for (let i = 0; i < 64; i++) {
-        hash += (grays[i] >= avg ? "1" : "0");
-      }
-      resolve(hash);
-    };
-    img.onerror = () => resolve("");
-    img.src = src;
-  });
-}
-
-// Compare two hashes and return percentage similarity
-function compareHashes(h1, h2) {
-  if (!h1 || !h2 || h1.length !== 64 || h2.length !== 64) return 0;
-  let matches = 0;
-  for (let i = 0; i < 64; i++) {
-    if (h1[i] === h2[i]) matches++;
+function saveActiveInvestigations() {
+  const tbody = document.getElementById('active-investigations-body');
+  if (tbody) {
+    localStorage.setItem('activeAiInvestigationsV2', tbody.innerHTML);
   }
-  return (matches / 64) * 100;
 }
 
-async function runAiSearch() {
-  const fileInput = document.getElementById('ai-reference-image');
-  const previewImg = document.getElementById('ai-preview-img');
-  
-  if ((!fileInput.files || !fileInput.files[0]) && !window.activeAiSearchImage && !previewImg.getAttribute('src')) {
-    alert("Please upload a reference image or select a case first.");
-    return;
+function loadActiveInvestigations() {
+  const tbody = document.getElementById('active-investigations-body');
+  const saved = localStorage.getItem('activeAiInvestigationsV2');
+  if (tbody && saved && saved.trim() !== '') {
+    tbody.innerHTML = saved;
   }
-  
-  const searchImageSrc = previewImg.getAttribute('src') || window.activeAiSearchImage;
-  const isAutoFilled = (searchImageSrc === window.activeAiSearchImage);
-  
+}
+
+// Call load on page start
+document.addEventListener('DOMContentLoaded', loadActiveInvestigations);
+
+let activeAiResultButton = null;
+
+async function startPythonAISearch(caseId, targetImage, searchType) {
   const resultsGrid = document.getElementById('ai-results-grid');
-  resultsGrid.innerHTML = '<div class="ai-empty-state"><i class="fa-solid fa-spinner fa-spin" style="font-size: 24px;"></i><p style="margin-top: 10px;">Searching database and network...</p></div>';
+  const statusEl = document.getElementById(`inv-status-${caseId}`);
   
-  const isSocial = document.querySelector('.ai-tab-btn[data-tab="social"]').classList.contains('active');
+  if (statusEl) {
+    statusEl.innerHTML = `<span class="status-pending"><i class="fa-solid fa-spinner fa-spin"></i> Searching ${searchType}...</span>`;
+    saveActiveInvestigations();
+  }
+  
+  resultsGrid.innerHTML = `<div class="ai-empty-state"><i class="fa-solid fa-spinner fa-spin" style="font-size: 24px;"></i><p style="margin-top: 10px;">Connecting to Python AI Engine to search in ${searchType === 'posts' ? 'Website Posts' : 'CCTV Feeds'}...</p></div>`;
   
   try {
-    let mockResultsHTML = '';
+    const fd = new FormData();
+    fd.append('action', searchType === 'posts' ? 'search_posts' : 'search_cctv');
+    fd.append('target_image', targetImage);
     
-    if (isSocial) {
-      // Fetch real website posts first
-      const response = await fetch('../Php/fetch_latest_approved_posts.php');
-      const data = await response.json();
-      let allPosts = (data && data.success && Array.isArray(data.rows)) ? data.rows : [];
-      
-      let matchedPost = null;
-      let finalScore = 0;
-
-      if (isAutoFilled) {
-        finalScore = 98;
-        matchedPost = allPosts.length > 0 ? allPosts[0] : null; 
-      } else {
-        const uploadedFile = fileInput.files[0];
-        if (uploadedFile) {
-          // Generate perceptual hash for the uploaded image
-          const uploadedHash = await generateImageHash(searchImageSrc);
-          
-          // Iterate over posts and compare perceptual hashes
-          for (const post of allPosts) {
-            let url = null;
-            if (post.media_path) url = post.media_path;
-            else if (post.media_json) {
-              try {
-                const parsed = JSON.parse(post.media_json);
-                if (parsed.length > 0) url = parsed[0].url || parsed[0].path;
-              } catch(e) {}
-            }
-            if (url) {
-              const postHash = await generateImageHash(url);
-              const similarity = compareHashes(uploadedHash, postHash);
-              
-              if (similarity >= 85) { // 85% visual similarity threshold
-                matchedPost = post;
-                finalScore = Math.floor(similarity);
-                if (finalScore < 90) finalScore += 5; // Boost score slightly for UI
-                break;
-              }
-            }
-          }
+    const res = await fetch('../Php/ai_search_handler.php', {
+      method: 'POST',
+      body: fd
+    });
+    
+    const data = await res.json();
+    
+    if (!data.success) {
+      throw new Error(data.error || 'Failed to get results from AI engine');
+    }
+    
+    if (statusEl) {
+      statusEl.innerHTML = `<span class="status-approved">Finished</span>`;
+      saveActiveInvestigations();
+    }
+    
+    if (!data.matches || data.matches.length === 0) {
+      resultsGrid.innerHTML = `
+        <div class="ai-empty-state" style="padding: 40px 20px;">
+          <i class="fa-solid fa-fingerprint" style="font-size: 32px; color: #f05454; margin-bottom: 15px;"></i>
+          <h4 style="margin: 0 0 10px; color: #1a232a;">No Confirmed Matches</h4>
+          <p style="color: #64748b; margin: 0; font-size: 14px;">The AI scanned the database but couldn't find a strong match.</p>
+        </div>
+      `;
+    } else {
+      let html = '';
+      data.matches.forEach(match => {
+        let displayImg = match.match_image || match.post_image || targetImage;
+        let details = '';
+        
+        if (searchType === 'posts') {
+          details = `
+            <div class="ai-result-location"><i class="fa-solid fa-file-lines" style="color:#1877F2;"></i> Post by ${escapeHtml(match.author || 'Unknown')}</div>
+            <div style="font-size:12px; color:#555; margin-bottom: 8px;">${escapeHtml(match.time || '')}</div>
+          `;
+        } else {
+          details = `
+            <div class="ai-result-location"><i class="fa-solid fa-video" style="color:#333;"></i> ${escapeHtml(match.label || 'CCTV')} (${escapeHtml(match.location || 'Unknown')})</div>
+            <div style="font-size:12px; color:#555; margin-bottom: 8px;">Time in video: ${escapeHtml(match.timestamp || '0:00')}</div>
+          `;
         }
         
-        // If no visual match found, fallback to low mock score
-        if (!matchedPost) {
-          let hashStr = 0;
-          const strToHash = (searchImageSrc || '').substring(0, 500) + (searchImageSrc || '').length;
-          for (let i = 0; i < strToHash.length; i++) {
-            hashStr = ((hashStr << 5) - hashStr) + strToHash.charCodeAt(i);
-            hashStr |= 0;
-          }
-          finalScore = Math.abs(hashStr) % 50 + 10; // Between 10 and 59
-        }
-      }
-
-      if (finalScore < 75 || !matchedPost) {
-        mockResultsHTML = `
-          <div class="ai-empty-state" style="padding: 40px 20px;">
-            <i class="fa-solid fa-fingerprint" style="font-size: 32px; color: #f05454; margin-bottom: 15px;"></i>
-            <h4 style="margin: 0 0 10px; color: #1a232a;">No Confirmed Matches</h4>
-            <p style="color: #64748b; margin: 0; font-size: 14px;">The AI scanned the database but couldn't find a strong match.</p>
-            <small style="display: block; margin-top: 10px; color: #94a3b8;">Highest confidence found was ${finalScore}%, which is below our 75% threshold.</small>
-          </div>
-        `;
-      } else {
-        let displayImg = searchImageSrc;
-        if (matchedPost.media_path) {
-          displayImg = matchedPost.media_path;
-        } else if (matchedPost.media_json) {
-          try {
-            const parsed = JSON.parse(matchedPost.media_json);
-            if (parsed.length > 0) displayImg = parsed[0].url || parsed[0].path || searchImageSrc;
-          } catch(e) {}
-        }
-        mockResultsHTML = `
+        html += `
           <div class="ai-result-card">
             <img src="${displayImg}" class="ai-result-img" alt="Match">
             <div class="ai-result-details">
-              <span class="ai-result-confidence">${finalScore}% Match</span>
-              <div class="ai-result-location"><i class="fa-solid fa-file-lines" style="color:#1877F2;"></i> Post by ${escapeHtml(matchedPost.author_name || 'Unknown')}</div>
+              <span class="ai-result-confidence">${match.confidence}% Match</span>
+              ${details}
               <button class="ai-action-btn" onclick="openAiConfirmModal(this)">Confirm Source</button>
             </div>
           </div>
         `;
-      }
-    } else {
-      // CCTV search simulation
-      await new Promise(r => setTimeout(r, 1500));
-      let hashStr = 0;
-      const strToHash = (searchImageSrc || '').substring(0, 500) + (searchImageSrc || '').length;
-      for (let i = 0; i < strToHash.length; i++) {
-        hashStr = ((hashStr << 5) - hashStr) + strToHash.charCodeAt(i);
-        hashStr |= 0;
-      }
-      const score = Math.abs(hashStr) % 90 + 10;
-      const finalScore = isAutoFilled ? 92 : score;
-      
-      if (finalScore < 75) {
-        mockResultsHTML = `
-          <div class="ai-empty-state" style="padding: 40px 20px;">
-            <i class="fa-solid fa-fingerprint" style="font-size: 32px; color: #f05454; margin-bottom: 15px;"></i>
-            <h4 style="margin: 0 0 10px; color: #1a232a;">No CCTV Matches</h4>
-            <p style="color: #64748b; margin: 0; font-size: 14px;">The AI scanned CCTV feeds but couldn't find a strong match.</p>
-            <small style="display: block; margin-top: 10px; color: #94a3b8;">Highest confidence found was ${finalScore}%, which is below our 75% threshold.</small>
-          </div>
-        `;
-      } else {
-        mockResultsHTML = `
-          <div class="ai-result-card">
-            <img src="${searchImageSrc}" class="ai-result-img" alt="Match">
-            <div class="ai-result-details">
-              <span class="ai-result-confidence">${finalScore}% Match</span>
-              <div class="ai-result-location"><i class="fa-solid fa-video" style="color:#333;"></i> CCTV ID: GUL-001 (Gulshan 1 Circle)</div>
-              <button class="ai-action-btn" onclick="openAiConfirmModal(this)">Confirm Source</button>
-            </div>
-          </div>
-        `;
-      }
+      });
+      resultsGrid.innerHTML = html;
     }
     
-    resultsGrid.innerHTML = mockResultsHTML;
+    if (searchType === 'posts') {
+      setTimeout(() => {
+        const cctvBtn = document.querySelector(`#investigation-row-${caseId} button:nth-child(2)`);
+        if (cctvBtn && confirm("Posts search finished. Start CCTV search now?")) {
+          cctvBtn.click();
+        }
+      }, 1000);
+    }
+    
   } catch (err) {
-    resultsGrid.innerHTML = `<div class="ai-empty-state">Search failed: ${err.message}</div>`;
+    if (statusEl) {
+      statusEl.innerHTML = `<span class="status-rejected">Error</span>`;
+      saveActiveInvestigations();
+    }
+    resultsGrid.innerHTML = `<div class="ai-empty-state"><i class="fa-solid fa-circle-exclamation" style="color:red;font-size:24px;"></i><p style="margin-top:10px;">Error: ${err.message}</p></div>`;
   }
 }
-
-let activeAiResultButton = null;
 
 function openAiConfirmModal(button) {
   activeAiResultButton = button;

@@ -461,36 +461,23 @@
     <div id="ai" class="main-section">
       <h2>AI Investigation Search</h2>
       <div class="ai-investigation-panel">
-        <div class="ai-search-config">
-          <div class="ai-upload-box">
-            <label for="ai-reference-image" class="ai-upload-label">
-              <i class="fa-solid fa-cloud-arrow-up" style="font-size: 24px; color: var(--primary);"></i>
-              <span style="display:block; margin-top: 8px;">Upload Suspect/Target Image</span>
-            </label>
-            <input type="file" id="ai-reference-image" accept="image/*" hidden onchange="previewAiImage(this)">
-            <div id="ai-reference-preview" class="ai-image-preview hidden">
-              <img id="ai-preview-img" src="" alt="Preview">
-              <button class="ai-remove-preview" onclick="removeAiImage()">&times;</button>
-            </div>
-          </div>
-          
-          <div class="ai-search-tabs">
-            <button class="ai-tab-btn active" data-tab="social" onclick="switchAiTab('social')">Website Posts Search</button>
-            <button class="ai-tab-btn" data-tab="cctv" onclick="switchAiTab('cctv')">CCTV Area Search</button>
-          </div>
-          
-          <div class="ai-tab-content active" id="ai-tab-social">
-            <p class="ai-hint">Search for matches across user posts, videos, and images on our platform.</p>
-            <input type="text" placeholder="Keywords (Optional)" class="ai-input-full">
-          </div>
-          
-          <div class="ai-tab-content hidden" id="ai-tab-cctv">
-            <p class="ai-hint">Search local CCTVs within a specific area.</p>
-            <input type="text" placeholder="Enter Area or Landmark (e.g., Gulshan 1)" class="ai-input-full">
-            <input type="number" placeholder="Radius (km) e.g., 5" class="ai-input-full" style="margin-top: 10px;">
-          </div>
-          
-          <button class="ai-run-search-btn" onclick="runAiSearch()"><i class="fa-solid fa-magnifying-glass"></i> Run AI Search</button>
+        <div class="section-table-block" style="margin-bottom: 20px;">
+          <h3 style="margin:0 0 10px; color:#1f2937;">Active Investigations</h3>
+          <table class="styled-table" id="active-investigations-table">
+            <thead>
+              <tr>
+                <th>Case ID</th>
+                <th>Target Image</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="active-investigations-body">
+              <tr id="empty-investigations">
+                <td colspan="4" style="text-align:center;">No active investigations. Click "AI Investigation" from the Crime Reports table to start.</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
         
         <div class="ai-search-results">

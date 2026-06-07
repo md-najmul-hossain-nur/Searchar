@@ -524,9 +524,12 @@ function filterPosts(category) {
 document.addEventListener("DOMContentLoaded", () => {
   const feedForm = document.getElementById("camFeedForm");
   const uploadSection = document.getElementById("camUploadSection");
-  const liveInputSection = document.getElementById("camLiveInputSection");
+  const webcamSection = document.getElementById("camWebcamSection");
   const fileInput = document.getElementById("camFileInput");
-  const liveURLInput = document.getElementById("camLiveURL");
+  const startWebcamBtn = document.getElementById("camStartWebcamBtn");
+  const webcamPreview = document.getElementById("camWebcamPreview");
+  const webcamPlaceholder = document.getElementById("camWebcamPlaceholder");
+  const webcamStatus = document.getElementById("camWebcamStatus");
   const sourceList = document.getElementById("camSourceList");
   const refreshBtn = document.getElementById("camRefreshFeedsBtn");
   const autoLabelEl = document.getElementById("camAutoLabel");
@@ -543,6 +546,21 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   let currentFeeds = [];
+  let webcamStream = null;
+
+  const stopWebcamPreview = () => {
+    if (webcamStream) {
+      webcamStream.getTracks().forEach((track) => track.stop());
+      webcamStream = null;
+    }
+    if (webcamPreview) {
+      webcamPreview.pause();
+      webcamPreview.srcObject = null;
+    }
+    if (webcamPlaceholder) webcamPlaceholder.style.display = "grid";
+    if (webcamStatus) webcamStatus.textContent = "Browser permission is required to preview your webcam.";
+    if (startWebcamBtn) startWebcamBtn.textContent = "Start Webcam";
+  };
 
   const getNextCameraLabel = () => {
     if (!Array.isArray(currentFeeds) || currentFeeds.length === 0) {
@@ -569,24 +587,24 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const applyTypeUI = () => {
-    const type = feedForm.feedType?.value || "live";
-    if (type === "live") {
-      liveInputSection.style.display = "block";
-      uploadSection.style.display = "none";
-      liveURLInput.required = true;
-      fileInput.required = false;
-    } else {
+    const type = feedForm.feedType?.value || "webcam";
+    if (type === "recorded") {
       uploadSection.style.display = "block";
-      liveInputSection.style.display = "none";
-      liveURLInput.required = false;
+      webcamSection.style.display = "none";
       fileInput.required = true;
+      stopWebcamPreview();
+    } else {
+      webcamSection.style.display = "block";
+      uploadSection.style.display = "none";
+      fileInput.required = false;
     }
   };
 
   const formHardReset = () => {
     feedForm.reset();
-    const liveRadio = feedForm.querySelector('input[name="feedType"][value="live"]');
-    if (liveRadio) liveRadio.checked = true;
+    const webcamRadio = feedForm.querySelector('input[name="feedType"][value="webcam"]');
+    if (webcamRadio) webcamRadio.checked = true;
+    stopWebcamPreview();
     applyTypeUI();
     if (recordedPreview) recordedPreview.removeAttribute('src');
     if (recordedPreviewWrap) recordedPreviewWrap.style.display = 'none';
@@ -604,12 +622,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     sourceList.innerHTML = feeds.map((feed) => {
-      const typeText = (feed.feed_type || 'live').toLowerCase() === 'recorded' ? 'Recorded Video' : 'Live URL';
+      const feedType = (feed.feed_type || 'webcam').toLowerCase();
+      const typeText = feedType === 'recorded' ? 'Recorded Video' : (feedType === 'webcam' ? 'Webcam' : 'Live URL');
       const statusText = Number(feed.is_active) === 1 ? 'Active' : 'Closed';
       const toggleText = Number(feed.is_active) === 1 ? 'Close CCTV' : 'Reopen CCTV';
       const feedLink = feed.feed_type === 'live' && feed.live_url
         ? `<a href="${feed.live_url}" target="_blank" rel="noopener">Open URL</a>`
-        : (feed.video_url ? `<a href="${feed.video_url}" target="_blank" rel="noopener">Open Video</a>` : 'No media');
+        : (feed.video_url ? `<a href="${feed.video_url}" target="_blank" rel="noopener">Open Video</a>` : (feedType === 'webcam' ? 'Webcam preview' : 'No media'));
 
       return `
         <article class="cam-source-item" data-feed-id="${feed.feed_id}">
@@ -676,6 +695,34 @@ document.addEventListener("DOMContentLoaded", () => {
     applyTypeUI();
   });
 
+  if (startWebcamBtn) {
+    startWebcamBtn.addEventListener('click', async () => {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        if (webcamStatus) webcamStatus.textContent = 'Your browser does not support webcam preview.';
+        return;
+      }
+
+      try {
+        startWebcamBtn.disabled = true;
+        if (webcamStatus) webcamStatus.textContent = 'Requesting webcam permission...';
+        stopWebcamPreview();
+
+        webcamStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        if (webcamPreview) {
+          webcamPreview.srcObject = webcamStream;
+          await webcamPreview.play();
+        }
+        if (webcamPlaceholder) webcamPlaceholder.style.display = 'none';
+        if (webcamStatus) webcamStatus.textContent = 'Webcam preview is active.';
+        startWebcamBtn.textContent = 'Restart Webcam';
+      } catch (error) {
+        if (webcamStatus) webcamStatus.textContent = 'Webcam permission was denied or unavailable.';
+      } finally {
+        startWebcamBtn.disabled = false;
+      }
+    });
+  }
+
   if (fileInput) {
     fileInput.addEventListener('change', () => {
       const file = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
@@ -709,14 +756,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const fd = new FormData();
+      const selectedType = feedForm.feedType?.value || 'webcam';
+      if (selectedType === 'webcam' && !webcamStream) {
+        alert('Please start the webcam preview before adding this feed.');
+        return;
+      }
+
       fd.append('action', 'create');
-      fd.append('feed_type', feedForm.feedType?.value || 'live');
+      fd.append('feed_type', selectedType);
       fd.append('feed_label', getNextCameraLabel());
-      fd.append('stream_scope', feedForm.stream_scope?.value || 'private');
-      fd.append('live_url', liveURLInput.value.trim());
-      fd.append('streaming_hours', feedForm.streaming_hours?.value || 'continuous');
+      fd.append('stream_scope', 'private');
+      fd.append('streaming_hours', 'continuous');
       fd.append('permission_confirmed', '1');
-      if (fileInput.files[0]) fd.append('recorded_video', fileInput.files[0], fileInput.files[0].name);
+      if (selectedType === 'recorded' && fileInput.files[0]) {
+        fd.append('recorded_video', fileInput.files[0], fileInput.files[0].name);
+      }
 
       const response = await fetch('../Php/camera_cctv_feeds.php', {
         method: 'POST',

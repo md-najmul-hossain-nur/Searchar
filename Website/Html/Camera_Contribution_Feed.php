@@ -154,7 +154,9 @@ foreach ($cctvFeeds as $feed) {
   $isActive = (int)($feed['is_active'] ?? 0) === 1;
   $mediaType = (string)($feed['feed_type'] ?? 'live');
   $hasStream = false;
-  if ($mediaType === 'live') {
+  if ($mediaType === 'webcam') {
+    $hasStream = true;
+  } elseif ($mediaType === 'live') {
     $hasStream = trim((string)($feed['live_url'] ?? '')) !== '';
   } else {
     $hasStream = trim((string)($feed['video_path'] ?? '')) !== '';
@@ -305,23 +307,39 @@ if ($latestFeed) {
             $statusText = $isActive ? 'Active' : 'Closed';
             $statusClass = $isActive ? 'status-approved' : 'status-rejected';
             $isActive = (int)($feed['is_active'] ?? 0) === 1;
-            $hasStream = $mediaType === 'live' ? ($liveUrl !== '') : ($mediaPath !== '');
+            if ($mediaType === 'webcam') {
+              $hasStream = true;
+            } elseif ($mediaType === 'live') {
+              $hasStream = $liveUrl !== '';
+            } else {
+              $hasStream = $mediaPath !== '';
+            }
             $rate = ($isActive && $hasStream) ? $ratePerCamera : 0;
             $earned = (accruedSeconds($feed) / 3600) * $rate;
           ?>
           <article class="camera-card">
-            <?php if ($mediaType === 'recorded' && $mediaUrl !== ''): ?>
+            <?php if ($mediaType === 'webcam' && $isActive): ?>
+              <div class="camera-video-wrap webcam-video-wrap">
+                <video class="camera-video webcam-video" autoplay muted playsinline></video>
+                <div class="webcam-preview-state">Starting webcam preview...</div>
+                <div class="webcam-controls" style="margin-top: 10px; text-align: center;">
+                  <button type="button" class="feed-action-btn start-webcam-btn">Restart Webcam</button>
+                </div>
+              </div>
+            <?php elseif ($mediaType === 'recorded' && $mediaUrl !== '' && $isActive): ?>
               <div class="camera-video-wrap">
                 <video class="camera-video" controls preload="metadata">
                   <source src="<?= e($mediaUrl) ?>" type="video/mp4">
                 </video>
               </div>
-            <?php elseif ($mediaType === 'live' && $liveUrl !== ''): ?>
+            <?php elseif ($mediaType === 'live' && $liveUrl !== '' && $isActive): ?>
               <div class="camera-video-wrap">
                 <video class="camera-video live-video" controls muted playsinline preload="metadata" data-live-src="<?= e($liveUrl) ?>" title="<?= e((string)($feed['feed_label'] ?? 'Live CCTV')) ?>"></video>
               </div>
             <?php else: ?>
-              <img src="<?= $coverPhoto ?>" alt="Camera cover" class="camera-img">
+              <div class="camera-video-wrap" style="display: flex; align-items: center; justify-content: center; background: #222; color: #ccc; font-size: 1.2rem; min-height: 200px; border-radius: 8px;">
+                CCTV is Closed
+              </div>
             <?php endif; ?>
 
             <span class="feed-status <?= e($statusClass) ?>"><?= e($statusText) ?></span>

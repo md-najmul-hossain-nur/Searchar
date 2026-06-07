@@ -1729,7 +1729,6 @@ background: linear-gradient(80deg, #d1b75a);
 }
 
 /* Input Fields */
-#camLiveInputSection input,
 #camUploadSection input,
 .cam-form-content select {
   width: 100%;
@@ -1742,7 +1741,6 @@ background: linear-gradient(80deg, #d1b75a);
   transition: border-color 0.2s;
 }
 
-#camLiveInputSection input:focus,
 #camUploadSection input:focus,
 .cam-form-content select:focus {
   border-color: #3498db;
@@ -1966,8 +1964,8 @@ legend {
   transform: translateY(-2px);
 }
 
-/* Input Sections for Live/Recorded */
-#camLiveInputSection,
+/* Input Sections for Webcam/Recorded */
+#camWebcamSection,
 #camUploadSection {
   display: none;
   margin-top: 10px;
@@ -2170,7 +2168,7 @@ legend {
 }
 
 #camFeedForm > label,
-#camFeedForm > #camLiveInputSection,
+#camFeedForm > #camWebcamSection,
 #camFeedForm > #camUploadSection,
 #camFeedForm > .cam-auto-label-box,
 #camFeedForm > .cam-submit-btn {
@@ -2199,6 +2197,54 @@ legend {
   max-height: 260px;
   border-radius: 8px;
   background: #111;
+}
+
+.cam-webcam-preview-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 260px;
+  border: 1px solid #e3ebf3;
+  border-radius: 10px;
+  background: #101820;
+  overflow: hidden;
+}
+
+.cam-webcam-preview {
+  width: 100%;
+  max-height: 360px;
+  background: #101820;
+  object-fit: cover;
+}
+
+.cam-webcam-placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #d9e5ee;
+  font-size: 0.9rem;
+  background: linear-gradient(135deg, #162230, #22384a);
+}
+
+.cam-secondary-btn {
+  margin-top: 10px;
+  border: 0;
+  border-radius: 8px;
+  background: #245c8a;
+  color: #fff;
+  font-weight: 700;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.cam-secondary-btn:hover {
+  background: #1d4d75;
+}
+
+.cam-secondary-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
 }
 
 .cam-pricing-rules {

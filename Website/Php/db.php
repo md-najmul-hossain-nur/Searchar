@@ -17,18 +17,26 @@ if (!function_exists('isDuplicateContact')) {
         $tables = ['users', 'policemen', 'volunteers', 'camera_contributors', 'admins'];
         
         foreach ($tables as $table) {
+            $columnStmt = $pdo->prepare("SELECT COLUMN_NAME
+                FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = ?
+                  AND COLUMN_NAME IN ('email', 'mobile', 'nid_number')");
+            $columnStmt->execute([$table]);
+            $availableColumns = array_flip($columnStmt->fetchAll(PDO::FETCH_COLUMN));
+
             $conditions = [];
             $params = [];
             
-            if (!empty($email)) {
+            if (!empty($email) && isset($availableColumns['email'])) {
                 $conditions[] = "LOWER(email) = LOWER(?)";
                 $params[] = $email;
             }
-            if (!empty($mobile)) {
+            if (!empty($mobile) && isset($availableColumns['mobile'])) {
                 $conditions[] = "mobile = ?";
                 $params[] = $mobile;
             }
-            if (!empty($nid)) {
+            if (!empty($nid) && isset($availableColumns['nid_number'])) {
                 $conditions[] = "nid_number = ?";
                 $params[] = $nid;
             }
