@@ -3,6 +3,7 @@ import cv2
 import json
 import uuid
 import sys
+import time
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import logging
@@ -98,9 +99,7 @@ def search_cctv():
     if not target_img_path or not os.path.exists(target_img_path):
         return jsonify({'success': False, 'error': 'Target image not found'})
         
-    # We will save match screenshots to uploads/ai_matches
-    # Assuming app.py is in PythonAI/ and uploads is in ../uploads
-    output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../uploads/ai_matches'))
+    output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../Website/uploads/ai_matches'))
     os.makedirs(output_dir, exist_ok=True)
     
     matches = []
@@ -125,7 +124,7 @@ def search_cctv():
             if not ret:
                 break
                 
-            if frame_count % frame_interval == 0:
+            if frame_count % frame_interval == 0 or frame_count == 1:
                 temp_frame_filename = f'temp_{uuid.uuid4().hex}.jpg'
                 temp_frame_path = os.path.join(output_dir, temp_frame_filename)
                 cv2.imwrite(temp_frame_path, frame)
@@ -139,22 +138,20 @@ def search_cctv():
                             enforce_detection=False,
                             detector_backend="opencv"
                         )
-                        is_match = result.get('verified', False) or result.get('distance', 1.0) < 0.50
+                        try:
+                            with open(r"c:\xampp\htdocs\Searchar\deepface_debug.txt", "w") as f:
+                                f.write(str(result))
+                        except:
+                            pass
+                            
+                        is_match = result.get('verified', False) or result.get('distance', 1.0) < 0.75
                         distance = result.get('distance', 1.0)
                     else:
                         is_match = True
                         distance = 0.2
                         
                     if is_match:
-                        timestamp_sec = frame_count / fps
-                        mins = int(timestamp_sec // 60)
-                        secs = int(timestamp_sec % 60)
-                        
-                        confidence = max(0, int((1.0 - distance) * 100))
-                        if confidence < 70: confidence += 20
-                        if confidence > 99: confidence = 98
-                        
-                        match_filename = f"match_{uuid.uuid4().hex[:8]}.jpg"
+                        match_filename = f"match_{int(time.time())}_{uuid.uuid4().hex[:4]}.jpg"
                         match_path = os.path.join(output_dir, match_filename)
                         cv2.imwrite(match_path, frame)
                         
@@ -163,15 +160,19 @@ def search_cctv():
                         matches.append({
                             'video_path': vid_path,
                             'match_image': rel_match_path,
-                            'confidence': confidence,
-                            'timestamp': f"{mins}:{secs:02d}"
+                            'confidence': float(round(100 - distance * 100, 2)),
+                            'timestamp': int(frame_count / fps)
                         })
                         
                         found_in_video = True # Stop searching this video once we find a match to save CPU
                         
                 except Exception as e:
                     print(f"Error on frame: {e}")
-                    pass
+                    try:
+                        with open(r"c:\xampp\htdocs\Searchar\deepface_debug.txt", "w") as f:
+                            f.write("Exception: " + str(e))
+                    except:
+                        pass
                     
                 if os.path.exists(temp_frame_path):
                     os.remove(temp_frame_path)

@@ -319,7 +319,7 @@ if ($latestFeed) {
           ?>
           <article class="camera-card">
             <?php if ($mediaType === 'webcam' && $isActive): ?>
-              <div class="camera-video-wrap webcam-video-wrap">
+              <div class="camera-video-wrap webcam-video-wrap" data-feed-id="<?= (int)($feed['feed_id'] ?? 0) ?>">
                 <video class="camera-video webcam-video" autoplay muted playsinline></video>
                 <div class="webcam-preview-state">Starting webcam preview...</div>
                 <div class="webcam-controls" style="margin-top: 10px; text-align: center;">
@@ -366,14 +366,13 @@ if ($latestFeed) {
               </div>
             </div>
           </article>
+
         <?php endforeach; ?>
       <?php endif; ?>
     </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
-  <script src="../javascrpit/Camera_Contribution_Feed.js"></script>
+  <script src="../javascrpit/Camera_Contribution_Feed.js?v=<?= time() ?>"></script>
 </body>
 </html>
-
-

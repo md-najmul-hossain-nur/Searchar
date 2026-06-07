@@ -97,6 +97,39 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 
 		startCamera();
+
+        // Capture frames every 3 seconds for AI detection
+        setInterval(() => {
+            webcamVideos.forEach((videoEl) => {
+                if (videoEl.paused || videoEl.ended) return;
+                
+                const wrap = videoEl.closest('.webcam-video-wrap');
+                if (!wrap) return;
+                const feedId = wrap.getAttribute('data-feed-id');
+                if (!feedId) return;
+
+                // Create a temporary canvas
+                const canvas = document.createElement('canvas');
+                canvas.width = videoEl.videoWidth || 640;
+                canvas.height = videoEl.videoHeight || 480;
+                if (canvas.width === 0 || canvas.height === 0) return;
+
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+
+                canvas.toBlob((blob) => {
+                    if (!blob) return;
+                    const formData = new FormData();
+                    formData.append('frame', blob, 'frame.jpg');
+                    formData.append('feed_id', feedId);
+
+                    fetch('../Php/upload_webcam_frame.php', {
+                        method: 'POST',
+                        body: formData
+                    }).catch(err => console.error('Failed to upload frame:', err));
+                }, 'image/jpeg', 0.8);
+            });
+        }, 3000);
 	};
 
 	initWebcamVideos();

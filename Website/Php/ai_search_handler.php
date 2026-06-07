@@ -111,21 +111,21 @@ if ($action === 'search_posts') {
     echo json_encode(['success' => true, 'matches' => $finalMatches]);
 
 } elseif ($action === 'search_cctv') {
-    // Fetch all recorded cctv feeds
-    $stmt = $pdo->query("SELECT feed_id, owner_name, feed_label, camera_location, feed_type, video_url FROM camera_cctv_feeds WHERE feed_type = 'recorded' AND is_active = 1");
+    // Fetch all recorded cctv feeds and active webcams
+    $stmt = $pdo->query("SELECT feed_id, feed_label, camera_location, feed_type, video_path FROM camera_cctv_feeds WHERE feed_type IN ('recorded', 'webcam') AND is_active = 1");
     $feeds = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $videoPaths = [];
     $feedMap = [];
 
     foreach ($feeds as $feed) {
-        if (!empty($feed['video_url'])) {
-            $absPath = realpath($baseDir . '/' . ltrim($feed['video_url'], './'));
+        if (!empty($feed['video_path'])) {
+            $absPath = realpath($baseDir . '/' . ltrim($feed['video_path'], './'));
             if ($absPath && file_exists($absPath)) {
                 $videoPaths[] = $absPath;
                 $feedMap[$absPath] = [
                     'feed_id' => $feed['feed_id'],
-                    'owner' => $feed['owner_name'],
+                    'owner' => 'Camera System', // Placeholder since owner_name is not in table
                     'label' => $feed['feed_label'],
                     'location' => $feed['camera_location']
                 ];

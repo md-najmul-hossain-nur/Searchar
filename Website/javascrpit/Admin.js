@@ -2662,11 +2662,17 @@ function openAddVolunteerModal() {
               tr.id = `investigation-row-${id}`;
               tr.innerHTML = `
                 <td><strong>${id}</strong><br><small>${escapeHtml(crime.landmark || '')}</small></td>
-                <td><img src="${escapeHtml(resolvedMediaUrl)}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;" onerror="this.src='../Images/demo_pic/profile.jpg'"></td>
+                <td>
+                  <img src="${escapeHtml(resolvedMediaUrl)}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;" onerror="this.src='../Images/demo_pic/profile.jpg'">
+                  <div style="margin-top: 5px;">
+                    <input type="file" id="update-img-${id}" style="display:none;" accept="image/*" onchange="updateTargetImage('${id}', this)">
+                    <button type="button" class="ghost" style="padding: 2px 5px; font-size: 10px; border-radius: 4px;" onclick="document.getElementById('update-img-${id}').click()">Update Image</button>
+                  </div>
+                </td>
                 <td id="inv-status-${id}"><span class="status-pending">Ready</span></td>
                 <td>
                   <button type="button" class="ghost" style="margin-right: 5px;" onclick="startPythonAISearch('${id}', '${resolvedMediaUrl}', 'posts')">Search in Posts</button>
-                  <button type="button" class="ghost" onclick="startPythonAISearch('${id}', '${resolvedMediaUrl}', 'cctv')">Search in CCTV</button>
+                  <button type="button" class="ghost" onclick="promptCCTVImageAndSearch('${id}', '${resolvedMediaUrl}')">Search in CCTV</button>
                 </td>
               `;
               tbody.prepend(tr);
@@ -2674,10 +2680,11 @@ function openAddVolunteerModal() {
             } else {
               // Update the row just in case the image was broken previously
               existingRow.querySelector('img').src = escapeHtml(resolvedMediaUrl);
-              const btns = existingRow.querySelectorAll('button');
-              if (btns.length >= 2) {
-                  btns[0].setAttribute('onclick', `startPythonAISearch('${id}', '${resolvedMediaUrl}', 'posts')`);
-                  btns[1].setAttribute('onclick', `startPythonAISearch('${id}', '${resolvedMediaUrl}', 'cctv')`);
+              const btns = existingRow.querySelectorAll('button.ghost');
+              const actionBtns = Array.from(btns).filter(b => b.innerText.includes('Search in'));
+              if (actionBtns.length >= 2) {
+                  actionBtns[0].setAttribute('onclick', `startPythonAISearch('${id}', '${resolvedMediaUrl}', 'posts')`);
+                  actionBtns[1].setAttribute('onclick', `promptCCTVImageAndSearch('${id}', '${resolvedMediaUrl}')`);
               }
               // Highlight the existing row
               existingRow.style.backgroundColor = '#f1f5f9';
@@ -4832,6 +4839,90 @@ document.addEventListener('DOMContentLoaded', () => {
     loadActiveInvestigations();
     loadConfirmedMatches();
 });
+
+async function updateTargetImage(id, input) {
+    if (!input.files || !input.files[0]) return;
+    const formData = new FormData();
+    formData.append('image', input.files[0]);
+    
+    // Show a loading state on the button
+    const btn = input.nextElementSibling;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch('../Php/update_target_image.php', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+            // Update the image src in the row
+            const tr = document.getElementById(`investigation-row-${id}`);
+            if (tr) {
+                const img = tr.querySelector('img');
+                img.src = data.new_image_url;
+                
+                // Update the onclick attributes for the search buttons to use the new URL
+                const searchBtns = tr.querySelectorAll('button.ghost');
+                // The first button in the actions cell is Posts, second is CCTV
+                const actionBtns = Array.from(searchBtns).filter(b => b.innerText.includes('Search in'));
+                if (actionBtns.length >= 2) {
+                    actionBtns[0].setAttribute('onclick', `startPythonAISearch('${id}', '${data.new_image_url}', 'posts')`);
+                    actionBtns[1].setAttribute('onclick', `promptCCTVImageAndSearch('${id}', '${data.new_image_url}')`);
+                }
+                saveActiveInvestigations();
+            }
+        } else {
+            alert('Failed to update image: ' + data.error);
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Error uploading image');
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        input.value = ''; // Reset file input
+    }
+}
+
+function promptCCTVImageAndSearch(caseId, fallbackImageUrl) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e) => {
+        if (!e.target.files || !e.target.files[0]) return;
+        
+        // Show status
+        const statusEl = document.getElementById(`inv-status-${caseId}`);
+        if (statusEl) {
+            statusEl.innerHTML = `<span class="status-pending"><i class="fa-solid fa-spinner fa-spin"></i> Uploading Image...</span>`;
+        }
+
+        const formData = new FormData();
+        formData.append('image', e.target.files[0]);
+
+        try {
+            const res = await fetch('../Php/update_target_image.php', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.success) {
+                // Call search CCTV with new image
+                startPythonAISearch(caseId, data.new_image_url, 'cctv');
+            } else {
+                alert('Upload failed: ' + data.error);
+                if (statusEl) statusEl.innerHTML = `<span class="status-rejected">Upload Error</span>`;
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error uploading image');
+            if (statusEl) statusEl.innerHTML = `<span class="status-rejected">Upload Error</span>`;
+        }
+    };
+    // If they cancel, we can optionally fall back to the existing image
+    // But for now, we just prompt it. If no file, it won't trigger onchange.
+    input.click();
+}
 
 function openAiConfirmModal(btn) {
     const card = btn.closest('.ai-result-card');
