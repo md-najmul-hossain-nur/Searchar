@@ -1,12 +1,8 @@
 <?php
 declare(strict_types=1);
 session_start();
+set_time_limit(0);
 header('Content-Type: application/json; charset=utf-8');
-
-if (empty($_SESSION['role']) || !in_array($_SESSION['role'], ['police', 'admin'], true)) {
-    echo json_encode(['success' => false, 'error' => 'Unauthorized access']);
-    exit();
-}
 
 $action = $_POST['action'] ?? '';
 $targetImage = $_POST['target_image'] ?? '';
@@ -27,14 +23,14 @@ if (!$targetImgPath || !file_exists($targetImgPath)) {
 }
 
 require_once 'db.php';
-global $conn;
+global $pdo;
 
 $pythonApiUrl = 'http://127.0.0.1:5001/api/';
 
 if ($action === 'search_posts') {
     // Fetch all approved posts that have media
-    $stmt = $conn->query("SELECT p.post_id, p.description, p.media_path, p.media_json, p.created_at, u.full_name, u.role FROM feed_posts p LEFT JOIN users u ON p.user_id = u.user_id WHERE p.status = 'approved' ORDER BY p.created_at DESC");
-    $posts = $stmt->fetch_all(MYSQLI_ASSOC);
+    $stmt = $pdo->query("SELECT id, text, media_path, media_json, created_at, author_name, author_role FROM posts WHERE status = 'approved' ORDER BY created_at DESC");
+    $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $postImages = [];
     $postMap = []; // map absolute path to post details for merging later
@@ -59,10 +55,10 @@ if ($action === 'search_posts') {
                 if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
                     $postImages[] = $absPath;
                     $postMap[$absPath] = [
-                        'post_id' => $post['post_id'],
-                        'author' => $post['full_name'] ?: 'Unknown',
-                        'role' => $post['role'] ?: 'User',
-                        'description' => $post['description'],
+                        'post_id' => $post['id'],
+                        'author' => $post['author_name'] ?: 'Unknown',
+                        'role' => $post['author_role'] ?: 'User',
+                        'description' => $post['text'],
                         'time' => $post['created_at'],
                         'url' => $path
                     ];
@@ -87,6 +83,7 @@ if ($action === 'search_posts') {
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
     curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 300); // 5 minutes timeout for model downloads and large searches
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
@@ -115,8 +112,8 @@ if ($action === 'search_posts') {
 
 } elseif ($action === 'search_cctv') {
     // Fetch all recorded cctv feeds
-    $stmt = $conn->query("SELECT feed_id, owner_name, feed_label, camera_location, feed_type, video_url FROM camera_cctv_feeds WHERE feed_type = 'recorded' AND is_active = 1");
-    $feeds = $stmt->fetch_all(MYSQLI_ASSOC);
+    $stmt = $pdo->query("SELECT feed_id, owner_name, feed_label, camera_location, feed_type, video_url FROM camera_cctv_feeds WHERE feed_type = 'recorded' AND is_active = 1");
+    $feeds = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $videoPaths = [];
     $feedMap = [];

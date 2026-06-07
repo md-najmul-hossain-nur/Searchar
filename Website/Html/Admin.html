@@ -459,7 +459,17 @@
     </div>
 
     <div id="ai" class="main-section">
-      <h2>AI Investigation Search</h2>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin-bottom: 0;">AI Investigation Search</h2>
+        <div style="display: flex; align-items: center; gap: 15px;">
+          <div id="ai-engine-status" style="font-weight: bold; font-size: 14px; padding: 5px 10px; border-radius: 5px; background: #ffebee; color: #d32f2f;">
+            <i class="fa-solid fa-circle-xmark"></i> Status: Offline
+          </div>
+          <button id="start-ai-engine-btn" class="approve-btn" onclick="startAIEngineViaPHP()">
+            <i class="fa-solid fa-play"></i> Start Python AI Engine
+          </button>
+        </div>
+      </div>
       <div class="ai-investigation-panel">
         <div class="section-table-block" style="margin-bottom: 20px;">
           <h3 style="margin:0 0 10px; color:#1f2937;">Active Investigations</h3>
@@ -2927,7 +2937,7 @@
 
   <!-- Chart.js CDN for demo chart drawing (remove if you use your own chart lib) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="../javascrpit/Admin.js?v=20260607f" charset="UTF-8"></script>
+  <script src="../javascrpit/Admin.js?v=20260608b" charset="UTF-8"></script>
   <script>
     // Force sub-admin init directly to avoid cache issues
     (async function initSubAdmins() {

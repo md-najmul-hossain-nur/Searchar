@@ -2662,7 +2662,7 @@ function openAddVolunteerModal() {
               tr.id = `investigation-row-${id}`;
               tr.innerHTML = `
                 <td><strong>${id}</strong><br><small>${escapeHtml(crime.landmark || '')}</small></td>
-                <td><img src="${escapeHtml(resolvedMediaUrl)}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;"></td>
+                <td><img src="${escapeHtml(resolvedMediaUrl)}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;" onerror="this.src='../Images/demo_pic/profile.jpg'"></td>
                 <td id="inv-status-${id}"><span class="status-pending">Ready</span></td>
                 <td>
                   <button type="button" class="ghost" style="margin-right: 5px;" onclick="startPythonAISearch('${id}', '${resolvedMediaUrl}', 'posts')">Search in Posts</button>
@@ -4738,6 +4738,56 @@ function openAddVolunteerModal() {
 })();
 
 // AI Investigation Search Logic
+async function checkAIEngineStatus() {
+  const statusEl = document.getElementById('ai-engine-status');
+  if (!statusEl) return;
+  try {
+    const res = await fetch('../Php/check_python_ai.php', { credentials: 'same-origin', cache: 'no-store' });
+    const data = await res.json();
+    if (data.success && data.status === 'online') {
+      statusEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> Status: Online';
+      statusEl.style.background = '#e8f5e9';
+      statusEl.style.color = '#2e7d32';
+    } else {
+      statusEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Status: Offline';
+      statusEl.style.background = '#ffebee';
+      statusEl.style.color = '#d32f2f';
+    }
+  } catch (err) {
+    statusEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Status: Error';
+  }
+}
+setInterval(checkAIEngineStatus, 3000);
+setTimeout(checkAIEngineStatus, 500);
+
+async function startAIEngineViaPHP() {
+  const btn = document.getElementById('start-ai-engine-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Starting...';
+  }
+  try {
+    const res = await fetch('../Php/start_python_ai.php', { method: 'POST', credentials: 'same-origin' });
+    const data = await res.json();
+    if (data.success) {
+      alert('Python AI Engine is starting in the background! Please wait a few seconds for the status to turn Online.');
+      if (btn) btn.innerHTML = '<i class="fa-solid fa-check"></i> Started';
+    } else {
+      alert('Error starting AI engine: ' + data.error);
+      if (btn) btn.innerHTML = '<i class="fa-solid fa-play"></i> Start Python AI Engine';
+    }
+  } catch (err) {
+    alert('Failed to contact server to start AI engine.');
+    if (btn) btn.innerHTML = '<i class="fa-solid fa-play"></i> Start Python AI Engine';
+  }
+  if (btn) {
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-play"></i> Start Python AI Engine';
+    }, 5000);
+  }
+}
+
 function switchAiTab(tabId) {
   document.querySelectorAll('.ai-tab-btn').forEach(btn => btn.classList.remove('active'));
   document.querySelectorAll('.ai-tab-content').forEach(content => content.classList.add('hidden'));
@@ -4778,7 +4828,94 @@ function loadActiveInvestigations() {
 }
 
 // Call load on page start
-document.addEventListener('DOMContentLoaded', loadActiveInvestigations);
+document.addEventListener('DOMContentLoaded', () => {
+    loadActiveInvestigations();
+    loadConfirmedMatches();
+});
+
+function openAiConfirmModal(btn) {
+    const card = btn.closest('.ai-result-card');
+    const matchImgSrc = card.querySelector('.ai-result-img').src;
+    
+    const caseId = window.activeAiSearchCaseId;
+    const targetImgSrc = document.querySelector(`#investigation-row-${caseId} img`).src;
+    const detailsHtml = card.querySelector('.ai-result-details').innerHTML;
+
+    let confirmedTable = document.getElementById('confirmed-ai-matches-body');
+    if (!confirmedTable) {
+        const panel = document.querySelector('.ai-investigation-panel');
+        const tableHtml = `
+        <div class="section-table-block" style="margin-top: 30px;">
+          <h3 style="margin:0 0 10px; color:#1f2937;">Confirmed AI Matches</h3>
+          <table class="styled-table" id="confirmed-ai-matches-table">
+            <thead>
+              <tr>
+                <th>Case ID</th>
+                <th>Target Image</th>
+                <th>Matched Source</th>
+                <th>Match Details</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="confirmed-ai-matches-body">
+            </tbody>
+          </table>
+        </div>`;
+        panel.insertAdjacentHTML('beforeend', tableHtml);
+        confirmedTable = document.getElementById('confirmed-ai-matches-body');
+    }
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td><strong>${caseId}</strong></td>
+        <td><img src="${targetImgSrc}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;"></td>
+        <td><img src="${matchImgSrc}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;"></td>
+        <td><div style="font-size: 0.9em; max-width: 250px;">${detailsHtml.replace(new RegExp('<button[^>]*>.*?</button>', 'ig'), '')}</div></td>
+        <td><span class="status-approved">Confirmed</span></td>
+    `;
+    confirmedTable.prepend(tr);
+    
+    localStorage.setItem('confirmedAiMatchesV2', confirmedTable.innerHTML);
+
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Confirmed';
+    btn.disabled = true;
+    btn.style.backgroundColor = '#2e7d32';
+    btn.style.color = '#fff';
+    
+    // Change Active Investigation row status
+    const invStatus = document.getElementById(`inv-status-${caseId}`);
+    if (invStatus) {
+        invStatus.innerHTML = '<span class="status-approved">Resolved</span>';
+        saveActiveInvestigations();
+    }
+}
+
+function loadConfirmedMatches() {
+    const saved = localStorage.getItem('confirmedAiMatchesV2');
+    if (saved && saved.trim() !== '') {
+        const panel = document.querySelector('.ai-investigation-panel');
+        if (!panel) return;
+        const tableHtml = `
+        <div class="section-table-block" style="margin-top: 30px;">
+          <h3 style="margin:0 0 10px; color:#1f2937;">Confirmed AI Matches</h3>
+          <table class="styled-table" id="confirmed-ai-matches-table">
+            <thead>
+              <tr>
+                <th>Case ID</th>
+                <th>Target Image</th>
+                <th>Matched Source</th>
+                <th>Match Details</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="confirmed-ai-matches-body">
+                ${saved}
+            </tbody>
+          </table>
+        </div>`;
+        panel.insertAdjacentHTML('beforeend', tableHtml);
+    }
+}
 
 let activeAiResultButton = null;
 
@@ -4825,13 +4962,35 @@ async function startPythonAISearch(caseId, targetImage, searchType) {
     } else {
       let html = '';
       data.matches.forEach(match => {
-        let displayImg = match.match_image || match.post_image || targetImage;
+        let displayImg = match.url || match.match_image || match.post_image || targetImage;
+        
+        // Make sure displayImg is not an absolute C:\ path
+        if (displayImg.includes(':\\')) {
+            let parts = displayImg.split('htdocs\\\\Searchar\\\\');
+            if (parts.length > 1) {
+                displayImg = '../' + parts[1].replace(/\\\\/g, '/');
+            } else {
+                parts = displayImg.split('htdocs/Searchar/');
+                if (parts.length > 1) {
+                    displayImg = '../' + parts[1];
+                }
+            }
+        }
+        
+        // If it's a relative path from the root (like uploads/posts/...) prepend ../
+        if (!displayImg.startsWith('http') && !displayImg.startsWith('data:') && !displayImg.startsWith('../') && !displayImg.startsWith('/')) {
+            displayImg = '../' + displayImg;
+        }
+
         let details = '';
         
         if (searchType === 'posts') {
           details = `
             <div class="ai-result-location"><i class="fa-solid fa-file-lines" style="color:#1877F2;"></i> Post by ${escapeHtml(match.author || 'Unknown')}</div>
-            <div style="font-size:12px; color:#555; margin-bottom: 8px;">${escapeHtml(match.time || '')}</div>
+            <div style="font-size:12px; color:#555; margin-bottom: 4px;">${escapeHtml(match.time || '')}</div>
+            <div style="font-size:13px; color:#333; margin-bottom: 8px; font-style: italic; max-height: 38px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                "${escapeHtml(match.description || 'No caption provided')}"
+            </div>
           `;
         } else {
           details = `
@@ -4842,7 +5001,7 @@ async function startPythonAISearch(caseId, targetImage, searchType) {
         
         html += `
           <div class="ai-result-card">
-            <img src="${displayImg}" class="ai-result-img" alt="Match">
+            <img src="${escapeHtml(displayImg)}" class="ai-result-img" alt="Match" onerror="this.src='../Images/demo_pic/profile.jpg'">
             <div class="ai-result-details">
               <span class="ai-result-confidence">${match.confidence}% Match</span>
               ${details}

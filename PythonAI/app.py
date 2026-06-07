@@ -81,7 +81,8 @@ def search_posts():
                 break
                 
         except Exception as e:
-            print(f"Error verifying {post_img}: {str(e)}")
+            # Safely print without crashing on unicode characters in Windows console
+            print(f"Error verifying a post image: {str(e)}")
             continue
 
     # Sort by highest confidence
