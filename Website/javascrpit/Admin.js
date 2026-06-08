@@ -1473,7 +1473,6 @@ function openAddVolunteerModal() {
       }
 
       missingRows = Array.isArray(json.rows) ? json.rows : [];
-      window.missingRowsData = missingRows;
       const summary = json.summary || {};
 
       if (totalActiveEl) totalActiveEl.textContent = String(summary.total_active_cases ?? 0).padStart(2, '0');
@@ -1770,7 +1769,6 @@ function openAddVolunteerModal() {
       }
 
       demoCrimes = json.rows.map(normalizeCrimeRow);
-      window.demoCrimesData = demoCrimes;
       applyFilters();
     } catch (error) {
       console.error('missing->crime sync failed', error);
