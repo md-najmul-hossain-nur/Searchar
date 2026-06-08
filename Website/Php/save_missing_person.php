@@ -137,6 +137,31 @@ try {
         ':consent' => 1,
     ]);
 
+    $reportId = (int)$pdo->lastInsertId();
+    
+    // Automatically escalate to crime_reports (Active Investigations / Crime Case Table)
+    $caseRef = 'MP' . str_pad((string)$reportId, 4, '0', STR_PAD_LEFT);
+    $mediaPath = $photoName !== '' ? ('uploads/missing_person/' . $photoName) : null;
+    $mediaJson = $mediaPath ? json_encode([$mediaPath], JSON_UNESCAPED_SLASHES) : null;
+
+    $upsertCrime = $pdo->prepare("INSERT INTO crime_reports
+        (case_ref, source_type, source_ref_id, report_type, severity, status, landmark, reporter_name, anonymous, description, media_path, media_json, submitted_at, updated_at, lat, lng)
+        VALUES
+        (:case_ref, 'missing_person', :source_ref_id, 'missing_person', 'high', 'new', :landmark, :reporter_name, 0, :description, :media_path, :media_json, NOW(), NOW(), :lat, :lng)
+    ");
+
+    $upsertCrime->execute([
+        ':case_ref' => $caseRef,
+        ':source_ref_id' => $reportId,
+        ':landmark' => trim((string)$_POST['last_seen_location']) !== '' ? trim((string)$_POST['last_seen_location']) : 'Unknown location',
+        ':reporter_name' => trim((string)$_POST['reporter_name']) !== '' ? trim((string)$_POST['reporter_name']) : 'Unknown',
+        ':description' => 'Automatically escalated from Missing Persons',
+        ':media_path' => $mediaPath,
+        ':media_json' => $mediaJson,
+        ':lat' => 23.8103, // Default lat (or you can capture from frontend if available)
+        ':lng' => 90.4125, // Default lng
+    ]);
+
     redirectWithStatus('success', 'Missing person report submitted successfully.');
 } catch (Throwable $e) {
     error_log('Missing report save error: ' . $e->getMessage());

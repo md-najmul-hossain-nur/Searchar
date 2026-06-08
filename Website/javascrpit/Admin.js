@@ -2368,8 +2368,9 @@ function openAddVolunteerModal() {
           <td>${r.anonymous ? 'Anonymous' : (r.reporter || 'N/A')}</td>
           <td>
             <button type="button" class="view-profile-btn" data-crime-view="${r.id}">View</button>
-            <button type="button" data-crime-assign="${r.id}" ${assignDisabled ? 'disabled' : ''}>${isClosed ? 'Closed' : (actState.assigned || assignedCrimes.has(r.id) ? 'Assigned' : 'Assign Volunteer')}</button>
-            <button type="button" data-crime-cctv="${r.id}" ${cctvDisabled ? 'disabled' : ''}>${isClosed ? 'Closed' : 'AI Investigation'}</button>
+            ${isClosed ? `<button type="button" onclick="notifyReporterManualHandover('${r.id}', this)" style="background:#1877F2; color:white; border:none; padding:5px 10px; border-radius:4px; font-size:12px; cursor:pointer; margin-left:5px;">Notify Reporter</button>` : `
+            <button type="button" data-crime-assign="${r.id}" ${assignDisabled ? 'disabled' : ''}>${actState.assigned || assignedCrimes.has(r.id) ? 'Assigned' : 'Assign Volunteer'}</button>
+            <button type="button" data-crime-cctv="${r.id}" ${cctvDisabled ? 'disabled' : ''}>AI Investigation</button>`}
           </td>
         </tr>
       `;
@@ -4928,7 +4929,7 @@ function promptCCTVImageAndSearch(caseId, fallbackImageUrl) {
   input.click();
 }
 
-function confirmAiMatch(btn, sourceType) {
+async function confirmAiMatch(btn, sourceType) {
   const card = btn.closest('.ai-result-card');
   const matchImgSrc = card.querySelector('.ai-result-img').src;
 
@@ -4936,84 +4937,123 @@ function confirmAiMatch(btn, sourceType) {
   const targetImgSrc = document.querySelector(`#investigation-row-${caseId} img`).src;
   const detailsHtml = card.querySelector('.ai-result-details').innerHTML;
 
-  let confirmedTable = document.getElementById('confirmed-ai-matches-body');
-  if (!confirmedTable) {
-    const panel = document.querySelector('.ai-investigation-panel');
-    const tableHtml = `
-        <div class="section-table-block" style="margin-top: 30px;">
-          <h3 style="margin:0 0 10px; color:#1f2937;">Confirmed AI Matches</h3>
-          <table class="styled-table" id="confirmed-ai-matches-table">
-            <thead>
-              <tr>
-                <th>Case ID</th>
-                <th>Target Image</th>
-                <th>Matched Source</th>
-                <th>Match Details</th>
-                <th>Original Reporter</th>
-                <th>Assigned Policeman</th>
-                <th>Assigned Volunteer</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="confirmed-ai-matches-body">
-            </tbody>
-          </table>
-        </div>`;
-    panel.insertAdjacentHTML('beforeend', tableHtml);
-    confirmedTable = document.getElementById('confirmed-ai-matches-body');
-  }
-
-  // Find reporter and assignments
-  let reporter = 'Unknown';
-  let policeman = 'Pending Assignment';
-  let volunteer = 'Pending Assignment';
-
-  if (typeof demoCrimes !== 'undefined') {
-    const crime = demoCrimes.find(c => c.id === caseId);
-    if (crime) {
-      reporter = crime.reporter || 'Anonymous';
-    }
-  }
-
-  // Attempt to get assignment info if the function exists
-  if (typeof getCrimeActionState === 'function') {
-    const state = getCrimeActionState(caseId);
-    if (state && state.assigned_to) {
-      volunteer = state.assigned_to;
-    }
-  }
-
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
-        <td><strong>${caseId}</strong></td>
-        <td><img src="${targetImgSrc}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;"></td>
-        <td><img src="${matchImgSrc}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;"></td>
-        <td><div style="font-size: 0.9em; max-width: 250px;">${detailsHtml.replace(new RegExp('<button[^>]*>.*?</button>', 'ig'), '')}</div></td>
-        <td>${escapeHtml(reporter)}</td>
-        <td><span style="color:#f39c12;"><i class="fa-solid fa-clock"></i> ${policeman}</span></td>
-        <td>${volunteer !== 'Pending Assignment' ? escapeHtml(volunteer) : '<span style="color:#f39c12;"><i class="fa-solid fa-clock"></i> Pending</span>'}</td>
-        <td><span class="status-approved">Confirmed: ${escapeHtml(sourceType)}</span></td>
-    `;
-  confirmedTable.prepend(tr);
-
-  localStorage.setItem('confirmedAiMatchesV3', confirmedTable.innerHTML);
-
-  btn.innerHTML = '<i class="fa-solid fa-check"></i> Confirmed';
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Confirming...';
   btn.disabled = true;
-  btn.style.backgroundColor = '#2e7d32';
-  btn.style.color = '#fff';
 
-  // Change Active Investigation row status
-  const invStatus = document.getElementById(`inv-status-${caseId}`);
-  if (invStatus) {
-    invStatus.innerHTML = '<span class="status-approved">Resolved</span>';
-    saveActiveInvestigations();
+  try {
+    const res = await fetch('../Php/admin_confirm_ai_match.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ case_id: caseId, source_type: sourceType })
+    });
+    const data = await res.json();
+    if (!data.success) {
+      throw new Error(data.error || 'Failed to confirm AI match');
+    }
+
+    let confirmedTable = document.getElementById('confirmed-ai-matches-body');
+    if (!confirmedTable) {
+      const panel = document.querySelector('.ai-investigation-panel');
+      const tableHtml = `
+          <div class="section-table-block" style="margin-top: 30px;">
+            <h3 style="margin:0 0 10px; color:#1f2937;">Confirmed AI Matches</h3>
+            <table class="styled-table" id="confirmed-ai-matches-table">
+              <thead>
+                <tr>
+                  <th>Case ID</th>
+                  <th>Target Image</th>
+                  <th>Matched Source</th>
+                  <th>Match Details</th>
+                  <th>Original Reporter</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="confirmed-ai-matches-body">
+              </tbody>
+            </table>
+          </div>`;
+      panel.insertAdjacentHTML('beforeend', tableHtml);
+      confirmedTable = document.getElementById('confirmed-ai-matches-body');
+    }
+
+    // Use real data from backend
+    let reporter = data.reporter_name || 'Unknown';
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+          <td><strong>${caseId}</strong></td>
+          <td><img src="${targetImgSrc}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;"></td>
+          <td><img src="${matchImgSrc}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;"></td>
+          <td><div style="font-size: 0.9em; max-width: 250px;">${detailsHtml.replace(new RegExp('<button[^>]*>.*?</button>', 'ig'), '')}</div></td>
+          <td>${escapeHtml(reporter)}</td>
+          <td><span class="status-approved">Confirmed: ${escapeHtml(sourceType)}</span></td>
+          <td>
+            <button class="ai-action-btn" style="background:#1877F2; padding: 5px 10px; font-size:12px; margin-bottom: 5px; width: 100%;" onclick="notifyReporterHandover('${caseId}', this)">Notify Reporter</button>
+            ${sourceType === 'Website Post' ? `<button class="ai-action-btn btn-say-thanks" style="background:#28a745; padding: 5px 10px; font-size:12px; width: 100%;" onclick="sayThanksToFinder('${caseId}', '${data.matched_post_id}', this)">Say Thanks</button>` : ''}
+          </td>
+      `;
+    confirmedTable.prepend(tr);
+
+    localStorage.setItem('confirmedAiMatchesV3', confirmedTable.innerHTML);
+
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Confirmed';
+    btn.disabled = true;
+    btn.style.backgroundColor = '#2e7d32';
+    btn.style.color = '#fff';
+
+    // Change Active Investigation row status
+    const invStatus = document.getElementById(`inv-status-${caseId}`);
+    if (invStatus) {
+      invStatus.innerHTML = '<span class="status-approved">Resolved</span>';
+      saveActiveInvestigations();
+    }
+    
+    // Trigger global UI refresh if needed
+    if (typeof loadActionQueue === 'function') {
+      loadActionQueue();
+    }
+  } catch (err) {
+    alert('Error: ' + err.message);
+    btn.innerHTML = 'Confirm Source';
+    btn.disabled = false;
   }
 }
 
 function loadConfirmedMatches() {
-  const saved = localStorage.getItem('confirmedAiMatchesV3');
+  let saved = localStorage.getItem('confirmedAiMatchesV3');
   if (saved && saved.trim() !== '') {
+    
+    // Automatically fix old cached rows that are missing the Action column
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(`<table><tbody id="temp-body">${saved}</tbody></table>`, 'text/html');
+      const rows = doc.querySelectorAll('#temp-body tr');
+      let modified = false;
+      rows.forEach(tr => {
+        const tds = tr.querySelectorAll('td');
+        if (tds.length === 8) { // Missing Action column, but still has Policeman/Volunteer
+          const caseId = tds[0].innerText.trim();
+          tds[5].remove(); // Remove Policeman
+          tds[6].remove(); // Remove Volunteer
+          const actionTd = document.createElement('td');
+          actionTd.innerHTML = `<button class="ai-action-btn" style="background:#1877F2; padding: 5px 10px; font-size:12px;" onclick="notifyReporterHandover('${caseId}', this)">Notify Reporter</button>`;
+          tr.appendChild(actionTd);
+          modified = true;
+        } else if (tds.length === 9) { // Has Action column, but still has Policeman/Volunteer
+          tds[5].remove(); // Remove Policeman
+          tds[6].remove(); // Remove Volunteer
+          modified = true;
+        }
+      });
+      if (modified) {
+        saved = doc.querySelector('#temp-body').innerHTML;
+        localStorage.setItem('confirmedAiMatchesV3', saved);
+      }
+    } catch (e) {
+      console.error('Error repairing cached confirmed matches:', e);
+    }
+
     const panel = document.querySelector('.ai-investigation-panel');
     if (!panel) return;
     const tableHtml = `
@@ -5027,9 +5067,8 @@ function loadConfirmedMatches() {
                 <th>Matched Source</th>
                 <th>Match Details</th>
                 <th>Original Reporter</th>
-                <th>Assigned Policeman</th>
-                <th>Assigned Volunteer</th>
                 <th>Status</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody id="confirmed-ai-matches-body">
@@ -5038,6 +5077,123 @@ function loadConfirmedMatches() {
           </table>
         </div>`;
     panel.insertAdjacentHTML('beforeend', tableHtml);
+  }
+}
+
+async function notifyReporterHandover(caseId, btn) {
+  if (!confirm(`Are you sure you want to notify the reporter for handover for case ${caseId}?`)) return;
+  
+  const tr = btn.closest('tr');
+  let matchImgSrc = '';
+  let matchDetails = '';
+  if (tr) {
+    const tds = tr.querySelectorAll('td');
+    if (tds.length >= 4) {
+      const imgEl = tds[2].querySelector('img');
+      if (imgEl) matchImgSrc = imgEl.src;
+      matchDetails = tds[3].innerText.trim();
+    }
+  }
+  
+  const originalHtml = btn.innerHTML;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Notifying...';
+  btn.disabled = true;
+  
+  try {
+    const res = await fetch('../Php/admin_notify_reporter_handover.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ case_id: caseId, match_img: matchImgSrc, match_details: matchDetails })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert('Handover notification sent successfully! Handover ID: ' + data.handover_id);
+      btn.innerHTML = '<i class="fa-solid fa-check"></i> Notified';
+      btn.style.backgroundColor = '#2e7d32';
+      btn.style.borderColor = '#2e7d32';
+      btn.style.color = '#fff';
+      
+      // Update localstorage so the button stays updated
+      const confirmedTable = document.getElementById('confirmed-ai-matches-body');
+      if (confirmedTable) {
+        localStorage.setItem('confirmedAiMatchesV3', confirmedTable.innerHTML);
+      }
+    } else {
+      throw new Error(data.error || 'Failed to notify reporter');
+    }
+  } catch (err) {
+    alert('Error: ' + err.message);
+    btn.innerHTML = originalHtml;
+    btn.disabled = false;
+  }
+}
+
+async function sayThanksToFinder(caseId, postId, btn) {
+  if (!postId || postId === 'undefined') {
+    alert('Cannot send thanks: Matched Post ID is unknown.');
+    return;
+  }
+  if (!confirm(`Send a Thank You email to the person whose post (Post ID: ${postId}) matched Case ${caseId}?`)) return;
+  
+  const originalHtml = btn.innerHTML;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+  btn.disabled = true;
+  
+  try {
+    const res = await fetch('../Php/admin_notify_finder_thanks.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ case_id: caseId, post_id: postId })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert('Thank You notification sent to the finder!');
+      btn.innerHTML = '<i class="fa-solid fa-heart"></i> Thanked';
+      btn.style.backgroundColor = '#1e7e34';
+      btn.style.borderColor = '#1e7e34';
+      btn.style.color = '#fff';
+      
+      const confirmedTable = document.getElementById('confirmed-ai-matches-body');
+      if (confirmedTable) {
+        localStorage.setItem('confirmedAiMatchesV3', confirmedTable.innerHTML);
+      }
+    } else {
+      throw new Error(data.error || 'Failed to send thanks');
+    }
+  } catch (err) {
+    alert('Error: ' + err.message);
+    btn.innerHTML = originalHtml;
+    btn.disabled = false;
+  }
+}
+
+async function notifyReporterManualHandover(caseId, btn) {
+  if (!confirm(`Are you sure you want to notify the original reporter that Case ${caseId} has been successfully resolved?`)) return;
+  
+  const originalHtml = btn.innerHTML;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Notifying...';
+  btn.disabled = true;
+  
+  try {
+    const res = await fetch('../Php/admin_notify_reporter_handover.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ case_id: caseId, match_img: '', match_details: '' })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert('Handover notification sent successfully! Handover ID: ' + data.handover_id);
+      btn.innerHTML = '<i class="fa-solid fa-check"></i> Notified';
+      btn.style.backgroundColor = '#2e7d32';
+      btn.style.color = '#fff';
+      btn.style.cursor = 'default';
+    } else {
+      throw new Error(data.error || 'Failed to notify reporter');
+    }
+  } catch (err) {
+    alert('Error: ' + err.message);
+    btn.innerHTML = originalHtml;
+    btn.disabled = false;
   }
 }
 

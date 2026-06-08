@@ -278,6 +278,64 @@ try {
 
     $postId = (int)$pdo->lastInsertId();
 
+    // Automatically escalate to crime_reports (Active Investigations / Crime Case Table)
+    $caseRef = 'PT' . str_pad((string)$postId, 4, '0', STR_PAD_LEFT);
+    $reportType = $category !== '' ? strtolower($category) : 'post_report';
+    $description = $text !== '' ? $text : 'Automatically escalated from Post';
+    
+    // Ensure media variables are properly formatted
+    $mediaPathCrime = $media_path ? ltrim($media_path, '/') : null;
+    $mediaJsonCrime = $media_json;
+    
+    // Ensure crime_reports table exists
+    $pdo->exec("CREATE TABLE IF NOT EXISTS crime_reports (
+        crime_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        case_ref VARCHAR(80) NOT NULL,
+        source_type VARCHAR(40) NOT NULL DEFAULT 'missing_person',
+        source_ref_id BIGINT UNSIGNED DEFAULT NULL,
+        report_type VARCHAR(60) NOT NULL DEFAULT 'missing_person',
+        severity VARCHAR(20) NOT NULL DEFAULT 'high',
+        status VARCHAR(30) NOT NULL DEFAULT 'new',
+        landmark VARCHAR(255) DEFAULT NULL,
+        reporter_name VARCHAR(150) DEFAULT NULL,
+        anonymous TINYINT(1) NOT NULL DEFAULT 0,
+        anon_token VARCHAR(80) DEFAULT NULL,
+        description TEXT DEFAULT NULL,
+        media_path VARCHAR(255) DEFAULT NULL,
+        media_json TEXT DEFAULT NULL,
+        lat DECIMAL(10,7) DEFAULT NULL,
+        lng DECIMAL(10,7) DEFAULT NULL,
+        submitted_at DATETIME NOT NULL,
+        updated_at DATETIME NOT NULL,
+        closed_at DATETIME DEFAULT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (crime_id),
+        UNIQUE KEY uq_crime_reports_case_ref (case_ref),
+        KEY idx_crime_reports_status (status),
+        KEY idx_crime_reports_source (source_type, source_ref_id),
+        KEY idx_crime_reports_submitted (submitted_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $upsertCrime = $pdo->prepare("INSERT INTO crime_reports
+        (case_ref, source_type, source_ref_id, report_type, severity, status, landmark, reporter_name, anonymous, description, media_path, media_json, submitted_at, updated_at, lat, lng)
+        VALUES
+        (:case_ref, 'post', :source_ref_id, :report_type, 'medium', 'new', :landmark, :reporter_name, :anonymous, :description, :media_path, :media_json, NOW(), NOW(), :lat, :lng)
+    ");
+    
+    $upsertCrime->execute([
+        ':case_ref' => $caseRef,
+        ':source_ref_id' => $postId,
+        ':report_type' => $reportType,
+        ':landmark' => $category !== '' ? $category : 'Post report',
+        ':reporter_name' => $author_name ?: 'Unknown',
+        ':anonymous' => $share_anonymous,
+        ':description' => $description,
+        ':media_path' => $mediaPathCrime,
+        ':media_json' => $mediaJsonCrime,
+        ':lat' => 23.8103,
+        ':lng' => 90.4125,
+    ]);
+
     // Notify the author that the post is submitted and waiting for admin review
     $pdo->exec("CREATE TABLE IF NOT EXISTS user_notifications (
         notification_id INT UNSIGNED NOT NULL AUTO_INCREMENT,

@@ -97,7 +97,8 @@ try {
             SUM(CASE WHEN LOWER(status) = 'completed' OR {$responseExpr} = 'completed' THEN 1 ELSE 0 END) AS completed_count,
             SUM(CASE WHEN LOWER(status) = 'accepted' OR {$responseExpr} = 'accepted' THEN 1 ELSE 0 END) AS accepted_count,
             SUM(CASE WHEN LOWER(status) = 'rejected_busy' OR {$responseExpr} = 'rejected_busy' THEN 1 ELSE 0 END) AS busy_count,
-            SUM(CASE WHEN LOWER(status) = 'closed_by_police' OR {$responseExpr} = 'closed_by_police' THEN 1 ELSE 0 END) AS auto_closed_by_police_count
+            SUM(CASE WHEN LOWER(status) = 'closed_by_police' OR {$responseExpr} = 'closed_by_police' THEN 1 ELSE 0 END) AS auto_closed_by_police_count,
+            SUM(CASE WHEN LOWER(status) = 'closed_by_ai' OR {$responseExpr} = 'closed_by_ai' THEN 1 ELSE 0 END) AS auto_closed_by_ai_count
             FROM volunteer_missions
             WHERE volunteer_id = :vid");
         $stmt->execute([':vid' => $volunteerId]);
@@ -106,9 +107,10 @@ try {
         $accepted = (int)($row['accepted_count'] ?? 0);
         $busy = (int)($row['busy_count'] ?? 0);
         $autoClosedByPolice = (int)($row['auto_closed_by_police_count'] ?? 0);
+        $autoClosedByAi = (int)($row['auto_closed_by_ai_count'] ?? 0);
     }
 
-    $points = ($completed * 20) + ($accepted * 10) + ($autoClosedByPolice * 2);
+    $points = ($completed * 20) + ($accepted * 10) + ($autoClosedByPolice * 2) + ($autoClosedByAi * 5);
     $rankInfo = pointsToRank($points);
 
     $pointsToNext = null;
@@ -129,6 +131,7 @@ try {
             'accepted_mission_xp' => 10,
             'completed_mission_xp' => 20,
             'auto_closed_by_police_xp' => 2,
+            'auto_closed_by_ai_xp' => 5,
             'ranks' => [
                 ['name' => 'Bronze Volunteer', 'min_points' => 100],
                 ['name' => 'Silver Responder', 'min_points' => 380],
@@ -141,6 +144,7 @@ try {
             'completed_missions' => $completed,
             'busy_missions' => $busy,
             'auto_closed_by_police_missions' => $autoClosedByPolice,
+            'auto_closed_by_ai_missions' => $autoClosedByAi,
             'points' => $points,
             'rank' => $rankInfo['rank'],
             'next_rank' => $rankInfo['next_rank'],
