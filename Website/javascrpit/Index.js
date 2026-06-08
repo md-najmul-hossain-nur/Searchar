@@ -256,15 +256,16 @@ function setupDonationAnimations() {
 
 setupDonationAnimations();
 
-function setupRescueStoriesSlider() {
-  const avatarEl = document.getElementById('rescueStoriesAvatar');
-  const avatarWrapEl = document.getElementById('rescueStoriesAvatarWrap');
-  const quoteEl = document.getElementById('rescueStoriesQuote');
-  const nameEl = document.getElementById('rescueStoriesName');
-  const roleEl = document.getElementById('rescueStoriesRole');
-  const dots = Array.from(document.querySelectorAll('.rescue-stories-dot'));
-
-  if (!avatarEl || !quoteEl || !nameEl || !roleEl || dots.length === 0) return;
+  function setupRescueStoriesSlider() {
+    const avatarEl = document.getElementById('rescueStoriesAvatar');
+    const avatarWrapEl = document.getElementById('rescueStoriesAvatarWrap');
+    const quoteEl = document.getElementById('rescueStoriesQuote');
+    const nameEl = document.getElementById('rescueStoriesName');
+    const roleEl = document.getElementById('rescueStoriesRole');
+    const dotsContainer = document.querySelector('.rescue-stories-dots');
+    let dots = Array.from(document.querySelectorAll('.rescue-stories-dot'));
+  
+    if (!avatarEl || !quoteEl || !nameEl || !roleEl || !dotsContainer) return;
 
   const stories = [
     {
@@ -304,37 +305,62 @@ function setupRescueStoriesSlider() {
     }
   ];
 
-  let idx = Math.floor(Math.random() * stories.length);
+    let idx = Math.floor(Math.random() * stories.length);
 
-  const animateSwap = (element) => {
-    element.classList.remove('rescue-story-fade');
-    void element.offsetWidth;
-    element.classList.add('rescue-story-fade');
-  };
-
-  const render = () => {
-    const story = stories[idx];
-    avatarEl.src = story.image;
-    avatarEl.alt = story.alt;
-    quoteEl.textContent = story.quote;
-    nameEl.textContent = story.name;
-    roleEl.textContent = story.role;
-
-    dots.forEach((dot, i) => dot.classList.toggle('active', i === (idx % dots.length)));
-
-    animateSwap(avatarWrapEl || avatarEl);
-    animateSwap(quoteEl);
-    animateSwap(nameEl);
-    animateSwap(roleEl);
-  };
-
-  render();
-
-  setInterval(() => {
-    idx = (idx + 1) % stories.length;
+    // Fetch dynamic stories from database
+    fetch('../Php/fetch_approved_rescue_stories.php')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.stories && data.stories.length > 0) {
+          data.stories.forEach(s => {
+            stories.push({
+              image: s.profile_photo ? `../Uploads/${s.profile_photo}` : '../Images/demo_pic/profile.jpg',
+              alt: s.author_name,
+              quote: `"${s.story_text}"`,
+              name: `— ${s.author_name}`,
+              role: s.author_role || 'User'
+            });
+            // Add a corresponding dot
+            const newDot = document.createElement('span');
+            newDot.className = 'rescue-stories-dot';
+            dotsContainer.appendChild(newDot);
+          });
+          // Update dots array reference
+          dots = Array.from(document.querySelectorAll('.rescue-stories-dot'));
+        }
+      })
+      .catch(err => console.error('Failed to load dynamic rescue stories', err));
+  
+    const animateSwap = (element) => {
+      element.classList.remove('rescue-story-fade');
+      void element.offsetWidth;
+      element.classList.add('rescue-story-fade');
+    };
+  
+    const render = () => {
+      if (!stories[idx]) idx = 0; // fallback if out of bounds
+      const story = stories[idx];
+      avatarEl.src = story.image;
+      avatarEl.alt = story.alt;
+      quoteEl.textContent = story.quote;
+      nameEl.textContent = story.name;
+      roleEl.textContent = story.role;
+  
+      dots.forEach((dot, i) => dot.classList.toggle('active', i === idx));
+  
+      animateSwap(avatarWrapEl || avatarEl);
+      animateSwap(quoteEl);
+      animateSwap(nameEl);
+      animateSwap(roleEl);
+    };
+  
     render();
-  }, 4200);
-}
+  
+    setInterval(() => {
+      idx = (idx + 1) % stories.length;
+      render();
+    }, 4200);
+  }
 
 setupRescueStoriesSlider();
 

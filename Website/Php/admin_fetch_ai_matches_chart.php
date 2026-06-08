@@ -23,22 +23,29 @@ if (!$isAdminSession && !$isAdminPanelRef) {
     exit;
 }
 
-if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'GET') {
-    http_response_code(405);
-    echo json_encode(['success' => false, 'error' => 'Method not allowed']);
-    exit;
-}
-
 try {
-    $stmt = $pdo->query("SELECT story_id, author_name, author_role, story_text, status, created_at FROM rescue_stories ORDER BY created_at DESC");
-    $stories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $stmt = $pdo->prepare("
+        SELECT MONTH(closed_at) as m, COUNT(*) as c
+        FROM crime_reports
+        WHERE status = 'closed'
+          AND description LIKE '%[Closed by Admin AI%'
+          AND YEAR(closed_at) = 2026
+        GROUP BY MONTH(closed_at)
+    ");
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $data2026 = array_fill(0, 12, 0);
+    foreach ($rows as $r) {
+        if ($r['m']) {
+            $data2026[(int)$r['m'] - 1] = (int)$r['c'];
+        }
+    }
 
     echo json_encode([
         'success' => true,
-        'data' => $stories
+        'data_2026' => $data2026
     ]);
-} catch (Throwable $e) {
-    error_log('admin_fetch_rescue_stories error: ' . $e->getMessage());
-    http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'Failed to fetch rescue stories']);
+} catch (Exception $e) {
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }

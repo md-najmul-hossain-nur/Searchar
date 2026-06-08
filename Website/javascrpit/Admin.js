@@ -119,11 +119,11 @@ loadCameraSeries();
 const ordersChart = new Chart(document.getElementById('ordersChart').getContext('2d'), {
   type: 'bar',
   data: {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
     datasets: [
       {
         label: '2025',
-        data: [40, 60, 80, 70, 100, 30, 10],
+        data: [40, 60, 80, 70, 100, 30, 10, 45, 65, 80, 50, 90],
         backgroundColor: '#f59e0b',
         borderColor: '#d97706',
         borderWidth: 1,
@@ -134,7 +134,7 @@ const ordersChart = new Chart(document.getElementById('ordersChart').getContext(
       },
       {
         label: '2026',
-        data: [20, 50, 60, 30, 90, 25, 80],
+        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         backgroundColor: '#2563eb',
         borderColor: '#1d4ed8',
         borderWidth: 1,
@@ -225,6 +225,17 @@ resetOrdersDefaultView();
 window.addEventListener('pageshow', () => {
   resetOrdersDefaultView();
 });
+
+// Fetch real data for 2026 AI Matches
+fetch('../Php/admin_fetch_ai_matches_chart.php')
+  .then(res => res.json())
+  .then(data => {
+    if (data.success && data.data_2026) {
+      ordersChart.data.datasets[1].data = data.data_2026;
+      ordersChart.update();
+    }
+  })
+  .catch(err => console.error('Failed to fetch AI matches chart data', err));
 
 function activateSection(sectionId) {
   if (!sectionId) return false;
@@ -2354,8 +2365,24 @@ function openAddVolunteerModal() {
       const mediaCount = Array.isArray(r.media) ? r.media.length : 0;
       const actState = getCrimeActionState(r.id);
       const isClosed = String(r.status || '').toLowerCase() === 'closed';
+      const isClosedByAI = String(r.description || '').includes('[Closed by Admin AI');
       const assignDisabled = isClosed || actState.assigned || assignedCrimes.has(r.id) || actState.rejected;
       const cctvDisabled = isClosed || actState.cctv || actState.rejected;
+      
+      let actionButtonsHtml = '';
+      if (isClosed) {
+        if (isClosedByAI) {
+          actionButtonsHtml = `<span style="color:#666; font-size:12px; margin-left:5px;">Closed by AI</span>`;
+        } else {
+          actionButtonsHtml = `<button type="button" onclick="notifyReporterManualHandover('${r.id}', this)" style="background:#1877F2; color:white; border:none; padding:5px 10px; border-radius:4px; font-size:12px; cursor:pointer; margin-left:5px;">Notify Reporter</button>`;
+        }
+      } else {
+        actionButtonsHtml = `
+          <button type="button" data-crime-assign="${r.id}" ${assignDisabled ? 'disabled' : ''}>${actState.assigned || assignedCrimes.has(r.id) ? 'Assigned' : 'Assign Volunteer'}</button>
+          <button type="button" data-crime-cctv="${r.id}" ${cctvDisabled ? 'disabled' : ''}>AI Investigation</button>
+        `;
+      }
+
       return `
         <tr data-crime-id="${r.id}">
           <td>${r.id}</td>
@@ -2368,9 +2395,7 @@ function openAddVolunteerModal() {
           <td>${r.anonymous ? 'Anonymous' : (r.reporter || 'N/A')}</td>
           <td>
             <button type="button" class="view-profile-btn" data-crime-view="${r.id}">View</button>
-            ${isClosed ? `<button type="button" onclick="notifyReporterManualHandover('${r.id}', this)" style="background:#1877F2; color:white; border:none; padding:5px 10px; border-radius:4px; font-size:12px; cursor:pointer; margin-left:5px;">Notify Reporter</button>` : `
-            <button type="button" data-crime-assign="${r.id}" ${assignDisabled ? 'disabled' : ''}>${actState.assigned || assignedCrimes.has(r.id) ? 'Assigned' : 'Assign Volunteer'}</button>
-            <button type="button" data-crime-cctv="${r.id}" ${cctvDisabled ? 'disabled' : ''}>AI Investigation</button>`}
+            ${actionButtonsHtml}
           </td>
         </tr>
       `;
@@ -5433,101 +5458,5 @@ function confirmAiSource(sourceType) {
   closeAiConfirmModal();
 }
 
-// --- SUB-ADMIN MANAGEMENT ---
-document.addEventListener('DOMContentLoaded', async () => {
-  try {
-    const res = await fetch('../Php/admin_fetch_profile.php');
-    const data = await res.json();
-    if (data.success && data.admin_role === 'main_admin') {
-      const el = document.getElementById('sidebar-sub-admins');
-      if (el) el.style.display = 'block';
-    }
-  } catch (err) {
-    console.error('Failed to fetch admin profile', err);
-  }
-});
-
-const subAdminForm = document.getElementById('add-sub-admin-form');
-if (subAdminForm) {
-  subAdminForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const fd = new FormData();
-    fd.append('full_name', document.getElementById('sub-admin-name').value);
-    fd.append('email', document.getElementById('sub-admin-email').value);
-    fd.append('mobile', document.getElementById('sub-admin-mobile').value);
-    fd.append('password', document.getElementById('sub-admin-password').value);
-
-    try {
-      const res = await fetch('../Php/admin_add_sub_admin.php', { method: 'POST', body: fd });
-      const data = await res.json();
-      if (data.success) {
-        alert('Sub-admin added successfully!');
-        subAdminForm.reset();
-        loadSubAdmins();
-        loadAdminLogs();
-      } else {
-        alert('Error: ' + data.error);
-      }
-    } catch (err) {
-      alert('Network error adding sub-admin');
-    }
-  });
-}
-
-async function loadSubAdmins() {
-  const tbody = document.getElementById('sub-admins-table-body');
-  if (!tbody) return;
-  try {
-    const res = await fetch('../Php/admin_fetch_sub_admins.php');
-    const data = await res.json();
-    if (data.success) {
-      if (data.admins.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4">No sub-admins found</td></tr>';
-        return;
-      }
-      tbody.innerHTML = data.admins.map(a => `
-        <tr>
-          <td>${a.full_name}</td>
-          <td>${a.email}</td>
-          <td>${a.mobile}</td>
-          <td>${new Date(a.created_at).toLocaleString()}</td>
-        </tr>
-      `).join('');
-    }
-  } catch (err) {
-    console.error(err);
-  }
-}
-
-async function loadAdminLogs() {
-  const tbody = document.getElementById('admin-logs-table-body');
-  if (!tbody) return;
-  try {
-    const res = await fetch('../Php/admin_fetch_logs.php');
-    const data = await res.json();
-    if (data.success) {
-      if (data.logs.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4">No logs found</td></tr>';
-        return;
-      }
-      tbody.innerHTML = data.logs.map(l => `
-        <tr>
-          <td>${new Date(l.created_at).toLocaleString()}</td>
-          <td>${l.admin_name}<br><small>${l.admin_email}</small></td>
-          <td>${l.action_type}</td>
-          <td>${l.details}</td>
-        </tr>
-      `).join('');
-    }
-  } catch (err) {
-    console.error(err);
-  }
-}
-
-document.addEventListener('admin:refresh-section', (e) => {
-  if (e.detail && e.detail.sectionId === 'sub-admins') {
-    loadSubAdmins();
-    loadAdminLogs();
-  }
-});
+// End of Admin.js
 

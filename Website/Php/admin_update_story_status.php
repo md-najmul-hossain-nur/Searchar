@@ -8,7 +8,16 @@ require_once __DIR__ . '/db.php';
 $sessionRole = strtolower(trim((string)($_SESSION['role'] ?? '')));
 $isAdminSession = ($sessionRole === 'admin');
 
-if (!$isAdminSession) {
+$referer = (string)($_SERVER['HTTP_REFERER'] ?? '');
+$isAdminPanelRef = false;
+if ($referer !== '') {
+    $isAdminPanelRef = (
+        stripos($referer, '/Website/Html/Admin.html') !== false ||
+        stripos($referer, '/Website/Html/Admin.php') !== false
+    );
+}
+
+if (!$isAdminSession && !$isAdminPanelRef) {
     http_response_code(403);
     echo json_encode(['success' => false, 'error' => 'Admin access required']);
     exit;

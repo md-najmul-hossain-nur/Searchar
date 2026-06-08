@@ -4,7 +4,39 @@ declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 session_start();
 require_once __DIR__ . '/db.php';
-require_once __DIR__ . '/mailer.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require_once __DIR__ . '/PHPMailer/Exception.php';
+require_once __DIR__ . '/PHPMailer/PHPMailer.php';
+require_once __DIR__ . '/PHPMailer/SMTP.php';
+
+function sendEmailViaPHPMailer(string $toEmail, string $subject, string $htmlBody, string $altBody): bool {
+    $mail = new PHPMailer(true);
+    try {
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.gmail.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'searchar04@gmail.com';
+        $mail->Password   = 'qbly vkft dzku ujni';
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+        $mail->Port       = 465;
+
+        $mail->setFrom('searchar04@gmail.com', 'Searchar Admin');
+        $mail->addAddress($toEmail);
+        $mail->isHTML(true);
+        $mail->Subject = $subject;
+        $mail->Body    = $htmlBody;
+        $mail->AltBody = $altBody;
+
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        error_log("PHPMailer error: " . $mail->ErrorInfo);
+        return false;
+    }
+}
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     http_response_code(405);
