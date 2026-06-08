@@ -511,12 +511,14 @@ document.addEventListener('click', function (event) {
     sendCrimeBtn.disabled = true;
     const prevLabel = sendCrimeBtn.textContent;
     sendCrimeBtn.textContent = 'Reporting…';
+    const body = new FormData();
+    body.append('post_id', postId);
+    body.append('action', 'make_report');
 
     fetch('../Php/admin_update_post_status.php', {
       method: 'POST',
       credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ post_id: String(postId), action: 'make_report' })
+      body: body
     })
       .then(res => res.json())
       .then(json => {
@@ -562,17 +564,29 @@ document.addEventListener('click', function (event) {
   const action = actionButton.getAttribute('data-post-action');
   const approveButton = row.querySelector('[data-post-action="approve"]');
   const rejectButton = row.querySelector('[data-post-action="reject"]');
+  const approveShareButton = row.querySelector('[data-post-action="approve_share"]');
+
+  let customCaption = null;
+  if (action === 'approve_share') {
+    let defaultText = row.dataset.text || '';
+    
+    customCaption = prompt("Add a custom caption for the Facebook Post (or leave as is):", defaultText);
+    if (customCaption === null) {
+      return;
+    }
+  }
 
   const postId = row.dataset.id;
   if (!postId) return;
 
   const originalLabel = actionButton.textContent;
   actionButton.disabled = true;
-  actionButton.textContent = action === 'approve' ? 'Approving…' : 'Rejecting…';
+  actionButton.textContent = action === 'reject' ? 'Rejecting…' : 'Approving/Sharing…';
   if (approveButton && approveButton !== actionButton) approveButton.disabled = true;
   if (rejectButton && rejectButton !== actionButton) rejectButton.disabled = true;
+  if (approveShareButton && approveShareButton !== actionButton) approveShareButton.disabled = true;
 
-  const targetStatus = action === 'approve' ? 'approved' : 'rejected';
+  const targetStatus = action === 'reject' ? 'rejected' : 'approved';
   postControlActionInFlight += 1;
 
   function setStatusUI(statusText) {
@@ -587,11 +601,16 @@ document.addEventListener('click', function (event) {
     }
   }
 
+  const reqBody = new URLSearchParams({ post_id: postId, action });
+  if (customCaption !== null) {
+    reqBody.append('custom_caption', customCaption);
+  }
+
   fetch('../Php/admin_update_post_status.php', {
     method: 'POST',
     credentials: 'same-origin',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ post_id: postId, action })
+    body: reqBody
   })
     .then(res => res.json())
     .then(json => {
@@ -612,6 +631,7 @@ document.addEventListener('click', function (event) {
 
       if (approveButton) approveButton.disabled = true;
       if (rejectButton) rejectButton.disabled = true;
+      if (approveShareButton) approveShareButton.disabled = true;
 
       if (typeof applyPostControlFilters === 'function') {
         applyPostControlFilters();
@@ -643,6 +663,7 @@ document.addEventListener('click', function (event) {
       actionButton.textContent = originalLabel;
       if (approveButton && approveButton !== actionButton) approveButton.disabled = false;
       if (rejectButton && rejectButton !== actionButton) rejectButton.disabled = false;
+      if (approveShareButton && approveShareButton !== actionButton) approveShareButton.disabled = false;
       alert('Could not update status. This post may already be decided or a network error occurred.');
     })
     .finally(() => {
@@ -770,6 +791,7 @@ document.addEventListener('click', function (event) {
               <button class="view-profile-btn" data-post-details="1">View Details</button>
               <button class="ghost" data-post-send-crime="1" ${isReported ? 'disabled' : ''}>${isReported ? 'Reported' : 'Make Report'}</button>
               <button class="approve-btn" data-post-action="approve" ${statusClass(row.status) !== 'status-pending' ? 'disabled' : ''}>Approve</button>
+              ${Number(row.share_facebook || 0) === 1 ? `<button class="approve-btn" style="background:#1877f2; color:#ffffff;" data-post-action="approve_share" ${statusClass(row.status) === 'status-rejected' ? 'disabled' : ''}><i class="fa-brands fa-facebook"></i> Share FB</button>` : ''}
               <button class="reject-btn" data-post-action="reject" ${statusClass(row.status) !== 'status-pending' ? 'disabled' : ''}>Reject</button>
             </td>
           </tr>
@@ -1098,7 +1120,22 @@ document.addEventListener('click', function (event) {
       if (mediaPreview) {
         mediaPreview.innerHTML = 'Media preview will appear here';
       }
-      alert('Admin post published successfully.');
+      
+      let alertMsg = 'Admin post published successfully.';
+      try {
+        const fb = json.facebook_share;
+        if (fb) {
+          if (fb.shared) {
+            alertMsg += '\nFacebook: shared successfully' + (fb.post_id ? ' (id: ' + fb.post_id + ')' : '');
+          } else if (fb.attempted && !fb.shared) {
+            alertMsg += '\nFacebook share attempted but failed: ' + (fb.error || fb.message || 'Unknown error');
+          }
+        }
+      } catch (e) {
+        console.error('Failed to parse facebook_share result', e);
+      }
+      
+      alert(alertMsg);
 
       document.dispatchEvent(new CustomEvent('admin:section-activated', {
         detail: { sectionId: 'post-control' }

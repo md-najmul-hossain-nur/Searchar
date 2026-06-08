@@ -82,6 +82,7 @@ $allowedActions = [
     'reject'  => 'rejected',
     'make_report' => 'reported',
     'close_case' => 'closed',
+    'approve_share' => 'approved',
 ];
 
 try {
@@ -362,6 +363,7 @@ try {
     $stmt = $pdo->prepare("UPDATE posts SET status = :status WHERE id = :id AND LOWER(COALESCE(status, 'pending')) = 'pending'");
     $stmt->execute([':status' => $targetStatus, ':id' => $postId]);
 
+    $proceedWithShare = false;
     if ($stmt->rowCount() === 0) {
         // Check existing status to give a friendly message
         $chk = $pdo->prepare("SELECT status FROM posts WHERE id = :id LIMIT 1");
@@ -374,24 +376,33 @@ try {
         }
 
         $current = $row['status'] ?? 'pending';
-        echo json_encode([
-            'success' => false,
-            'error' => 'Post already decided',
-            'status' => $current,
-        ]);
-        exit;
-    }
-
-    if ($authorId > 0) {
-        $notify = $pdo->prepare('INSERT INTO user_notifications (recipient_entity, recipient_id, title, message, level, is_read, target_post_id) VALUES (:entity, :rid, :title, :message, :level, 0, :post_id)');
-        $notify->execute([
-            ':entity' => $recipientEntity,
-            ':rid' => $authorId,
-            ':title' => 'Your post was approved',
-            ':message' => 'An admin approved your post.',
-            ':level' => 'success',
-            ':post_id' => $postId,
-        ]);
+        if ($action === 'approve_share' && strtolower((string)$current) === 'approved') {
+            $proceedWithShare = true;
+        } else {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Post already decided',
+                'status' => $current,
+            ]);
+            exit;
+        }
+    } else {
+        $proceedWithShare = true;
+        if ($authorId > 0) {
+            $notify = $pdo->prepare('INSERT INTO user_notifications (recipient_entity, recipient_id, title, message, level, is_read, target_post_id) VALUES (:entity, :rid, :title, :message, :level, 0, :post_id)');
+            $notify->execute([
+                ':entity' => $recipientEntity,
+                ':rid' => $authorId,
+                ':title' => 'Your post was approved',
+                ':message' => 'An admin approved your post.',
+                ':level' => 'success',
+                ':post_id' => $postId,
+            ]);
+        }
+        if (isset($_SESSION['user_id'])) {
+            $logStmt = $pdo->prepare("INSERT INTO admin_logs (admin_id, action_type, details) VALUES (?, ?, ?)");
+            $logStmt->execute([$_SESSION['user_id'], 'Approved Post', "Approved post ID: $postId ($targetStatus)"]);
+        }
     }
 
     $facebookShareResult = [
@@ -400,8 +411,12 @@ try {
         'skipped' => true,
     ];
 
-    $shareRequested = (int)($postRow['share_facebook'] ?? 0) === 1;
+    $shareRequested = (int)($postRow['share_facebook'] ?? 0) === 1 || $action === 'approve_share';
     $shareAnonymous = (int)($postRow['share_anonymous'] ?? 0) === 1;
+    
+    if ($action === 'approve_share' && isset($_POST['custom_caption'])) {
+        $postRow['text'] = $_POST['custom_caption'];
+    }
     if ($shareRequested && !$shareAnonymous) {
         try {
             $facebookShareResult = publishPostToFacebook($postRow, loadFacebookPageConfig());
@@ -427,10 +442,7 @@ try {
         error_log('admin_update_post_status: Facebook share skipped for anonymous post ' . $postId);
     }
 
-    if (isset($_SESSION['user_id'])) {
-        $logStmt = $pdo->prepare("INSERT INTO admin_logs (admin_id, action_type, details) VALUES (?, ?, ?)");
-        $logStmt->execute([$_SESSION['user_id'], 'Approved Post', "Approved post ID: $postId ($targetStatus)"]);
-    }
+
 
     echo json_encode([
         'success' => true,

@@ -150,7 +150,53 @@ try {
         ':status' => 'approved',
     ]);
 
-    echo json_encode(['success' => true, 'post_id' => (int)$pdo->lastInsertId()]);
+    $postId = (int)$pdo->lastInsertId();
+
+    $facebookShareResult = [
+        'attempted' => false,
+        'shared' => false,
+        'skipped' => true,
+    ];
+
+    if ($shareFacebook) {
+        require_once __DIR__ . '/facebook_share.php';
+        $postRow = [
+            'text' => $text,
+            'media_type' => $mediaType,
+            'media_path' => $mediaPath,
+            'media_json' => $mediaJson
+        ];
+        try {
+            $facebookShareResult = publishPostToFacebook($postRow, loadFacebookPageConfig());
+        } catch (Throwable $facebookError) {
+            $facebookShareResult = [
+                'attempted' => true,
+                'shared' => false,
+                'error' => $facebookError->getMessage(),
+            ];
+            error_log('admin_publish_feed_post: Facebook publish failed - ' . $facebookError->getMessage());
+        }
+
+        try {
+            if (is_array($facebookShareResult) && !empty($facebookShareResult['shared']) && !empty($facebookShareResult['post_id'])) {
+                // Check if columns exist first, though they might not. The previous script assumes they might exist or skips.
+                // Let's add them just in case.
+                $hasIsShare = $pdo->query("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'posts' AND COLUMN_NAME = 'is_share' LIMIT 1")->fetchColumn();
+                if (!$hasIsShare) {
+                    $pdo->exec("ALTER TABLE posts ADD COLUMN is_share TINYINT(1) DEFAULT 0 AFTER share_anonymous");
+                    $pdo->exec("ALTER TABLE posts ADD COLUMN shared_post_id VARCHAR(100) DEFAULT NULL AFTER is_share");
+                    $pdo->exec("ALTER TABLE posts ADD COLUMN shared_payload TEXT DEFAULT NULL AFTER shared_post_id");
+                }
+                $upd = $pdo->prepare("UPDATE posts SET is_share = 1, shared_post_id = :spid, shared_payload = :payload WHERE id = :id");
+                $payloadJson = json_encode($facebookShareResult, JSON_UNESCAPED_UNICODE);
+                $upd->execute([':spid' => $facebookShareResult['post_id'], ':payload' => $payloadJson, ':id' => $postId]);
+            }
+        } catch (Throwable $persistErr) {
+            error_log('admin_publish_feed_post: Failed to persist Facebook share - ' . $persistErr->getMessage());
+        }
+    }
+
+    echo json_encode(['success' => true, 'post_id' => $postId, 'facebook_share' => $facebookShareResult]);
 } catch (Throwable $e) {
     error_log('admin_publish_feed_post error: ' . $e->getMessage());
     http_response_code(500);
