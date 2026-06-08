@@ -139,6 +139,61 @@ try {
         exit;
     }
 
+    if ($action === 'get_solved_cases') {
+        $solved = [];
+        
+        if (tableExists($pdo, 'posts') && columnExists($pdo, 'posts', 'report_status')) {
+            $stmt = $pdo->query("SELECT id, category, text, created_at, report_closed_at FROM posts WHERE LOWER(COALESCE(report_status,'not_reported')) = 'closed' ORDER BY report_closed_at DESC LIMIT 50");
+            $rows = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+            foreach ($rows as $r) {
+                $categoryRaw = strtolower((string)($r['category'] ?? 'case'));
+                $type = match ($categoryRaw) {
+                    'missing_person' => 'Missing Person',
+                    'criminal_found' => 'Criminal Found',
+                    'disaster' => 'Disaster',
+                    'mission' => 'Mission',
+                    default => ucfirst(str_replace('_', ' ', $categoryRaw)),
+                };
+                
+                $solvedAtStr = $r['report_closed_at'] ? (new DateTime((string)$r['report_closed_at']))->format('Y-m-d H:i') : '—';
+                $solved[] = [
+                    'case_no' => 'PT-' . str_pad((string)$r['id'], 4, '0', STR_PAD_LEFT),
+                    'type' => $type,
+                    'details' => trim((string)$r['text']) ?: 'Case resolved',
+                    'source' => 'Crime Reporting',
+                    'published_at' => (new DateTime((string)$r['created_at']))->format('Y-m-d H:i'),
+                    'solved_at' => $solvedAtStr,
+                    'timestamp' => $r['report_closed_at'] ? strtotime((string)$r['report_closed_at']) : 0
+                ];
+            }
+        }
+        
+        if (tableExists($pdo, 'missing_person_reports')) {
+            $stmt = $pdo->query("SELECT report_id, full_name, last_seen_location, created_at, resolved_at FROM missing_person_reports WHERE LOWER(COALESCE(status,'open')) IN ('closed','resolved','found') ORDER BY resolved_at DESC LIMIT 50");
+            $rows = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+            foreach ($rows as $r) {
+                $solvedAtStr = $r['resolved_at'] ? (new DateTime((string)$r['resolved_at']))->format('Y-m-d H:i') : '—';
+                $solved[] = [
+                    'case_no' => 'MP-' . str_pad((string)$r['report_id'], 4, '0', STR_PAD_LEFT),
+                    'type' => 'Missing Person',
+                    'details' => trim((string)$r['full_name']) . ' • Last seen: ' . trim((string)$r['last_seen_location']),
+                    'source' => 'Missing Desk',
+                    'published_at' => (new DateTime((string)$r['created_at']))->format('Y-m-d H:i'),
+                    'solved_at' => $solvedAtStr,
+                    'timestamp' => $r['resolved_at'] ? strtotime((string)$r['resolved_at']) : 0
+                ];
+            }
+        }
+
+        usort($solved, fn($a, $b) => $b['timestamp'] <=> $a['timestamp']);
+        
+        echo json_encode([
+            'success' => true,
+            'solved_cases' => array_slice($solved, 0, 100)
+        ]);
+        exit;
+    }
+
     if ($action !== 'close_case') {
         throw new RuntimeException('Unsupported action');
     }

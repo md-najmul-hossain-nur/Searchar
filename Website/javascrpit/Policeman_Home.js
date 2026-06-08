@@ -587,28 +587,15 @@ async function syncClosedCasesFromServer() {
   }
 }
 
-async function pruneSolvedCasesAgainstServer() {
-  const solvedRows = readSolvedCases();
-  if (!solvedRows.length) return;
-
-  const payloadCases = solvedRows
-    .map((row) => ({ case_no: String(row?.case_no || '').trim() }))
-    .filter((row) => row.case_no);
-
-  if (!payloadCases.length) return;
-
+async function fetchSolvedCasesFromServer() {
   try {
-    const json = await callCaseResolutionApi('sync_published', { cases: payloadCases });
-    const closedSet = new Set((Array.isArray(json?.closed_case_nos) ? json.closed_case_nos : []).map((v) => String(v || '').trim().toUpperCase()));
-
-    const filteredSolved = solvedRows.filter((row) => closedSet.has(String(row?.case_no || '').trim().toUpperCase()));
-    if (filteredSolved.length !== solvedRows.length) {
-      writeSolvedCases(filteredSolved);
-      renderSolvedCasesTable();
-      syncPublishedCaseButtons();
-    }
+    const json = await callCaseResolutionApi('get_solved_cases');
+    const cases = Array.isArray(json?.solved_cases) ? json.solved_cases : [];
+    writeSolvedCases(cases);
+    renderSolvedCasesTable();
+    syncPublishedCaseButtons();
   } catch (error) {
-    console.error('prune solved cases failed', error);
+    console.error('fetch solved cases failed', error);
   }
 }
 
@@ -880,8 +867,7 @@ if (openAllCasesBtn && allCasesModal) {
 if (openSolvedCasesBtn && solvedCasesModal) {
   openSolvedCasesBtn.addEventListener('click', async function () {
     showCaseModal(solvedCasesModal);
-    await pruneSolvedCasesAgainstServer();
-    renderSolvedCasesTable();
+    await fetchSolvedCasesFromServer();
   });
 }
 
@@ -982,7 +968,7 @@ renderLivePublishedBoard();
 renderSolvedCasesTable();
 syncPublishedCaseButtons();
 syncClosedCasesFromServer();
-pruneSolvedCasesAgainstServer();
+fetchSolvedCasesFromServer();
 setInterval(syncClosedCasesFromServer, 30000);
 if (caseFilterPost) caseFilterPost.addEventListener('change', applyCaseSourceFilters);
 if (caseFilterMissing) caseFilterMissing.addEventListener('change', applyCaseSourceFilters);
