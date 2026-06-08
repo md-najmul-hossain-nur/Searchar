@@ -1337,6 +1337,83 @@ try {
       <script src="../javascrpit/post_interactions_shared.js?v=20260406d"></script>
       <script src="../javascrpit/notifications_shared.js"></script>
       <script src="../javascrpit/messenger_shared.js"></script>
+
+      <!-- Rescue Story Floating Button -->
+      <button type="button" id="rescue-story-fab" style="position:fixed; bottom:30px; right:30px; width:60px; height:60px; border-radius:50%; background:#e11d48; color:white; border:none; box-shadow:0 4px 12px rgba(225,29,72,0.4); cursor:pointer; font-size:24px; z-index:9999; display:flex; align-items:center; justify-content:center; transition: transform 0.2s;" title="Submit Rescue Story" onclick="document.getElementById('rescue-story-modal').classList.add('open')">
+          <i class="fa-solid fa-heart"></i>
+      </button>
+
+      <!-- Rescue Story Modal -->
+      <div id="rescue-story-modal" class="custom-modal">
+          <div class="custom-modal-content" style="max-width: 500px; border-radius: 12px;">
+              <div class="custom-modal-header" style="border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
+                  <h3 style="margin:0; color:#e11d48;"><i class="fa-solid fa-heart"></i> Share Your Rescue Story</h3>
+                  <button type="button" class="custom-modal-close" onclick="document.getElementById('rescue-story-modal').classList.remove('open')">&times;</button>
+              </div>
+              <div class="custom-modal-body">
+                  <p style="font-size: 14px; color: #666; margin-bottom: 15px;">Did our platform help you find a missing person? Share your story to inspire others!</p>
+                  <form id="rescue-story-form">
+                      <div style="margin-bottom: 15px;">
+                          <label style="display:block; font-weight:600; margin-bottom:5px;">Your Name</label>
+                          <input type="text" id="rs-author-name" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;" value="<?= htmlspecialchars($_SESSION['username'] ?? '') ?>">
+                      </div>
+                      <div style="margin-bottom: 15px;">
+                          <label style="display:block; font-weight:600; margin-bottom:5px;">Your Role</label>
+                          <input type="text" id="rs-author-role" required placeholder="e.g. Local Shop Owner, Volunteer" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
+                      </div>
+                      <div style="margin-bottom: 15px;">
+                          <label style="display:block; font-weight:600; margin-bottom:5px;">Your Story</label>
+                          <textarea id="rs-story-text" required rows="4" placeholder="I submitted CCTV footage from my shop and..." style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; resize: vertical;"></textarea>
+                      </div>
+                      <div style="text-align: right;">
+                          <button type="button" onclick="document.getElementById('rescue-story-modal').classList.remove('open')" style="background:transparent; border:none; color:#666; cursor:pointer; font-weight:600; margin-right: 15px;">Cancel</button>
+                          <button type="submit" id="rs-submit-btn" style="background:#e11d48; color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:600;">Submit Story</button>
+                      </div>
+                  </form>
+              </div>
+          </div>
+      </div>
+
+      <style>
+      #rescue-story-fab:hover { transform: scale(1.1); }
+      </style>
+
+      <script>
+      document.getElementById('rescue-story-form').addEventListener('submit', async function(e) {
+          e.preventDefault();
+          const btn = document.getElementById('rs-submit-btn');
+          const originalText = btn.innerHTML;
+          btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+          btn.disabled = true;
+
+          try {
+              const res = await fetch('../Php/save_rescue_story.php', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                      author_name: document.getElementById('rs-author-name').value,
+                      author_role: document.getElementById('rs-author-role').value,
+                      story_text: document.getElementById('rs-story-text').value
+                  })
+              });
+              const data = await res.json();
+              if (data.success) {
+                  alert('Thank you! Your rescue story has been submitted for review.');
+                  document.getElementById('rescue-story-modal').classList.remove('open');
+                  document.getElementById('rs-author-role').value = '';
+                  document.getElementById('rs-story-text').value = '';
+              } else {
+                  throw new Error(data.error || 'Failed to submit story');
+              }
+          } catch (err) {
+              alert('Error: ' + err.message);
+          } finally {
+              btn.innerHTML = originalText;
+              btn.disabled = false;
+          }
+      });
+      </script>
+
     </body>
 
 </html>

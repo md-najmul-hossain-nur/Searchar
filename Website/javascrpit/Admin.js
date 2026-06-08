@@ -3921,10 +3921,96 @@ function openAddVolunteerModal() {
 
   document.addEventListener('admin:refresh-section', (event) => {
     const sectionId = String(event?.detail?.sectionId || '').toLowerCase();
-    if (sectionId === 'review' || sectionId === 'reports') {
+    if (sectionId === 'reports') {
       loadReports();
     }
   });
+})();
+
+// Rescue Stories / Reviews Module
+(function() {
+  const section = document.getElementById('review');
+  if (!section) return;
+  const tableBody = document.getElementById('review-table-body');
+  if (!tableBody) return;
+  
+  function statusBadge(status) {
+    status = String(status || 'pending').toLowerCase();
+    if (status === 'approved') return '<span class="status-approved">Approved</span>';
+    if (status === 'rejected') return '<span class="status-rejected">Rejected</span>';
+    return '<span class="status-pending">Pending</span>';
+  }
+
+  function esc(val) {
+    return String(val || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  async function loadRescueStories() {
+    tableBody.innerHTML = '<tr><td colspan="7">Loading reviews...</td></tr>';
+    try {
+      const res = await fetch('../Php/admin_fetch_rescue_stories.php', { cache: 'no-store' });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Failed to fetch reviews');
+      
+      const rows = data.data || [];
+      if (rows.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="7">No rescue stories found.</td></tr>';
+        return;
+      }
+      
+      tableBody.innerHTML = rows.map(r => `
+        <tr data-story-id="${esc(r.story_id)}">
+          <td>RS-${esc(r.story_id)}</td>
+          <td>${esc(r.author_name)}</td>
+          <td>${esc(r.author_role)}</td>
+          <td style="max-width: 300px; white-space: normal;">${esc(r.story_text)}</td>
+          <td class="status-cell">${statusBadge(r.status)}</td>
+          <td>${esc(r.created_at)}</td>
+          <td>
+            ${r.status === 'pending' ? `
+            <button class="ghost" onclick="updateStoryStatus(${r.story_id}, 'approve', this)" style="color:#2e7d32; border-color:#2e7d32; margin-right:5px;">Approve</button>
+            <button class="ghost" onclick="updateStoryStatus(${r.story_id}, 'reject', this)" style="color:#d32f2f; border-color:#d32f2f;">Reject</button>
+            ` : `<button disabled>Actioned</button>`}
+          </td>
+        </tr>
+      `).join('');
+    } catch (err) {
+      tableBody.innerHTML = `<tr><td colspan="7" style="color:red;">Error: ${esc(err.message)}</td></tr>`;
+    }
+  }
+
+  window.updateStoryStatus = async function(storyId, action, btn) {
+    if (!confirm(`Are you sure you want to ${action} this story?`)) return;
+    const originalText = btn.innerText;
+    btn.innerText = 'Wait...';
+    btn.disabled = true;
+    try {
+      const res = await fetch('../Php/admin_update_story_status.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ story_id: storyId, action })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('Story status updated!');
+        loadRescueStories();
+      } else {
+        throw new Error(data.error || 'Failed to update status');
+      }
+    } catch (err) {
+      alert('Error: ' + err.message);
+      btn.innerText = originalText;
+      btn.disabled = false;
+    }
+  };
+
+  document.addEventListener('admin:refresh-section', (event) => {
+    if (String(event?.detail?.sectionId || '').toLowerCase() === 'review') {
+      loadRescueStories();
+    }
+  });
+
+  loadRescueStories();
 })();
 
 // AI detection logs are static demo content, so refresh restores the section markup.
