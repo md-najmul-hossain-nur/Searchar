@@ -127,7 +127,8 @@ if ($action === 'search_posts') {
                     'feed_id' => $feed['feed_id'],
                     'owner' => 'Camera System', // Placeholder since owner_name is not in table
                     'label' => $feed['feed_label'],
-                    'location' => $feed['camera_location']
+                    'location' => $feed['camera_location'],
+                    'capture_time' => date('Y-m-d h:i A', filemtime($absPath))
                 ];
             }
         }

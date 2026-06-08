@@ -1473,6 +1473,7 @@ function openAddVolunteerModal() {
       }
 
       missingRows = Array.isArray(json.rows) ? json.rows : [];
+      window.missingRowsData = missingRows;
       const summary = json.summary || {};
 
       if (totalActiveEl) totalActiveEl.textContent = String(summary.total_active_cases ?? 0).padStart(2, '0');
@@ -1769,6 +1770,7 @@ function openAddVolunteerModal() {
       }
 
       demoCrimes = json.rows.map(normalizeCrimeRow);
+      window.demoCrimesData = demoCrimes;
       applyFilters();
     } catch (error) {
       console.error('missing->crime sync failed', error);
@@ -2651,12 +2653,12 @@ function openAddVolunteerModal() {
 
             const tbody = document.getElementById('active-investigations-body');
             let existingRow = document.getElementById(`investigation-row-${id}`);
-            
+
             let resolvedMediaUrl = mediaUrl;
             if (!resolvedMediaUrl.startsWith('http') && !resolvedMediaUrl.startsWith('data:') && !resolvedMediaUrl.startsWith('../')) {
-                resolvedMediaUrl = '../' + resolvedMediaUrl;
+              resolvedMediaUrl = '../' + resolvedMediaUrl;
             }
-            
+
             if (!existingRow) {
               const tr = document.createElement('tr');
               tr.id = `investigation-row-${id}`;
@@ -2664,10 +2666,9 @@ function openAddVolunteerModal() {
                 <td><strong>${id}</strong><br><small>${escapeHtml(crime.landmark || '')}</small></td>
                 <td>
                   <img src="${escapeHtml(resolvedMediaUrl)}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;" onerror="this.src='../Images/demo_pic/profile.jpg'">
-                  <div style="margin-top: 5px;">
-                    <input type="file" id="update-img-${id}" style="display:none;" accept="image/*" onchange="updateTargetImage('${id}', this)">
-                    <button type="button" class="ghost" style="padding: 2px 5px; font-size: 10px; border-radius: 4px;" onclick="document.getElementById('update-img-${id}').click()">Update Image</button>
-                  </div>
+                </td>
+                <td id="search-img-col-${id}">
+                  <span style="font-size:12px; color:#666;">No search image yet</span>
                 </td>
                 <td id="inv-status-${id}"><span class="status-pending">Ready</span></td>
                 <td>
@@ -2683,8 +2684,8 @@ function openAddVolunteerModal() {
               const btns = existingRow.querySelectorAll('button.ghost');
               const actionBtns = Array.from(btns).filter(b => b.innerText.includes('Search in'));
               if (actionBtns.length >= 2) {
-                  actionBtns[0].setAttribute('onclick', `startPythonAISearch('${id}', '${resolvedMediaUrl}', 'posts')`);
-                  actionBtns[1].setAttribute('onclick', `promptCCTVImageAndSearch('${id}', '${resolvedMediaUrl}')`);
+                actionBtns[0].setAttribute('onclick', `startPythonAISearch('${id}', '${resolvedMediaUrl}', 'posts')`);
+                actionBtns[1].setAttribute('onclick', `promptCCTVImageAndSearch('${id}', '${resolvedMediaUrl}')`);
               }
               // Highlight the existing row
               existingRow.style.backgroundColor = '#f1f5f9';
@@ -4822,13 +4823,13 @@ function previewAiImage(input) {
 function saveActiveInvestigations() {
   const tbody = document.getElementById('active-investigations-body');
   if (tbody) {
-    localStorage.setItem('activeAiInvestigationsV2', tbody.innerHTML);
+    localStorage.setItem('activeAiInvestigationsV4', tbody.innerHTML);
   }
 }
 
 function loadActiveInvestigations() {
   const tbody = document.getElementById('active-investigations-body');
-  const saved = localStorage.getItem('activeAiInvestigationsV2');
+  const saved = localStorage.getItem('activeAiInvestigationsV4');
   if (tbody && saved && saved.trim() !== '') {
     tbody.innerHTML = saved;
   }
@@ -4836,106 +4837,111 @@ function loadActiveInvestigations() {
 
 // Call load on page start
 document.addEventListener('DOMContentLoaded', () => {
-    loadActiveInvestigations();
-    loadConfirmedMatches();
+  loadActiveInvestigations();
+  loadConfirmedMatches();
 });
 
 async function updateTargetImage(id, input) {
-    if (!input.files || !input.files[0]) return;
-    const formData = new FormData();
-    formData.append('image', input.files[0]);
-    
-    // Show a loading state on the button
-    const btn = input.nextElementSibling;
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-    btn.disabled = true;
+  if (!input.files || !input.files[0]) return;
+  const formData = new FormData();
+  formData.append('image', input.files[0]);
 
-    try {
-        const res = await fetch('../Php/update_target_image.php', {
-            method: 'POST',
-            body: formData
-        });
-        const data = await res.json();
-        if (data.success) {
-            // Update the image src in the row
-            const tr = document.getElementById(`investigation-row-${id}`);
-            if (tr) {
-                const img = tr.querySelector('img');
-                img.src = data.new_image_url;
-                
-                // Update the onclick attributes for the search buttons to use the new URL
-                const searchBtns = tr.querySelectorAll('button.ghost');
-                // The first button in the actions cell is Posts, second is CCTV
-                const actionBtns = Array.from(searchBtns).filter(b => b.innerText.includes('Search in'));
-                if (actionBtns.length >= 2) {
-                    actionBtns[0].setAttribute('onclick', `startPythonAISearch('${id}', '${data.new_image_url}', 'posts')`);
-                    actionBtns[1].setAttribute('onclick', `promptCCTVImageAndSearch('${id}', '${data.new_image_url}')`);
-                }
-                saveActiveInvestigations();
-            }
-        } else {
-            alert('Failed to update image: ' + data.error);
+  // Show a loading state on the button
+  const btn = input.nextElementSibling;
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('../Php/update_target_image.php', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json();
+    if (data.success) {
+      // Update the image src in the row
+      const tr = document.getElementById(`investigation-row-${id}`);
+      if (tr) {
+        const img = tr.querySelector('img');
+        img.src = data.new_image_url;
+
+        // Update the onclick attributes for the search buttons to use the new URL
+        const searchBtns = tr.querySelectorAll('button.ghost');
+        // The first button in the actions cell is Posts, second is CCTV
+        const actionBtns = Array.from(searchBtns).filter(b => b.innerText.includes('Search in'));
+        if (actionBtns.length >= 2) {
+          actionBtns[0].setAttribute('onclick', `startPythonAISearch('${id}', '${data.new_image_url}', 'posts')`);
+          actionBtns[1].setAttribute('onclick', `promptCCTVImageAndSearch('${id}', '${data.new_image_url}')`);
         }
-    } catch (err) {
-        console.error(err);
-        alert('Error uploading image');
-    } finally {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-        input.value = ''; // Reset file input
+        saveActiveInvestigations();
+      }
+    } else {
+      alert('Failed to update image: ' + data.error);
     }
+  } catch (err) {
+    console.error(err);
+    alert('Error uploading image');
+  } finally {
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+    input.value = ''; // Reset file input
+  }
 }
 
 function promptCCTVImageAndSearch(caseId, fallbackImageUrl) {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = async (e) => {
-        if (!e.target.files || !e.target.files[0]) return;
-        
-        // Show status
-        const statusEl = document.getElementById(`inv-status-${caseId}`);
-        if (statusEl) {
-            statusEl.innerHTML = `<span class="status-pending"><i class="fa-solid fa-spinner fa-spin"></i> Uploading Image...</span>`;
-        }
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = async (e) => {
+    if (!e.target.files || !e.target.files[0]) return;
 
-        const formData = new FormData();
-        formData.append('image', e.target.files[0]);
+    // Show status
+    const statusEl = document.getElementById(`inv-status-${caseId}`);
+    if (statusEl) {
+      statusEl.innerHTML = `<span class="status-pending"><i class="fa-solid fa-spinner fa-spin"></i> Uploading Image...</span>`;
+    }
 
-        try {
-            const res = await fetch('../Php/update_target_image.php', { method: 'POST', body: formData });
-            const data = await res.json();
-            if (data.success) {
-                // Call search CCTV with new image
-                startPythonAISearch(caseId, data.new_image_url, 'cctv');
-            } else {
-                alert('Upload failed: ' + data.error);
-                if (statusEl) statusEl.innerHTML = `<span class="status-rejected">Upload Error</span>`;
-            }
-        } catch (err) {
-            console.error(err);
-            alert('Error uploading image');
-            if (statusEl) statusEl.innerHTML = `<span class="status-rejected">Upload Error</span>`;
+    const formData = new FormData();
+    formData.append('image', e.target.files[0]);
+
+    try {
+      const res = await fetch('../Php/update_target_image.php', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.success) {
+        const searchCol = document.getElementById(`search-img-col-${caseId}`);
+        if (searchCol) {
+          searchCol.innerHTML = `<img src="${data.new_image_url}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;"><div style="font-size:10px; margin-top:2px;">CCTV Ref</div>`;
+          saveActiveInvestigations();
         }
-    };
-    // If they cancel, we can optionally fall back to the existing image
-    // But for now, we just prompt it. If no file, it won't trigger onchange.
-    input.click();
+        // Call search CCTV with new image
+        startPythonAISearch(caseId, data.new_image_url, 'cctv');
+      } else {
+        alert('Upload failed: ' + data.error);
+        if (statusEl) statusEl.innerHTML = `<span class="status-rejected">Upload Error</span>`;
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error uploading image');
+      if (statusEl) statusEl.innerHTML = `<span class="status-rejected">Upload Error</span>`;
+    }
+  };
+  // If they cancel, we can optionally fall back to the existing image
+  // But for now, we just prompt it. If no file, it won't trigger onchange.
+  input.click();
 }
 
-function openAiConfirmModal(btn) {
-    const card = btn.closest('.ai-result-card');
-    const matchImgSrc = card.querySelector('.ai-result-img').src;
-    
-    const caseId = window.activeAiSearchCaseId;
-    const targetImgSrc = document.querySelector(`#investigation-row-${caseId} img`).src;
-    const detailsHtml = card.querySelector('.ai-result-details').innerHTML;
+function confirmAiMatch(btn, sourceType) {
+  const card = btn.closest('.ai-result-card');
+  const matchImgSrc = card.querySelector('.ai-result-img').src;
 
-    let confirmedTable = document.getElementById('confirmed-ai-matches-body');
-    if (!confirmedTable) {
-        const panel = document.querySelector('.ai-investigation-panel');
-        const tableHtml = `
+  const caseId = window.activeAiSearchCaseId;
+  const targetImgSrc = document.querySelector(`#investigation-row-${caseId} img`).src;
+  const detailsHtml = card.querySelector('.ai-result-details').innerHTML;
+
+  let confirmedTable = document.getElementById('confirmed-ai-matches-body');
+  if (!confirmedTable) {
+    const panel = document.querySelector('.ai-investigation-panel');
+    const tableHtml = `
         <div class="section-table-block" style="margin-top: 30px;">
           <h3 style="margin:0 0 10px; color:#1f2937;">Confirmed AI Matches</h3>
           <table class="styled-table" id="confirmed-ai-matches-table">
@@ -4945,6 +4951,9 @@ function openAiConfirmModal(btn) {
                 <th>Target Image</th>
                 <th>Matched Source</th>
                 <th>Match Details</th>
+                <th>Original Reporter</th>
+                <th>Assigned Policeman</th>
+                <th>Assigned Volunteer</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -4952,41 +4961,64 @@ function openAiConfirmModal(btn) {
             </tbody>
           </table>
         </div>`;
-        panel.insertAdjacentHTML('beforeend', tableHtml);
-        confirmedTable = document.getElementById('confirmed-ai-matches-body');
-    }
+    panel.insertAdjacentHTML('beforeend', tableHtml);
+    confirmedTable = document.getElementById('confirmed-ai-matches-body');
+  }
 
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
+  // Find reporter and assignments
+  let reporter = 'Unknown';
+  let policeman = 'Pending Assignment';
+  let volunteer = 'Pending Assignment';
+
+  if (typeof demoCrimes !== 'undefined') {
+    const crime = demoCrimes.find(c => c.id === caseId);
+    if (crime) {
+      reporter = crime.reporter || 'Anonymous';
+    }
+  }
+
+  // Attempt to get assignment info if the function exists
+  if (typeof getCrimeActionState === 'function') {
+    const state = getCrimeActionState(caseId);
+    if (state && state.assigned_to) {
+      volunteer = state.assigned_to;
+    }
+  }
+
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
         <td><strong>${caseId}</strong></td>
         <td><img src="${targetImgSrc}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;"></td>
         <td><img src="${matchImgSrc}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;"></td>
         <td><div style="font-size: 0.9em; max-width: 250px;">${detailsHtml.replace(new RegExp('<button[^>]*>.*?</button>', 'ig'), '')}</div></td>
-        <td><span class="status-approved">Confirmed</span></td>
+        <td>${escapeHtml(reporter)}</td>
+        <td><span style="color:#f39c12;"><i class="fa-solid fa-clock"></i> ${policeman}</span></td>
+        <td>${volunteer !== 'Pending Assignment' ? escapeHtml(volunteer) : '<span style="color:#f39c12;"><i class="fa-solid fa-clock"></i> Pending</span>'}</td>
+        <td><span class="status-approved">Confirmed: ${escapeHtml(sourceType)}</span></td>
     `;
-    confirmedTable.prepend(tr);
-    
-    localStorage.setItem('confirmedAiMatchesV2', confirmedTable.innerHTML);
+  confirmedTable.prepend(tr);
 
-    btn.innerHTML = '<i class="fa-solid fa-check"></i> Confirmed';
-    btn.disabled = true;
-    btn.style.backgroundColor = '#2e7d32';
-    btn.style.color = '#fff';
-    
-    // Change Active Investigation row status
-    const invStatus = document.getElementById(`inv-status-${caseId}`);
-    if (invStatus) {
-        invStatus.innerHTML = '<span class="status-approved">Resolved</span>';
-        saveActiveInvestigations();
-    }
+  localStorage.setItem('confirmedAiMatchesV3', confirmedTable.innerHTML);
+
+  btn.innerHTML = '<i class="fa-solid fa-check"></i> Confirmed';
+  btn.disabled = true;
+  btn.style.backgroundColor = '#2e7d32';
+  btn.style.color = '#fff';
+
+  // Change Active Investigation row status
+  const invStatus = document.getElementById(`inv-status-${caseId}`);
+  if (invStatus) {
+    invStatus.innerHTML = '<span class="status-approved">Resolved</span>';
+    saveActiveInvestigations();
+  }
 }
 
 function loadConfirmedMatches() {
-    const saved = localStorage.getItem('confirmedAiMatchesV2');
-    if (saved && saved.trim() !== '') {
-        const panel = document.querySelector('.ai-investigation-panel');
-        if (!panel) return;
-        const tableHtml = `
+  const saved = localStorage.getItem('confirmedAiMatchesV3');
+  if (saved && saved.trim() !== '') {
+    const panel = document.querySelector('.ai-investigation-panel');
+    if (!panel) return;
+    const tableHtml = `
         <div class="section-table-block" style="margin-top: 30px;">
           <h3 style="margin:0 0 10px; color:#1f2937;">Confirmed AI Matches</h3>
           <table class="styled-table" id="confirmed-ai-matches-table">
@@ -4996,6 +5028,9 @@ function loadConfirmedMatches() {
                 <th>Target Image</th>
                 <th>Matched Source</th>
                 <th>Match Details</th>
+                <th>Original Reporter</th>
+                <th>Assigned Policeman</th>
+                <th>Assigned Volunteer</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -5004,77 +5039,83 @@ function loadConfirmedMatches() {
             </tbody>
           </table>
         </div>`;
-        panel.insertAdjacentHTML('beforeend', tableHtml);
-    }
+    panel.insertAdjacentHTML('beforeend', tableHtml);
+  }
 }
 
 let activeAiResultButton = null;
 
 async function startPythonAISearch(caseId, targetImage, searchType) {
-  const resultsGrid = document.getElementById('ai-results-grid');
+  window.activeAiSearchCaseId = caseId;
+  const gridId = searchType === 'posts' ? 'ai-results-grid-posts' : 'ai-results-grid-cctv';
+  const resultsGrid = document.getElementById(gridId);
   const statusEl = document.getElementById(`inv-status-${caseId}`);
-  
+
   if (statusEl) {
     statusEl.innerHTML = `<span class="status-pending"><i class="fa-solid fa-spinner fa-spin"></i> Searching ${searchType}...</span>`;
     saveActiveInvestigations();
   }
-  
-  resultsGrid.innerHTML = `<div class="ai-empty-state"><i class="fa-solid fa-spinner fa-spin" style="font-size: 24px;"></i><p style="margin-top: 10px;">Connecting to Python AI Engine to search in ${searchType === 'posts' ? 'Website Posts' : 'CCTV Feeds'}...</p></div>`;
-  
+
+  if (resultsGrid) {
+    resultsGrid.innerHTML = `<div class="ai-empty-state"><i class="fa-solid fa-spinner fa-spin" style="font-size: 24px;"></i><p style="margin-top: 10px;">Connecting to Python AI Engine to search in ${searchType === 'posts' ? 'Website Posts' : 'CCTV Feeds'}...</p></div>`;
+  }
+
   try {
     const fd = new FormData();
     fd.append('action', searchType === 'posts' ? 'search_posts' : 'search_cctv');
     fd.append('target_image', targetImage);
-    
+
     const res = await fetch('../Php/ai_search_handler.php', {
       method: 'POST',
       body: fd
     });
-    
+
     const data = await res.json();
-    
+
     if (!data.success) {
       throw new Error(data.error || 'Failed to get results from AI engine');
     }
-    
+
     if (statusEl) {
       statusEl.innerHTML = `<span class="status-approved">Finished</span>`;
       saveActiveInvestigations();
     }
-    
+
     if (!data.matches || data.matches.length === 0) {
-      resultsGrid.innerHTML = `
-        <div class="ai-empty-state" style="padding: 40px 20px;">
-          <i class="fa-solid fa-fingerprint" style="font-size: 32px; color: #f05454; margin-bottom: 15px;"></i>
-          <h4 style="margin: 0 0 10px; color: #1a232a;">No Confirmed Matches</h4>
-          <p style="color: #64748b; margin: 0; font-size: 14px;">The AI scanned the database but couldn't find a strong match.</p>
-        </div>
-      `;
+      if (resultsGrid) {
+        resultsGrid.innerHTML = `
+          <div class="ai-empty-state" style="padding: 40px 20px;">
+            <i class="fa-solid fa-fingerprint" style="font-size: 32px; color: #f05454; margin-bottom: 15px;"></i>
+            <h4 style="margin: 0 0 10px; color: #1a232a;">No Confirmed Matches</h4>
+            <p style="color: #64748b; margin: 0; font-size: 14px;">The AI scanned the database but couldn't find a strong match.</p>
+          </div>
+        `;
+      }
     } else {
       let html = '';
       data.matches.forEach(match => {
         let displayImg = match.url || match.match_image || match.post_image || targetImage;
-        
+
         // Make sure displayImg is not an absolute C:\ path
         if (displayImg.includes(':\\')) {
-            let parts = displayImg.split('htdocs\\\\Searchar\\\\');
+          let parts = displayImg.split('htdocs\\\\Searchar\\\\');
+          if (parts.length > 1) {
+            displayImg = '../' + parts[1].replace(/\\\\/g, '/');
+          } else {
+            parts = displayImg.split('htdocs/Searchar/');
             if (parts.length > 1) {
-                displayImg = '../' + parts[1].replace(/\\\\/g, '/');
-            } else {
-                parts = displayImg.split('htdocs/Searchar/');
-                if (parts.length > 1) {
-                    displayImg = '../' + parts[1];
-                }
+              displayImg = '../' + parts[1];
             }
+          }
         }
-        
+
         // If it's a relative path from the root (like uploads/posts/...) prepend ../
         if (!displayImg.startsWith('http') && !displayImg.startsWith('data:') && !displayImg.startsWith('../') && !displayImg.startsWith('/')) {
-            displayImg = '../' + displayImg;
+          displayImg = '../' + displayImg;
         }
 
         let details = '';
-        
+
         if (searchType === 'posts') {
           details = `
             <div class="ai-result-location"><i class="fa-solid fa-file-lines" style="color:#1877F2;"></i> Post by ${escapeHtml(match.author || 'Unknown')}</div>
@@ -5086,24 +5127,28 @@ async function startPythonAISearch(caseId, targetImage, searchType) {
         } else {
           details = `
             <div class="ai-result-location"><i class="fa-solid fa-video" style="color:#333;"></i> ${escapeHtml(match.label || 'CCTV')} (${escapeHtml(match.location || 'Unknown')})</div>
-            <div style="font-size:12px; color:#555; margin-bottom: 8px;">Time in video: ${escapeHtml(match.timestamp || '0:00')}</div>
+            <div style="font-size:12px; color:#555; margin-bottom: 8px;">
+               ${match.capture_time ? 'Captured at: ' + escapeHtml(match.capture_time) : 'Time in video: ' + escapeHtml(match.timestamp + 's')}
+            </div>
           `;
         }
-        
+
         html += `
           <div class="ai-result-card">
             <img src="${escapeHtml(displayImg)}" class="ai-result-img" alt="Match" onerror="this.src='../Images/demo_pic/profile.jpg'">
             <div class="ai-result-details">
               <span class="ai-result-confidence">${match.confidence}% Match</span>
               ${details}
-              <button class="ai-action-btn" onclick="openAiConfirmModal(this)">Confirm Source</button>
+              <button class="ai-action-btn" onclick="confirmAiMatch(this, '${searchType === 'posts' ? 'Website Post' : 'CCTV Camera'}')">Confirm Source</button>
             </div>
           </div>
         `;
       });
-      resultsGrid.innerHTML = html;
+      if (resultsGrid) {
+        resultsGrid.innerHTML = html;
+      }
     }
-    
+
     if (searchType === 'posts') {
       setTimeout(() => {
         const cctvBtn = document.querySelector(`#investigation-row-${caseId} button:nth-child(2)`);
@@ -5112,13 +5157,15 @@ async function startPythonAISearch(caseId, targetImage, searchType) {
         }
       }, 1000);
     }
-    
+
   } catch (err) {
     if (statusEl) {
       statusEl.innerHTML = `<span class="status-rejected">Error</span>`;
       saveActiveInvestigations();
     }
-    resultsGrid.innerHTML = `<div class="ai-empty-state"><i class="fa-solid fa-circle-exclamation" style="color:red;font-size:24px;"></i><p style="margin-top:10px;">Error: ${err.message}</p></div>`;
+    if (resultsGrid) {
+      resultsGrid.innerHTML = `<div class="ai-empty-state"><i class="fa-solid fa-circle-exclamation" style="color:red;font-size:24px;"></i><p style="margin-top:10px;">Error: ${err.message}</p></div>`;
+    }
   }
 }
 

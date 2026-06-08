@@ -1,1 +1,1 @@
-{'verified': True, 'distance': 0.243022, 'threshold': 0.68, 'confidence': 95.67, 'model': 'VGG-Face', 'detector_backend': 'opencv', 'similarity_metric': 'cosine', 'facial_areas': {'img1': {'x': 0, 'y': 0, 'w': 3023, 'h': 3819, 'left_eye': None, 'right_eye': None}, 'img2': {'x': 335, 'y': 25, 'w': 555, 'h': 555, 'left_eye': None, 'right_eye': None}}, 'time': 15.5}
+Exception: OpenCV(4.13.0) D:\a\opencv-python\opencv-python\opencv\modules\core\src\alloc.cpp:73: error: (-4:Insufficient memory) Failed to allocate 193320960 bytes in function 'cv::OutOfMemoryError'

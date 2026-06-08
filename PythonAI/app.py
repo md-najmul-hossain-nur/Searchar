@@ -135,15 +135,9 @@ def search_cctv():
                             img1_path=target_img_path,
                             img2_path=temp_frame_path,
                             model_name="VGG-Face",
-                            enforce_detection=False,
+                            enforce_detection=True,
                             detector_backend="opencv"
                         )
-                        try:
-                            with open(r"c:\xampp\htdocs\Searchar\deepface_debug.txt", "w") as f:
-                                f.write(str(result))
-                        except:
-                            pass
-                            
                         is_match = result.get('verified', False) or result.get('distance', 1.0) < 0.75
                         distance = result.get('distance', 1.0)
                     else:
@@ -167,12 +161,7 @@ def search_cctv():
                         found_in_video = True # Stop searching this video once we find a match to save CPU
                         
                 except Exception as e:
-                    print(f"Error on frame: {e}")
-                    try:
-                        with open(r"c:\xampp\htdocs\Searchar\deepface_debug.txt", "w") as f:
-                            f.write("Exception: " + str(e))
-                    except:
-                        pass
+                    pass
                     
                 if os.path.exists(temp_frame_path):
                     os.remove(temp_frame_path)
