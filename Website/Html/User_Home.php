@@ -1339,16 +1339,16 @@ try {
       <script src="../javascrpit/messenger_shared.js"></script>
 
       <!-- Rescue Story Floating Button -->
-      <button type="button" id="rescue-story-fab" style="position:fixed; bottom:30px; right:30px; width:60px; height:60px; border-radius:50%; background:#e11d48; color:white; border:none; box-shadow:0 4px 12px rgba(225,29,72,0.4); cursor:pointer; font-size:24px; z-index:9999; display:flex; align-items:center; justify-content:center; transition: transform 0.2s;" title="Submit Rescue Story" onclick="document.getElementById('rescue-story-modal').classList.add('open')">
-          <i class="fa-solid fa-heart"></i>
+      <button type="button" id="rescue-story-fab" title="Submit Rescue Story" onclick="document.getElementById('rescue-story-modal').classList.add('open')">
+          <i class="fa-solid fa-heart"></i> Share Story
       </button>
 
       <!-- Rescue Story Modal -->
       <div id="rescue-story-modal" class="custom-modal">
-          <div class="custom-modal-content" style="max-width: 500px; border-radius: 12px;">
-              <div class="custom-modal-header" style="border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
+          <div class="custom-modal-content">
+              <button type="button" class="custom-modal-close" onclick="document.getElementById('rescue-story-modal').classList.remove('open')">&times;</button>
+              <div class="custom-modal-header" style="border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; padding-right: 30px;">
                   <h3 style="margin:0; color:#e11d48;"><i class="fa-solid fa-heart"></i> Share Your Rescue Story</h3>
-                  <button type="button" class="custom-modal-close" onclick="document.getElementById('rescue-story-modal').classList.remove('open')">&times;</button>
               </div>
               <div class="custom-modal-body">
                   <p style="font-size: 14px; color: #666; margin-bottom: 15px;">Did our platform help you find a missing person? Share your story to inspire others!</p>
@@ -1375,7 +1375,68 @@ try {
       </div>
 
       <style>
-      #rescue-story-fab:hover { transform: scale(1.1); }
+      #rescue-story-fab {
+          position: fixed;
+          bottom: 30px;
+          right: 30px;
+          height: 50px;
+          padding: 0 25px;
+          border-radius: 25px;
+          background: #e11d48;
+          color: white;
+          border: none;
+          box-shadow: 0 4px 12px rgba(225,29,72,0.4);
+          cursor: pointer;
+          font-size: 16px;
+          font-weight: 600;
+          z-index: 9999;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          transition: transform 0.2s, box-shadow 0.2s;
+      }
+      #rescue-story-fab:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 6px 16px rgba(225,29,72,0.6);
+      }
+      .custom-modal {
+          display: none;
+          position: fixed;
+          top: 0; left: 0; width: 100%; height: 100%;
+          background: rgba(0,0,0,0.6);
+          z-index: 10000;
+          align-items: center;
+          justify-content: center;
+      }
+      .custom-modal.open {
+          display: flex;
+      }
+      .custom-modal-content {
+          background: white;
+          padding: 25px;
+          width: 90%;
+          max-width: 500px;
+          border-radius: 12px;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+          position: relative;
+          animation: modalFadeIn 0.3s ease;
+      }
+      @keyframes modalFadeIn {
+          from { opacity: 0; transform: translateY(-20px); }
+          to { opacity: 1; transform: translateY(0); }
+      }
+      .custom-modal-close {
+          background: transparent;
+          border: none;
+          font-size: 28px;
+          cursor: pointer;
+          color: #999;
+          position: absolute;
+          right: 15px;
+          top: 10px;
+          line-height: 1;
+      }
+      .custom-modal-close:hover { color: #333; }
       </style>
 
       <script>
