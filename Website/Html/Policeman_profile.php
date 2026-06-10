@@ -360,17 +360,54 @@ try {
       <div class="notifications">
   <div class="redzone">
   <h4>Red Zone Alerts</h4>
-  <ul>
-    <li><span>Badda: Fire risk</span><span>Today</span></li>
-    <li><span>Kuril: Accident zone</span><span>1 hr ago</span></li>
-    <li><span>Gulshan-2: Snatching alert</span><span>Yesterday</span></li>
-    <li><span>Rampura: Traffic heavy</span><span>30 min ago</span></li>
+  <ul id="police-redzone-list">
+    <li><span>Loading alerts...</span></li>
   </ul>
 
   <button class="redzone-btn"
     onclick="window.location.href='../Html/RedZone.html';">
     Open Red Zone Map
   </button>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      fetch('../Php/fetch_redzone_incidents.php?hours=24&cat=all')
+        .then(res => res.json())
+        .then(data => {
+          const list = document.getElementById('police-redzone-list');
+          if (!data || !data.success || !data.incidents || data.incidents.length === 0) {
+            list.innerHTML = '<li><span>No recent alerts</span></li>';
+            return;
+          }
+          
+          list.innerHTML = '';
+          // Show top 5 recent high severity incidents
+          const critical = data.incidents.filter(i => i.intensity >= 0.65).slice(0, 5);
+          if (critical.length === 0) {
+             list.innerHTML = '<li><span>No critical alerts</span></li>';
+             return;
+          }
+          
+          critical.forEach(inc => {
+            const li = document.createElement('li');
+            
+            // Format time
+            const diff = Date.now() - inc.timestamp_ms;
+            const mins = Math.max(0, Math.floor(diff / 60000));
+            let timeStr = 'Just now';
+            if (mins >= 60 * 24) timeStr = Math.floor(mins / 1440) === 1 ? 'Yesterday' : Math.floor(mins / 1440) + 'd ago';
+            else if (mins >= 60) timeStr = Math.floor(mins / 60) + ' hr ago';
+            else if (mins > 0) timeStr = mins + ' min ago';
+            
+            li.innerHTML = `<span><b>${inc.place}</b>: ${inc.note || inc.category}</span><span>${timeStr}</span>`;
+            list.appendChild(li);
+          });
+        })
+        .catch(err => {
+          document.getElementById('police-redzone-list').innerHTML = '<li><span>Failed to load alerts</span></li>';
+        });
+    });
+  </script>
 </div>
 </div>
 <style>.redzone {

@@ -569,7 +569,7 @@ document.addEventListener('click', function (event) {
   let customCaption = null;
   if (action === 'approve_share') {
     let defaultText = row.dataset.text || '';
-    
+
     customCaption = prompt("Add a custom caption for the Facebook Post (or leave as is):", defaultText);
     if (customCaption === null) {
       return;
@@ -1120,7 +1120,7 @@ document.addEventListener('click', function (event) {
       if (mediaPreview) {
         mediaPreview.innerHTML = 'Media preview will appear here';
       }
-      
+
       let alertMsg = 'Admin post published successfully.';
       try {
         const fb = json.facebook_share;
@@ -1134,7 +1134,7 @@ document.addEventListener('click', function (event) {
       } catch (e) {
         console.error('Failed to parse facebook_share result', e);
       }
-      
+
       alert(alertMsg);
 
       document.dispatchEvent(new CustomEvent('admin:section-activated', {
@@ -2306,13 +2306,14 @@ function openAddVolunteerModal() {
   }
 
   function createMarker(crime) {
-    const color = severityColor(crime.severity);
+    const isClosed = String(crime.status || '').toLowerCase() === 'closed';
+    const color = isClosed ? '#22c55e' : severityColor(crime.severity);
     const isRecent = withinLast24(crime.submitted);
     const marker = L.circleMarker([crime.lat, crime.lng], {
-      radius: isRecent ? 11 : 9,
+      radius: isRecent && !isClosed ? 11 : 9,
       color,
       weight: 2,
-      fillColor: isRecent ? '#10b981' : color,
+      fillColor: isClosed ? '#22c55e' : (isRecent ? '#10b981' : color),
       fillOpacity: 0.6
     });
 
@@ -2352,25 +2353,32 @@ function openAddVolunteerModal() {
       crimeHeat = null;
     }
 
+    const showHeatmap = toggleHeatmap && toggleHeatmap.checked && typeof L.heatLayer === 'function';
+
     rows.forEach(r => {
+      const isClosed = String(r.status || '').toLowerCase() === 'closed';
+      const zColor = isClosed ? '#22c55e' : severityZoneColor(r.severity);
       const zone = L.circle([r.lat, r.lng], {
         radius: severityRadius(r.severity),
-        color: severityZoneColor(r.severity),
+        color: zColor,
         weight: 1.4,
-        fillColor: severityZoneColor(r.severity),
+        fillColor: zColor,
         fillOpacity: 0.12,
         opacity: 0.9,
         dashArray: '6 4'
       });
-      zone.addTo(crimeMap);
       crimeZones.push(zone);
 
       const marker = createMarker(r);
-      marker.addTo(crimeMap);
       crimeMarkers.push(marker);
+
+      if (!showHeatmap) {
+        zone.addTo(crimeMap);
+        marker.addTo(crimeMap);
+      }
     });
 
-    if (toggleHeatmap && toggleHeatmap.checked && typeof L.heatLayer === 'function') {
+    if (showHeatmap) {
       const heatData = rows.map(r => [r.lat, r.lng, severityWeight(r.severity)]);
       if (heatData.length) {
         crimeHeat = L.heatLayer(heatData, { radius: 26, blur: 18, maxZoom: 16 });
@@ -2405,13 +2413,17 @@ function openAddVolunteerModal() {
       const isClosedByAI = String(r.description || '').includes('[Closed by Admin AI');
       const assignDisabled = isClosed || actState.assigned || assignedCrimes.has(r.id) || actState.rejected;
       const cctvDisabled = isClosed || actState.cctv || actState.rejected;
-      
+
       let actionButtonsHtml = '';
       if (isClosed) {
         if (isClosedByAI) {
           actionButtonsHtml = `<span style="color:#666; font-size:12px; margin-left:5px;">Closed by AI</span>`;
         } else {
-          actionButtonsHtml = `<button type="button" onclick="notifyReporterManualHandover('${r.id}', this)" style="background:#1877F2; color:white; border:none; padding:5px 10px; border-radius:4px; font-size:12px; cursor:pointer; margin-left:5px;">Notify Reporter</button>`;
+          if (String(r.id).startsWith('MP-')) {
+            actionButtonsHtml = `<button type="button" onclick="notifyReporterManualHandover('${r.id}', this)" style="background:#1877F2; color:white; border:none; padding:5px 10px; border-radius:4px; font-size:12px; cursor:pointer; margin-left:5px;">Notify Reporter</button>`;
+          } else {
+            actionButtonsHtml = `<span style="color:#666; font-size:12px; margin-left:5px;">Closed</span>`;
+          }
         }
       } else {
         actionButtonsHtml = `
@@ -2927,13 +2939,13 @@ function openAddVolunteerModal() {
           <td>${esc(createdAt)}</td>
           <td>${statusHtml}</td>
           <td>
-            ${status === 'approved' 
-              ? `<button type="button" data-broadcast-request-action="close_link" data-broadcast-request-id="${esc(requestId)}" style="background:#dc2626;">Close Link</button>` 
-              : `
+            ${status === 'approved'
+          ? `<button type="button" data-broadcast-request-action="close_link" data-broadcast-request-id="${esc(requestId)}" style="background:#dc2626;">Close Link</button>`
+          : `
                 <button type="button" data-broadcast-request-action="approve" data-broadcast-request-id="${esc(requestId)}" ${canAct ? '' : 'disabled'}>Approve</button>
                 <button type="button" data-broadcast-request-action="reject" data-broadcast-request-id="${esc(requestId)}" ${canAct ? '' : 'disabled'}>Reject</button>
               `
-            }
+        }
           </td>
         </tr>
       `;
@@ -3995,12 +4007,12 @@ function openAddVolunteerModal() {
 })();
 
 // Rescue Stories / Reviews Module
-(function() {
+(function () {
   const section = document.getElementById('review');
   if (!section) return;
   const tableBody = document.getElementById('review-table-body');
   if (!tableBody) return;
-  
+
   function statusBadge(status) {
     status = String(status || 'pending').toLowerCase();
     if (status === 'approved') return '<span class="status-approved">Approved</span>';
@@ -4018,13 +4030,13 @@ function openAddVolunteerModal() {
       const res = await fetch('../Php/admin_fetch_rescue_stories.php', { cache: 'no-store' });
       const data = await res.json();
       if (!data.success) throw new Error(data.error || 'Failed to fetch reviews');
-      
+
       const rows = data.data || [];
       if (rows.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="7">No rescue stories found.</td></tr>';
         return;
       }
-      
+
       tableBody.innerHTML = rows.map(r => `
         <tr data-story-id="${esc(r.story_id)}">
           <td>RS-${esc(r.story_id)}</td>
@@ -4046,7 +4058,7 @@ function openAddVolunteerModal() {
     }
   }
 
-  window.updateStoryStatus = async function(storyId, action, btn) {
+  window.updateStoryStatus = async function (storyId, action, btn) {
     if (!confirm(`Are you sure you want to ${action} this story?`)) return;
     const originalText = btn.innerText;
     btn.innerText = 'Wait...';
@@ -4110,8 +4122,15 @@ function openAddVolunteerModal() {
 
   function exportTable() {
     const rows = Array.from(table.querySelectorAll('tr'));
+
+    // Find index of "Action" or "Actions" column
+    const headerCells = Array.from(table.querySelectorAll('thead th'));
+    const actionColIndex = headerCells.findIndex(th => th.innerText.trim().match(/^(Action|Actions)$/i));
+
     const csv = rows.map(row => {
-      const cells = Array.from(row.querySelectorAll('th, td')).map(cell => toCsvValue(cell.innerText.trim()));
+      const cells = Array.from(row.querySelectorAll('th, td'))
+        .filter((_, idx) => idx !== actionColIndex)
+        .map(cell => toCsvValue(cell.innerText.trim()));
       return cells.join(',');
     }).join('\n');
 
@@ -4194,8 +4213,15 @@ function openAddVolunteerModal() {
 
   function exportTable() {
     const rows = Array.from(table.querySelectorAll('tr'));
+
+    // Find index of "Action" or "Actions" column
+    const headerCells = Array.from(table.querySelectorAll('thead th'));
+    const actionColIndex = headerCells.findIndex(th => th.innerText.trim().match(/^(Action|Actions)$/i));
+
     const csv = rows.map(row => {
-      const cells = Array.from(row.querySelectorAll('th, td')).map(cell => toCsvValue(cell.innerText.trim()));
+      const cells = Array.from(row.querySelectorAll('th, td'))
+        .filter((_, idx) => idx !== actionColIndex)
+        .map(cell => toCsvValue(cell.innerText.trim()));
       return cells.join(',');
     }).join('\n');
 
@@ -5164,35 +5190,35 @@ async function confirmAiMatch(btn, sourceType) {
     // After confirming, immediately open the match details modal as requested
     openMatchDetailsModal(caseId, sourceType, targetImgSrc, matchImgSrc, encodeURIComponent(detailsHtml), reporter);
 
-window.openMatchDetailsModal = function(caseId, sourceType, targetImg, matchImg, encodedDetails, reporter) {
-    const modal = document.getElementById('matchDetailsModal');
-    const content = document.getElementById('matchDetailsContent');
-    if (!modal || !content) return;
+    window.openMatchDetailsModal = function (caseId, sourceType, targetImg, matchImg, encodedDetails, reporter) {
+      const modal = document.getElementById('matchDetailsModal');
+      const content = document.getElementById('matchDetailsContent');
+      if (!modal || !content) return;
 
-    const detailsHtml = decodeURIComponent(encodedDetails).replace(new RegExp('<button[^>]*>.*?</button>', 'ig'), '');
+      const detailsHtml = decodeURIComponent(encodedDetails).replace(new RegExp('<button[^>]*>.*?</button>', 'ig'), '');
 
-    let extraInfo = '';
-    if (sourceType === 'Website Post') {
+      let extraInfo = '';
+      if (sourceType === 'Website Post') {
         extraInfo = `
             <div style="margin-top:15px; padding:10px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px;">
                 <h4 style="margin:0 0 5px; color:#166534;">Related Post Information</h4>
                 <p style="margin:0; font-size:14px; color:#15803d;">This match was found in a user-submitted post on the website.</p>
                 <div style="margin-top:10px;">
-                    <a href="#" style="color:#166534; font-weight:600; text-decoration:underline;">View User Profile</a>
+                    <a href="#" style="color:#166534; font-weight:600; text-decoration:underline;" onclick="closeMatchDetailsModal(); showSection('post-control'); return false;"><i class="fa-solid fa-arrow-right-to-bracket"></i> View in Post Control</a>
                 </div>
             </div>`;
-    } else if (sourceType.toLowerCase().includes('cctv') || sourceType.toLowerCase().includes('camera')) {
+      } else if (sourceType.toLowerCase().includes('cctv') || sourceType.toLowerCase().includes('camera')) {
         extraInfo = `
             <div style="margin-top:15px; padding:10px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px;">
                 <h4 style="margin:0 0 5px; color:#1e40af;">Related Camera Feed Information</h4>
                 <p style="margin:0; font-size:14px; color:#1d4ed8;">This match was identified via an active CCTV/Camera feed.</p>
                 <div style="margin-top:10px;">
-                    <a href="#" style="color:#1e40af; font-weight:600; text-decoration:underline;">View Camera Owner Profile</a>
+                    <a href="#" style="color:#1e40af; font-weight:600; text-decoration:underline;" onclick="closeMatchDetailsModal(); showSection('cctv'); return false;"><i class="fa-solid fa-arrow-right-to-bracket"></i> View in Camera Video Submissions</a>
                 </div>
             </div>`;
-    }
+      }
 
-    content.innerHTML = `
+      content.innerHTML = `
         <div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">
             <div style="flex:1; min-width:250px;">
                 <h4 style="margin-top:0;">Target Image (Case ${caseId})</h4>
@@ -5211,13 +5237,13 @@ window.openMatchDetailsModal = function(caseId, sourceType, targetImg, matchImg,
         ${extraInfo}
     `;
 
-    modal.style.display = 'flex';
-};
+      modal.style.display = 'flex';
+    };
 
-window.closeMatchDetailsModal = function() {
-    const modal = document.getElementById('matchDetailsModal');
-    if (modal) modal.style.display = 'none';
-};
+    window.closeMatchDetailsModal = function () {
+      const modal = document.getElementById('matchDetailsModal');
+      if (modal) modal.style.display = 'none';
+    };
     confirmedTable.prepend(tr);
 
     localStorage.setItem('confirmedAiMatchesV3', confirmedTable.innerHTML);
@@ -5233,7 +5259,7 @@ window.closeMatchDetailsModal = function() {
       invRow.remove();
       saveActiveInvestigations();
     }
-    
+
     // Trigger global UI refresh if needed
     if (typeof loadActionQueue === 'function') {
       loadActionQueue();
@@ -5248,7 +5274,7 @@ window.closeMatchDetailsModal = function() {
 function loadConfirmedMatches() {
   let saved = localStorage.getItem('confirmedAiMatchesV3');
   if (saved && saved.trim() !== '') {
-    
+
     // Automatically fix old cached rows that are missing the Action column
     try {
       const parser = new DOMParser();
@@ -5307,7 +5333,7 @@ function loadConfirmedMatches() {
 
 async function notifyReporterHandover(caseId, btn) {
   if (!confirm(`Are you sure you want to notify the reporter for handover for case ${caseId}?`)) return;
-  
+
   const tr = btn.closest('tr');
   let matchImgSrc = '';
   let matchDetails = '';
@@ -5319,11 +5345,11 @@ async function notifyReporterHandover(caseId, btn) {
       matchDetails = tds[3].innerText.trim();
     }
   }
-  
+
   const originalHtml = btn.innerHTML;
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Notifying...';
   btn.disabled = true;
-  
+
   try {
     const res = await fetch('../Php/admin_notify_reporter_handover.php', {
       method: 'POST',
@@ -5337,7 +5363,7 @@ async function notifyReporterHandover(caseId, btn) {
       btn.style.backgroundColor = '#2e7d32';
       btn.style.borderColor = '#2e7d32';
       btn.style.color = '#fff';
-      
+
       // Update localstorage so the button stays updated
       const confirmedTable = document.getElementById('confirmed-ai-matches-body');
       if (confirmedTable) {
@@ -5359,11 +5385,11 @@ async function sayThanksToFinder(caseId, postId, btn) {
     return;
   }
   if (!confirm(`Send a Thank You email to the person whose post (Post ID: ${postId}) matched Case ${caseId}?`)) return;
-  
+
   const originalHtml = btn.innerHTML;
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
   btn.disabled = true;
-  
+
   try {
     const res = await fetch('../Php/admin_notify_finder_thanks.php', {
       method: 'POST',
@@ -5377,7 +5403,7 @@ async function sayThanksToFinder(caseId, postId, btn) {
       btn.style.backgroundColor = '#1e7e34';
       btn.style.borderColor = '#1e7e34';
       btn.style.color = '#fff';
-      
+
       const confirmedTable = document.getElementById('confirmed-ai-matches-body');
       if (confirmedTable) {
         localStorage.setItem('confirmedAiMatchesV3', confirmedTable.innerHTML);
@@ -5394,11 +5420,11 @@ async function sayThanksToFinder(caseId, postId, btn) {
 
 async function notifyReporterManualHandover(caseId, btn) {
   if (!confirm(`Are you sure you want to notify the original reporter that Case ${caseId} has been successfully resolved?`)) return;
-  
+
   const originalHtml = btn.innerHTML;
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Notifying...';
   btn.disabled = true;
-  
+
   try {
     const res = await fetch('../Php/admin_notify_reporter_handover.php', {
       method: 'POST',

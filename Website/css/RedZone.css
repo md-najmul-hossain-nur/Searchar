@@ -265,6 +265,8 @@ video.ad-thumb {
 }
 
 .rz-chip {
+  display: inline-flex;
+  align-items: center;
   border: 1px solid #d1d5db;
   background: #f8fafc;
   border-radius: 999px;
@@ -324,7 +326,7 @@ video.ad-thumb {
 
 #redZoneMap {
   width: 100%;
-  min-height: 560px;
+  height: 560px;
 }
 
 .rz-legend {

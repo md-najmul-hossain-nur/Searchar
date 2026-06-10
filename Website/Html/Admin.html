@@ -681,7 +681,7 @@
             <div class="crime-toggles">
                 <label><input type="checkbox" id="crime-toggle-heatmap"> Heatmap</label>
                 <label><input type="checkbox" id="crime-toggle-last24"> Last 24h only</label>
-                <label><input type="checkbox" id="crime-toggle-closed" checked> Show closed</label>
+                <label><input type="checkbox" id="crime-toggle-closed"> Show closed</label>
             </div>
             <div class="crime-map-toggle-bar">
                 <div class="crime-map-toggle-text">Map + proximity tools (toggle)</div>
@@ -864,6 +864,7 @@
                             <th>Withdrawal Amount</th>
                             <th>Status</th>
                             <th>Request Date</th>
+                            <th>TX ID</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -2091,7 +2092,7 @@
             <td>${email}</td>
             <td>${mobile}</td>
             <td>${volunteerId}</td>
-            <td>${occupation} ├óΓé¼┬ó ${availability}</td>
+            <td>${occupation} • ${availability}</td>
             <td>${reviewedAt}</td>
           </tr>
         `;
@@ -2406,7 +2407,7 @@
                 setRows(tbody, '<tr><td colspan="5">No withdrawal requests found.</td></tr>');
                 const totalEl = document.getElementById('withdraw-total-amount');
                 const pendingEl = document.getElementById('withdraw-pending-count');
-                if (totalEl) totalEl.textContent = 'αº│0.00';
+                if (totalEl) totalEl.textContent = '৳0.00';
                 if (pendingEl) pendingEl.textContent = '0';
                 return;
             }
@@ -2415,11 +2416,12 @@
                 const id = r.id || '';
                 const name = escapeHtml(r.contributor_name || (`User #${r.contributor_id || 'ΓÇö'}`));
                 const amountNum = Number(r.amount || 0);
-                const amountStr = 'αº│' + amountNum.toFixed(2);
+                const amountStr = '৳' + amountNum.toFixed(2);
                 const status = String(r.status || 'pending').toLowerCase();
                 const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
                 const statusClass = status === 'approved' ? 'status-approved' : (status === 'rejected' ? 'status-rejected' : 'status-pending');
-                const created = escapeHtml(r.created_at || '');
+                const created = escapeHtml(r.created_at || r.request_date || '');
+                const txId = escapeHtml(r.tx_id || '—');
                 const actions = status === 'pending' ? `<button class="withdraw-approve" data-id="${id}">Approve</button> <button class="withdraw-reject" data-id="${id}">Reject</button>` : '';
                 return `
           <tr>
@@ -2427,6 +2429,7 @@
             <td>${escapeHtml(amountStr)}</td>
             <td><span class="${statusClass}">${escapeHtml(statusLabel)}</span></td>
             <td>${created}</td>
+            <td>${txId}</td>
             <td class="actions-cell">${actions}</td>
           </tr>`;
             }).join('');
@@ -2437,7 +2440,7 @@
             const pendingCount = rows.filter(rr => String(rr.status || '').toLowerCase() === 'pending').length;
             const totalEl = document.getElementById('withdraw-total-amount');
             const pendingEl = document.getElementById('withdraw-pending-count');
-            if (totalEl) totalEl.textContent = `αº│${total.toFixed(2)}`;
+            if (totalEl) totalEl.textContent = `৳${total.toFixed(2)}`;
             if (pendingEl) pendingEl.textContent = String(pendingCount);
 
             // bind approve/reject buttons
@@ -2487,12 +2490,23 @@
             if (!requestId) return;
             const ok = confirm(`Confirm to ${action} this withdrawal?`);
             if (!ok) return;
+
+            let txId = null;
+            if (action === 'approve') {
+                txId = prompt("Enter Transaction ID (optional):") || "";
+            }
+
             try {
+                const payload = { action: action, request_id: Number(requestId) };
+                if (txId !== null) {
+                    payload.tx_id = txId;
+                }
+
                 const res = await fetch('../Php/admin_update_withdraw_status.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'same-origin',
-                    body: JSON.stringify({ action: action, request_id: Number(requestId) })
+                    body: JSON.stringify(payload)
                 });
                 const json = await res.json();
                 console.debug('admin:update_withdraw_response', json);

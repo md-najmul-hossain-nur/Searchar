@@ -50,27 +50,55 @@ def search_posts():
             
         try:
             if HAS_DEEPFACE:
-                # Use Facenet or VGG-Face
-                result = DeepFace.verify(
-                    img1_path=target_img_path,
-                    img2_path=post_img,
-                    model_name="VGG-Face",
-                    enforce_detection=False,
-                    detector_backend="opencv"
-                )
+                # Extract all faces first to handle group photos
+                try:
+                    faces = DeepFace.extract_faces(img_path=post_img, detector_backend="opencv", enforce_detection=True)
+                except Exception:
+                    faces = []
+
+                if not faces:
+                    continue
+
+                img2_bgr = cv2.imread(post_img)
+                best_confidence = 0
+                best_distance = 1.0
+                is_match_found = False
+
+                for face_obj in faces:
+                    try:
+                        facial_area = face_obj["facial_area"]
+                        x, y, w, h = facial_area["x"], facial_area["y"], facial_area["w"], facial_area["h"]
+                        # Ensure valid bounds
+                        y1, y2 = max(0, y), min(img2_bgr.shape[0], y+h)
+                        x1, x2 = max(0, x), min(img2_bgr.shape[1], x+w)
+                        face_crop = img2_bgr[y1:y2, x1:x2]
+
+                        if face_crop.size == 0: continue
+
+                        result = DeepFace.verify(
+                            img1_path=target_img_path,
+                            img2_path=face_crop,
+                            model_name="VGG-Face",
+                            enforce_detection=False, # already a cropped face
+                            detector_backend="opencv"
+                        )
+                        
+                        if result.get('verified', False):
+                            is_match_found = True
+                            dist = result.get('distance', 1.0)
+                            if dist < best_distance:
+                                best_distance = dist
+                    except Exception:
+                        pass
                 
-                is_match = result.get('verified', False) or result.get('distance', 1.0) < 0.50
-                distance = result.get('distance', 1.0)
-                
-                if is_match:
-                    confidence = max(0, int((1.0 - distance) * 100))
-                    if confidence < 70: confidence += 20 # UI Boost
+                if is_match_found:
+                    confidence = max(0, int((1.0 - best_distance) * 100))
                     if confidence > 99: confidence = 98
                     
                     matches.append({
                         'post_image': post_img,
                         'confidence': confidence,
-                        'distance': distance
+                        'distance': best_distance
                     })
             else:
                 # Mock if TF is not loaded
@@ -118,15 +146,41 @@ def search_cctv():
                 
             try:
                 if HAS_DEEPFACE:
-                    result = DeepFace.verify(
-                        img1_path=target_img_path,
-                        img2_path=vid_path,
-                        model_name="VGG-Face",
-                        enforce_detection=False,
-                        detector_backend="opencv"
-                    )
-                    is_match = result.get('verified', False) or result.get('distance', 1.0) < 0.75
-                    distance = result.get('distance', 1.0)
+                    # Handle multiple faces in CCTV static images
+                    try:
+                        faces = DeepFace.extract_faces(img_path=vid_path, detector_backend="opencv", enforce_detection=True)
+                    except Exception:
+                        faces = []
+
+                    img2_bgr = frame
+                    best_distance = 1.0
+                    is_match = False
+
+                    for face_obj in faces:
+                        try:
+                            facial_area = face_obj["facial_area"]
+                            x, y, w, h = facial_area["x"], facial_area["y"], facial_area["w"], facial_area["h"]
+                            y1, y2 = max(0, y), min(img2_bgr.shape[0], y+h)
+                            x1, x2 = max(0, x), min(img2_bgr.shape[1], x+w)
+                            face_crop = img2_bgr[y1:y2, x1:x2]
+
+                            if face_crop.size == 0: continue
+
+                            result = DeepFace.verify(
+                                img1_path=target_img_path,
+                                img2_path=face_crop,
+                                model_name="VGG-Face",
+                                enforce_detection=False,
+                                detector_backend="opencv"
+                            )
+                            if result.get('verified', False):
+                                is_match = True
+                                dist = result.get('distance', 1.0)
+                                if dist < best_distance:
+                                    best_distance = dist
+                        except Exception:
+                            pass
+                    distance = best_distance
                 else:
                     is_match = True
                     distance = 0.2
@@ -167,15 +221,40 @@ def search_cctv():
                 
                 try:
                     if HAS_DEEPFACE:
-                        result = DeepFace.verify(
-                            img1_path=target_img_path,
-                            img2_path=temp_frame_path,
-                            model_name="VGG-Face",
-                            enforce_detection=False,
-                            detector_backend="opencv"
-                        )
-                        is_match = result.get('verified', False) or result.get('distance', 1.0) < 0.75
-                        distance = result.get('distance', 1.0)
+                        try:
+                            faces = DeepFace.extract_faces(img_path=temp_frame_path, detector_backend="opencv", enforce_detection=True)
+                        except Exception:
+                            faces = []
+
+                        img2_bgr = frame
+                        best_distance = 1.0
+                        is_match = False
+
+                        for face_obj in faces:
+                            try:
+                                facial_area = face_obj["facial_area"]
+                                x, y, w, h = facial_area["x"], facial_area["y"], facial_area["w"], facial_area["h"]
+                                y1, y2 = max(0, y), min(img2_bgr.shape[0], y+h)
+                                x1, x2 = max(0, x), min(img2_bgr.shape[1], x+w)
+                                face_crop = img2_bgr[y1:y2, x1:x2]
+
+                                if face_crop.size == 0: continue
+
+                                result = DeepFace.verify(
+                                    img1_path=target_img_path,
+                                    img2_path=face_crop,
+                                    model_name="VGG-Face",
+                                    enforce_detection=False,
+                                    detector_backend="opencv"
+                                )
+                                if result.get('verified', False):
+                                    is_match = True
+                                    dist = result.get('distance', 1.0)
+                                    if dist < best_distance:
+                                        best_distance = dist
+                            except Exception:
+                                pass
+                        distance = best_distance
                     else:
                         is_match = True
                         distance = 0.2

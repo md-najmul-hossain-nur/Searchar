@@ -113,14 +113,20 @@ try {
             $updatedAtSet = ', processed_at = NOW()';
         }
 
+        $txIdSet = '';
+        if ($newStatus === 'approved' && isset($data['tx_id']) && columnExists($pdo, $tableName, 'tx_id')) {
+            $txIdSet = ', tx_id = :tx_id';
+            $params[':tx_id'] = trim((string)$data['tx_id']);
+        }
+
         $updateSql = "UPDATE `{$tableName}`
-                        SET status = :new_status{$updatedAtSet}
+                        SET status = :new_status{$updatedAtSet}{$txIdSet}
                         WHERE {$where}
                             AND LOWER(COALESCE(status, 'pending')) = 'pending'
                         LIMIT 1";
 
         $updateStmt = $pdo->prepare($updateSql);
-        // update requires :new_status and the where params
+        // update requires :new_status, :tx_id (optional), and the where params
         $updateStmt->execute($params);
 
         if ($updateStmt->rowCount() < 1) {

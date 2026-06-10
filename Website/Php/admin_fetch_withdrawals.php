@@ -21,8 +21,15 @@ try {
         exit;
     }
 
+    $txIdSelect = "";
+    $stmtCheck = $pdo->prepare("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :t AND COLUMN_NAME = 'tx_id' LIMIT 1");
+    $stmtCheck->execute([':t' => $tableName]);
+    if ($stmtCheck->fetchColumn()) {
+        $txIdSelect = ", r.tx_id";
+    }
+
     // Return recent requests with contributor name where possible
-    $sql = "SELECT r.id, r.contributor_id, r.method, r.account_number, r.amount, r.status, r.created_at,
+    $sql = "SELECT r.* {$txIdSelect},
                    COALESCE(c.full_name, u.full_name, '') AS contributor_name
             FROM `{$tableName}` r
             LEFT JOIN camera_contributors c ON c.camera_id = r.contributor_id

@@ -99,6 +99,15 @@ try {
             }
         }
 
+        // Fix all URLs to make sure they resolve from the Html/ folder
+        foreach ($media as &$m) {
+            $fixedUrl = ltrim($m['url'], '/');
+            if (strpos($fixedUrl, 'http') !== 0 && strpos($fixedUrl, '../') !== 0) {
+                $m['url'] = '../' . $fixedUrl;
+            }
+        }
+        unset($m);
+
         return [
             'id' => trim((string)($row['case_ref'] ?? '')),
             'type' => trim((string)($row['report_type'] ?? 'other')) ?: 'other',

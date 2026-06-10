@@ -85,6 +85,6 @@ if (empty($userRole) || !in_array($userRole, ['police', 'admin'], true) || empty
   <div id="site-footer-placeholder"></div>
 
   <script src="../javascrpit/footer_loader.js"></script>
-  <script src="../javascrpit/BoardCast.js?v=20260410k"></script>
+  <script src="../javascrpit/BoardCast.js?v=20260611c"></script>
 </body>
 </html>

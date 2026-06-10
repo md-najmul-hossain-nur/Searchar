@@ -8,7 +8,7 @@
   // ── State ────────────────────────────────────────────────────────────
   const state = {
     selectedCategories: new Set(['all']),
-    hoursWindow: 24,
+    hoursWindow: 'all',
     radius: 30,
     markers: [],
     allIncidents: [],      // raw data from API
@@ -43,8 +43,6 @@
   const hotspotList   = document.getElementById('rzHotspotList');
   const categoryChips = document.getElementById('rzCategoryGroup');
   const timeFilter    = document.getElementById('rzTimeGroup');
-  const radiusSlider  = document.getElementById('rzRadius');
-  const radiusValue   = document.getElementById('rzRadiusValue');
   const locateMeBtn   = document.getElementById('rzLocateBtn');
 
   const categoryColor = {
@@ -131,6 +129,7 @@
 
     // Circle markers
     clearMarkers();
+    const groupLayers = [];
     points.forEach(row => {
       const marker = L.circleMarker([row.lat, row.lng], {
         radius:      5 + row.intensity * 5,
@@ -149,7 +148,15 @@
       );
 
       state.markers.push(marker);
+      groupLayers.push(marker);
     });
+
+    if (groupLayers.length > 0) {
+      const group = L.featureGroup(groupLayers);
+      map.fitBounds(group.getBounds().pad(0.2));
+    } else {
+      map.setView(defaultCenter, 13);
+    }
 
     // Risk badge on map card
     const risk = computeRisk(points);
@@ -220,21 +227,20 @@
   }
 
   function setupCategoryFilters() {
-    categoryChips.addEventListener('click', event => {
-      const chip = event.target.closest('.rz-chip');
-      if (!chip) return;
-      const input = chip.querySelector('input');
-      if (!input) return;
+    categoryChips.addEventListener('change', event => {
+      if (event.target.tagName !== 'INPUT') return;
+      const input = event.target;
       const value = input.value;
+      const isChecked = input.checked;
 
       if (value === 'all') {
         state.selectedCategories = new Set(['all']);
       } else {
         state.selectedCategories.delete('all');
-        if (state.selectedCategories.has(value)) {
-          state.selectedCategories.delete(value);
-        } else {
+        if (isChecked) {
           state.selectedCategories.add(value);
+        } else {
+          state.selectedCategories.delete(value);
         }
         if (!state.selectedCategories.size) {
           state.selectedCategories.add('all');
@@ -264,13 +270,7 @@
     });
   }
 
-  function setupRadiusControl() {
-    radiusSlider.addEventListener('input', () => {
-      state.radius = Number(radiusSlider.value || 30);
-      radiusValue.textContent = state.radius + 'px';
-      renderMap();
-    });
-  }
+
 
   function setupLocateMe() {
     locateMeBtn.addEventListener('click', () => {
@@ -359,7 +359,6 @@
   // ── Boot ─────────────────────────────────────────────────────────────
   setupCategoryFilters();
   setupTimeFilter();
-  setupRadiusControl();
   setupLocateMe();
   setupNavbarBack();
   hydrateProfileCard();

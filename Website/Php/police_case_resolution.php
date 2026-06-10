@@ -233,6 +233,12 @@ try {
         $upd->execute([':id' => $rowId]);
     }
 
+    if (tableExists($pdo, 'crime_reports') && columnExists($pdo, 'crime_reports', 'status')) {
+        $srcType = ($prefix === 'MP') ? 'missing_person' : 'post';
+        $updCrime = $pdo->prepare("UPDATE crime_reports SET status = 'closed', updated_at = NOW() WHERE source_type = :st AND source_ref_id = :id AND LOWER(COALESCE(status, 'new')) <> 'closed'");
+        $updCrime->execute([':st' => $srcType, ':id' => $rowId]);
+    }
+
     ensureVolunteerMissionColumns($pdo);
     ensureNotificationsTable($pdo);
 
