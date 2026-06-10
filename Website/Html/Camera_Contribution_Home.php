@@ -575,7 +575,7 @@ try {
           <input type="text" id="accountNumber" name="accountNumber" placeholder="Enter your account number" required>
 
           <label for="amount">Amount to Withdraw:</label>
-          <input type="number" id="amount" name="amount" min="5" max="1000" placeholder="Enter amount" required>
+          <input type="number" id="amount" name="amount" min="200" placeholder="Enter amount (min BDT 200)" required>
 
           <button type="submit" class="confirm-btn">Confirm Withdrawal</button>
         </form>

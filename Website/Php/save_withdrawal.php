@@ -5,7 +5,8 @@ header('Content-Type: application/json; charset=UTF-8');
 
 require_once __DIR__ . '/db.php';
 
-if (empty($_SESSION['role']) || $_SESSION['role'] !== 'contributor' || empty($_SESSION['user_id'])) {
+$allowedRoles = ['contributor', 'camera_contributor', 'camera'];
+if (empty($_SESSION['role']) || !in_array($_SESSION['role'], $allowedRoles, true) || empty($_SESSION['user_id'])) {
   http_response_code(403);
   echo json_encode(['success' => false, 'error' => 'unauthorized']);
   exit();
@@ -23,15 +24,47 @@ $method = trim((string)($data['method'] ?? ''));
 $account = trim((string)($data['accountNumber'] ?? ''));
 $amount = (float)($data['amount'] ?? 0);
 
+const MIN_WITHDRAW = 200.0;
+
 if ($method === '' || $account === '' || $amount <= 0) {
   http_response_code(400);
   echo json_encode(['success' => false, 'error' => 'missing_fields']);
   exit();
 }
 
+if ($amount < MIN_WITHDRAW) {
+  http_response_code(400);
+  echo json_encode(['success' => false, 'error' => 'below_minimum', 'message' => 'Minimum withdrawal is BDT 200.']);
+  exit();
+}
+
 $userId = (int) $_SESSION['user_id'];
 
 try {
+  // Verify available balance server-side
+  $feedStmt = $pdo->prepare('SELECT accumulated_seconds, is_active, active_started_at, created_at FROM camera_cctv_feeds WHERE camera_id = :cid');
+  $feedStmt->execute([':cid' => $userId]);
+  $feeds = $feedStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+  $totalEarned = 0.0;
+  foreach ($feeds as $f) {
+    $acc = (int)($f['accumulated_seconds'] ?? 0);
+    if ((int)($f['is_active'] ?? 0) === 1) {
+      $start = strtotime((string)($f['active_started_at'] ?? $f['created_at'] ?? 'now') ?: 'now');
+      if ($start) $acc += max(0, time() - $start);
+    }
+    $totalEarned += ($acc / 3600) * 40;
+  }
+  $wchk = $pdo->prepare("SELECT COALESCE(SUM(amount),0) FROM withdrawal_requests WHERE contributor_id = :cid AND status = 'approved'");
+  $wchk->execute([':cid' => $userId]);
+  $totalApproved = (float)$wchk->fetchColumn();
+  $available = max(0.0, $totalEarned - $totalApproved);
+
+  if ($amount > $available) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'insufficient_balance', 'message' => 'Amount exceeds available balance.']);
+    exit();
+  }
+
   // Ensure table exists
   $pdo->exec("CREATE TABLE IF NOT EXISTS withdrawal_requests (
     id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,

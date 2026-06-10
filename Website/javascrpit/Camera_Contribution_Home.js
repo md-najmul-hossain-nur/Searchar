@@ -410,6 +410,19 @@ function formatDate(value) {
   return date.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
+const MIN_WITHDRAW_BDT = 200;
+
+function updateWithdrawButton(availableBalance) {
+  if (!openBtn) return;
+  const canWithdraw = availableBalance >= MIN_WITHDRAW_BDT;
+  openBtn.disabled = !canWithdraw;
+  openBtn.title = canWithdraw
+    ? 'Click to withdraw your earnings'
+    : `Minimum balance of BDT ${MIN_WITHDRAW_BDT} required to withdraw`;
+  openBtn.style.opacity = canWithdraw ? '1' : '0.5';
+  openBtn.style.cursor = canWithdraw ? 'pointer' : 'not-allowed';
+}
+
 async function loadCameraEarnings() {
   try {
     const res = await fetch('../Php/fetch_camera_earnings.php', {
@@ -425,6 +438,8 @@ async function loadCameraEarnings() {
     if (availableBalanceEl) availableBalanceEl.textContent = `BDT ${Number(data.available_balance || 0).toFixed(2)}`;
     if (pendingCountEl) pendingCountEl.textContent = String(data.pending_withdrawals ?? 0);
     if (lastWithdrawalEl) lastWithdrawalEl.textContent = formatDate(data.last_withdrawal_date);
+
+    updateWithdrawButton(Number(data.available_balance || 0));
   } catch (error) {
     // Keep existing values on error.
   }
@@ -478,9 +493,8 @@ if (withdrawForm) {
       return;
     }
 
-    const minWithdrawal = 5;
-    if (amount < minWithdrawal) {
-      alert(`Minimum withdrawal amount is $${minWithdrawal}.`);
+    if (amount < MIN_WITHDRAW_BDT) {
+      alert(`Minimum withdrawal amount is BDT ${MIN_WITHDRAW_BDT}.`);
       return;
     }
 
@@ -492,17 +506,23 @@ if (withdrawForm) {
         body: JSON.stringify({ method, accountNumber, amount })
       });
       const json = await res.json();
-      if (!json || !json.success) throw new Error(json?.error || 'Request failed');
+      if (!json || !json.success) {
+        alert(json?.message || 'Could not submit withdrawal. Please try again.');
+        return;
+      }
 
       alert('Withdrawal request submitted!');
       withdrawModal.style.display = 'none';
       this.reset();
-      await loadWithdrawalHistory();
+      await Promise.all([loadCameraEarnings(), loadWithdrawalHistory()]);
     } catch (error) {
       alert('Could not submit withdrawal.');
     }
   });
 }
+
+// Disable button until balance is confirmed by the server
+updateWithdrawButton(0);
 
 loadWithdrawalHistory();
 loadCameraEarnings();
