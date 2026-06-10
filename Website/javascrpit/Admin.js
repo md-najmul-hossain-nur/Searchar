@@ -4251,13 +4251,7 @@ function openAddVolunteerModal() {
     'In an emergency, please call 999 immediately.'
   ];
   const section = document.getElementById('chatbot-logs');
-  const sidebar = document.getElementById('chatbot-sidebar');
-    const messagesContainer = document.getElementById('chatbot-messages-container');
-    const replySelect = document.getElementById('chatbot-admin-reply-select');
-    const replyBtn = document.getElementById('chatbot-admin-reply-send');
-    const activeSessionHeader = document.getElementById('chatbot-active-session-header');
-    let activeSessionToken = null;
-    let sessionGroups = {};
+  const body = document.getElementById('chatbot-logs-body');
   const filterInput = document.getElementById('chatbot-log-filter');
   const refreshBtn = document.getElementById('chatbot-log-refresh');
   const clearBtn = document.getElementById('chatbot-log-clear');
@@ -4406,100 +4400,33 @@ function openAddVolunteerModal() {
       return hay.includes(q);
     });
 
-    // Group by session_token
-    sessionGroups = {};
-    filtered.forEach(row => {
-      const token = String(row.session_token || 'Unknown').trim();
-      if (!sessionGroups[token]) sessionGroups[token] = [];
-      sessionGroups[token].push(row);
-    });
-
-    // Render Sidebar
-    const tokens = Object.keys(sessionGroups);
-    if (tokens.length === 0) {
-      if(sidebar) sidebar.innerHTML = '<div style="padding:15px; text-align:center; color:#666;">No sessions found.</div>';
-      if(messagesContainer) messagesContainer.innerHTML = '';
+    if (!filtered.length) {
+      body.innerHTML = '<tr><td colspan="4">No chatbot logs found.</td></tr>';
       return;
     }
 
-    let sidebarHtml = '';
-    tokens.forEach(token => {
-      const msgs = sessionGroups[token];
-      const lastMsg = msgs[0]; // because it's reversed (newest first)
-      const isActive = token === activeSessionToken;
-      const bg = isActive ? '#e9f0ff' : 'transparent';
-      const brd = isActive ? 'border-left: 4px solid #1abc9c;' : 'border-left: 4px solid transparent;';
-      
-      sidebarHtml += `
-        <div class="chatbot-session-item" data-session="${esc(token)}" style="padding:15px; border-bottom:1px solid #e0e4ee; cursor:pointer; background:${bg}; ${brd} transition:all 0.2s;">
-          <div style="font-weight:bold; font-size:14px; color:#1a232a; margin-bottom:4px;">Session: ${esc(token.substring(0,8))}...</div>
-          <div style="font-size:12px; color:#667085; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(lastMsg.question || 'No question')}</div>
-          <div style="font-size:11px; color:#9ca3af; margin-top:4px;">${esc(formatTime(lastMsg.time))}</div>
-        </div>
+    body.innerHTML = filtered.map((row) => `
+      ${(() => {
+        const token = String(row.session_token || '').trim();
+        const disabled = token ? '' : 'disabled';
+        const btnLabel = token ? 'Send' : 'Unavailable';
+        return `
+      <tr>
+        <td>${esc(formatTime(row.time))}</td>
+        <td>${esc(row.question || '')}</td>
+        <td>${esc(row.reply || '')}</td>
+        <td>
+          <div class="chatbot-admin-reply-wrap">
+            <select class="chatbot-admin-reply-select" data-chatbot-reply-select="${esc(token)}" ${disabled}>
+              ${renderQuickCommentOptions()}
+            </select>
+            <button type="button" class="chatbot-admin-reply-send" data-chatbot-reply-send="${esc(token)}" ${disabled}>${btnLabel}</button>
+          </div>
+        </td>
+      </tr>
       `;
-    });
-    
-    if(sidebar) {
-      sidebar.innerHTML = sidebarHtml;
-      // Add click listeners to sidebar items
-      const items = sidebar.querySelectorAll('.chatbot-session-item');
-      items.forEach(item => {
-        item.addEventListener('click', () => {
-          activeSessionToken = item.getAttribute('data-session');
-          renderRows(rows); // re-render to update active state and right panel
-        });
-      });
-    }
-
-    // Auto-select first if none selected
-    if (!activeSessionToken && tokens.length > 0) {
-      activeSessionToken = tokens[0];
-    }
-
-    // Render Messages for active session
-    if (activeSessionToken && sessionGroups[activeSessionToken]) {
-      if(activeSessionHeader) {
-        activeSessionHeader.innerHTML = `Chat History - Session: <span style="color:#1abc9c;">${esc(activeSessionToken)}</span>`;
-      }
-      
-      const msgs = sessionGroups[activeSessionToken].slice().reverse(); // Show oldest first in chat
-      let chatHtml = '';
-      msgs.forEach(msg => {
-        if(msg.question) {
-          chatHtml += `
-            <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
-              <div style="background:#1abc9c; color:#fff; padding:10px 15px; border-radius:15px 15px 0 15px; max-width:70%; font-size:14px; box-shadow:0 2px 5px rgba(0,0,0,0.1);">
-                <div>${esc(msg.question)}</div>
-                <div style="font-size:10px; color:#e0e0e0; text-align:right; margin-top:4px;">${esc(formatTime(msg.time))}</div>
-              </div>
-            </div>
-          `;
-        }
-        if(msg.reply) {
-          chatHtml += `
-            <div style="display:flex; justify-content:flex-start; margin-bottom:10px;">
-              <div style="background:#f1f5f9; color:#1a232a; padding:10px 15px; border-radius:15px 15px 15px 0; max-width:70%; font-size:14px; box-shadow:0 2px 5px rgba(0,0,0,0.05); border:1px solid #e2e8f0;">
-                <div>${esc(msg.reply)}</div>
-                <div style="font-size:10px; color:#94a3b8; margin-top:4px;">${esc(formatTime(msg.time))}</div>
-              </div>
-            </div>
-          `;
-        }
-      });
-      if(messagesContainer) {
-        messagesContainer.innerHTML = chatHtml;
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-      }
-      
-      // Update reply box
-      if(replySelect) {
-        replySelect.innerHTML = `<option value="">Select a quick comment</option>` + renderQuickCommentOptions();
-        replySelect.disabled = false;
-      }
-      if(replyBtn) {
-        replyBtn.disabled = false;
-      }
-    }
+      })()}
+    `).join('');
   }
 
   async function fetchServerLogs() {
