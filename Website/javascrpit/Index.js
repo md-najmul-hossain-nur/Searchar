@@ -370,7 +370,9 @@ function setupAchievementsCarousel() {
   const nextBtn = document.getElementById('achievementsNextBtn');
   if (!track || !prevBtn || !nextBtn) return;
 
-  const achievements = [
+  let achievements = [];
+
+  const fallbackAchievements = [
     {
       img: '../Images/demo.jpg',
       title: 'Case #A-102 Solved',
@@ -438,7 +440,7 @@ function setupAchievementsCarousel() {
   let cardWidth = 0;
   let isAnimating = false;
   let autoTimer = null;
-  const originalCount = achievements.length;
+  let originalCount = 0;
 
   const getCardWidth = () => {
     const card = track.querySelector('.cause-card');
@@ -463,6 +465,7 @@ function setupAchievementsCarousel() {
   };
 
   const buildLoopTrack = () => {
+    if (achievements.length === 0) return;
     visibleCount = getVisibleCount();
     const prefix = achievements.slice(-visibleCount);
     const suffix = achievements.slice(0, visibleCount);
@@ -472,7 +475,7 @@ function setupAchievementsCarousel() {
   };
 
   const slideTo = (index) => {
-    if (isAnimating) return;
+    if (isAnimating || achievements.length === 0) return;
     isAnimating = true;
     cardWidth = getCardWidth();
     currentIndex = index;
@@ -481,7 +484,9 @@ function setupAchievementsCarousel() {
 
   const restartAuto = () => {
     if (autoTimer) clearInterval(autoTimer);
-    autoTimer = setInterval(() => slideTo(currentIndex + 1), 5600);
+    if (achievements.length > 0) {
+      autoTimer = setInterval(() => slideTo(currentIndex + 1), 5600);
+    }
   };
 
   track.addEventListener('transitionend', () => {
@@ -515,10 +520,28 @@ function setupAchievementsCarousel() {
     restartAuto();
   });
 
-  window.addEventListener('resize', buildLoopTrack);
+  window.addEventListener('resize', () => {
+    if (achievements.length > 0) buildLoopTrack();
+  });
 
-  buildLoopTrack();
-  restartAuto();
+  fetch('../Php/fetch_achievements.php')
+    .then(r => r.json())
+    .then(json => {
+      if (json && json.success && Array.isArray(json.data)) {
+        achievements = json.data;
+      } else {
+        achievements = fallbackAchievements;
+      }
+      originalCount = achievements.length;
+      buildLoopTrack();
+      restartAuto();
+    })
+    .catch(() => {
+      achievements = fallbackAchievements;
+      originalCount = achievements.length;
+      buildLoopTrack();
+      restartAuto();
+    });
 }
 
 setupAchievementsCarousel();
@@ -596,6 +619,10 @@ function setupHomeChatbot() {
   let adminHasReplied = localStorage.getItem('searchar_admin_replied_' + sessionToken) === 'true';
 
   const getReply = (q) => {
+    if (adminHasReplied) {
+      return '';
+    }
+
     const text = q.toLowerCase();
     if (text.includes('donat')) return 'To donate, click MAKE DONATION or Contribute Now on this page.';
     if (text.includes('volunteer') || text.includes('join')) return 'To join as volunteer, click GET INVOLVED NOW and complete registration.';
@@ -603,9 +630,6 @@ function setupHomeChatbot() {
     if (text.includes('login') || text.includes('log in')) return 'Use the LOG IN button on top-right to access your account.';
     if (text.includes('news')) return 'Check the LATEST NEWS section below. You can click Read More for full details.';
     
-    if (adminHasReplied) {
-      return 'Please wait for the admin\'s reply.';
-    }
     return 'I can help with donation, volunteer joining, login, and news navigation. Ask me anything about these. Please wait for the admin\'s reply.';
   };
 
@@ -629,7 +653,9 @@ function setupHomeChatbot() {
     addMsg(userText, 'user');
     const replyText = getReply(userText);
     window.setTimeout(() => {
-      addMsg(replyText, 'bot');
+      if (replyText) {
+        addMsg(replyText, 'bot');
+      }
       saveLog(userText, replyText);
     }, 280);
   };
