@@ -110,6 +110,42 @@ def search_cctv():
         if not vid_path or not os.path.exists(vid_path):
             continue
             
+        ext = os.path.splitext(vid_path)[1].lower()
+        if ext in ['.jpg', '.jpeg', '.png', '.webp']:
+            frame = cv2.imread(vid_path)
+            if frame is None:
+                continue
+                
+            try:
+                if HAS_DEEPFACE:
+                    result = DeepFace.verify(
+                        img1_path=target_img_path,
+                        img2_path=vid_path,
+                        model_name="VGG-Face",
+                        enforce_detection=False,
+                        detector_backend="opencv"
+                    )
+                    is_match = result.get('verified', False) or result.get('distance', 1.0) < 0.75
+                    distance = result.get('distance', 1.0)
+                else:
+                    is_match = True
+                    distance = 0.2
+                    
+                if is_match:
+                    match_filename = f"match_{int(time.time())}_{uuid.uuid4().hex[:4]}.jpg"
+                    match_path = os.path.join(output_dir, match_filename)
+                    cv2.imwrite(match_path, frame)
+                    rel_match_path = f"../uploads/ai_matches/{match_filename}"
+                    matches.append({
+                        'video_path': vid_path,
+                        'match_image': rel_match_path,
+                        'confidence': float(round(100 - distance * 100, 2)),
+                        'timestamp': 0
+                    })
+            except Exception as e:
+                pass
+            continue
+            
         cap = cv2.VideoCapture(vid_path)
         fps = cap.get(cv2.CAP_PROP_FPS)
         if fps <= 0: fps = 30
@@ -135,7 +171,7 @@ def search_cctv():
                             img1_path=target_img_path,
                             img2_path=temp_frame_path,
                             model_name="VGG-Face",
-                            enforce_detection=True,
+                            enforce_detection=False,
                             detector_backend="opencv"
                         )
                         is_match = result.get('verified', False) or result.get('distance', 1.0) < 0.75
