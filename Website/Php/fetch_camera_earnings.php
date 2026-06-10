@@ -60,25 +60,34 @@ function computeAccruedSeconds(array $row): int {
 
 try {
     // Ensure payout_count column
-    if (tableExists($pdo, 'camera_cctv_feeds') && !columnExists($pdo, 'camera_cctv_feeds', 'payout_count')) {
-        $pdo->exec("ALTER TABLE camera_cctv_feeds ADD COLUMN payout_count INT UNSIGNED NOT NULL DEFAULT 0 AFTER accumulated_seconds");
+    if (tableExists($pdo, 'camera_cctv_feeds')) {
+        if (!columnExists($pdo, 'camera_cctv_feeds', 'payout_count')) {
+            $pdo->exec("ALTER TABLE camera_cctv_feeds ADD COLUMN payout_count INT UNSIGNED NOT NULL DEFAULT 0 AFTER accumulated_seconds");
+        }
+        if (!columnExists($pdo, 'camera_cctv_feeds', 'is_deleted')) {
+            $pdo->exec("ALTER TABLE camera_cctv_feeds ADD COLUMN is_deleted TINYINT(1) NOT NULL DEFAULT 0 AFTER is_active");
+        }
     }
 
     ensureNotificationTable($pdo);
 
-    $stmt = $pdo->prepare('SELECT feed_id, feed_type, is_active, accumulated_seconds, active_started_at, created_at, payout_count FROM camera_cctv_feeds WHERE camera_id = :camera_id');
+    $stmt = $pdo->prepare('SELECT feed_id, feed_type, is_active, is_deleted, accumulated_seconds, active_started_at, created_at, payout_count FROM camera_cctv_feeds WHERE camera_id = :camera_id');
     $stmt->execute([':camera_id' => $userId]);
     $feeds = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
-    $totalFeeds = count($feeds);
+    $totalFeeds = 0;
     $liveReady = 0;
     $totalEarned = 0.0;
     $runningHourlyRate = 0;
 
     foreach ($feeds as $feed) {
-        if ((int)($feed['is_active'] ?? 0) === 1) {
-            $liveReady++;
-            $runningHourlyRate += 40; // 20 BDT per 30 min -> 40 per hour
+        $isDeleted = (int)($feed['is_deleted'] ?? 0) === 1;
+        if (!$isDeleted) {
+            $totalFeeds++;
+            if ((int)($feed['is_active'] ?? 0) === 1) {
+                $liveReady++;
+                $runningHourlyRate += 40; // 20 BDT per 30 min -> 40 per hour
+            }
         }
 
         $accrued = computeAccruedSeconds($feed);
@@ -118,7 +127,7 @@ try {
 
     // Withdrawals summary
     $withdrawTable = null;
-    foreach (['withdrawal_requests', 'withdraw_requests'] as $t) {
+    foreach (['withdrawal_requests'] as $t) {
         if (tableExists($pdo, $t)) {
             $withdrawTable = $t;
             break;
@@ -164,5 +173,5 @@ try {
     ]);
 } catch (Throwable $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'server_error']);
+    echo json_encode(['success' => false, 'error' => 'server_error', 'detail' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
 }

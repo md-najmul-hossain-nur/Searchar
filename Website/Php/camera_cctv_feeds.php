@@ -75,6 +75,11 @@ function ensureCctvTable(PDO $pdo): void {
     if (!$indoorCol || !$indoorCol->fetch(PDO::FETCH_ASSOC)) {
         $pdo->exec("ALTER TABLE camera_cctv_feeds ADD COLUMN is_indoor TINYINT(1) NOT NULL DEFAULT 1 AFTER feed_type");
     }
+
+    $deletedCol = $pdo->query("SHOW COLUMNS FROM camera_cctv_feeds LIKE 'is_deleted'");
+    if (!$deletedCol || !$deletedCol->fetch(PDO::FETCH_ASSOC)) {
+        $pdo->exec("ALTER TABLE camera_cctv_feeds ADD COLUMN is_deleted TINYINT(1) NOT NULL DEFAULT 0 AFTER is_active");
+    }
 }
 
 function normalizeHours(string $raw): string {
@@ -187,7 +192,7 @@ try {
     ensureCctvTable($pdo);
 
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-        $stmt = $pdo->prepare('SELECT * FROM camera_cctv_feeds WHERE camera_id = :camera_id ORDER BY feed_id DESC');
+        $stmt = $pdo->prepare('SELECT * FROM camera_cctv_feeds WHERE camera_id = :camera_id AND is_deleted = 0 ORDER BY feed_id DESC');
         $stmt->execute(['camera_id' => $userId]);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
         $feeds = array_map('mapFeedRow', $rows);
@@ -252,15 +257,31 @@ try {
             respond(['success' => false, 'error' => 'Invalid feed id'], 400);
         }
 
-        $sel = $pdo->prepare('SELECT video_path FROM camera_cctv_feeds WHERE feed_id = :feed_id AND camera_id = :camera_id LIMIT 1');
+        $sel = $pdo->prepare('SELECT video_path, is_active, accumulated_seconds, active_started_at, created_at FROM camera_cctv_feeds WHERE feed_id = :feed_id AND camera_id = :camera_id AND is_deleted = 0 LIMIT 1');
         $sel->execute(['feed_id' => $feedId, 'camera_id' => $userId]);
         $row = $sel->fetch(PDO::FETCH_ASSOC);
         if (!$row) {
             respond(['success' => false, 'error' => 'Feed not found'], 404);
         }
 
-        $del = $pdo->prepare('DELETE FROM camera_cctv_feeds WHERE feed_id = :feed_id AND camera_id = :camera_id LIMIT 1');
-        $del->execute(['feed_id' => $feedId, 'camera_id' => $userId]);
+        $currentActive = (int)($row['is_active'] ?? 0) === 1;
+        $accSeconds = (int)($row['accumulated_seconds'] ?? 0);
+        $activeStartedAt = (string)($row['active_started_at'] ?? '');
+
+        if ($currentActive) {
+            $startRaw = $activeStartedAt !== '' ? $activeStartedAt : (string)($row['created_at'] ?? '');
+            $startTs = strtotime($startRaw ?: 'now');
+            if ($startTs) {
+                $accSeconds += max(0, time() - $startTs);
+            }
+        }
+
+        $del = $pdo->prepare('UPDATE camera_cctv_feeds SET is_deleted = 1, is_active = 0, accumulated_seconds = :acc, active_started_at = NULL WHERE feed_id = :feed_id AND camera_id = :camera_id LIMIT 1');
+        $del->execute([
+            'acc' => $accSeconds,
+            'feed_id' => $feedId,
+            'camera_id' => $userId
+        ]);
 
         $videoPath = (string)($row['video_path'] ?? '');
         if ($videoPath !== '') {

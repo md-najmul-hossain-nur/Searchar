@@ -109,7 +109,7 @@ try {
       $pdo->exec("ALTER TABLE camera_cctv_feeds ADD COLUMN is_indoor TINYINT(1) NOT NULL DEFAULT 1 AFTER feed_type");
     }
 
-    $cctvStmt = $pdo->prepare("SELECT feed_id, feed_label, feed_type, is_indoor, stream_scope, live_url, video_path, camera_location, streaming_hours, allow_ai_detection, allow_public_viewing, ai_alerts_to_volunteers, accumulated_seconds, active_started_at, is_active, created_at FROM camera_cctv_feeds WHERE camera_id = :camera_id ORDER BY feed_id DESC LIMIT 40");
+    $cctvStmt = $pdo->prepare("SELECT feed_id, feed_label, feed_type, is_indoor, stream_scope, live_url, video_path, camera_location, streaming_hours, allow_ai_detection, allow_public_viewing, ai_alerts_to_volunteers, accumulated_seconds, active_started_at, is_active, created_at FROM camera_cctv_feeds WHERE camera_id = :camera_id AND is_deleted = 0 ORDER BY feed_id DESC LIMIT 40");
     $cctvStmt->execute(['camera_id' => $userId]);
     $cctvFeeds = $cctvStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
@@ -330,8 +330,7 @@ if ($latestFeed) {
               <div class="camera-video-wrap webcam-video-wrap" data-feed-id="<?= (int)($feed['feed_id'] ?? 0) ?>">
                 <video class="camera-video webcam-video" autoplay muted playsinline></video>
                 <div class="webcam-preview-state">Starting webcam preview...</div>
-                <div class="webcam-controls" style="margin-top: 10px; text-align: left; width: 100%;">
-                </div>
+                <div class="webcam-controls" style="margin-top: 10px; padding: 0 14px; text-align: center; width: 100%;"></div>
               </div>
             <?php elseif ($mediaType === 'recorded' && $mediaUrl !== '' && $isActive): ?>
               <div class="camera-video-wrap">

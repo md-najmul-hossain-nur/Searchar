@@ -20,7 +20,7 @@ function tableExists(PDO $pdo, string $tableName): bool {
 }
 
 try {
-    $tableCandidates = ['withdrawal_requests', 'withdraw_requests'];
+    $tableCandidates = ['withdrawal_requests'];
     $tableName = null;
     foreach ($tableCandidates as $t) {
         if (tableExists($pdo, $t)) {

@@ -112,6 +112,8 @@ document.addEventListener('DOMContentLoaded', () => {
 						select.style.fontFamily = 'inherit';
 						select.style.fontSize = '14px';
 						select.style.cursor = 'pointer';
+						select.style.textAlign = 'center';
+						select.style.textAlignLast = 'center';
 						
 						select.addEventListener('change', (e) => {
 							startCameraForWrap(wrap, e.target.value);
