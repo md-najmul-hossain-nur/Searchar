@@ -491,6 +491,17 @@ try {
     <p class="cam-form-subtitle">Add one by one, your camera name will auto increment (Camera 1, Camera 2, ...).</p>
 
     <form id="camFeedForm">
+      <!-- Indoor / Outdoor Selection -->
+      <div class="cam-placement-row">
+        <span class="cam-placement-label">Camera Placement:</span>
+        <label class="cam-placement-option">
+          <input type="radio" name="cameraPlacement" value="1" required checked> Indoor
+        </label>
+        <label class="cam-placement-option">
+          <input type="radio" name="cameraPlacement" value="0" required> Outdoor
+        </label>
+      </div>
+
       <!-- Webcam / Recorded Selection -->
       <label>
         <input type="radio" name="feedType" value="webcam" required checked>

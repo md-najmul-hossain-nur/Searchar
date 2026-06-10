@@ -661,6 +661,8 @@ document.addEventListener("DOMContentLoaded", () => {
     sourceList.innerHTML = feeds.map((feed) => {
       const feedType = (feed.feed_type || 'webcam').toLowerCase();
       const typeText = feedType === 'recorded' ? 'Recorded Video' : (feedType === 'webcam' ? 'Webcam' : 'Live URL');
+      const placementText = Number(feed.is_indoor) === 1 ? 'Indoor' : 'Outdoor';
+      const placementClass = Number(feed.is_indoor) === 1 ? 'cam-badge-indoor' : 'cam-badge-outdoor';
       const statusText = Number(feed.is_active) === 1 ? 'Active' : 'Closed';
       const toggleText = Number(feed.is_active) === 1 ? 'Close CCTV' : 'Reopen CCTV';
       const feedLink = feed.feed_type === 'live' && feed.live_url
@@ -672,6 +674,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="cam-source-main">
             <strong>${feed.feed_label || 'Camera Feed'}</strong>
             <span>${typeText}</span>
+            <span class="cam-badge ${placementClass}">${placementText}</span>
             <span>${feed.camera_location || 'Location not set'}</span>
             <span class="cam-source-status ${Number(feed.is_active) === 1 ? 'is-active' : 'is-closed'}">${statusText}</span>
             <span class="cam-source-link">${feedLink}</span>
@@ -802,6 +805,7 @@ document.addEventListener("DOMContentLoaded", () => {
       fd.append('action', 'create');
       fd.append('feed_type', selectedType);
       fd.append('feed_label', getNextCameraLabel());
+      fd.append('is_indoor', feedForm.querySelector('input[name="cameraPlacement"]:checked')?.value ?? '1');
       fd.append('stream_scope', 'private');
       fd.append('streaming_hours', 'continuous');
       fd.append('permission_confirmed', '1');

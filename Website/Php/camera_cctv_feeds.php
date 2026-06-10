@@ -70,6 +70,11 @@ function ensureCctvTable(PDO $pdo): void {
     if (!$payoutCol || !$payoutCol->fetch(PDO::FETCH_ASSOC)) {
         $pdo->exec("ALTER TABLE camera_cctv_feeds ADD COLUMN payout_count INT UNSIGNED NOT NULL DEFAULT 0 AFTER accumulated_seconds");
     }
+
+    $indoorCol = $pdo->query("SHOW COLUMNS FROM camera_cctv_feeds LIKE 'is_indoor'");
+    if (!$indoorCol || !$indoorCol->fetch(PDO::FETCH_ASSOC)) {
+        $pdo->exec("ALTER TABLE camera_cctv_feeds ADD COLUMN is_indoor TINYINT(1) NOT NULL DEFAULT 1 AFTER feed_type");
+    }
 }
 
 function normalizeHours(string $raw): string {
@@ -170,6 +175,7 @@ function mapFeedRow(array $row): array {
         'ai_alerts_to_volunteers' => (int)($row['ai_alerts_to_volunteers'] ?? 0),
         'accumulated_seconds' => (int)($row['accumulated_seconds'] ?? 0),
         'active_started_at' => (string)($row['active_started_at'] ?? ''),
+        'is_indoor' => (int)($row['is_indoor'] ?? 1),
         'is_active' => (int)($row['is_active'] ?? 0),
         'hourly_rate' => hourlyRateForFeedType((string)($row['feed_type'] ?? 'recorded')),
         'accrued_seconds' => computeAccruedSeconds($row),
@@ -284,6 +290,7 @@ try {
     $allowAi = !empty($_POST['allow_ai_detection']) ? 1 : 0;
     $allowPublic = !empty($_POST['allow_public_viewing']) ? 1 : 0;
     $aiAlerts = !empty($_POST['ai_alerts_to_volunteers']) ? 1 : 0;
+    $isIndoor = isset($_POST['is_indoor']) ? ((int)$_POST['is_indoor'] === 0 ? 0 : 1) : 1;
     $permissionConfirmed = !empty($_POST['permission_confirmed']);
 
     if (!$permissionConfirmed) {
@@ -361,11 +368,12 @@ try {
         $videoPath = 'uploads/cctv/' . $fileName;
     }
 
-    $ins = $pdo->prepare('INSERT INTO camera_cctv_feeds (camera_id, feed_label, feed_type, stream_scope, live_url, video_path, camera_location, streaming_hours, allow_ai_detection, allow_public_viewing, ai_alerts_to_volunteers, accumulated_seconds, active_started_at, is_active) VALUES (:camera_id, :feed_label, :feed_type, :stream_scope, :live_url, :video_path, :camera_location, :streaming_hours, :allow_ai_detection, :allow_public_viewing, :ai_alerts_to_volunteers, 0, :active_started_at, 1)');
+    $ins = $pdo->prepare('INSERT INTO camera_cctv_feeds (camera_id, feed_label, feed_type, is_indoor, stream_scope, live_url, video_path, camera_location, streaming_hours, allow_ai_detection, allow_public_viewing, ai_alerts_to_volunteers, accumulated_seconds, active_started_at, is_active) VALUES (:camera_id, :feed_label, :feed_type, :is_indoor, :stream_scope, :live_url, :video_path, :camera_location, :streaming_hours, :allow_ai_detection, :allow_public_viewing, :ai_alerts_to_volunteers, 0, :active_started_at, 1)');
     $ins->execute([
         'camera_id' => $userId,
         'feed_label' => $feedLabel,
         'feed_type' => $feedType,
+        'is_indoor' => $isIndoor,
         'stream_scope' => $streamScope,
         'live_url' => $liveUrl,
         'video_path' => $videoPath,

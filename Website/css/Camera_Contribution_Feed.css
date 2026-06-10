@@ -477,6 +477,27 @@ iframe.video-preview {
   color: #b42318;
 }
 
+.feed-placement {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.placement-indoor {
+  background: #e8f0ff;
+  color: #2256c7;
+}
+
+.placement-outdoor {
+  background: #eaf7ee;
+  color: #1c7a47;
+}
+
 .camera-time {
   color: #6f7f92;
   font-size: 0.88rem;

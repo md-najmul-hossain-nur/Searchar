@@ -2242,6 +2242,57 @@ legend {
   background: #1d4d75;
 }
 
+/* Indoor/Outdoor placement row in feed form */
+.cam-placement-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  background: #f0f6fc;
+  border: 1px solid #c9dff0;
+  border-radius: 8px;
+}
+
+.cam-placement-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #3a5068;
+  white-space: nowrap;
+}
+
+.cam-placement-option {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.85rem;
+  color: #2c4260;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* Indoor/Outdoor badges in the feed list */
+.cam-badge {
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.cam-badge-indoor {
+  background: #e8f0ff;
+  color: #2256c7;
+}
+
+.cam-badge-outdoor {
+  background: #eaf7ee;
+  color: #1c7a47;
+}
+
 .cam-secondary-btn:disabled {
   opacity: 0.65;
   cursor: not-allowed;

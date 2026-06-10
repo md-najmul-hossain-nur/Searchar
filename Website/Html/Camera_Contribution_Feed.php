@@ -104,7 +104,12 @@ try {
       $pdo->exec("ALTER TABLE camera_cctv_feeds ADD COLUMN active_started_at DATETIME DEFAULT NULL AFTER accumulated_seconds");
     }
 
-    $cctvStmt = $pdo->prepare("SELECT feed_id, feed_label, feed_type, stream_scope, live_url, video_path, camera_location, streaming_hours, allow_ai_detection, allow_public_viewing, ai_alerts_to_volunteers, accumulated_seconds, active_started_at, is_active, created_at FROM camera_cctv_feeds WHERE camera_id = :camera_id ORDER BY feed_id DESC LIMIT 40");
+    $indoorCol = $pdo->query("SHOW COLUMNS FROM camera_cctv_feeds LIKE 'is_indoor'");
+    if (!$indoorCol || !$indoorCol->fetch(PDO::FETCH_ASSOC)) {
+      $pdo->exec("ALTER TABLE camera_cctv_feeds ADD COLUMN is_indoor TINYINT(1) NOT NULL DEFAULT 1 AFTER feed_type");
+    }
+
+    $cctvStmt = $pdo->prepare("SELECT feed_id, feed_label, feed_type, is_indoor, stream_scope, live_url, video_path, camera_location, streaming_hours, allow_ai_detection, allow_public_viewing, ai_alerts_to_volunteers, accumulated_seconds, active_started_at, is_active, created_at FROM camera_cctv_feeds WHERE camera_id = :camera_id ORDER BY feed_id DESC LIMIT 40");
     $cctvStmt->execute(['camera_id' => $userId]);
     $cctvFeeds = $cctvStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
@@ -316,6 +321,9 @@ if ($latestFeed) {
             }
             $rate = ($isActive && $hasStream) ? $ratePerCamera : 0;
             $earned = (accruedSeconds($feed) / 3600) * $rate;
+            $isIndoor = (int)($feed['is_indoor'] ?? 1) === 1;
+            $placementText = $isIndoor ? 'Indoor' : 'Outdoor';
+            $placementClass = $isIndoor ? 'placement-indoor' : 'placement-outdoor';
           ?>
           <article class="camera-card">
             <?php if ($mediaType === 'webcam' && $isActive): ?>
@@ -342,6 +350,7 @@ if ($latestFeed) {
             <?php endif; ?>
 
             <span class="feed-status <?= e($statusClass) ?>"><?= e($statusText) ?></span>
+            <span class="feed-placement <?= e($placementClass) ?>"><?= e($placementText) ?></span>
 
             <div class="camera-info">
               <span class="camera-title"><?= e((string)($feed['feed_label'] ?? 'CCTV Feed')) ?></span>
