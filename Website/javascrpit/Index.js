@@ -593,6 +593,8 @@ function setupHomeChatbot() {
     });
   };
 
+  let adminHasReplied = localStorage.getItem('searchar_admin_replied_' + sessionToken) === 'true';
+
   const getReply = (q) => {
     const text = q.toLowerCase();
     if (text.includes('donat')) return 'To donate, click MAKE DONATION or Contribute Now on this page.';
@@ -600,7 +602,11 @@ function setupHomeChatbot() {
     if (text.includes('report') || text.includes('clue') || text.includes('crime')) return 'Please use the relevant logged-in dashboard to submit verified clues safely.';
     if (text.includes('login') || text.includes('log in')) return 'Use the LOG IN button on top-right to access your account.';
     if (text.includes('news')) return 'Check the LATEST NEWS section below. You can click Read More for full details.';
-    return 'I can help with donation, volunteer joining, login, and news navigation. Ask me anything about these.';
+    
+    if (adminHasReplied) {
+      return 'Please wait for the admin\'s reply.';
+    }
+    return 'I can help with donation, volunteer joining, login, and news navigation. Ask me anything about these. Please wait for the admin\'s reply.';
   };
 
   const openPanel = () => {
@@ -642,7 +648,13 @@ function setupHomeChatbot() {
         const id = Number(row?.id || 0);
         if (id > lastAdminReplyId) lastAdminReplyId = id;
         const text = String(row?.reply_text || '').trim();
-        if (text) addMsg(`Admin: ${text}`, 'bot');
+        if (text) {
+          addMsg(`Admin: ${text}`, 'bot');
+          if (!adminHasReplied) {
+            adminHasReplied = true;
+            localStorage.setItem('searchar_admin_replied_' + sessionToken, 'true');
+          }
+        }
       });
     } catch (_e) {
       // Silent fail to keep chat UX smooth.
