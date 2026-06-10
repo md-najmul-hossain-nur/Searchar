@@ -1,0 +1,374 @@
+/* ═══════════════════════════════════════════════════════════
+   Profile Page – Shared Design Refresh  v20260611a
+   Loaded last; overrides page-specific CSS.
+   Navbar rules are intentionally untouched.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Page background ─────────────────────────────────────── */
+body {
+  background: linear-gradient(160deg, #fffdf8 0%, #fff3ec 100%) fixed !important;
+  min-height: 100vh;
+}
+
+/* ── Cover area ──────────────────────────────────────────── */
+.cover-photo {
+  margin-top: 104px;
+  overflow: visible !important;
+}
+
+.cover-img {
+  display: block !important;
+  width: 100% !important;
+  height: 360px !important;
+  object-fit: cover !important;
+  filter: brightness(0.82) !important;
+}
+
+/* Gradient fade at the bottom of the cover */
+.cover-photo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  height: 360px;
+  background: linear-gradient(to bottom, transparent 50%, rgba(20, 28, 36, 0.55) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Profile picture container ───────────────────────────── */
+.profile-pic-container {
+  background: #ffffff !important;
+  padding: 5px !important;
+  border-radius: 14px !important;
+  box-shadow: 0 6px 24px rgba(240, 84, 84, 0.22) !important;
+  margin-top: 240px !important;
+  margin-bottom: 0 !important;
+  z-index: 5;
+}
+
+.profile-pic {
+  width: 160px !important;
+  height: 180px !important;
+  object-fit: cover !important;
+  border-radius: 10px !important;
+  display: block !important;
+}
+
+/* ── Main content layout ─────────────────────────────────── */
+.main-content {
+  width: 92% !important;
+  max-width: 1380px !important;
+  margin: 48px auto 40px !important;
+  padding: 0 !important;
+  gap: 22px !important;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* ── Cards ───────────────────────────────────────────────── */
+.card {
+  background: #ffffff !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(240, 84, 84, 0.1) !important;
+  box-shadow: 0 4px 20px rgba(240, 84, 84, 0.09), 0 1px 4px rgba(0,0,0,0.04) !important;
+  padding: 22px 20px !important;
+  margin-bottom: 18px !important;
+}
+
+.card.user-info {
+  background: linear-gradient(180deg, #ffffff 0%, #fff9f6 100%) !important;
+  border: 1px solid rgba(240, 84, 84, 0.13) !important;
+}
+
+/* ── User info – name & divider ──────────────────────────── */
+.user-info h2 {
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  color: #1a232a !important;
+  margin: 0 0 2px 0 !important;
+}
+
+.divider {
+  width: 44px !important;
+  height: 3px !important;
+  background: linear-gradient(90deg, #f05454, #ff7040) !important;
+  border-radius: 2px !important;
+  margin: 12px 0 14px !important;
+}
+
+/* Wide divider inside notifications card */
+.notifications.notifications-card .divider {
+  width: 100% !important;
+  height: 1px !important;
+  background: linear-gradient(90deg, transparent, rgba(240,84,84,0.45), transparent) !important;
+  border-radius: 0 !important;
+}
+
+/* ── Bio ─────────────────────────────────────────────────── */
+.user-bio {
+  font-size: 13.5px !important;
+  color: #555 !important;
+  background: linear-gradient(180deg, #fff8f5, #fff2ec) !important;
+  border: 1px solid rgba(240, 84, 84, 0.14) !important;
+  border-radius: 10px !important;
+  padding: 10px 14px !important;
+  line-height: 1.6 !important;
+  margin-bottom: 14px !important;
+}
+
+.user-bio:hover {
+  background: linear-gradient(180deg, #fff3ee, #ffece4) !important;
+  border-color: rgba(240, 84, 84, 0.28) !important;
+}
+
+/* ── Info list ───────────────────────────────────────────── */
+.info-list {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.info-list li {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  font-size: 13.5px !important;
+  color: #3a3a3a !important;
+  padding: 8px 0 !important;
+  margin-bottom: 0 !important;
+  border-bottom: 1px solid rgba(240, 84, 84, 0.07) !important;
+}
+
+.info-list li:last-child {
+  border-bottom: none !important;
+}
+
+.info-list .icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+  background: linear-gradient(135deg, #fff0ed, #ffddd5) !important;
+  border-radius: 50% !important;
+  font-size: 13px !important;
+  color: #f05454 !important;
+  margin-right: 0 !important;
+}
+
+/* ── Password change section ─────────────────────────────── */
+.password-change-section {
+  background: linear-gradient(135deg, #f05454 0%, #e3471c 100%) !important;
+  border-radius: 14px !important;
+  padding: 20px 20px !important;
+  color: #fff !important;
+  box-shadow: 0 6px 20px rgba(240, 84, 84, 0.32) !important;
+  text-align: left !important;
+  margin-top: 0 !important;
+  margin-bottom: 18px !important;
+}
+
+.password-change-section h3 {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: #fff !important;
+  margin-bottom: 6px !important;
+}
+
+.password-change-section p {
+  font-size: 13px !important;
+  color: rgba(255,255,255,0.88) !important;
+  margin-bottom: 14px !important;
+  line-height: 1.5 !important;
+}
+
+.change-pass-btn {
+  background: rgba(255,255,255,0.18) !important;
+  color: #fff !important;
+  border: 1.5px solid rgba(255,255,255,0.45) !important;
+  border-radius: 8px !important;
+  padding: 8px 20px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: background 0.2s !important;
+}
+
+.change-pass-btn:hover {
+  background: rgba(255,255,255,0.32) !important;
+}
+
+/* ── Share / post-prompt box ─────────────────────────────── */
+.share-box {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 16px 18px !important;
+}
+
+.share-box .mini-profile {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  margin-right: 0 !important;
+  flex-shrink: 0;
+}
+
+.share-box input[type="text"] {
+  flex: 1 !important;
+  padding: 10px 18px !important;
+  border: 1.5px solid rgba(240, 84, 84, 0.18) !important;
+  border-radius: 22px !important;
+  background: #fff5f2 !important;
+  font-size: 14px !important;
+  color: #999 !important;
+  outline: none !important;
+  cursor: pointer !important;
+  margin-right: 0 !important;
+  transition: border-color 0.2s;
+}
+
+.share-box input[type="text"]:hover {
+  border-color: rgba(240, 84, 84, 0.42) !important;
+}
+
+/* ── Post cards ──────────────────────────────────────────── */
+.post {
+  padding: 18px 18px !important;
+}
+
+.post-header {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin-bottom: 12px !important;
+}
+
+.post-header .mini-profile {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 50% !important;
+  border: 2px solid rgba(240, 84, 84, 0.18) !important;
+  object-fit: cover !important;
+}
+
+.post-header h2 {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: #1a232a !important;
+  margin: 0 !important;
+}
+
+.post-time {
+  font-size: 12px !important;
+  color: #999 !important;
+}
+
+.post p {
+  font-size: 14px !important;
+  color: #444 !important;
+  line-height: 1.6 !important;
+}
+
+/* ── Post images (profile page uses .post-image wrapper) ─── */
+.post-image img {
+  width: 100% !important;
+  border-radius: 10px !important;
+  object-fit: cover !important;
+  margin-top: 8px !important;
+}
+
+/* ── Post actions bar ────────────────────────────────────── */
+.post .post-actions {
+  background: transparent !important;
+  color: #555 !important;
+  border-top: 1px solid rgba(240, 84, 84, 0.1) !important;
+  border-radius: 0 !important;
+  padding: 10px 0 0 !important;
+  margin-top: 12px !important;
+  justify-content: flex-start !important;
+  gap: 6px !important;
+}
+
+.post .post-actions .like-btn,
+.post .post-actions .comment-btn,
+.post .post-actions .share-btn {
+  color: #f05454 !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  padding: 5px 12px !important;
+  border-radius: 7px !important;
+  transition: background 0.15s !important;
+}
+
+.post .post-actions .like-btn:hover,
+.post .post-actions .comment-btn:hover,
+.post .post-actions .share-btn:hover {
+  background: rgba(240, 84, 84, 0.08) !important;
+  color: #e3471c !important;
+}
+
+/* ── Notifications card ──────────────────────────────────── */
+.notifications.notifications-card {
+  background: linear-gradient(180deg, #ffffff 0%, #fff9f6 100%) !important;
+  border: 1px solid rgba(240, 84, 84, 0.12) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 4px 20px rgba(240, 84, 84, 0.09) !important;
+  padding: 20px 18px !important;
+}
+
+.notifications.notifications-card h3 {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: #1a232a !important;
+  margin: 0 !important;
+}
+
+.notifications-see-more {
+  font-size: 12px !important;
+  color: #f05454 !important;
+  background: none !important;
+  border: none !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 1200px) {
+  .main-content {
+    flex-direction: column !important;
+    align-items: center !important;
+    width: 94% !important;
+  }
+  .left-panel, .center-panel, .right-panel {
+    width: 100% !important;
+    min-width: unset !important;
+    max-width: 700px;
+  }
+}
+
+@media (max-width: 768px) {
+  .cover-img {
+    height: 220px !important;
+  }
+  .cover-photo::before {
+    height: 220px !important;
+  }
+  .profile-pic-container {
+    left: 50% !important;
+    top: auto !important;
+    transform: translateX(-50%) !important;
+    margin-top: 160px !important;
+  }
+  .profile-pic {
+    width: 130px !important;
+    height: 146px !important;
+  }
+  .main-content {
+    margin-top: 30px !important;
+    width: 100% !important;
+    padding: 0 10px !important;
+  }
+}
