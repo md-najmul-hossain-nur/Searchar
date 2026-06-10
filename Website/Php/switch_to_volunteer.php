@@ -20,7 +20,7 @@ try {
         failRedirect('invalid_user');
     }
 
-    $userStmt = $pdo->prepare('SELECT full_name, email, mobile, nid_number FROM users WHERE user_id = :id LIMIT 1');
+    $userStmt = $pdo->prepare('SELECT full_name, email, mobile FROM users WHERE user_id = :id LIMIT 1');
     $userStmt->execute([':id' => $userId]);
     $user = $userStmt->fetch(PDO::FETCH_ASSOC);
     if (!$user) {
@@ -29,17 +29,15 @@ try {
 
     $email = trim((string)($user['email'] ?? ''));
     $mobile = trim((string)($user['mobile'] ?? ''));
-    $nidNumber = trim((string)($user['nid_number'] ?? ''));
 
-    if ($email === '' || $mobile === '' || $nidNumber === '') {
+    if ($email === '' || $mobile === '') {
         failRedirect('profile_incomplete');
     }
 
-    $volStmt = $pdo->prepare('SELECT volunteer_id, full_name, email FROM volunteers WHERE email = :email OR mobile = :mobile OR nid_number = :nid LIMIT 1');
+    $volStmt = $pdo->prepare('SELECT volunteer_id, full_name, email FROM volunteers WHERE email = :email OR mobile = :mobile LIMIT 1');
     $volStmt->execute([
         ':email' => $email,
         ':mobile' => $mobile,
-        ':nid' => $nidNumber,
     ]);
     $volunteer = $volStmt->fetch(PDO::FETCH_ASSOC);
     if (!$volunteer) {

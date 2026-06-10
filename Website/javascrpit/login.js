@@ -145,11 +145,15 @@ function showForm() {
   const formContainer = document.getElementById('dynamicForm');
   let formHTML = '';
 
+  const _d = new Date();
+  _d.setFullYear(_d.getFullYear() - 18);
+  const maxDob = _d.toISOString().split('T')[0];
+
   if (role === 'user') {
     formHTML = `
       <h3>User Sign Up</h3>
       <form id="userSignupForm" enctype="multipart/form-data" method="post" action="../Php/user_signup.php">
-        <h5 class="form-section-title">🔐 General Information</h5>
+        <h5 class="form-section-title">General Information</h5>
         <div class="mb-3">
           <label for="fullname" class="form-label">Full Name </label>
           <input type="text" class="form-control" id="fullname" name="fullname" required>
@@ -177,9 +181,9 @@ function showForm() {
     `;
   } else if (role === 'police') {
     formHTML = `
-      <h3 class="text-center mb-3">👮 Policeman / Authority Sign Up</h3>
+      <h3 class="text-center mb-3">Policeman / Authority Sign Up</h3>
       <form id="policeSignupForm" enctype="multipart/form-data" method="post" action="../Php/police_signup.php">
-        <h5 class="form-section-title">🔐 General Information</h5>
+        <h5 class="form-section-title">General Information</h5>
         <div class="mb-3">
           <label for="fullname" class="form-label">Full Name </label>
           <input type="text" class="form-control" id="fullname" name="fullname" required>
@@ -194,7 +198,7 @@ function showForm() {
         </div>
         <div class="mb-3">
           <label for="nid" class="form-label">NID Number </label>
-          <input type="text" class="form-control" id="nid" name="nid" placeholder="10 or 17 digits" required>
+          <input type="text" class="form-control" id="nid" name="nid" placeholder="10 or 17 digits" minlength="10" maxlength="17" pattern="[0-9]{10,17}" title="NID must be 10 to 17 digits (numbers only)" required>
         </div>
         <div class="mb-3">
           <label for="nid_photo" class="form-label">Upload NID Photo </label>
@@ -210,7 +214,7 @@ function showForm() {
 </div>
         <div class="mb-3">
           <label for="dob" class="form-label">Date of Birth </label>
-          <input type="date" class="form-control" id="dob" name="dob" required>
+          <input type="date" class="form-control" id="dob" name="dob" max="${maxDob}" required>
         </div>
         <div class="mb-3">
           <label for="gender" class="form-label">Gender </label>
@@ -242,20 +246,10 @@ function showForm() {
         </div>
         <input type="hidden" id="latitude" name="latitude">
         <input type="hidden" id="longitude" name="longitude">
-        <button type="button" class="btn btn-primary map-select-btn"
-                onclick="selectLocationFromMap()"
-                style="margin-bottom: 15px;">
-          Select location from map
+        <button type="button" class="map-select-btn"
+                onclick="selectLocationFromMap()">
+          📍 Select location from map
         </button>
-        <div id="mapModal" class="map-modal" style="display:none;">
-          <div class="map-modal-content" style="background:#fff; padding:15px; border-radius:8px; position:relative;">
-            <span class="map-close" onclick="closeMapModal()"
-                  style="position:absolute; top:8px; right:12px; cursor:pointer; font-size:20px;">&times;</span>
-            <div id="map" style="width:100%;height:320px; margin-bottom:10px;"></div>
-            <button id="currentLocationBtn" type="button" class="btn btn-secondary" onclick="getCurrentLocation()">Use Current Location</button>
-            <button id="saveLocationBtn" type="button" class="btn btn-success" onclick="saveMapLocation()">Save Location</button>
-          </div>
-        </div>
         <div class="mb-3">
           <label for="password" class="form-label">Password </label>
           <input type="password" class="form-control" id="password" name="password" minlength="6" required>
@@ -264,7 +258,7 @@ function showForm() {
           <label for="confirm_password" class="form-label">Confirm Password </label>
           <input type="password" class="form-control" id="confirm_password" name="confirm_password" minlength="6" required>
         </div>
-        <h5 class="form-section-title">👮 Authority Details</h5>
+        <h5 class="form-section-title">Authority Details</h5>
         <div class="mb-3">
           <label for="badge_id" class="form-label">Badge ID / Police ID Number </label>
           <input type="text" class="form-control" id="badge_id" name="badge_id" required>
@@ -293,9 +287,9 @@ function showForm() {
   } else if (role === 'volunteer') {
     formHTML = `
       <div class="signup-container">
-        <h3 class="text-center mb-3">🚨 Volunteer Sign Up</h3>
+        <h3 class="text-center mb-3">Volunteer Sign Up</h3>
         <form id="volunteerSignupForm" enctype="multipart/form-data" method="post" action="../Php/volunteer_signup.php">
-          <h5 class="form-section-title">🔐 General Information</h5>
+          <h5 class="form-section-title">General Information</h5>
           <div class="mb-3">
             <label for="fullname" class="form-label">Full Name </label>
             <input type="text" class="form-control" id="fullname" name="fullname" required>
@@ -310,7 +304,7 @@ function showForm() {
           </div>
           <div class="mb-3">
             <label for="nid" class="form-label">NID Number </label>
-            <input type="text" class="form-control" id="nid" name="nid" placeholder="10 or 17 digits" required>
+            <input type="text" class="form-control" id="nid" name="nid" placeholder="10 or 17 digits" minlength="10" maxlength="17" pattern="[0-9]{10,17}" title="NID must be 10 to 17 digits (numbers only)" required>
           </div>
           <div class="mb-3">
             <label for="nid_photo" class="form-label">Upload NID Photo </label>
@@ -326,7 +320,7 @@ function showForm() {
 </div>
           <div class="mb-3">
             <label for="dob" class="form-label">Date of Birth </label>
-            <input type="date" class="form-control" id="dob" name="dob" required>
+            <input type="date" class="form-control" id="dob" name="dob" max="${maxDob}" required>
           </div>
           <div class="mb-3">
             <label for="gender" class="form-label">Gender </label>
@@ -380,26 +374,6 @@ function showForm() {
             <label for="confirm_password" class="form-label">Confirm Password </label>
             <input type="password" class="form-control" id="confirm_password" name="confirm_password" minlength="6" required>
           </div>
-          <h5 class="form-section-title">🚨 Volunteer Details</h5>
-          <div class="mb-3">
-            <label for="occupation" class="form-label">Occupation </label>
-            <select class="form-select" id="occupation" name="occupation" required>
-              <option value="">-- Select Occupation --</option>
-              <option value="student">Student</option>
-              <option value="job_holder">Job Holder</option>
-              <option value="business">Business</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label for="availability" class="form-label">Availability </label>
-            <select class="form-select" id="availability" name="availability" required>
-              <option value="">-- Select Availability --</option>
-              <option value="full_time">Full-Time</option>
-              <option value="part_time">Part-Time</option>
-              <option value="on_call">On Call</option>
-            </select>
-          </div>
           <div class="form-check mb-3">
             <input class="form-check-input" type="checkbox" id="terms" required>
             <label class="form-check-label" for="terms">
@@ -412,9 +386,9 @@ function showForm() {
     `;
   } else if (role === 'contributor') {
     formHTML = `
-      <h3 class="text-center mb-3">🎥 Camera Contributor Sign Up</h3>
+      <h3 class="text-center mb-3">Camera Contributor Sign Up</h3>
       <form id="cameraSignupForm" enctype="multipart/form-data" method="post" action="../Php/camera_signup.php">
-        <h5 class="form-section-title">🔐 General Information</h5>
+        <h5 class="form-section-title">General Information</h5>
         <div class="mb-3">
           <label for="fullname" class="form-label">Full Name </label>
           <input type="text" class="form-control" id="fullname" name="fullname" required>
@@ -429,7 +403,7 @@ function showForm() {
         </div>
         <div class="mb-3">
           <label for="nid" class="form-label">NID Number </label>
-          <input type="text" class="form-control" id="nid" name="nid" placeholder="10 or 17 digits" required>
+          <input type="text" class="form-control" id="nid" name="nid" placeholder="10 or 17 digits" minlength="10" maxlength="17" pattern="[0-9]{10,17}" title="NID must be 10 to 17 digits (numbers only)" required>
         </div>
         <div class="mb-3">
           <label for="nid_photo" class="form-label">Upload NID Photo </label>
@@ -445,7 +419,7 @@ function showForm() {
 </div>
         <div class="mb-3">
           <label for="dob" class="form-label">Date of Birth </label>
-          <input type="date" class="form-control" id="dob" name="dob" required>
+          <input type="date" class="form-control" id="dob" name="dob" max="${maxDob}" required>
         </div>
         <div class="mb-3">
           <label for="gender" class="form-label">Gender </label>
@@ -477,20 +451,10 @@ function showForm() {
         </div>
         <input type="hidden" id="latitude" name="latitude">
         <input type="hidden" id="longitude" name="longitude">
-        <button type="button" class="btn btn-primary map-select-btn"
-                onclick="selectLocationFromMap()"
-                style="margin-bottom: 15px;">
-          Select location from map
+        <button type="button" class="map-select-btn"
+                onclick="selectLocationFromMap()">
+          📍 Select location from map
         </button>
-        <div id="mapModal" class="map-modal" style="display:none;">
-          <div class="map-modal-content" style="background:#fff; padding:15px; border-radius:8px; position:relative;">
-            <span class="map-close" onclick="closeMapModal()"
-                  style="position:absolute; top:8px; right:12px; cursor:pointer; font-size:20px;">&times;</span>
-            <div id="map" style="width:100%;height:320px; margin-bottom:10px;"></div>
-            <button id="currentLocationBtn" type="button" class="btn btn-secondary" onclick="getCurrentLocation()">Use Current Location</button>
-            <button id="saveLocationBtn" type="button" class="btn btn-success" onclick="saveMapLocation()">Save Location</button>
-          </div>
-        </div>
         <div class="mb-3">
           <label for="password" class="form-label">Password </label>
           <input type="password" class="form-control" id="password" name="password" minlength="6" required>
@@ -498,19 +462,6 @@ function showForm() {
         <div class="mb-3">
           <label for="confirm_password" class="form-label">Confirm Password </label>
           <input type="password" class="form-control" id="confirm_password" name="confirm_password" minlength="6" required>
-        </div>
-        <h5 class="form-section-title">🎥 Camera Information</h5>
-        <div class="mb-3">
-          <label for="camera_type" class="form-label">Camera Type </label>
-          <select class="form-select" id="camera_type" name="camera_type" required>
-            <option value="">-- Select Camera Type --</option>
-            <option value="indoor">Indoor</option>
-            <option value="outdoor">Outdoor</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label for="payment_number" class="form-label">Bkash/Nagad Number (Payment Receiving) </label>
-          <input type="tel" class="form-control" id="payment_number" name="payment_number" maxlength="11" minlength="11" required>
         </div>
         <div class="form-check mb-3">
           <input class="form-check-input" type="checkbox" id="terms" required>
@@ -521,6 +472,12 @@ function showForm() {
         <button type="submit" class="btn btn-success w-100">Join as Camera Contributor</button>
       </form>
     `;
+  }
+
+  if (map) {
+    try { map.remove(); } catch (e) { /* already removed */ }
+    map = null;
+    marker = null;
   }
 
   formContainer.innerHTML = formHTML;
@@ -562,25 +519,53 @@ document.addEventListener('DOMContentLoaded', () => {
 }); 
 let map, marker;
 
-// Open Map Modal
+function ensureMapModal() {
+  if (document.getElementById('mapModal')) return;
+
+  const modal = document.createElement('div');
+  modal.id = 'mapModal';
+  modal.style.cssText = 'display:none;position:fixed;background:rgba(0,0,0,0.55);z-index:9999;overflow:hidden;border-radius:1.5rem;flex-direction:column;align-items:stretch;';
+  modal.innerHTML = `
+    <div style="position:relative;flex:1;display:flex;flex-direction:column;padding:12px 12px 10px;">
+      <span id="mapModalClose" style="position:absolute;top:8px;right:12px;cursor:pointer;font-size:24px;color:#fff;z-index:2;line-height:1;">&times;</span>
+      <div id="map" style="flex:1;width:100%;min-height:0;border-radius:8px;margin-top:4px;"></div>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-shrink:0;">
+        <button id="currentLocationBtn" type="button" onclick="getCurrentLocation()">📍 Use Current Location</button>
+        <button id="saveLocationBtn" type="button" onclick="saveMapLocation()">✔ Save Location</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  modal.querySelector('#mapModalClose').addEventListener('click', closeMapModal);
+}
+
+// Open Map Modal — overlay the sign-up form card
 function selectLocationFromMap() {
-  document.getElementById('mapModal').style.display = 'flex';
+  ensureMapModal();
+  const modal = document.getElementById('mapModal');
 
-  // Initialize map if not created yet
-  if (!map) {
-    map = L.map('map').setView([23.8103, 90.4125], 13); // Default: Dhaka
-
-    // Add tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-    }).addTo(map);
-
-    // Click to set marker
-    map.on('click', function (e) {
-      setMarker(e.latlng);
+  const formCard = document.querySelector('.col.sign-up .form.sign-up');
+  if (formCard) {
+    const r = formCard.getBoundingClientRect();
+    Object.assign(modal.style, {
+      top:    r.top    + 'px',
+      left:   r.left   + 'px',
+      width:  r.width  + 'px',
+      height: r.height + 'px',
     });
+  } else {
+    Object.assign(modal.style, { top:'0', left:'0', width:'100%', height:'100vh', borderRadius:'0' });
   }
-  setTimeout(() => { map.invalidateSize(); }, 200); // Fix map sizing
+
+  modal.style.display = 'flex';
+
+  if (!map) {
+    map = L.map('map').setView([23.8103, 90.4125], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+    map.on('click', (e) => setMarker(e.latlng));
+  }
+  setTimeout(() => { map.invalidateSize(); }, 350);
 }
 
 // Set marker and save coordinates
@@ -646,7 +631,7 @@ function ensureTermsModal() {
     <div class="map-modal-content terms-modal-content" role="dialog" aria-modal="true" aria-label="Terms and Privacy Policy">
       <span class="map-close terms-close" id="termsModalClose" aria-label="Close">&times;</span>
       <h4 class="terms-modal-title">Terms & Privacy Policy</h4>
-      <iframe id="termsPolicyFrame" class="terms-policy-frame" title="Terms and Privacy Policy" style="width: 100%; height: 100%; min-width: 100%; min-height: 100%; border: none;"></iframe>
+      <iframe id="termsPolicyFrame" class="terms-policy-frame" title="Terms and Privacy Policy"></iframe>
     </div>
   `;
 

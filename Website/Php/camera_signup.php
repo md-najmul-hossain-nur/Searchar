@@ -43,7 +43,7 @@ function save_upload($file, $prefix = '', $allowed = ['jpg','jpeg','png','pdf'])
 try {
     $required = [
         'fullname', 'email', 'mobile', 'nid', 'dob', 'gender',
-        'password', 'confirm_password', 'camera_type', 'payment_number'
+        'password', 'confirm_password'
     ];
     foreach ($required as $k) {
         if (empty($_POST[$k])) throw new Exception("Missing field: $k");
@@ -51,7 +51,24 @@ try {
 
     $email  = $_POST['email'];
     $mobile = $_POST['mobile'];
-    $nid    = $_POST['nid'];
+    $nid    = preg_replace('/\D/', '', (string)($_POST['nid'] ?? ''));
+
+    // NID: 10–17 digits only
+    if (!preg_match('/^[0-9]{10,17}$/', $nid)) {
+        throw new Exception("NID number must be 10 to 17 digits.");
+    }
+
+    // Mobile: exactly 11 digits
+    if (!preg_match('/^[0-9]{11}$/', preg_replace('/\D/', '', $mobile))) {
+        throw new Exception("Mobile number must be exactly 11 digits.");
+    }
+
+    // Age: minimum 18 years
+    $dob = $_POST['dob'] ?? '';
+    $dobTs = strtotime($dob);
+    if (!$dobTs || strtotime('+18 years', $dobTs) > time()) {
+        throw new Exception("You must be at least 18 years old to register.");
+    }
 
     // Blocked account check (email/phone reuse prevention)
     $blkExists = $pdo->prepare("SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'signup_blacklist' LIMIT 1");
@@ -91,12 +108,11 @@ try {
     $addr = [];
     foreach ($fields as $f) $addr[$f] = $_POST[$f] ?? null;
 
-    // Insert into DB (bio removed, cover_photo included)
     $stmt = $pdo->prepare("INSERT INTO camera_contributors
         (full_name,email,mobile,nid_number,nid_photo,profile_photo,cover_photo,
         date_of_birth,gender,street,city,postal_code,country,latitude,longitude,
-        password_hash,camera_type,payment_number)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+        password_hash)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
     $stmt->execute([
         $_POST['fullname'],
@@ -110,13 +126,11 @@ try {
         $_POST['gender'],
         $addr['street'],
         $addr['city'],
-        $addr['postal'],   // goes to postal_code column
+        $addr['postal'],
         $addr['country'],
         $addr['latitude'],
         $addr['longitude'],
         $password_hash,
-        $_POST['camera_type'],
-        $_POST['payment_number']
     ]);
 
     echo "<script>

@@ -62,7 +62,7 @@ $feedPosts = [];
 $cctvFeeds = [];
 
 try {
-    $stmt = $pdo->prepare("SELECT camera_id, full_name, email, profile_photo, cover_photo, city, street, country, camera_type, created_at FROM camera_contributors WHERE camera_id = :id LIMIT 1");
+    $stmt = $pdo->prepare("SELECT camera_id, full_name, email, profile_photo, cover_photo, city, street, country, created_at FROM camera_contributors WHERE camera_id = :id LIMIT 1");
     $stmt->execute(['id' => $userId]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
 

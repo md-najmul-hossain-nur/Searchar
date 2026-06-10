@@ -38,7 +38,7 @@ $id_col = $roleTableMap[$role]['id_col'];
 
 try {
     // Fetch the user row by id. Use whitelist for table/column interpolation.
-  $sql = "SELECT {$id_col}, full_name, email, mobile, nid_number, profile_photo, bio, cover_photo, date_of_birth, gender, street, city, country, latitude, longitude
+  $sql = "SELECT {$id_col}, full_name, email, mobile, profile_photo, bio, cover_photo, date_of_birth, gender, street, city, country, latitude, longitude
             FROM {$table} WHERE {$id_col} = :id LIMIT 1";
     $stmt = $pdo->prepare($sql);
     $stmt->execute(['id' => $user_id]);
@@ -116,7 +116,6 @@ if (!$user) {
   if (trim((string)($user['full_name'] ?? '')) === '') $volunteerProfileMissingParts[] = 'full name';
   if (trim((string)($user['email'] ?? '')) === '') $volunteerProfileMissingParts[] = 'email';
   if (trim((string)($user['mobile'] ?? '')) === '') $volunteerProfileMissingParts[] = 'mobile';
-  if (trim((string)($user['nid_number'] ?? '')) === '') $volunteerProfileMissingParts[] = 'NID number';
   if (trim((string)($user['date_of_birth'] ?? '')) === '') $volunteerProfileMissingParts[] = 'date of birth';
   if (trim((string)($user['gender'] ?? '')) === '') $volunteerProfileMissingParts[] = 'gender';
   if (trim((string)($user['street'] ?? '')) === '' && (trim((string)($user['latitude'] ?? '')) === '' || trim((string)($user['longitude'] ?? '')) === '')) $volunteerProfileMissingParts[] = 'street address or map location';
@@ -294,14 +293,12 @@ try {
 
   $lookupEmail = trim((string)($user['email'] ?? ''));
   $lookupMobile = trim((string)($user['mobile'] ?? ''));
-  $lookupNid = trim((string)($user['nid_number'] ?? ''));
 
-  if ($lookupEmail !== '' || $lookupMobile !== '' || $lookupNid !== '') {
-    $volExists = $pdo->prepare('SELECT volunteer_id FROM volunteers WHERE email = :email OR mobile = :mobile OR nid_number = :nid LIMIT 1');
+  if ($lookupEmail !== '' || $lookupMobile !== '') {
+    $volExists = $pdo->prepare('SELECT volunteer_id FROM volunteers WHERE email = :email OR mobile = :mobile LIMIT 1');
     $volExists->execute([
       ':email' => $lookupEmail,
       ':mobile' => $lookupMobile,
-      ':nid' => $lookupNid,
     ]);
     $existingVolunteerId = (int)($volExists->fetchColumn() ?: 0);
     if ($existingVolunteerId > 0) {

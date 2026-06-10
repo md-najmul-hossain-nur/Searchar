@@ -677,6 +677,42 @@ body {
   transform: translateY(0);
 }
 
+/* Map select button — distinct from submit buttons */
+#dynamicForm .map-select-btn,
+#dynamicForm button.map-select-btn {
+  background: #fff !important;
+  color: #1565c0 !important;
+  border: 2px solid #1976d2 !important;
+  border-radius: .6rem !important;
+  font-size: 0.97em !important;
+  font-weight: 600 !important;
+  padding: 0.65rem 1rem !important;
+  width: 100% !important;
+  margin-top: 4px !important;
+  margin-bottom: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10) !important;
+  transition: all 0.22s ease !important;
+  cursor: pointer;
+}
+
+#dynamicForm .map-select-btn:hover,
+#dynamicForm button.map-select-btn:hover {
+  background: #e3f0ff !important;
+  border-color: #1251a3 !important;
+  color: #1251a3 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 5px 16px rgba(25, 118, 210, 0.18) !important;
+}
+
+#dynamicForm .map-select-btn:active,
+#dynamicForm button.map-select-btn:active {
+  transform: translateY(0) !important;
+}
+
 /* Checkbox, radio, etc. tweaks for neatness */
 #dynamicForm .form-check-input {
   accent-color: #f75c3c;
@@ -854,12 +890,32 @@ body {
   color: #333;
 }
 
-/* Buttons Inside Modal */
+/* Buttons inside map modal */
 #currentLocationBtn,
 #saveLocationBtn {
-  width: 48%;
-  margin: 4px 1%;
+  flex: 1;
+  padding: 0.55rem 0.7rem;
+  border: none;
+  border-radius: 7px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
+
+#currentLocationBtn {
+  background: #1976d2;
+  color: #fff;
+}
+
+#currentLocationBtn:hover { background: #1251a3; }
+
+#saveLocationBtn {
+  background: #2e7d32;
+  color: #fff;
+}
+
+#saveLocationBtn:hover { background: #1b5e20; }
 
 /* Fade In Animation */
 @keyframes fadeIn {
@@ -1104,6 +1160,8 @@ back-toggle-btn:hover {
   display: flex;
   flex-direction: column;
   padding: 14px 14px 12px;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .terms-modal-title {
@@ -1111,34 +1169,48 @@ back-toggle-btn:hover {
   color: #1d3658;
   font-size: 1.05rem;
   font-weight: 700;
+  flex-shrink: 0;
 }
 
 .terms-policy-frame {
-  flex: 1 1 auto !important;
-  width: 100% !important;
-  min-width: 100% !important;
-  height: 100% !important;
-  min-height: 100% !important;
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
   border: 1px solid #d9e3ef;
   border-radius: 8px;
   background: #fff;
-  display: block !important;
+  display: block;
 }
 
 .terms-close {
   z-index: 2;
+  flex-shrink: 0;
 }
 
 @media (max-width: 700px) {
   .terms-modal-content {
     width: 96vw;
-    height: 86vh;
-    padding: 12px 10px 10px;
+    height: 88vh;
+    padding: 10px 8px 8px;
   }
 
   .terms-modal-title {
     font-size: 0.98rem;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .terms-modal-content {
+    width: 99vw;
+    height: 92vh;
+    padding: 8px 6px 6px;
+    border-radius: 6px;
+  }
+
+  .terms-modal-title {
+    font-size: 0.92rem;
+    margin-bottom: 5px;
   }
 }
 

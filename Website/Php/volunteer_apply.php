@@ -36,7 +36,6 @@ function buildVolunteerMissingProfileParts(array $user): array {
     if (trim((string)($user['full_name'] ?? '')) === '') $missing[] = 'full name';
     if (trim((string)($user['email'] ?? '')) === '') $missing[] = 'email';
     if (trim((string)($user['mobile'] ?? '')) === '') $missing[] = 'mobile';
-    if (trim((string)($user['nid_number'] ?? '')) === '') $missing[] = 'NID number';
     if (trim((string)($user['date_of_birth'] ?? '')) === '') $missing[] = 'date of birth';
     if (trim((string)($user['gender'] ?? '')) === '') $missing[] = 'gender';
 
@@ -70,7 +69,7 @@ try {
 
     ensureVolunteerApplicationsTable($pdo);
 
-    $userStmt = $pdo->prepare('SELECT user_id, full_name, email, mobile, nid_number, city, country, date_of_birth, gender, street, latitude, longitude FROM users WHERE user_id = :id LIMIT 1');
+    $userStmt = $pdo->prepare('SELECT user_id, full_name, email, mobile, city, country, date_of_birth, gender, street, latitude, longitude FROM users WHERE user_id = :id LIMIT 1');
     $userStmt->execute([':id' => $userId]);
     $user = $userStmt->fetch(PDO::FETCH_ASSOC);
     if (!$user) {
@@ -80,7 +79,6 @@ try {
     $fullName = trim((string)($user['full_name'] ?? ''));
     $email = trim((string)($user['email'] ?? ''));
     $mobile = trim((string)($user['mobile'] ?? ''));
-    $nidNumber = trim((string)($user['nid_number'] ?? ''));
     $city = trim((string)($user['city'] ?? ''));
     $country = trim((string)($user['country'] ?? ''));
 
@@ -95,23 +93,21 @@ try {
         $note = trim((string)($input['note'] ?? ''));
     }
 
-    $volStmt = $pdo->prepare('SELECT volunteer_id FROM volunteers WHERE email = :email OR mobile = :mobile OR nid_number = :nid LIMIT 1');
+    $volStmt = $pdo->prepare('SELECT volunteer_id FROM volunteers WHERE email = :email OR mobile = :mobile LIMIT 1');
     $volStmt->execute([
         ':email' => $email,
         ':mobile' => $mobile,
-        ':nid' => $nidNumber,
     ]);
     $volunteerId = (int)($volStmt->fetchColumn() ?: 0);
 
     if ($volunteerId > 0) {
         $approvedUpsert = $pdo->prepare("INSERT INTO volunteer_applications
-            (user_id, full_name, email, mobile, nid_number, city, country, note, status, volunteer_id, reviewed_by, review_note, reviewed_at)
-            VALUES (:user_id, :full_name, :email, :mobile, :nid_number, :city, :country, :note, 'approved', :volunteer_id, 'system', 'Already verified volunteer account found.', NOW())
+            (user_id, full_name, email, mobile, city, country, note, status, volunteer_id, reviewed_by, review_note, reviewed_at)
+            VALUES (:user_id, :full_name, :email, :mobile, :city, :country, :note, 'approved', :volunteer_id, 'system', 'Already verified volunteer account found.', NOW())
             ON DUPLICATE KEY UPDATE
               full_name = VALUES(full_name),
               email = VALUES(email),
               mobile = VALUES(mobile),
-              nid_number = VALUES(nid_number),
               city = VALUES(city),
               country = VALUES(country),
               note = VALUES(note),
@@ -125,7 +121,6 @@ try {
             ':full_name' => $fullName,
             ':email' => $email,
             ':mobile' => $mobile,
-            ':nid_number' => $nidNumber,
             ':city' => $city,
             ':country' => $country,
             ':note' => $note,
@@ -142,13 +137,12 @@ try {
     }
 
     $upsert = $pdo->prepare("INSERT INTO volunteer_applications
-      (user_id, full_name, email, mobile, nid_number, city, country, note, status, review_note, reviewed_by, reviewed_at)
-      VALUES (:user_id, :full_name, :email, :mobile, :nid_number, :city, :country, :note, 'pending', NULL, NULL, NULL)
+      (user_id, full_name, email, mobile, city, country, note, status, review_note, reviewed_by, reviewed_at)
+      VALUES (:user_id, :full_name, :email, :mobile, :city, :country, :note, 'pending', NULL, NULL, NULL)
       ON DUPLICATE KEY UPDATE
         full_name = VALUES(full_name),
         email = VALUES(email),
         mobile = VALUES(mobile),
-        nid_number = VALUES(nid_number),
         city = VALUES(city),
         country = VALUES(country),
         note = VALUES(note),
@@ -162,7 +156,6 @@ try {
         ':full_name' => $fullName,
         ':email' => $email,
         ':mobile' => $mobile,
-        ':nid_number' => $nidNumber,
         ':city' => $city,
         ':country' => $country,
         ':note' => $note,

@@ -141,17 +141,16 @@ try {
     $fullName = trim((string)($user['full_name'] ?? ''));
     $email = trim((string)($user['email'] ?? ''));
     $mobile = trim((string)($user['mobile'] ?? ''));
-    $nidNumber = trim((string)($user['nid_number'] ?? ''));
+    $nidNumber = trim((string)($application['nid_number'] ?? ''));
 
-    if ($fullName === '' || $email === '' || $mobile === '' || $nidNumber === '') {
-        throw new RuntimeException('User must have full name, email, mobile, and NID for volunteer approval.');
+    if ($fullName === '' || $email === '' || $mobile === '') {
+        throw new RuntimeException('User must have full name, email, and mobile for volunteer approval.');
     }
 
-    $findVol = $pdo->prepare('SELECT volunteer_id FROM volunteers WHERE LOWER(email) = LOWER(:email) OR mobile = :mobile OR nid_number = :nid LIMIT 1');
+    $findVol = $pdo->prepare('SELECT volunteer_id FROM volunteers WHERE LOWER(email) = LOWER(:email) OR mobile = :mobile LIMIT 1');
     $findVol->execute([
         ':email' => $email,
         ':mobile' => $mobile,
-        ':nid' => $nidNumber,
     ]);
     $volunteerId = (int)($findVol->fetchColumn() ?: 0);
 
@@ -166,11 +165,11 @@ try {
             $passwordHash = password_hash(bin2hex(random_bytes(8)), PASSWORD_BCRYPT);
         }
 
-        $nidPhoto = trim((string)($user['nid_photo'] ?? ''));
-        if ($nidPhoto === '') {
-            // volunteers.nid_photo is often NOT NULL in existing schema dumps.
-            $nidPhoto = 'missing_nid_photo.png';
+        if ($nidNumber === '') {
+            $nidNumber = 'VOL_' . $userId . '_' . date('YmdHis');
         }
+
+        $nidPhoto = 'missing_nid_photo.png';
 
         $insertVol->execute([
             ':full_name' => $fullName,

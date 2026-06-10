@@ -53,7 +53,24 @@ try {
 
     $email  = $_POST['email'];
     $mobile = $_POST['mobile'];
-    $nid    = $_POST['nid'];
+    $nid    = preg_replace('/\D/', '', (string)($_POST['nid'] ?? ''));
+
+    // NID: 10–17 digits only
+    if (!preg_match('/^[0-9]{10,17}$/', $nid)) {
+        throw new Exception("NID number must be 10 to 17 digits.");
+    }
+
+    // Mobile: exactly 11 digits
+    if (!preg_match('/^[0-9]{11}$/', preg_replace('/\D/', '', $mobile))) {
+        throw new Exception("Mobile number must be exactly 11 digits.");
+    }
+
+    // Age: minimum 18 years
+    $dob = $_POST['dob'] ?? '';
+    $dobTs = strtotime($dob);
+    if (!$dobTs || strtotime('+18 years', $dobTs) > time()) {
+        throw new Exception("You must be at least 18 years old to register.");
+    }
 
     // Blocked account check (email/phone reuse prevention)
     $blkExists = $pdo->prepare("SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'signup_blacklist' LIMIT 1");

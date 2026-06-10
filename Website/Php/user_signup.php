@@ -116,19 +116,16 @@ try {
         throw new Exception('Email or mobile already registered. Please sign in.');
     }
 
-    $nidSeed = 'AUTO_NID_' . date('YmdHis') . '_' . random_int(1000, 9999);
-    $nidNumber = generateUniqueValue($pdo, 'nid_number', $nidSeed);
     $passwordHash = password_hash($password, PASSWORD_BCRYPT);
 
     $stmt = $pdo->prepare("INSERT INTO users
-        (full_name, email, mobile, nid_number, nid_photo, profile_photo, cover_photo, date_of_birth, gender, street, city, postal_code, country, latitude, longitude, password_hash)
-        VALUES (?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, ?)");
+        (full_name, email, mobile, profile_photo, cover_photo, date_of_birth, gender, street, city, postal_code, country, latitude, longitude, password_hash)
+        VALUES (?, ?, ?, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, ?)");
 
     $stmt->execute([
         $fullName,
         $emailValue,
         $mobileValue,
-        $nidNumber,
         $passwordHash,
     ]);
 
