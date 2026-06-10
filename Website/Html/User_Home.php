@@ -449,6 +449,7 @@ try {
   <link rel="icon" type="image/png" href="../Images/logo.png">
   <!-- Main CSS -->
   <link rel="stylesheet" href="../css/User_Home.css?v=20260410b">
+  <link rel="stylesheet" href="../css/post_media_shared.css?v=20260611a">
   <link rel="stylesheet" href="../css/post_modal_shared.css?v=20260409a">
   <link rel="stylesheet" href="../css/profile_button_shared.css?v=20260410a">
 

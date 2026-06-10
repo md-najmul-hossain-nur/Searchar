@@ -4979,6 +4979,18 @@ function loadActiveInvestigations() {
   const saved = localStorage.getItem('activeAiInvestigationsV4');
   if (tbody && saved && saved.trim() !== '') {
     tbody.innerHTML = saved;
+    // Clean up any old "Resolved" rows that might still be in localStorage
+    const resolvedRows = tbody.querySelectorAll('tr');
+    let changed = false;
+    resolvedRows.forEach(row => {
+      if (row.innerHTML.includes('Resolved') || row.innerHTML.includes('status-approved')) {
+        row.remove();
+        changed = true;
+      }
+    });
+    if (changed) {
+      saveActiveInvestigations();
+    }
   }
 }
 
@@ -5150,10 +5162,10 @@ async function confirmAiMatch(btn, sourceType) {
     btn.style.backgroundColor = '#2e7d32';
     btn.style.color = '#fff';
 
-    // Change Active Investigation row status
-    const invStatus = document.getElementById(`inv-status-${caseId}`);
-    if (invStatus) {
-      invStatus.innerHTML = '<span class="status-approved">Resolved</span>';
+    // Remove Active Investigation row since it's now confirmed
+    const invRow = document.getElementById(`investigation-row-${caseId}`);
+    if (invRow) {
+      invRow.remove();
       saveActiveInvestigations();
     }
     

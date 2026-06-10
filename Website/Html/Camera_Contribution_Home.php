@@ -140,6 +140,7 @@ try {
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Main CSS -->
   <link rel="stylesheet" href="../css/Camera_Contribution_Home.css?v=20260406e">
+  <link rel="stylesheet" href="../css/post_media_shared.css?v=20260611a">
   <link rel="stylesheet" href="../css/post_modal_shared.css?v=20260409a">
   <link rel="stylesheet" href="../css/profile_button_shared.css?v=20260410a">
   <link rel="stylesheet" href="../css/notifications_shared.css">
@@ -472,7 +473,7 @@ try {
   <p style="margin:6px 0 12px; color:#555; font-size:13px;">Start a webcam or upload a recorded feed to help community monitoring. You can view all your submitted feeds anytime.</p>
   
   <button id="startFeedBtn" class="camera-btn">
-    Webcam / Upload Recorded Feed
+    CCTV / Upload Recorded Footage
   </button>
   <button class="camera-btn" onclick="window.location.href='../Html/Camera_Contribution_Feed.php';">
     View Feed
@@ -484,14 +485,14 @@ try {
 <div id="camFeedFormModal" class="cam-form-popup">
   <div class="cam-form-content">
     <span class="cam-form-close">&times;</span>
-    <h3>Upload or Start Webcam Feed</h3>
+    <h3>Upload or Start CCTV Feed</h3>
     <p class="cam-form-subtitle">Add one by one, your camera name will auto increment (Camera 1, Camera 2, ...).</p>
 
     <form id="camFeedForm">
       <!-- Webcam / Recorded Selection -->
       <label>
         <input type="radio" name="feedType" value="webcam" required checked>
-        Webcam
+        CCTV
       </label>
       <label>
         <input type="radio" name="feedType" value="recorded" required>
@@ -506,10 +507,9 @@ try {
       <div id="camWebcamSection">
         <div class="cam-webcam-preview-wrap">
           <video id="camWebcamPreview" class="cam-webcam-preview" autoplay playsinline muted></video>
-          <div id="camWebcamPlaceholder" class="cam-webcam-placeholder">Webcam preview will appear here</div>
+          <div id="camWebcamPlaceholder" class="cam-webcam-placeholder">CCTV preview will appear here</div>
         </div>
-        <button type="button" id="camStartWebcamBtn" class="cam-secondary-btn">Start Webcam</button>
-        <small id="camWebcamStatus" class="cam-form-hint">Browser permission is required to preview your webcam.</small>
+        <button type="button" id="camStartWebcamBtn" class="cam-secondary-btn">Start CCTV</button> 
       </div>
 
       <!-- File Upload Section for Recorded -->

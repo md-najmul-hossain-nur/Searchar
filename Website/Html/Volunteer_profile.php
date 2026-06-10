@@ -107,6 +107,7 @@ try {
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Main CSS -->
   <link rel="stylesheet" href="../css/Volunteer_profile.css?v=20260406f">
+  <link rel="stylesheet" href="../css/post_media_shared.css?v=20260611a">
   <link rel="stylesheet" href="../css/post_modal_shared.css?v=20260409a">
     <link rel="stylesheet" href="../css/notifications_shared.css">
 

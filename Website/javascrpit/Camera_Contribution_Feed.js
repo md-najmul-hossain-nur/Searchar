@@ -121,11 +121,23 @@ document.addEventListener('DOMContentLoaded', () => {
 					
 					select.innerHTML = '';
 					videoDevices.forEach((device, index) => {
+						const labelLower = (device.label || '').toLowerCase();
+						if (labelLower.includes('virtual') || labelLower.includes('obs')) {
+							return;
+						}
 						const option = document.createElement('option');
 						option.value = device.deviceId;
 						option.text = device.label || `Camera ${index + 1}`;
 						select.appendChild(option);
 					});
+
+					// If no real cameras found, show a message
+					if (select.options.length === 0) {
+						const option = document.createElement('option');
+						option.text = "No actual cameras found";
+						option.disabled = true;
+						select.appendChild(option);
+					}
 
 					const feedId = wrap.getAttribute('data-feed-id');
 					const savedId = localStorage.getItem(`searchar_cam_feed_${feedId}`);
