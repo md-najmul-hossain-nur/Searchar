@@ -1,15 +1,19 @@
 <?php
 declare(strict_types=1);
 session_start();
+
+// Restore session if multi-role logged in
+if (isset($_SESSION['active_roles']['police'])) {
+    $_SESSION['role'] = 'police';
+    $_SESSION['user_id'] = $_SESSION['active_roles']['police'];
+}
+
 require_once __DIR__ . '/../Php/db.php';
 
-if (
-  empty($_SESSION['role']) ||
-  $_SESSION['role'] !== 'police' ||
-  empty($_SESSION['user_id'])
-) {
-  header('Location: ../Html/login.html?error=session');
-  exit();
+// Police home must only allow authenticated police officers
+if (empty($_SESSION['role']) || $_SESSION['role'] !== 'police' || empty($_SESSION['user_id'])) {
+    header('Location: ../Html/login.html?error=session');
+    exit();
 }
 
 $user_id = (int) $_SESSION['user_id'];
@@ -471,32 +475,64 @@ try {
     }
     .case-section-actions {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
     }
     .case-section-btn {
       border: none;
       border-radius: 8px;
       cursor: pointer;
       color: #fff;
-      font-weight: 700;
+      font-weight: 600;
       font-size: 14px;
-      padding: 10px 12px;
-      transition: transform .08s ease, opacity .15s ease;
+      padding: 12px 14px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
     }
     .case-section-btn:hover {
-      opacity: .95;
-      transform: translateY(-1px);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
     }
     .case-section-btn:active {
       transform: translateY(0);
     }
     .case-section-btn.view {
-      background: #1f6feb;
+      background: linear-gradient(135deg, #1f6feb, #1656c0);
     }
     .case-section-btn.history {
-      background: #0f766e;
+      background: linear-gradient(135deg, #0f766e, #0b5852);
     }
+    .case-section-btn.proofs {
+      background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+    }
+    .emergency-btn {
+      flex: 1;
+      min-width: 140px;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #fff;
+      font-weight: 600;
+      font-size: 13px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    .emergency-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+    .btn-hospital { background: linear-gradient(135deg, #ef4444, #dc2626); }
+    .btn-fire { background: linear-gradient(135deg, #f97316, #ea580c); }
+    .btn-police { background: linear-gradient(135deg, #0ea5e9, #0284c7); }
     .case-preview-footer {
       display: flex;
       justify-content: flex-end;
@@ -604,9 +640,11 @@ try {
 <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
 
 <!-- Buttons -->
-<button id="find-hospitals" style="padding:8px 15px;background:#f05454;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">🏥 Show Nearby Hospitals</button>
-<button id="find-fire" style="padding:8px 15px;background:#ff7f11;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">🚒 Show Fire Stations</button>
-<button id="find-police" style="padding:8px 15px;background:#0077b6;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:10px;">👮 Show Police Stations</button>
+<div class="emergency-locator-actions" style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+  <button id="find-hospitals" class="emergency-btn btn-hospital"><i class="fa-solid fa-hospital"></i> Show Nearby Hospitals</button>
+  <button id="find-fire" class="emergency-btn btn-fire"><i class="fa-solid fa-fire-extinguisher"></i> Show Fire Stations</button>
+  <button id="find-police" class="emergency-btn btn-police"><i class="fa-solid fa-building-shield"></i> Show Police Stations</button>
+</div>
 
 <!-- Map Container -->
 <div id="emergency-map" style="height: 400px; border-radius: 8px; border: 2px solid #000; width: 100%; max-width: 100%; overflow: hidden; box-sizing: border-box; position: relative; z-index: 0;"></div>
@@ -621,8 +659,9 @@ try {
   <h2 class="case-section-title">Investigation Cases</h2>
   <p class="case-section-desc">Track investigation cases in one place. Open all current cases or view solved case history.</p>
   <div class="case-section-actions">
-    <button id="openAllCasesBtn" type="button" class="case-section-btn view">&#128193; View All Cases</button>
-    <button id="openSolvedCasesBtn" type="button" class="case-section-btn history">&#9989; Solved Case History</button>
+    <button id="openAllCasesBtn" type="button" class="case-section-btn view"><i class="fa-solid fa-folder-open"></i> View All Cases</button>
+    <button id="openSolvedCasesBtn" type="button" class="case-section-btn history"><i class="fa-solid fa-circle-check"></i> Solved Case History</button>
+    <button id="openVolunteerProofsBtn" type="button" class="case-section-btn proofs"><i class="fa-solid fa-shield-halved"></i> Volunteer Mission Proofs</button>
   </div>
 </div>
 
@@ -1451,6 +1490,114 @@ try {
         </form>
       </div>
     </div>
+
+    <div id="volunteerProofsModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.52); z-index:4300; align-items:center; justify-content:center; padding:16px;">
+      <div style="width:min(900px,96vw); max-height:88vh; overflow:auto; background:#fff; border-radius:12px; box-shadow:0 14px 32px rgba(0,0,0,.25); padding:14px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid #e5e7eb; padding-bottom:8px;">
+          <h3 style="margin:0; color:#1f2937;">Volunteer Mission Proofs</h3>
+          <button type="button" id="closeVolunteerProofsBtn" style="border:none; background:#f3f4f6; width:32px; height:32px; border-radius:7px; cursor:pointer; font-size:18px;">&times;</button>
+        </div>
+        <div class="all-cases-table-wrap">
+          <table class="all-cases-admin-table">
+            <thead>
+              <tr>
+                <th>Mission Title</th>
+                <th>Volunteer</th>
+                <th>Case Ref</th>
+                <th>Proof File</th>
+                <th>Submitted</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="volunteerProofsTableBody">
+              <tr><td colspan="6">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const proofsBtn = document.getElementById('openVolunteerProofsBtn');
+      const proofsModal = document.getElementById('volunteerProofsModal');
+      const proofsClose = document.getElementById('closeVolunteerProofsBtn');
+      const proofsBody = document.getElementById('volunteerProofsTableBody');
+
+      if (proofsBtn && proofsModal) {
+        proofsBtn.addEventListener('click', () => {
+          proofsModal.style.display = 'flex';
+          loadVolunteerProofs();
+        });
+
+        proofsClose.addEventListener('click', () => {
+          proofsModal.style.display = 'none';
+        });
+
+        proofsModal.addEventListener('click', (e) => {
+          if (e.target === proofsModal) proofsModal.style.display = 'none';
+        });
+      }
+
+      function loadVolunteerProofs() {
+        proofsBody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
+        fetch('../Php/police_fetch_volunteer_proofs.php')
+          .then(res => res.json())
+          .then(data => {
+            if (!data.success) {
+              proofsBody.innerHTML = '<tr><td colspan="6" style="color:red;">Failed to load proofs.</td></tr>';
+              return;
+            }
+            if (!data.proofs || data.proofs.length === 0) {
+              proofsBody.innerHTML = '<tr><td colspan="6">No pending proofs at this moment.</td></tr>';
+              return;
+            }
+            proofsBody.innerHTML = data.proofs.map(p => {
+              const fileLink = p.proof_file ? `<a href="../${p.proof_file}" target="_blank" style="color:#2563eb; font-weight:bold;">View Proof</a>` : 'No file';
+              return `
+                <tr>
+                  <td>${p.mission_title}</td>
+                  <td>${p.volunteer_name}</td>
+                  <td>${p.case_ref}</td>
+                  <td>${fileLink}</td>
+                  <td>${p.proof_submitted_at}</td>
+                  <td>
+                    <button type="button" class="case-section-btn proofs" onclick="verifyProof(${p.mission_id}, 'accept_close')" style="padding:6px 10px; margin-bottom:5px; font-size:12px;">Accept & Close Case</button>
+                    <button type="button" class="case-section-btn history" onclick="verifyProof(${p.mission_id}, 'reject')" style="background:#dc2626; padding:6px 10px; font-size:12px;">Reject Proof</button>
+                  </td>
+                </tr>
+              `;
+            }).join('');
+          })
+          .catch(err => {
+            proofsBody.innerHTML = '<tr><td colspan="6" style="color:red;">Network error.</td></tr>';
+          });
+      }
+
+      window.verifyProof = function(missionId, action) {
+        if (!confirm('Are you sure you want to ' + (action === 'accept_close' ? 'accept this proof and CLOSE the associated case?' : 'REJECT this proof?'))) {
+          return;
+        }
+        fetch('../Php/police_verify_proof.php', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ mission_id: missionId, action: action })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            alert('Proof verified successfully.');
+            loadVolunteerProofs();
+          } else {
+            alert('Error: ' + data.error);
+          }
+        })
+        .catch(err => {
+          alert('Network error while verifying proof.');
+        });
+      };
+    });
+    </script>
 
     </body>
       <script src="../javascrpit/Policeman_Home.js?v=20260410e"></script>

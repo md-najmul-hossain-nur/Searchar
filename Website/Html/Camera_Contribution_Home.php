@@ -3,6 +3,12 @@ declare(strict_types=1);
 session_start();
 require_once __DIR__ . '/../Php/db.php';
 
+// Restore session if multi-role logged in
+if (isset($_SESSION['active_roles']['contributor'])) {
+    $_SESSION['role'] = 'contributor';
+    $_SESSION['user_id'] = $_SESSION['active_roles']['contributor'];
+}
+
 // so always fetch from `camera_contributors` using the session `user_id`.
 if (
   empty($_SESSION['role']) ||
@@ -217,9 +223,37 @@ try {
 <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
 
 <!-- Buttons -->
-<button id="find-hospitals" style="padding:8px 15px;background:#f05454;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">Show Nearby Hospitals</button>
-<button id="find-fire" style="padding:8px 15px;background:#ff7f11;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:5px;">Show Fire Stations</button>
-<button id="find-police" style="padding:8px 15px;background:#0077b6;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:10px;">Show Police Stations</button>
+<style>
+    .emergency-btn {
+      flex: 1;
+      min-width: 140px;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #fff;
+      font-weight: 600;
+      font-size: 13px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    .emergency-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+    .btn-hospital { background: linear-gradient(135deg, #ef4444, #dc2626); }
+    .btn-fire { background: linear-gradient(135deg, #f97316, #ea580c); }
+    .btn-police { background: linear-gradient(135deg, #0ea5e9, #0284c7); }
+</style>
+<div class="emergency-locator-actions" style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+  <button id="find-hospitals" class="emergency-btn btn-hospital"><i class="fa-solid fa-hospital"></i> Show Nearby Hospitals</button>
+  <button id="find-fire" class="emergency-btn btn-fire"><i class="fa-solid fa-fire-extinguisher"></i> Show Fire Stations</button>
+  <button id="find-police" class="emergency-btn btn-police"><i class="fa-solid fa-building-shield"></i> Show Police Stations</button>
+</div>
 
 <!-- Map Container -->
 <div id="emergency-map" style="height: 400px; border-radius: 8px; border: 2px solid #000; width: 100%; max-width: 100%; overflow: hidden; box-sizing: border-box; position: relative; z-index: 0;"></div>

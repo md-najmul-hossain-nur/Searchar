@@ -103,17 +103,6 @@ document.addEventListener('DOMContentLoaded', () => {
 					if (!select) {
 						select = document.createElement('select');
 						select.className = 'camera-select';
-						select.style.width = '100%';
-						select.style.padding = '10px';
-						select.style.borderRadius = '8px';
-						select.style.background = '#f8f9fa';
-						select.style.color = '#333';
-						select.style.border = '1px solid #ccc';
-						select.style.fontFamily = 'inherit';
-						select.style.fontSize = '14px';
-						select.style.cursor = 'pointer';
-						select.style.textAlign = 'center';
-						select.style.textAlignLast = 'center';
 						
 						select.addEventListener('change', (e) => {
 							startCameraForWrap(wrap, e.target.value);

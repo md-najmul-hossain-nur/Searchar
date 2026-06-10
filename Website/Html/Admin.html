@@ -127,8 +127,8 @@
                 </div>
                 <div class="card">
                     <div class="card-title">AI PERFORMANCE</div>
-                    <div class="card-value">49.65%</div>
-                    <div class="card-meta up">Increased 12% <span>Since last month</span></div>
+                    <div class="card-value" id="ai-perf-value">0%</div>
+                    <div class="card-meta" id="ai-perf-meta"><span>Since last month</span></div>
                     <div class="card-icon card-icon-blue"><i class="fa-solid fa-brain"></i></div>
                 </div>
             </div>
@@ -1200,6 +1200,18 @@
         </div>
     </div>
 
+    <!-- Match Details Modal -->
+    <div id="matchDetailsModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.52); z-index:4300; align-items:center; justify-content:center; padding:16px;">
+        <div style="width:min(900px,96vw); max-height:88vh; overflow:auto; background:#fff; border-radius:12px; box-shadow:0 14px 32px rgba(0,0,0,.25); padding:20px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #e5e7eb; padding-bottom:10px;">
+                <h3 style="margin:0; color:#1f2937; font-size:1.25rem;">AI Match Details</h3>
+                <button type="button" onclick="closeMatchDetailsModal()" style="border:none; background:#f3f4f6; width:32px; height:32px; border-radius:7px; cursor:pointer; font-size:18px;">&times;</button>
+            </div>
+            <div id="matchDetailsContent">
+                Loading...
+            </div>
+        </div>
+    </div>
 
 
 
@@ -1345,6 +1357,8 @@
             const camMetaEl = document.getElementById('camera-conn-meta');
             const trafficEl = document.getElementById('traffic-value');
             const trafficMetaEl = document.getElementById('traffic-meta');
+            const aiPerfEl = document.getElementById('ai-perf-value');
+            const aiPerfMetaEl = document.getElementById('ai-perf-meta');
 
             const setTrend = (el, pct, baseText, periodLabel) => {
                 if (!el) return;
@@ -1366,7 +1380,8 @@
                     traffic = 0,
                     userTrend = { current: 0, previous: 0, pct: 0 },
                     cameraTrend = { current: 0, previous: 0, pct: 0 },
-                    trafficTrend = { current: 0, previous: 0, pct: 0 }
+                    trafficTrend = { current: 0, previous: 0, pct: 0 },
+                    aiPerformance = { current_perf: 0, trend: 0 }
                 } = res.data;
 
                 const totalAccounts = users + policemen + volunteers;
@@ -1394,11 +1409,20 @@
                     `Total visits (all time): ${traffic}`,
                     'since last week'
                 );
+
+                if (aiPerfEl) aiPerfEl.textContent = `${aiPerformance.current_perf}%`;
+                setTrend(
+                    aiPerfMetaEl,
+                    aiPerformance.trend || 0,
+                    'AI Detection Success',
+                    'since last month'
+                );
             } catch (e) {
                 console.error('Dashboard counts load failed', e);
                 if (usersMetaEl) usersMetaEl.textContent = 'Counts unavailable (check DB/API)';
                 if (camMetaEl) camMetaEl.textContent = 'Camera total unavailable (check DB/API)';
                 if (trafficMetaEl) trafficMetaEl.textContent = 'Traffic unavailable (check DB/API)';
+                if (aiPerfMetaEl) aiPerfMetaEl.textContent = 'AI stats unavailable (check DB/API)';
             }
         }
 

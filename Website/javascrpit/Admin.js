@@ -2927,8 +2927,13 @@ function openAddVolunteerModal() {
           <td>${esc(createdAt)}</td>
           <td>${statusHtml}</td>
           <td>
-            <button type="button" data-broadcast-request-action="approve" data-broadcast-request-id="${esc(requestId)}" ${canAct ? '' : 'disabled'}>Approve</button>
-            <button type="button" data-broadcast-request-action="reject" data-broadcast-request-id="${esc(requestId)}" ${canAct ? '' : 'disabled'}>Reject</button>
+            ${status === 'approved' 
+              ? `<button type="button" data-broadcast-request-action="close_link" data-broadcast-request-id="${esc(requestId)}" style="background:#dc2626;">Close Link</button>` 
+              : `
+                <button type="button" data-broadcast-request-action="approve" data-broadcast-request-id="${esc(requestId)}" ${canAct ? '' : 'disabled'}>Approve</button>
+                <button type="button" data-broadcast-request-action="reject" data-broadcast-request-id="${esc(requestId)}" ${canAct ? '' : 'disabled'}>Reject</button>
+              `
+            }
           </td>
         </tr>
       `;
@@ -5149,10 +5154,70 @@ async function confirmAiMatch(btn, sourceType) {
           <td>${escapeHtml(reporter)}</td>
           <td><span class="status-approved">Confirmed: ${escapeHtml(sourceType)}</span></td>
           <td>
+            <button class="ai-action-btn" style="background:#4b5563; padding: 5px 10px; font-size:12px; margin-bottom: 5px; width: 100%;" onclick="openMatchDetailsModal('${caseId}', '${sourceType}', '${targetImgSrc}', '${matchImgSrc}', '${encodeURIComponent(detailsHtml)}', '${escapeHtml(reporter)}')">View Details</button>
             <button class="ai-action-btn" style="background:#1877F2; padding: 5px 10px; font-size:12px; margin-bottom: 5px; width: 100%;" onclick="notifyReporterHandover('${caseId}', this)">Notify Reporter</button>
             ${sourceType === 'Website Post' ? `<button class="ai-action-btn btn-say-thanks" style="background:#28a745; padding: 5px 10px; font-size:12px; width: 100%;" onclick="sayThanksToFinder('${caseId}', '${data.matched_post_id}', this)">Say Thanks</button>` : ''}
           </td>
       `;
+    confirmedTable.appendChild(tr);
+
+    // After confirming, immediately open the match details modal as requested
+    openMatchDetailsModal(caseId, sourceType, targetImgSrc, matchImgSrc, encodeURIComponent(detailsHtml), reporter);
+
+window.openMatchDetailsModal = function(caseId, sourceType, targetImg, matchImg, encodedDetails, reporter) {
+    const modal = document.getElementById('matchDetailsModal');
+    const content = document.getElementById('matchDetailsContent');
+    if (!modal || !content) return;
+
+    const detailsHtml = decodeURIComponent(encodedDetails).replace(new RegExp('<button[^>]*>.*?</button>', 'ig'), '');
+
+    let extraInfo = '';
+    if (sourceType === 'Website Post') {
+        extraInfo = `
+            <div style="margin-top:15px; padding:10px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px;">
+                <h4 style="margin:0 0 5px; color:#166534;">Related Post Information</h4>
+                <p style="margin:0; font-size:14px; color:#15803d;">This match was found in a user-submitted post on the website.</p>
+                <div style="margin-top:10px;">
+                    <a href="#" style="color:#166534; font-weight:600; text-decoration:underline;">View User Profile</a>
+                </div>
+            </div>`;
+    } else if (sourceType.toLowerCase().includes('cctv') || sourceType.toLowerCase().includes('camera')) {
+        extraInfo = `
+            <div style="margin-top:15px; padding:10px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px;">
+                <h4 style="margin:0 0 5px; color:#1e40af;">Related Camera Feed Information</h4>
+                <p style="margin:0; font-size:14px; color:#1d4ed8;">This match was identified via an active CCTV/Camera feed.</p>
+                <div style="margin-top:10px;">
+                    <a href="#" style="color:#1e40af; font-weight:600; text-decoration:underline;">View Camera Owner Profile</a>
+                </div>
+            </div>`;
+    }
+
+    content.innerHTML = `
+        <div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">
+            <div style="flex:1; min-width:250px;">
+                <h4 style="margin-top:0;">Target Image (Case ${caseId})</h4>
+                <img src="${targetImg}" style="width:100%; max-width:300px; border-radius:8px; border:2px solid #e5e7eb;">
+                <p style="margin-top:10px;"><strong>Original Reporter:</strong> ${reporter}</p>
+            </div>
+            <div style="flex:1; min-width:250px;">
+                <h4 style="margin-top:0;">Matched Image (${sourceType})</h4>
+                <img src="${matchImg}" style="width:100%; max-width:300px; border-radius:8px; border:2px solid #22c55e;">
+                <div style="margin-top:10px; background:#f9fafb; padding:10px; border-radius:6px;">
+                    <strong>Match Details:</strong><br>
+                    ${detailsHtml}
+                </div>
+            </div>
+        </div>
+        ${extraInfo}
+    `;
+
+    modal.style.display = 'flex';
+};
+
+window.closeMatchDetailsModal = function() {
+    const modal = document.getElementById('matchDetailsModal');
+    if (modal) modal.style.display = 'none';
+};
     confirmedTable.prepend(tr);
 
     localStorage.setItem('confirmedAiMatchesV3', confirmedTable.innerHTML);

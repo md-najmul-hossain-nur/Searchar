@@ -47,6 +47,38 @@ function windowCounts(PDO $pdo, string $table, string $dateCol): array {
     }
 }
 
+function calculateAiPerformance(PDO $pdo): array {
+    if (!tableExists($pdo, 'crime_reports')) {
+        return ['current_perf' => 0.0, 'trend' => 0.0];
+    }
+    try {
+        // Overall
+        $totalStmt = $pdo->query("SELECT COUNT(*) as c FROM crime_reports");
+        $totalReports = (int)($totalStmt->fetch(PDO::FETCH_ASSOC)['c'] ?? 0);
+        $aiStmt = $pdo->query("SELECT COUNT(*) as c FROM crime_reports WHERE status = 'closed' AND description LIKE '%[Closed by Admin AI%'");
+        $aiClosed = (int)($aiStmt->fetch(PDO::FETCH_ASSOC)['c'] ?? 0);
+        $currentPerf = $totalReports > 0 ? ($aiClosed / $totalReports) * 100 : 0;
+
+        // Last month vs This month
+        $lmTotalStmt = $pdo->query("SELECT COUNT(*) as c FROM crime_reports WHERE MONTH(created_at) = MONTH(CURRENT_DATE() - INTERVAL 1 MONTH) AND YEAR(created_at) = YEAR(CURRENT_DATE() - INTERVAL 1 MONTH)");
+        $lmTotal = (int)($lmTotalStmt->fetch(PDO::FETCH_ASSOC)['c'] ?? 0);
+        $lmAiStmt = $pdo->query("SELECT COUNT(*) as c FROM crime_reports WHERE status = 'closed' AND description LIKE '%[Closed by Admin AI%' AND MONTH(closed_at) = MONTH(CURRENT_DATE() - INTERVAL 1 MONTH) AND YEAR(closed_at) = YEAR(CURRENT_DATE() - INTERVAL 1 MONTH)");
+        $lmAi = (int)($lmAiStmt->fetch(PDO::FETCH_ASSOC)['c'] ?? 0);
+        $lmPerf = $lmTotal > 0 ? ($lmAi / $lmTotal) * 100 : 0;
+        
+        $tmTotalStmt = $pdo->query("SELECT COUNT(*) as c FROM crime_reports WHERE MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE())");
+        $tmTotal = (int)($tmTotalStmt->fetch(PDO::FETCH_ASSOC)['c'] ?? 0);
+        $tmAiStmt = $pdo->query("SELECT COUNT(*) as c FROM crime_reports WHERE status = 'closed' AND description LIKE '%[Closed by Admin AI%' AND MONTH(closed_at) = MONTH(CURRENT_DATE()) AND YEAR(closed_at) = YEAR(CURRENT_DATE())");
+        $tmAi = (int)($tmAiStmt->fetch(PDO::FETCH_ASSOC)['c'] ?? 0);
+        $tmPerf = $tmTotal > 0 ? ($tmAi / $tmTotal) * 100 : 0;
+
+        $trend = $tmPerf - $lmPerf; // Difference in percentage points
+        return ['current_perf' => round($currentPerf, 2), 'trend' => round($trend, 2)];
+    } catch (Throwable $e) {
+        return ['current_perf' => 0.0, 'trend' => 0.0];
+    }
+}
+
 try {
     $users = safeCount($pdo, 'users');
     $policemen = safeCount($pdo, 'policemen');
@@ -57,6 +89,7 @@ try {
     $userTrend = windowCounts($pdo, 'users', 'created_at');
     $cameraTrend = windowCounts($pdo, 'camera_contributors', 'created_at');
     $trafficTrend = windowCounts($pdo, 'traffic_logs', 'created_at');
+    $aiPerformance = calculateAiPerformance($pdo);
 
     echo json_encode([
         'success' => true,
@@ -69,6 +102,7 @@ try {
             'userTrend' => $userTrend,
             'cameraTrend' => $cameraTrend,
             'trafficTrend' => $trafficTrend,
+            'aiPerformance' => $aiPerformance,
         ],
     ]);
 } catch (Throwable $e) {

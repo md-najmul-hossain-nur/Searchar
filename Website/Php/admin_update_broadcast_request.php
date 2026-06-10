@@ -32,7 +32,7 @@ if (!$isAdminSession && !$isAdminPanelRef) {
 $requestId = (int)($_POST['request_id'] ?? 0);
 $action = strtolower(trim((string)($_POST['action'] ?? '')));
 $reason = trim((string)($_POST['reason'] ?? ''));
-if ($requestId <= 0 || !in_array($action, ['approve', 'reject'], true)) {
+if ($requestId <= 0 || !in_array($action, ['approve', 'reject', 'close_link'], true)) {
     respond(['success' => false, 'error' => 'Invalid request'], 400);
 }
 
@@ -52,7 +52,7 @@ try {
     $policeName = (string)($meta['police_name'] ?? 'Police Officer');
     $station = (string)($meta['station'] ?? '');
 
-    $nextStatus = $action === 'approve' ? 'approved' : 'rejected';
+    $nextStatus = $action === 'approve' ? 'approved' : ($action === 'reject' ? 'rejected' : 'closed');
     $meta['status'] = $nextStatus;
     $meta['actioned_at'] = date('Y-m-d H:i:s');
     if ($reason !== '') {
@@ -64,9 +64,15 @@ try {
 
     if ($policeId > 0) {
         $title = 'Broadcast Approval';
-        $msg = $nextStatus === 'approved'
-            ? sprintf('Your broadcast request was approved. You can join the broadcast desk now.')
-            : sprintf('Your broadcast request was rejected by admin.');
+        if ($action === 'close_link') {
+            $title = 'Broadcast Link Closed';
+            $msg = 'Your broadcast link has been closed by the admin.';
+        } else {
+            $msg = $nextStatus === 'approved'
+                ? sprintf('Your broadcast request was approved. You can join the broadcast desk now.')
+                : sprintf('Your broadcast request was rejected by admin.');
+        }
+        
         if ($reason !== '') {
             $msg .= ' Reason: ' . $reason;
         }

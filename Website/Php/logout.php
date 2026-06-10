@@ -1,9 +1,21 @@
 <?php
 session_start();
-$_SESSION = [];
-session_destroy();
-?>
 
+if (isset($_SESSION['role'])) {
+    $currentRole = $_SESSION['role'];
+    if (isset($_SESSION['active_roles'][$currentRole])) {
+        unset($_SESSION['active_roles'][$currentRole]);
+    }
+    unset($_SESSION['role']);
+    unset($_SESSION['user_id']);
+}
+
+// If no active roles left at all, destroy completely
+if (empty($_SESSION['active_roles'])) {
+    $_SESSION = [];
+    session_destroy();
+}
+?>
 <script>
 alert("You have been logged out.");
 setTimeout(() => {

@@ -95,6 +95,12 @@ try {
     // Successful login
     $_SESSION['user_id'] = $foundUser[$roleTableMap[$foundRole]['id_col']];
     $_SESSION['role'] = $foundRole;
+    
+    if (!isset($_SESSION['active_roles']) || !is_array($_SESSION['active_roles'])) {
+        $_SESSION['active_roles'] = [];
+    }
+    $_SESSION['active_roles'][$foundRole] = $_SESSION['user_id'];
+
     if ($foundRole === 'admin') {
         $_SESSION['admin_role'] = $foundUser['role'] ?? 'sub_admin';
     }
