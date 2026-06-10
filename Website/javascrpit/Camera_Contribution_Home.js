@@ -423,16 +423,31 @@ function updateWithdrawButton(availableBalance) {
   openBtn.style.cursor = canWithdraw ? 'pointer' : 'not-allowed';
 }
 
+const earningsStatusEl = document.getElementById('earningsStatus');
+
+function setEarningsStatus(msg, isError = false) {
+  if (!earningsStatusEl) return;
+  earningsStatusEl.textContent = msg;
+  earningsStatusEl.style.color = isError ? '#e3471c' : '#888';
+}
+
 async function loadCameraEarnings() {
+  setEarningsStatus('Updating…');
   try {
     const res = await fetch('../Php/fetch_camera_earnings.php', {
       credentials: 'same-origin',
       cache: 'no-store'
     });
     const json = await res.json();
-    const data = json && json.success ? json.data : null;
-    if (!data) return;
 
+    if (!json || !json.success) {
+      const detail = json?.detail || json?.error || 'unknown error';
+      console.error('[earnings] server error:', detail);
+      setEarningsStatus('Could not load earnings — check console.', true);
+      return;
+    }
+
+    const data = json.data;
     if (totalStreamsEl) totalStreamsEl.textContent = String(data.total_streams ?? 0);
     if (totalEarnedEl) totalEarnedEl.textContent = `BDT ${Number(data.total_earned || 0).toFixed(2)}`;
     if (availableBalanceEl) availableBalanceEl.textContent = `BDT ${Number(data.available_balance || 0).toFixed(2)}`;
@@ -440,8 +455,10 @@ async function loadCameraEarnings() {
     if (lastWithdrawalEl) lastWithdrawalEl.textContent = formatDate(data.last_withdrawal_date);
 
     updateWithdrawButton(Number(data.available_balance || 0));
+    setEarningsStatus('Updated ' + new Date().toLocaleTimeString());
   } catch (error) {
-    // Keep existing values on error.
+    console.error('[earnings] fetch failed:', error);
+    setEarningsStatus('Connection error. Will retry.', true);
   }
 }
 

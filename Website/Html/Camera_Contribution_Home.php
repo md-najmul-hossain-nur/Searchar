@@ -193,7 +193,9 @@ try {
     <li><strong>Last Withdrawal Date:</strong> <span id="ccLastWithdrawalDate">—</span></li>
   </ul>
 
-  <button id="openWithdrawBtn" class="withdraw-btn">Withdraw Now</button>
+  <div style="margin-top:12px;">
+    <button id="openWithdrawBtn" class="withdraw-btn">Withdraw Now</button>
+  </div>
 </div>
 
 <!-- Withdrawal Modal moved to end of document to avoid stacking context issues -->
@@ -567,8 +569,6 @@ try {
             <option value="">Select Method</option>
             <option value="bkash">bKash</option>
             <option value="nagad">Nagad</option>
-            <option value="bank">Bank Transfer</option>
-            <option value="paypal">PayPal</option>
           </select>
 
           <label for="accountNumber">Account Number:</label>
@@ -601,7 +601,7 @@ try {
     </div>
 
     </body>
-      <script src="../javascrpit/Camera_Contribution_Home.js?v=20260410a"></script>
+      <script src="../javascrpit/Camera_Contribution_Home.js?v=20260611b"></script>
       <script src="../javascrpit/post_interactions_shared.js?v=20260406d"></script>
        <script src="../javascrpit/notifications_shared.js"></script>
       <script src="../javascrpit/messenger_shared.js"></script>
