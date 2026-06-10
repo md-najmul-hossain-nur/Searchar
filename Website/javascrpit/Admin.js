@@ -1436,7 +1436,7 @@ function openAddVolunteerModal() {
           <td>
             <button type="button" class="view-profile-btn" data-missing-view="${reportId}">View</button>
             <button type="button" class="danger-btn" data-missing-reject="${reportId}" ${actionable ? '' : 'disabled'}>${actionable ? 'Reject' : 'Locked'}</button>
-            <button type="button" data-send-to-crime="${reportId}" ${actionable ? '' : 'disabled'}>${actionable ? 'Make Report' : 'Reported'}</button>
+            <button type="button" class="ghost" data-send-to-crime="${reportId}" ${actionable ? '' : 'disabled'}>${actionable ? 'Make Report' : 'Reported'}</button>
           </td>
         </tr>
       `;
@@ -2420,15 +2420,15 @@ function openAddVolunteerModal() {
           actionButtonsHtml = `<span style="color:#666; font-size:12px; margin-left:5px;">Closed by AI</span>`;
         } else {
           if (String(r.id).startsWith('MP-')) {
-            actionButtonsHtml = `<button type="button" onclick="notifyReporterManualHandover('${r.id}', this)" style="background:#1877F2; color:white; border:none; padding:5px 10px; border-radius:4px; font-size:12px; cursor:pointer; margin-left:5px;">Notify Reporter</button>`;
+            actionButtonsHtml = `<button type="button" class="ghost" onclick="notifyReporterManualHandover('${r.id}', this)">Notify Reporter</button>`;
           } else {
             actionButtonsHtml = `<span style="color:#666; font-size:12px; margin-left:5px;">Closed</span>`;
           }
         }
       } else {
         actionButtonsHtml = `
-          <button type="button" data-crime-assign="${r.id}" ${assignDisabled ? 'disabled' : ''}>${actState.assigned || assignedCrimes.has(r.id) ? 'Assigned' : 'Assign Volunteer'}</button>
-          <button type="button" data-crime-cctv="${r.id}" ${cctvDisabled ? 'disabled' : ''}>AI Investigation</button>
+          <button type="button" class="ghost" data-crime-assign="${r.id}" ${assignDisabled ? 'disabled' : ''}>${actState.assigned || assignedCrimes.has(r.id) ? 'Assigned' : 'Assign Volunteer'}</button>
+          <button type="button" class="ghost" data-crime-cctv="${r.id}" ${cctvDisabled ? 'disabled' : ''}>AI Investigation</button>
         `;
       }
 
@@ -2940,10 +2940,10 @@ function openAddVolunteerModal() {
           <td>${statusHtml}</td>
           <td>
             ${status === 'approved'
-          ? `<button type="button" data-broadcast-request-action="close_link" data-broadcast-request-id="${esc(requestId)}" style="background:#dc2626;">Close Link</button>`
+          ? `<button type="button" data-broadcast-request-action="close_link" data-broadcast-request-id="${esc(requestId)}" style="background: #fee2e2; color: #dc2626; border: 1px solid #f87171; padding: 6px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s;">Close Link</button>`
           : `
-                <button type="button" data-broadcast-request-action="approve" data-broadcast-request-id="${esc(requestId)}" ${canAct ? '' : 'disabled'}>Approve</button>
-                <button type="button" data-broadcast-request-action="reject" data-broadcast-request-id="${esc(requestId)}" ${canAct ? '' : 'disabled'}>Reject</button>
+                <button type="button" class="approve-btn" data-broadcast-request-action="approve" data-broadcast-request-id="${esc(requestId)}" ${canAct ? '' : 'disabled'}>Approve</button>
+                <button type="button" class="reject-btn" data-broadcast-request-action="reject" data-broadcast-request-id="${esc(requestId)}" ${canAct ? '' : 'disabled'}>Reject</button>
               `
         }
           </td>
@@ -3024,7 +3024,7 @@ function openAddVolunteerModal() {
               <td>${esc(fmtDate(d.date))}</td>
               <td>${Number(d.anonymous || 0) === 1 ? 'Yes' : 'No'}</td>
               <td>${esc(d.message || 'N/A')}</td>
-              <td><button type="button" data-donation-report="1" data-donor-name="${esc(d.donor_name || 'Anonymous')}" data-donation-email="${esc(d.donor_email || '')}" data-donation-mobile="${esc(d.sender_mobile || '')}" data-donation-txid="${esc(d.tx_id || '')}" data-donation-amount="${esc(Number(d.amount || 0).toFixed(2))}" data-donation-date="${esc(d.date || '')}" data-donation-anon="${esc(Number(d.anonymous || 0))}" data-donation-message="${esc(d.message || '')}">Report</button></td>
+              <td><button type="button" class="danger-btn" data-donation-report="1" data-donor-name="${esc(d.donor_name || 'Anonymous')}" data-donation-email="${esc(d.donor_email || '')}" data-donation-mobile="${esc(d.sender_mobile || '')}" data-donation-txid="${esc(d.tx_id || '')}" data-donation-amount="${esc(Number(d.amount || 0).toFixed(2))}" data-donation-date="${esc(d.date || '')}" data-donation-anon="${esc(Number(d.anonymous || 0))}" data-donation-message="${esc(d.message || '')}">Report</button></td>
             </tr>
           `).join('');
 
@@ -3881,7 +3881,7 @@ function openAddVolunteerModal() {
           <td>
             <button type="button" class="view-profile-btn" data-report-view="1">View Details</button>
             <button type="button" class="ghost" data-report-action="mark_reviewed" ${canReview ? '' : 'disabled'}>Review</button>
-            <button type="button" data-report-action="resolve" ${canResolve ? '' : 'disabled'}>Resolve</button>
+            <button type="button" class="approve-btn" data-report-action="resolve" ${canResolve ? '' : 'disabled'}>Resolve</button>
           </td>
         </tr>
       `;
@@ -4047,9 +4047,9 @@ function openAddVolunteerModal() {
           <td>${esc(r.created_at)}</td>
           <td>
             ${r.status === 'pending' ? `
-            <button class="ghost" onclick="updateStoryStatus(${r.story_id}, 'approve', this)" style="color:#2e7d32; border-color:#2e7d32; margin-right:5px;">Approve</button>
-            <button class="ghost" onclick="updateStoryStatus(${r.story_id}, 'reject', this)" style="color:#d32f2f; border-color:#d32f2f;">Reject</button>
-            ` : `<button disabled>Actioned</button>`}
+            <button class="approve-btn" onclick="updateStoryStatus(${r.story_id}, 'approve', this)" style="margin-right:5px;">Approve</button>
+            <button class="reject-btn" onclick="updateStoryStatus(${r.story_id}, 'reject', this)">Reject</button>
+            ` : `<button class="ghost" disabled>Actioned</button>`}
           </td>
         </tr>
       `).join('');
@@ -4251,7 +4251,13 @@ function openAddVolunteerModal() {
     'In an emergency, please call 999 immediately.'
   ];
   const section = document.getElementById('chatbot-logs');
-  const body = document.getElementById('chatbot-logs-body');
+  const sidebar = document.getElementById('chatbot-sidebar');
+    const messagesContainer = document.getElementById('chatbot-messages-container');
+    const replySelect = document.getElementById('chatbot-admin-reply-select');
+    const replyBtn = document.getElementById('chatbot-admin-reply-send');
+    const activeSessionHeader = document.getElementById('chatbot-active-session-header');
+    let activeSessionToken = null;
+    let sessionGroups = {};
   const filterInput = document.getElementById('chatbot-log-filter');
   const refreshBtn = document.getElementById('chatbot-log-refresh');
   const clearBtn = document.getElementById('chatbot-log-clear');
@@ -4400,33 +4406,100 @@ function openAddVolunteerModal() {
       return hay.includes(q);
     });
 
-    if (!filtered.length) {
-      body.innerHTML = '<tr><td colspan="4">No chatbot logs found.</td></tr>';
+    // Group by session_token
+    sessionGroups = {};
+    filtered.forEach(row => {
+      const token = String(row.session_token || 'Unknown').trim();
+      if (!sessionGroups[token]) sessionGroups[token] = [];
+      sessionGroups[token].push(row);
+    });
+
+    // Render Sidebar
+    const tokens = Object.keys(sessionGroups);
+    if (tokens.length === 0) {
+      if(sidebar) sidebar.innerHTML = '<div style="padding:15px; text-align:center; color:#666;">No sessions found.</div>';
+      if(messagesContainer) messagesContainer.innerHTML = '';
       return;
     }
 
-    body.innerHTML = filtered.map((row) => `
-      ${(() => {
-        const token = String(row.session_token || '').trim();
-        const disabled = token ? '' : 'disabled';
-        const btnLabel = token ? 'Send' : 'Unavailable';
-        return `
-      <tr>
-        <td>${esc(formatTime(row.time))}</td>
-        <td>${esc(row.question || '')}</td>
-        <td>${esc(row.reply || '')}</td>
-        <td>
-          <div class="chatbot-admin-reply-wrap">
-            <select class="chatbot-admin-reply-select" data-chatbot-reply-select="${esc(token)}" ${disabled}>
-              ${renderQuickCommentOptions()}
-            </select>
-            <button type="button" class="chatbot-admin-reply-send" data-chatbot-reply-send="${esc(token)}" ${disabled}>${btnLabel}</button>
-          </div>
-        </td>
-      </tr>
+    let sidebarHtml = '';
+    tokens.forEach(token => {
+      const msgs = sessionGroups[token];
+      const lastMsg = msgs[0]; // because it's reversed (newest first)
+      const isActive = token === activeSessionToken;
+      const bg = isActive ? '#e9f0ff' : 'transparent';
+      const brd = isActive ? 'border-left: 4px solid #1abc9c;' : 'border-left: 4px solid transparent;';
+      
+      sidebarHtml += `
+        <div class="chatbot-session-item" data-session="${esc(token)}" style="padding:15px; border-bottom:1px solid #e0e4ee; cursor:pointer; background:${bg}; ${brd} transition:all 0.2s;">
+          <div style="font-weight:bold; font-size:14px; color:#1a232a; margin-bottom:4px;">Session: ${esc(token.substring(0,8))}...</div>
+          <div style="font-size:12px; color:#667085; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(lastMsg.question || 'No question')}</div>
+          <div style="font-size:11px; color:#9ca3af; margin-top:4px;">${esc(formatTime(lastMsg.time))}</div>
+        </div>
       `;
-      })()}
-    `).join('');
+    });
+    
+    if(sidebar) {
+      sidebar.innerHTML = sidebarHtml;
+      // Add click listeners to sidebar items
+      const items = sidebar.querySelectorAll('.chatbot-session-item');
+      items.forEach(item => {
+        item.addEventListener('click', () => {
+          activeSessionToken = item.getAttribute('data-session');
+          renderRows(rows); // re-render to update active state and right panel
+        });
+      });
+    }
+
+    // Auto-select first if none selected
+    if (!activeSessionToken && tokens.length > 0) {
+      activeSessionToken = tokens[0];
+    }
+
+    // Render Messages for active session
+    if (activeSessionToken && sessionGroups[activeSessionToken]) {
+      if(activeSessionHeader) {
+        activeSessionHeader.innerHTML = `Chat History - Session: <span style="color:#1abc9c;">${esc(activeSessionToken)}</span>`;
+      }
+      
+      const msgs = sessionGroups[activeSessionToken].slice().reverse(); // Show oldest first in chat
+      let chatHtml = '';
+      msgs.forEach(msg => {
+        if(msg.question) {
+          chatHtml += `
+            <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
+              <div style="background:#1abc9c; color:#fff; padding:10px 15px; border-radius:15px 15px 0 15px; max-width:70%; font-size:14px; box-shadow:0 2px 5px rgba(0,0,0,0.1);">
+                <div>${esc(msg.question)}</div>
+                <div style="font-size:10px; color:#e0e0e0; text-align:right; margin-top:4px;">${esc(formatTime(msg.time))}</div>
+              </div>
+            </div>
+          `;
+        }
+        if(msg.reply) {
+          chatHtml += `
+            <div style="display:flex; justify-content:flex-start; margin-bottom:10px;">
+              <div style="background:#f1f5f9; color:#1a232a; padding:10px 15px; border-radius:15px 15px 15px 0; max-width:70%; font-size:14px; box-shadow:0 2px 5px rgba(0,0,0,0.05); border:1px solid #e2e8f0;">
+                <div>${esc(msg.reply)}</div>
+                <div style="font-size:10px; color:#94a3b8; margin-top:4px;">${esc(formatTime(msg.time))}</div>
+              </div>
+            </div>
+          `;
+        }
+      });
+      if(messagesContainer) {
+        messagesContainer.innerHTML = chatHtml;
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }
+      
+      // Update reply box
+      if(replySelect) {
+        replySelect.innerHTML = `<option value="">Select a quick comment</option>` + renderQuickCommentOptions();
+        replySelect.disabled = false;
+      }
+      if(replyBtn) {
+        replyBtn.disabled = false;
+      }
+    }
   }
 
   async function fetchServerLogs() {
@@ -5181,7 +5254,7 @@ async function confirmAiMatch(btn, sourceType) {
           <td><span class="status-approved">Confirmed: ${escapeHtml(sourceType)}</span></td>
           <td>
             <button class="ai-action-btn" style="background:#4b5563; padding: 5px 10px; font-size:12px; margin-bottom: 5px; width: 100%;" onclick="openMatchDetailsModal('${caseId}', '${sourceType}', '${targetImgSrc}', '${matchImgSrc}', '${encodeURIComponent(detailsHtml)}', '${escapeHtml(reporter)}')">View Details</button>
-            <button class="ai-action-btn" style="background:#1877F2; padding: 5px 10px; font-size:12px; margin-bottom: 5px; width: 100%;" onclick="notifyReporterHandover('${caseId}', this)">Notify Reporter</button>
+            <button class="ai-action-btn ghost" style="width: 100%; margin-bottom: 5px;" onclick="notifyReporterHandover('${caseId}', this)">Notify Reporter</button>
             ${sourceType === 'Website Post' ? `<button class="ai-action-btn btn-say-thanks" style="background:#28a745; padding: 5px 10px; font-size:12px; width: 100%;" onclick="sayThanksToFinder('${caseId}', '${data.matched_post_id}', this)">Say Thanks</button>` : ''}
           </td>
       `;
@@ -5288,7 +5361,7 @@ function loadConfirmedMatches() {
           tds[5].remove(); // Remove Policeman
           tds[6].remove(); // Remove Volunteer
           const actionTd = document.createElement('td');
-          actionTd.innerHTML = `<button class="ai-action-btn" style="background:#1877F2; padding: 5px 10px; font-size:12px;" onclick="notifyReporterHandover('${caseId}', this)">Notify Reporter</button>`;
+          actionTd.innerHTML = `<button class="ai-action-btn ghost" onclick="notifyReporterHandover('${caseId}', this)">Notify Reporter</button>`;
           tr.appendChild(actionTd);
           modified = true;
         } else if (tds.length === 9) { // Has Action column, but still has Policeman/Volunteer
