@@ -322,8 +322,7 @@ if ($latestFeed) {
               <div class="camera-video-wrap webcam-video-wrap" data-feed-id="<?= (int)($feed['feed_id'] ?? 0) ?>">
                 <video class="camera-video webcam-video" autoplay muted playsinline></video>
                 <div class="webcam-preview-state">Starting webcam preview...</div>
-                <div class="webcam-controls" style="margin-top: 10px; text-align: center;">
-                  <button type="button" class="feed-action-btn start-webcam-btn">Restart Webcam</button>
+                <div class="webcam-controls" style="margin-top: 10px; text-align: left; width: 100%;">
                 </div>
               </div>
             <?php elseif ($mediaType === 'recorded' && $mediaUrl !== '' && $isActive): ?>

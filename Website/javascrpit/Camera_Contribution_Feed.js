@@ -44,59 +44,121 @@ document.addEventListener('DOMContentLoaded', () => {
 	const initWebcamVideos = async () => {
 		if (!webcamVideos.length) return;
 
-		const states = Array.from(document.querySelectorAll('.webcam-preview-state'));
-		const restartBtns = Array.from(document.querySelectorAll('.start-webcam-btn'));
-		
-		let currentStream = null;
+		const startCameraForWrap = async (wrap, deviceId = null) => {
+			const videoEl = wrap.querySelector('.webcam-video');
+			const stateEl = wrap.querySelector('.webcam-preview-state');
+			const btn = wrap.querySelector('.start-webcam-btn');
+			if (!videoEl || !stateEl) return;
 
-		const setState = (text) => {
-			states.forEach((state) => {
-				if (!text) {
-					state.style.display = 'none';
-				} else {
-					state.style.display = 'block';
-					state.textContent = text;
-				}
-			});
-		};
-
-		const startCamera = async () => {
 			if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-				setState('Webcam preview is not supported in this browser.');
+				stateEl.style.display = 'block';
+				stateEl.textContent = 'Webcam not supported.';
 				return;
 			}
 
 			try {
-				restartBtns.forEach(btn => btn.disabled = true);
-				setState('Requesting webcam permission...');
+				if (btn) btn.disabled = true;
+				stateEl.style.display = 'block';
+				stateEl.textContent = 'Requesting camera...';
 
-				if (currentStream) {
-					currentStream.getTracks().forEach(t => t.stop());
+				if (videoEl.srcObject) {
+					videoEl.srcObject.getTracks().forEach(t => t.stop());
 				}
 
-				currentStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-				webcamVideos.forEach((videoEl) => {
-					videoEl.srcObject = currentStream;
-					videoEl.play().catch(e => console.error('Play failed:', e));
-				});
-				setState('');
-				restartBtns.forEach(btn => btn.textContent = 'Restart Webcam');
+				const constraints = { video: true, audio: false };
+				if (deviceId) {
+					constraints.video = { deviceId: { exact: deviceId } };
+				}
+
+				const stream = await navigator.mediaDevices.getUserMedia(constraints);
+				videoEl.srcObject = stream;
+				await videoEl.play();
+				stateEl.style.display = 'none';
+				if (btn) btn.textContent = 'Restart Webcam';
+				
+				// Save selection
+				const feedId = wrap.getAttribute('data-feed-id');
+				if (feedId && deviceId) {
+					localStorage.setItem(`searchar_cam_feed_${feedId}`, deviceId);
+				}
 			} catch (error) {
 				console.error('Webcam error:', error);
-				setState('Webcam permission denied. Allow camera access to show preview.');
+				stateEl.style.display = 'block';
+				stateEl.textContent = 'Permission denied or camera unavailable.';
 			} finally {
-				restartBtns.forEach(btn => btn.disabled = false);
+				if (btn) btn.disabled = false;
 			}
 		};
 
-		restartBtns.forEach(btn => {
-			btn.addEventListener('click', (e) => {
-				e.preventDefault();
-				startCamera();
-			});
+		const populateCameraDropdowns = async () => {
+			try {
+				const devices = await navigator.mediaDevices.enumerateDevices();
+				const videoDevices = devices.filter(d => d.kind === 'videoinput');
+				
+				document.querySelectorAll('.webcam-video-wrap').forEach(wrap => {
+					const controls = wrap.querySelector('.webcam-controls');
+					if (!controls) return;
+					
+					let select = controls.querySelector('.camera-select');
+					if (!select) {
+						select = document.createElement('select');
+						select.className = 'camera-select';
+						select.style.width = '100%';
+						select.style.padding = '10px';
+						select.style.borderRadius = '8px';
+						select.style.background = '#f8f9fa';
+						select.style.color = '#333';
+						select.style.border = '1px solid #ccc';
+						select.style.fontFamily = 'inherit';
+						select.style.fontSize = '14px';
+						select.style.cursor = 'pointer';
+						
+						select.addEventListener('change', (e) => {
+							startCameraForWrap(wrap, e.target.value);
+						});
+						controls.appendChild(select);
+					}
+					
+					select.innerHTML = '';
+					videoDevices.forEach((device, index) => {
+						const option = document.createElement('option');
+						option.value = device.deviceId;
+						option.text = device.label || `Camera ${index + 1}`;
+						select.appendChild(option);
+					});
+
+					const feedId = wrap.getAttribute('data-feed-id');
+					const savedId = localStorage.getItem(`searchar_cam_feed_${feedId}`);
+					if (savedId && Array.from(select.options).some(o => o.value === savedId)) {
+						select.value = savedId;
+					}
+					
+					startCameraForWrap(wrap, select.value);
+				});
+			} catch (err) {
+				console.error('Failed to enumerate devices', err);
+			}
+		};
+
+		document.querySelectorAll('.webcam-video-wrap').forEach(wrap => {
+			const btn = wrap.querySelector('.start-webcam-btn');
+			if (btn) {
+				btn.addEventListener('click', (e) => {
+					e.preventDefault();
+					const select = wrap.querySelector('.camera-select');
+					startCameraForWrap(wrap, select ? select.value : null);
+				});
+			}
 		});
 
-		startCamera();
+		try {
+			const initialStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+			initialStream.getTracks().forEach(t => t.stop());
+		} catch (e) {
+			console.error('Initial permission denied', e);
+		}
+
+		populateCameraDropdowns();
 
         // Capture frames every 3 seconds for AI detection
         setInterval(() => {
