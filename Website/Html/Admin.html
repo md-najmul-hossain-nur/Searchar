@@ -40,44 +40,47 @@
         <div class="sidebar-section">
             <div class="sidebar-title">ADMIN FEATURES</div>
             <ul>
-                <li data-section="missing">
-                    <span class="icon"><i class="fa-solid fa-people-group"></i></span> Missing Persons
+                <li data-section="admin-post">
+                    <span class="icon"><i class="fa-solid fa-pen-to-square"></i></span> Admin Post
                 </li>
                 <li data-section="ai">
                     <span class="icon"><i class="fa-solid fa-robot"></i></span> AI Investigation Search
                 </li>
+                <li data-section="broadcast">
+                    <span class="icon"><i class="fa-solid fa-bullhorn"></i></span> Broadcast & Camera Videos
+                </li>
+                <li data-section="chatbot-logs">
+                    <span class="icon"><i class="fa-solid fa-comments"></i></span> Chatbot Logs
+                </li>
                 <li data-section="crime">
                     <span class="icon"><i class="fa-solid fa-video"></i></span> Crime Reporting
-                </li>
-                <li data-section="admin-post">
-                    <span class="icon"><i class="fa-solid fa-pen-to-square"></i></span> Admin Post
-                </li>
-                <li data-section="post-control">
-                    <span class="icon"><i class="fa-solid fa-clipboard-check"></i></span> Post Control
-                </li>
-                <li data-section="volunteer-approver">
-                    <span class="icon"><i class="fa-solid fa-handshake-angle"></i></span> Volunteer Approver
                 </li>
                 <li data-section="donations">
                     <span class="icon"><i class="fa-solid fa-hand-holding-dollar"></i></span> Donations Control
                 </li>
-                <li data-section="broadcast">
-                    <span class="icon"><i class="fa-solid fa-bullhorn"></i></span> Broadcast & Camera Videos
+                <li data-section="fire-detection">
+                    <span class="icon"><i class="fa-solid fa-fire"></i></span> Fire Detection
+                </li>
+                <li data-section="missing">
+                    <span class="icon"><i class="fa-solid fa-people-group"></i></span> Missing Persons
+                </li>
+                <li data-section="post-control">
+                    <span class="icon"><i class="fa-solid fa-clipboard-check"></i></span> Post Control
+                </li>
+                <li data-section="reports">
+                    <span class="icon"><i class="fa-solid fa-file-lines"></i></span> Reports
+                </li>
+                <li data-section="review">
+                    <span class="icon"><i class="fa-solid fa-star-half-stroke"></i></span> Review
+                </li>
+                <li data-section="volunteer-approver">
+                    <span class="icon"><i class="fa-solid fa-handshake-angle"></i></span> Volunteer Approver
                 </li>
                 <li data-section="volunteer">
                     <span class="icon"><i class="fa-solid fa-handshake-angle"></i></span> Volunteer Missions
                 </li>
                 <li data-section="withdraw">
                     <span class="icon"><i class="fa-solid fa-money-bill-transfer"></i></span> Withdraw Control
-                </li>
-                <li data-section="review">
-                    <span class="icon"><i class="fa-solid fa-star-half-stroke"></i></span> Review
-                </li>
-                <li data-section="reports">
-                    <span class="icon"><i class="fa-solid fa-file-lines"></i></span> Reports
-                </li>
-                <li data-section="chatbot-logs">
-                    <span class="icon"><i class="fa-solid fa-comments"></i></span> Chatbot Logs
                 </li>
             </ul>
 
@@ -1037,6 +1040,61 @@
                     <button type="button" class="primary" id="assign-confirm-btn">Assign Selected</button>
                     <button type="button" class="secondary" onclick="closeCrimeAssignModal()">Cancel</button>
                 </div>
+            </div>
+        </div>
+
+        <div id="fire-detection" class="main-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin-bottom: 0;">Fire Detection Alerts</h2>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div id="fire-engine-status" style="font-weight: bold; font-size: 14px; padding: 5px 10px; border-radius: 5px; background: #e8f5e9; color: #2e7d32;">
+                        <i class="fa-solid fa-circle-check"></i> Model: Active
+                    </div>
+                </div>
+            </div>
+            <div class="filters-bar" id="fire-filters">
+                <input id="fire-filter-text" type="text" placeholder="Search camera name, location">
+                <select id="fire-filter-status">
+                    <option value="">Status</option>
+                    <option value="new">New Alert</option>
+                    <option value="police_dispatched">Police Dispatched</option>
+                    <option value="dismissed">Dismissed (False Alarm)</option>
+                </select>
+                <button type="button" id="fire-filter-reset" class="ghost">Reset</button>
+            </div>
+            <div class="section-table-block">
+                <table class="styled-table">
+                    <thead>
+                        <tr>
+                            <th>Alert ID</th>
+                            <th>Camera Details</th>
+                            <th>Location</th>
+                            <th>Time Detected</th>
+                            <th>Confidence</th>
+                            <th>Snapshot</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fire-table-body">
+                        <tr>
+                            <td><strong>#FD-1045</strong></td>
+                            <td>Cam-N-42 (North Gate)</td>
+                            <td>Banani, Block C</td>
+                            <td>Today, 12:15 PM</td>
+                            <td><span style="background: #fee2e2; color: #b91c1c; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 12px;">94% High</span></td>
+                            <td><button class="ghost" style="padding: 4px 8px; font-size: 12px;"><i class="fa-solid fa-image"></i> View Frame</button></td>
+                            <td><span class="status-pending" style="color: #b91c1c; background: #fee2e2;">New Alert</span></td>
+                            <td>
+                                <button class="approve-btn" style="background: #ef4444; margin-right: 4px; padding: 6px 10px; font-size: 12px;"><i class="fa-solid fa-truck-fast"></i> Dispatch Police</button>
+                                <button class="ghost" style="padding: 6px 10px; font-size: 12px;">Dismiss</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="8" style="text-align: center; color: #6b7280;">End of recent alerts.</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
