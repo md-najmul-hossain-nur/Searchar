@@ -619,18 +619,14 @@ function setupHomeChatbot() {
   let adminHasReplied = localStorage.getItem('searchar_admin_replied_' + sessionToken) === 'true';
 
   const getReply = (q) => {
-    if (adminHasReplied) {
-      return '';
-    }
-
     const text = q.toLowerCase();
     if (text.includes('donat')) return 'To donate, click MAKE DONATION or Contribute Now on this page.';
     if (text.includes('volunteer') || text.includes('join')) return 'To join as volunteer, click GET INVOLVED NOW and complete registration.';
     if (text.includes('report') || text.includes('clue') || text.includes('crime')) return 'Please use the relevant logged-in dashboard to submit verified clues safely.';
     if (text.includes('login') || text.includes('log in')) return 'Use the LOG IN button on top-right to access your account.';
     if (text.includes('news')) return 'Check the LATEST NEWS section below. You can click Read More for full details.';
-    
-    return 'I can help with donation, volunteer joining, login, and news navigation. Ask me anything about these. Please wait for the admin\'s reply.';
+
+    return "I can help with donation, volunteer joining, login, and news navigation. Ask me anything about these. If you need more help, an admin will reply shortly.";
   };
 
   const openPanel = () => {
@@ -655,8 +651,8 @@ function setupHomeChatbot() {
     window.setTimeout(() => {
       if (replyText) {
         addMsg(replyText, 'bot');
+        saveLog(userText, replyText);
       }
-      saveLog(userText, replyText);
     }, 280);
   };
 

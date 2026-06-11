@@ -52,7 +52,7 @@ def search_posts():
             if HAS_DEEPFACE:
                 # Extract all faces first to handle group photos
                 try:
-                    faces = DeepFace.extract_faces(img_path=post_img, detector_backend="opencv", enforce_detection=True)
+                    faces = DeepFace.extract_faces(img_path=post_img, detector_backend="opencv", enforce_detection=False)
                 except Exception:
                     faces = []
 
@@ -83,9 +83,9 @@ def search_posts():
                             detector_backend="opencv"
                         )
                         
-                        if result.get('verified', False):
+                        dist = result.get('distance', 1.0)
+                        if result.get('verified', False) or dist < 0.55:
                             is_match_found = True
-                            dist = result.get('distance', 1.0)
                             if dist < best_distance:
                                 best_distance = dist
                     except Exception:
@@ -148,7 +148,7 @@ def search_cctv():
                 if HAS_DEEPFACE:
                     # Handle multiple faces in CCTV static images
                     try:
-                        faces = DeepFace.extract_faces(img_path=vid_path, detector_backend="opencv", enforce_detection=True)
+                        faces = DeepFace.extract_faces(img_path=vid_path, detector_backend="opencv", enforce_detection=False)
                     except Exception:
                         faces = []
 
@@ -166,6 +166,7 @@ def search_cctv():
 
                             if face_crop.size == 0: continue
 
+                            print(f"Verifying face crop of size {face_crop.shape}")
                             result = DeepFace.verify(
                                 img1_path=target_img_path,
                                 img2_path=face_crop,
@@ -173,12 +174,14 @@ def search_cctv():
                                 enforce_detection=False,
                                 detector_backend="opencv"
                             )
-                            if result.get('verified', False):
+                            dist = result.get('distance', 1.0)
+                            print(f"Distance: {dist}")
+                            if result.get('verified', False) or dist < 0.85:
                                 is_match = True
-                                dist = result.get('distance', 1.0)
                                 if dist < best_distance:
                                     best_distance = dist
-                        except Exception:
+                        except Exception as e:
+                            print("Verify error:", e)
                             pass
                     distance = best_distance
                 else:
@@ -222,7 +225,7 @@ def search_cctv():
                 try:
                     if HAS_DEEPFACE:
                         try:
-                            faces = DeepFace.extract_faces(img_path=temp_frame_path, detector_backend="opencv", enforce_detection=True)
+                            faces = DeepFace.extract_faces(img_path=temp_frame_path, detector_backend="opencv", enforce_detection=False)
                         except Exception:
                             faces = []
 
@@ -247,9 +250,9 @@ def search_cctv():
                                     enforce_detection=False,
                                     detector_backend="opencv"
                                 )
-                                if result.get('verified', False):
+                                dist = result.get('distance', 1.0)
+                                if result.get('verified', False) or dist < 0.85:
                                     is_match = True
-                                    dist = result.get('distance', 1.0)
                                     if dist < best_distance:
                                         best_distance = dist
                             except Exception:
@@ -287,6 +290,22 @@ def search_cctv():
 
     matches = sorted(matches, key=lambda x: x['confidence'], reverse=True)
     return jsonify({'success': True, 'matches': matches})
+
+from fire_detector import set_fire_detector_enabled, get_fire_detector_status
+
+@app.route('/api/fire_detect/status', methods=['GET'])
+def get_fire_status():
+    return jsonify({'success': True, 'status': 'online' if get_fire_detector_status() else 'offline'})
+
+@app.route('/api/fire_detect/start', methods=['POST'])
+def start_fire_detect():
+    set_fire_detector_enabled(True)
+    return jsonify({'success': True, 'status': 'online'})
+
+@app.route('/api/fire_detect/stop', methods=['POST'])
+def stop_fire_detect():
+    set_fire_detector_enabled(False)
+    return jsonify({'success': True, 'status': 'offline'})
 
 if __name__ == '__main__':
     print("Starting SearchAR Python AI Engine...")

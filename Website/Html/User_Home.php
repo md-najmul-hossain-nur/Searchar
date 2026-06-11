@@ -1131,10 +1131,9 @@ try {
     <span>Photo Support</span>
     <span>Secure Data</span>
   </div>
-  <button type="button" onclick="openMissingForm()">
-    <img src="../Images/search.gif" alt="Love Icon" class="love-image" />
+  <button type="button" onclick="openMissingForm()" style="display: block; width: 100%; margin-top: 15px; padding: 12px; background: linear-gradient(135deg, #f43f5e, #e11d48); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(225, 29, 72, 0.2);">
+    <i class="fa-solid fa-bullhorn" style="margin-right: 5px;"></i> Report Missing Person
   </button>
-  <p class="helpdesk-cta">Tap the icon to open the form</p>
 </div>
 
      <div class="advert">

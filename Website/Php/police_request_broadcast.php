@@ -19,12 +19,12 @@ $policeId = (int) $_SESSION['user_id'];
 $reason = trim((string)($_POST['reason'] ?? ''));
 
 try {
-    $stmt = $pdo->prepare('SELECT full_name, station FROM policemen WHERE police_id = :id LIMIT 1');
+    $stmt = $pdo->prepare('SELECT full_name, city FROM policemen WHERE police_id = :id LIMIT 1');
     $stmt->execute(['id' => $policeId]);
     $police = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
 
     $policeName = (string)($police['full_name'] ?? 'Police Officer');
-    $station = (string)($police['station'] ?? '');
+    $station = (string)($police['city'] ?? '');
 
     $needle = '%"police_id":' . $policeId . '%';
     $check = $pdo->prepare("SELECT notification_id FROM user_notifications WHERE recipient_entity = 'admin' AND title = 'Broadcast Request' AND is_read = 0 AND meta_json LIKE :needle ORDER BY notification_id DESC LIMIT 1");
@@ -59,5 +59,5 @@ try {
 
     respond(['success' => true, 'status' => 'pending', 'message' => 'Request sent. Waiting for admin approval...']);
 } catch (Throwable $e) {
-    respond(['success' => false, 'error' => 'Failed to submit request'], 500);
+    respond(['success' => false, 'error' => 'Failed to submit request: ' . $e->getMessage()], 500);
 }

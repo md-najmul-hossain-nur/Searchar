@@ -17,84 +17,122 @@ OUTPUT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../Website
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # Keep track of already alerted feeds to avoid spamming
-alerted_feeds = set()
+alerted_feeds = {}
+
+# Per-feed consecutive detection counter — fire must be seen N times in a row before alerting
+pending_detections = {}
+
+FIRE_DETECTOR_ENABLED = False
+
+def set_fire_detector_enabled(status):
+    global FIRE_DETECTOR_ENABLED
+    FIRE_DETECTOR_ENABLED = status
+
+def get_fire_detector_status():
+    global FIRE_DETECTOR_ENABLED
+    return FIRE_DETECTOR_ENABLED
 
 def detect_fire(frame):
     """
-    OpenCV heuristic for fire detection.
-    Converts frame to HSV and masks out bright orange/yellow/red areas.
+    OpenCV heuristic for fire detection using tight HSV thresholds to minimise
+    false positives from sunsets, orange objects, and bright indoor lighting.
     """
     blur = cv2.GaussianBlur(frame, (21, 21), 0)
     hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
-    
-    # Balanced Fire color range in HSV to detect lighter flames but reduce false positives
-    lower = np.array([0, 80, 140], dtype="uint8")
-    upper = np.array([35, 255, 255], dtype="uint8")
-    
+
+    # Tight fire range: hue 0-20 (red→orange only), high saturation, high brightness.
+    # Deliberately excludes yellow-green (hue 20-35) and low-saturation warm tones.
+    lower = np.array([0, 120, 170], dtype="uint8")
+    upper = np.array([20, 255, 255], dtype="uint8")
+
     mask = cv2.inRange(hsv, lower, upper)
-    
-    # Calculate area
+
     num_fire_pixels = cv2.countNonZero(mask)
     total_pixels = frame.shape[0] * frame.shape[1]
-    
-    # Trigger if > 0.08% or > 800 pixels
+
+    # Require > 8% fire pixels AND > 12000 absolute pixels to avoid tiny false blobs
     ratio = (num_fire_pixels / total_pixels) * 100
-    if ratio > 0.08 or num_fire_pixels > 800:
-        # Find contours to draw a bounding box
+    if ratio > 8.0 and num_fire_pixels > 12000:
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        # At least one contour must be large enough (500 px²) to rule out noise
+        large_contours = [cnt for cnt in contours if cv2.contourArea(cnt) > 500]
+        if not large_contours:
+            return False, "0%", frame
+
         output_frame = frame.copy()
-        for cnt in contours:
-            if cv2.contourArea(cnt) > 150: # Only draw box around decent sized blobs
-                x, y, w, h = cv2.boundingRect(cnt)
-                cv2.rectangle(output_frame, (x, y), (x+w, y+h), (0, 0, 255), 2)
-                cv2.putText(output_frame, 'FIRE DETECTED', (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
-                
-        # Confidence score scaling
-        conf = min(99, int(ratio * 50) + 75)
+        for cnt in large_contours:
+            x, y, w, h = cv2.boundingRect(cnt)
+            cv2.rectangle(output_frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
+            cv2.putText(output_frame, 'FIRE DETECTED', (x, y - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
+
+        # Honest confidence: starts low, only reaches high values at clearly high ratios
+        conf = min(95, 40 + int(ratio * 10))
         return True, f"{conf}% High", output_frame
-    
+
     return False, "0%", frame
+
+CONSECUTIVE_DETECTIONS_REQUIRED = 5  # fire must appear in this many consecutive checks
 
 def process_feed(feed):
     feed_id = feed.get('feed_id')
     video_path = feed.get('video_path')
-    
-    # 15 second cooldown per camera so it keeps coming!
-    if feed_id in alerted_feeds and (time.time() - alerted_feeds[feed_id] < 15):
+
+    # 5 minute cooldown per camera to prevent snapshot spam
+    if feed_id in alerted_feeds and (time.time() - alerted_feeds[feed_id] < 300):
         return
-        
+
     path_to_check = None
-    
-    # Priority 1: Check if a live snapshot exists in uploads/cctv_snapshots/
+
     snapshot_path = os.path.abspath(os.path.join(os.path.dirname(__file__), f"../Website/uploads/cctv_snapshots/feed_{feed_id}_latest.jpg"))
     if os.path.exists(snapshot_path):
         path_to_check = snapshot_path
     elif video_path and os.path.exists(video_path):
         path_to_check = video_path
-        
+
     if not path_to_check:
+        pending_detections.pop(feed_id, None)
         return
-        
+
     try:
         ext = os.path.splitext(path_to_check)[1].lower()
         if ext in ['.jpg', '.jpeg', '.png', '.webp']:
             frame = cv2.imread(path_to_check)
-            if frame is None: return
-            
+            if frame is None:
+                pending_detections.pop(feed_id, None)
+                return
+
             is_fire, conf, out_frame = detect_fire(frame)
-            if is_fire:
-                trigger_alert(feed_id, out_frame, conf)
         else:
             cap = cv2.VideoCapture(path_to_check)
-            if not cap.isOpened(): return
-            
+            if not cap.isOpened():
+                pending_detections.pop(feed_id, None)
+                return
+
+            # Sample a frame from 10% into the video to skip black leader frames
+            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0)
+            if total_frames > 10:
+                cap.set(cv2.CAP_PROP_POS_FRAMES, total_frames // 10)
+
             ret, frame = cap.read()
-            if ret:
-                is_fire, conf, out_frame = detect_fire(frame)
-                if is_fire:
-                    trigger_alert(feed_id, out_frame, conf)
             cap.release()
-            
+            if not ret:
+                pending_detections.pop(feed_id, None)
+                return
+
+            is_fire, conf, out_frame = detect_fire(frame)
+
+        if is_fire:
+            count = pending_detections.get(feed_id, 0) + 1
+            pending_detections[feed_id] = count
+            if count >= CONSECUTIVE_DETECTIONS_REQUIRED:
+                pending_detections.pop(feed_id, None)
+                trigger_alert(feed_id, out_frame, conf)
+        else:
+            # Reset streak — one clean frame breaks the detection chain
+            pending_detections.pop(feed_id, None)
+
     except Exception as e:
         logger.error(f"Error processing feed {feed_id}: {e}")
 
@@ -102,6 +140,17 @@ def trigger_alert(feed_id, frame, confidence):
     filename = f"fire_{feed_id}_{int(time.time())}.jpg"
     filepath = os.path.join(OUTPUT_DIR, filename)
     cv2.imwrite(filepath, frame)
+
+    # Keep only the 20 most recent snapshots to avoid disk fill-up
+    try:
+        all_snaps = sorted(
+            [f for f in os.listdir(OUTPUT_DIR) if f.endswith('.jpg')],
+            key=lambda f: os.path.getmtime(os.path.join(OUTPUT_DIR, f))
+        )
+        for old in all_snaps[:-20]:
+            os.remove(os.path.join(OUTPUT_DIR, old))
+    except Exception:
+        pass
     
     # URL relative to website root
     snapshot_url = f"../Images/fire_snapshots/{filename}"
@@ -124,16 +173,18 @@ def trigger_alert(feed_id, frame, confidence):
 
 def fire_detector_loop():
     logger.info("Starting Fire Detector background loop...")
+    global FIRE_DETECTOR_ENABLED
     while True:
-        try:
-            res = requests.get(FETCH_URL, timeout=5)
-            data = res.json()
-            if data.get('success'):
-                feeds = data.get('feeds', [])
-                for feed in feeds:
-                    process_feed(feed)
-        except Exception as e:
-            pass # Silently retry on next tick
+        if FIRE_DETECTOR_ENABLED:
+            try:
+                res = requests.get(FETCH_URL, timeout=5)
+                data = res.json()
+                if data.get('success'):
+                    feeds = data.get('feeds', [])
+                    for feed in feeds:
+                        process_feed(feed)
+            except Exception as e:
+                pass # Silently retry on next tick
             
         time.sleep(5) # Poll every 5 seconds
 

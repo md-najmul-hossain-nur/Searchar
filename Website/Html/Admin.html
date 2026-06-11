@@ -803,17 +803,8 @@
                     </thead>
                     <tbody id="volunteer-mission-body">
                         <tr>
-                            <td>Rafiq A. • <a href="#" target="_blank" rel="noopener">View Profile</a></td>
-                            <td>Missing Child Assistance</td>
-                            <td>2025-08-03</td>
-                            <td>Dhaka</td>
-                            <td>Silver Responder</td>
-                            <td>220</td>
-                            <td><span class="status-approved">Completed</span></td>
-                            <td><a href="#">View Proof</a></td>
-                            <td><button type="button" class="ghost">Mark Complete +50XP</button></td>
+                            <td colspan="9">Loading volunteer missions...</td>
                         </tr>
-                        <!-- More rows... -->
                     </tbody>
                 </table>
             </div>
@@ -871,21 +862,13 @@
                     </thead>
                     <tbody id="withdraw-table-body">
                         <tr>
-                            <td>Arif Hasan</td>
-                            <td>├á┬º┬│500</td>
-                            <td><span class="status-pending">Pending</span></td>
-                            <td>2025-08-09</td>
-                            <td>
-                                <button>Approve</button>
-                                <button>Reject</button>
-                            </td>
+                            <td colspan="6">Loading withdrawals...</td>
                         </tr>
-                        <!-- More rows... -->
                     </tbody>
                 </table>
             </div>
             <div class="widget-bar">
-                <div class="widget">Total Withdrawals: <span id="withdraw-total-amount">├á┬º┬│0.00</span></div>
+                <div class="widget">Total Withdrawals: <span id="withdraw-total-amount">৳0.00</span></div>
                 <div class="widget">Pending Requests: <span id="withdraw-pending-count">0</span></div>
             </div>
             <div class="withdraw-actions">
@@ -1052,6 +1035,9 @@
                         style="font-weight: bold; font-size: 14px; padding: 5px 10px; border-radius: 5px; background: #e8f5e9; color: #2e7d32;">
                         <i class="fa-solid fa-circle-check"></i> Model: Active
                     </div>
+                    <button id="fire-detector-toggle-btn" class="ghost" onclick="toggleFireDetector()" data-current-status="offline" style="padding: 5px 10px; border-radius: 5px;">
+                        <i class="fa-solid fa-play"></i> Turn On Fire Detection
+                    </button>
                 </div>
             </div>
             <div class="filters-bar" id="fire-filters">
@@ -2174,7 +2160,7 @@
                 return `
           <article class="volunteer-approver-item">
             <div class="volunteer-approver-item-top">
-              <strong>VA-${String(applicationId).padStart(3, '0')} ├óΓé¼┬ó ${escapeHtml(r.full_name || 'N/A')}</strong>
+              <strong>VA-${String(applicationId).padStart(3, '0')} &bull; ${escapeHtml(r.full_name || 'N/A')}</strong>
               <span class="${statusClass}">${statusLabel}</span>
             </div>
             <p>Email: ${escapeHtml(r.email || 'N/A')} | Mobile: ${escapeHtml(r.mobile || '01XXXXXXXXX')}</p>

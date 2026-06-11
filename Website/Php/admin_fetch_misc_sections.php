@@ -189,60 +189,79 @@ try {
 
     $missions = [];
     if (tableExists($pdo, 'volunteer_missions')) {
-        $hasResponseStatus = columnExists($pdo, 'volunteer_missions', 'response_status');
-        $hasCaseRef = columnExists($pdo, 'volunteer_missions', 'case_ref');
-        $hasProofFile = columnExists($pdo, 'volunteer_missions', 'proof_file');
+        $hasResponseStatus  = columnExists($pdo, 'volunteer_missions', 'response_status');
+        $hasCaseRef         = columnExists($pdo, 'volunteer_missions', 'case_ref');
+        $hasProofFile       = columnExists($pdo, 'volunteer_missions', 'proof_file');
         $hasProofSubmittedAt = columnExists($pdo, 'volunteer_missions', 'proof_submitted_at');
-        $hasCompletedAt = columnExists($pdo, 'volunteer_missions', 'completed_at');
+        $hasCompletedAt     = columnExists($pdo, 'volunteer_missions', 'completed_at');
 
-        $responseExpr = $hasResponseStatus ? 'vm.response_status' : 'NULL';
-        $caseExpr = $hasCaseRef ? 'vm.case_ref' : 'NULL';
-        $proofExpr = $hasProofFile ? 'vm.proof_file' : 'NULL';
-        $proofAtExpr = $hasProofSubmittedAt ? 'vm.proof_submitted_at' : 'NULL';
-        $completedExpr = $hasCompletedAt ? 'vm.completed_at' : 'NULL';
+        // Build SELECT columns safely
+        $cols = ['vm.mission_id', 'vm.volunteer_id', 'vm.mission_title', 'vm.mission_location',
+                 'vm.status', 'vm.assigned_at', 'vm.mission_details'];
+        $cols[] = $hasResponseStatus  ? 'vm.response_status'    : 'NULL AS response_status';
+        $cols[] = $hasCaseRef         ? 'vm.case_ref'           : 'NULL AS case_ref';
+        $cols[] = $hasProofFile       ? 'vm.proof_file'         : 'NULL AS proof_file';
+        $cols[] = $hasProofSubmittedAt ? 'vm.proof_submitted_at' : 'NULL AS proof_submitted_at';
+        $cols[] = $hasCompletedAt     ? 'vm.completed_at'       : 'NULL AS completed_at';
 
-        $stmt = $pdo->query("SELECT vm.mission_id, vm.volunteer_id, vm.mission_title, vm.mission_location, vm.status, {$responseExpr} AS response_status, {$caseExpr} AS case_ref, {$proofExpr} AS proof_file, {$proofAtExpr} AS proof_submitted_at, {$completedExpr} AS completed_at, vm.assigned_at, vm.mission_details,
-        COALESCE(v.full_name, vu.full_name, CONCAT('Volunteer #', vm.volunteer_id)) AS volunteer_name,
-        CASE
-            WHEN COALESCE(v.profile_photo, '') <> '' THEN v.profile_photo
-            WHEN COALESCE(vu.profile_photo, '') <> '' THEN vu.profile_photo
-            ELSE ''
-        END AS profile_photo,
-        CASE
-            WHEN COALESCE(v.profile_photo, '') <> '' THEN 'volunteers'
-            WHEN COALESCE(vu.profile_photo, '') <> '' THEN 'users'
-            ELSE ''
-        END AS profile_photo_entity,
-        COALESCE(vmcount.total_points, 0) AS volunteer_points,
-        CASE
-            WHEN COALESCE(vmcount.total_points, 0) >= 1000 THEN 'Platinum Responder'
-            WHEN COALESCE(vmcount.total_points, 0) >= 700 THEN 'Gold Responder'
-            WHEN COALESCE(vmcount.total_points, 0) >= 380 THEN 'Silver Responder'
-            ELSE 'Bronze Volunteer'
-        END AS volunteer_rank
-        FROM volunteer_missions vm
-        LEFT JOIN volunteers v ON v.volunteer_id = vm.volunteer_id
-        LEFT JOIN (
-            SELECT volunteer_id, MAX(application_id) AS latest_application_id
-            FROM volunteer_applications
-            WHERE LOWER(COALESCE(status, 'pending')) = 'approved'
-            GROUP BY volunteer_id
-        ) va_latest ON va_latest.volunteer_id = vm.volunteer_id
-        LEFT JOIN volunteer_applications va ON va.application_id = va_latest.latest_application_id
-        LEFT JOIN users vu ON vu.user_id = va.user_id
-        LEFT JOIN (
-            SELECT volunteer_id,
-                   SUM(CASE
-                       WHEN LOWER(status) = 'completed' OR LOWER(COALESCE(response_status,'')) = 'completed' THEN 20
-                       WHEN LOWER(status) = 'accepted' OR LOWER(COALESCE(response_status,'')) = 'accepted' THEN 10
-                       ELSE 0
-                   END) AS total_points,
-                   SUM(CASE WHEN LOWER(status) = 'completed' OR LOWER(COALESCE(response_status,'')) = 'completed' THEN 1 ELSE 0 END) AS completed_count
-            FROM volunteer_missions
-            GROUP BY volunteer_id
-        ) vmcount ON vmcount.volunteer_id = vm.volunteer_id
-        ORDER BY vm.assigned_at DESC LIMIT 150");
-        $missions = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        $selectSql = implode(', ', $cols);
+        $rawMissions = $pdo->query("SELECT {$selectSql} FROM volunteer_missions vm ORDER BY vm.assigned_at DESC LIMIT 150")
+                           ->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+        if ($rawMissions) {
+            // Collect volunteer_ids for name/photo lookup
+            $volunteerIds = array_unique(array_map(static fn($r) => (int)($r['volunteer_id'] ?? 0), $rawMissions));
+            $volunteerIds = array_filter($volunteerIds, static fn($id) => $id > 0);
+            $volunteerInfo = []; // keyed by volunteer_id
+
+            if ($volunteerIds && tableExists($pdo, 'volunteers')) {
+                $volCols = ['volunteer_id'];
+                foreach (['full_name', 'name', 'profile_photo'] as $c) {
+                    if (columnExists($pdo, 'volunteers', $c)) $volCols[] = $c;
+                }
+                $ph = implode(',', array_fill(0, count($volunteerIds), '?'));
+                $vs = $pdo->prepare("SELECT " . implode(',', $volCols) . " FROM volunteers WHERE volunteer_id IN ({$ph})");
+                $vs->execute(array_values($volunteerIds));
+                foreach ($vs->fetchAll(PDO::FETCH_ASSOC) as $vr) {
+                    $vid = (int)($vr['volunteer_id'] ?? 0);
+                    $volunteerInfo[$vid] = [
+                        'name'  => trim((string)($vr['full_name'] ?? $vr['name'] ?? '')),
+                        'photo' => trim((string)($vr['profile_photo'] ?? '')),
+                        'entity' => 'volunteers',
+                    ];
+                }
+            }
+
+            // Calculate per-volunteer points from raw data
+            $pointsMap = [];
+            foreach ($rawMissions as $mr) {
+                $vid = (int)($mr['volunteer_id'] ?? 0);
+                $st  = strtolower((string)($mr['status'] ?? ''));
+                $rs  = strtolower((string)($mr['response_status'] ?? ''));
+                if (!isset($pointsMap[$vid])) $pointsMap[$vid] = 0;
+                if ($st === 'completed' || $rs === 'completed') $pointsMap[$vid] += 20;
+                elseif ($st === 'accepted' || $rs === 'accepted') $pointsMap[$vid] += 10;
+            }
+
+            // Merge info into each mission row
+            foreach ($rawMissions as &$mr) {
+                $vid = (int)($mr['volunteer_id'] ?? 0);
+                $info = $volunteerInfo[$vid] ?? null;
+                $points = $pointsMap[$vid] ?? 0;
+                $mr['volunteer_name'] = $info ? ($info['name'] ?: "Volunteer #{$vid}") : "Volunteer #{$vid}";
+                $mr['profile_photo']  = $info ? $info['photo'] : '';
+                $mr['profile_photo_entity'] = ($info && $info['photo'] !== '') ? $info['entity'] : '';
+                $mr['volunteer_points'] = $points;
+                $mr['volunteer_rank'] = match(true) {
+                    $points >= 1000 => 'Platinum Responder',
+                    $points >= 700  => 'Gold Responder',
+                    $points >= 380  => 'Silver Responder',
+                    default         => 'Bronze Volunteer',
+                };
+            }
+            unset($mr);
+            $missions = $rawMissions;
+        }
     }
 
     $withdraws = [];
@@ -296,7 +315,7 @@ try {
 
         $join = '';
         if (!$hasRequesterName && $hasContributorId && tableExists($pdo, 'camera_contributors')) {
-            $join = ' LEFT JOIN camera_contributors cc ON cc.contributor_id = w.contributor_id ';
+            $join = ' LEFT JOIN camera_contributors cc ON cc.camera_id = w.contributor_id ';
         }
 
         $sql = 'SELECT ' . implode(', ', $selectParts) . " FROM {$withdrawTable} w {$join} ORDER BY w.{$dateColumn} DESC LIMIT 100";
@@ -315,6 +334,6 @@ try {
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'error' => 'Failed to load admin sections',
+        'error' => 'Failed to load admin sections: ' . $e->getMessage() . ' at line ' . $e->getLine(),
     ]);
 }

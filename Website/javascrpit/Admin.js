@@ -3360,7 +3360,7 @@ function openAddVolunteerModal() {
     if (!actionBtn) return;
     const action = String(actionBtn.getAttribute('data-broadcast-request-action') || '').toLowerCase();
     const requestId = Number(actionBtn.getAttribute('data-broadcast-request-id') || 0);
-    if (!requestId || (action !== 'approve' && action !== 'reject')) return;
+    if (!requestId || (action !== 'approve' && action !== 'reject' && action !== 'close_link')) return;
 
     let reasonText = '';
     if (action === 'reject') {
@@ -3375,7 +3375,7 @@ function openAddVolunteerModal() {
 
     actionBtn.disabled = true;
     const prevLabel = actionBtn.textContent;
-    actionBtn.textContent = action === 'approve' ? 'Approving...' : 'Rejecting...';
+    actionBtn.textContent = action === 'approve' ? 'Approving...' : (action === 'reject' ? 'Rejecting...' : 'Closing...');
 
     fetch('../Php/admin_update_broadcast_request.php', {
       method: 'POST',
@@ -4934,7 +4934,6 @@ function openAddVolunteerModal() {
 // AI Investigation Search Logic
 async function checkAIEngineStatus() {
   const statusEl = document.getElementById('ai-engine-status');
-  const fireStatusEl = document.getElementById('fire-engine-status');
   
   try {
     const res = await fetch('../Php/check_python_ai.php', { credentials: 'same-origin', cache: 'no-store' });
@@ -4945,30 +4944,90 @@ async function checkAIEngineStatus() {
         statusEl.style.background = '#e8f5e9';
         statusEl.style.color = '#2e7d32';
       }
-      if (fireStatusEl) {
-        fireStatusEl.innerHTML = '<i class="fa-solid fa-fire-flame-curved"></i> Detector: Online';
-        fireStatusEl.style.background = '#e8f5e9';
-        fireStatusEl.style.color = '#2e7d32';
-      }
     } else {
       if (statusEl) {
         statusEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Status: Offline';
         statusEl.style.background = '#ffebee';
         statusEl.style.color = '#d32f2f';
       }
+    }
+  } catch (err) {
+    if (statusEl) statusEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Status: Error';
+  }
+}
+setInterval(checkAIEngineStatus, 3000);
+setTimeout(checkAIEngineStatus, 500);
+
+async function checkFireDetectorStatus() {
+  const fireStatusEl = document.getElementById('fire-engine-status');
+  const fireToggleBtn = document.getElementById('fire-detector-toggle-btn');
+  try {
+    const res = await fetch('../Php/toggle_fire_detector.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'status' })
+    });
+    const data = await res.json();
+    if (data.success && data.status === 'online') {
+      if (fireStatusEl) {
+        fireStatusEl.innerHTML = '<i class="fa-solid fa-fire-flame-curved"></i> Detector: Online';
+        fireStatusEl.style.background = '#e8f5e9';
+        fireStatusEl.style.color = '#2e7d32';
+      }
+      if (fireToggleBtn) {
+        fireToggleBtn.innerHTML = '<i class="fa-solid fa-power-off"></i> Turn Off Fire Detection';
+        fireToggleBtn.dataset.currentStatus = 'online';
+        fireToggleBtn.disabled = false;
+      }
+    } else if (data.success && data.status === 'offline') {
       if (fireStatusEl) {
         fireStatusEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Detector: Offline';
         fireStatusEl.style.background = '#ffebee';
         fireStatusEl.style.color = '#d32f2f';
       }
+      if (fireToggleBtn) {
+        fireToggleBtn.innerHTML = '<i class="fa-solid fa-play"></i> Turn On Fire Detection';
+        fireToggleBtn.dataset.currentStatus = 'offline';
+        fireToggleBtn.disabled = false;
+      }
+    } else {
+       if (fireStatusEl) fireStatusEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Detector: Error';
     }
   } catch (err) {
-    if (statusEl) statusEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Status: Error';
     if (fireStatusEl) fireStatusEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Detector: Error';
   }
 }
-setInterval(checkAIEngineStatus, 3000);
-setTimeout(checkAIEngineStatus, 500);
+setInterval(checkFireDetectorStatus, 3000);
+setTimeout(checkFireDetectorStatus, 500);
+
+async function toggleFireDetector() {
+  const btn = document.getElementById('fire-detector-toggle-btn');
+  if (!btn) return;
+  
+  const current = btn.dataset.currentStatus;
+  const action = current === 'online' ? 'stop' : 'start';
+  
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Toggling...';
+  
+  try {
+    const res = await fetch('../Php/toggle_fire_detector.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: action })
+    });
+    const data = await res.json();
+    if (data.success) {
+      checkFireDetectorStatus();
+    } else {
+      alert('Error toggling fire detector: ' + data.error);
+    }
+  } catch(err) {
+     alert('Failed to connect to server.');
+  } finally {
+     btn.disabled = false;
+  }
+}
 
 async function startAIEngineViaPHP() {
   const btn = document.getElementById('start-ai-engine-btn');
@@ -5206,7 +5265,8 @@ async function confirmAiMatch(btn, sourceType) {
           <td>
             <button class="ai-action-btn" style="background:#4b5563; padding: 5px 10px; font-size:12px; margin-bottom: 5px; width: 100%;" onclick="openMatchDetailsModal('${caseId}', '${sourceType}', '${targetImgSrc}', '${matchImgSrc}', '${encodeURIComponent(detailsHtml)}', '${escapeHtml(reporter)}')">View Details</button>
             <button class="ai-action-btn ghost" style="width: 100%; margin-bottom: 5px;" onclick="notifyReporterHandover('${caseId}', this)">Notify Reporter</button>
-            ${sourceType === 'Website Post' ? `<button class="ai-action-btn btn-say-thanks" style="background:#28a745; padding: 5px 10px; font-size:12px; width: 100%;" onclick="sayThanksToFinder('${caseId}', '${data.matched_post_id}', this)">Say Thanks</button>` : ''}
+            ${sourceType === 'Website Post' ? `<button class="ai-action-btn btn-say-thanks" style="background:#28a745; padding: 5px 10px; font-size:12px; width: 100%; margin-bottom: 5px;" onclick="sayThanksToFinder('${caseId}', '${data.matched_post_id}', this)">Say Thanks</button>` : ''}
+            <button class="ai-action-btn" style="background:#dc2626; padding: 5px 10px; font-size:12px; width: 100%;" onclick="deleteConfirmedMatch(this)">Delete</button>
           </td>
       `;
     confirmedTable.appendChild(tr);
@@ -5352,6 +5412,34 @@ function loadConfirmedMatches() {
           </table>
         </div>`;
     panel.insertAdjacentHTML('beforeend', tableHtml);
+
+    // Add delete button to any rows that don't already have one
+    const tbody = document.getElementById('confirmed-ai-matches-body');
+    if (tbody) {
+      tbody.querySelectorAll('tr').forEach(tr => {
+        const actionTd = tr.querySelector('td:last-child');
+        if (actionTd && !actionTd.querySelector('button[onclick*="deleteConfirmedMatch"]')) {
+          const delBtn = document.createElement('button');
+          delBtn.className = 'ai-action-btn';
+          delBtn.style.cssText = 'background:#dc2626; padding:5px 10px; font-size:12px; width:100%; margin-top:5px;';
+          delBtn.setAttribute('onclick', 'deleteConfirmedMatch(this)');
+          delBtn.textContent = 'Delete';
+          actionTd.appendChild(delBtn);
+        }
+      });
+      localStorage.setItem('confirmedAiMatchesV3', tbody.innerHTML);
+    }
+  }
+}
+
+function deleteConfirmedMatch(btn) {
+  const tr = btn.closest('tr');
+  if (!tr) return;
+  if (!confirm('এই match entry delete করবেন?')) return;
+  tr.remove();
+  const tbody = document.getElementById('confirmed-ai-matches-body');
+  if (tbody) {
+    localStorage.setItem('confirmedAiMatchesV3', tbody.innerHTML);
   }
 }
 

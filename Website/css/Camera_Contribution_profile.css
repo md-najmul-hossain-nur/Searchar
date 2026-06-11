@@ -253,10 +253,9 @@ body {
   font-size: 16px;
 }
 
-/* Post image – fixed height */
 .post-image {
   width: 100%;
-  height: 320px;
+  height: auto;
   border-radius: 8px;
   margin-top: 8px;
   overflow: hidden;
@@ -264,17 +263,17 @@ body {
 
 .post-image img {
   width: 100%;
-  height: 100%;
+  height: auto;
   border-radius: 8px;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
 }
 
 .post-image video {
   width: 100%;
-  height: 100%;
+  height: auto;
   border-radius: 8px;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
 }
 

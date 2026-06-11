@@ -275,7 +275,7 @@ body {
 /* ── Post images (profile page uses .post-image wrapper) ─── */
 .post-image {
   width: 100% !important;
-  height: 320px !important;
+  height: auto !important;
   border-radius: 10px !important;
   margin-top: 8px !important;
   overflow: hidden !important;
@@ -283,22 +283,22 @@ body {
 
 .post-image img {
   width: 100% !important;
-  height: 100% !important;
+  height: auto !important;
   border-radius: 10px !important;
-  object-fit: cover !important;
+  object-fit: contain !important;
   display: block !important;
 }
 
 .post-image video {
   width: 100% !important;
-  height: 100% !important;
+  height: auto !important;
   border-radius: 10px !important;
-  object-fit: cover !important;
+  object-fit: contain !important;
   display: block !important;
 }
 
 .card.post {
-  overflow: hidden !important;
+  overflow: visible !important;
 }
 
 /* ── Post actions bar ────────────────────────────────────── */

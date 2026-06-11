@@ -112,7 +112,7 @@ if ($action === 'search_posts') {
 
 } elseif ($action === 'search_cctv') {
     // Fetch all recorded cctv feeds and active webcams
-    $stmt = $pdo->query("SELECT feed_id, feed_label, camera_location, feed_type, video_path FROM camera_cctv_feeds WHERE feed_type IN ('recorded', 'webcam') AND is_active = 1");
+    $stmt = $pdo->query("SELECT feed_id, feed_label, camera_location, feed_type, video_path FROM camera_cctv_feeds WHERE feed_type = 'webcam' AND is_active = 1");
     $feeds = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $videoPaths = [];
@@ -151,7 +151,7 @@ if ($action === 'search_posts') {
     curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
     curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
     // Give it more timeout since video parsing takes time
-    curl_setopt($ch, CURLOPT_TIMEOUT, 120); 
+    curl_setopt($ch, CURLOPT_TIMEOUT, 600); 
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);

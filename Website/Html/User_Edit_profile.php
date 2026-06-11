@@ -70,7 +70,7 @@ $country = trim((string)($_POST['country'] ?? ''));
     if (!empty($_FILES['profilePhoto']['name']) && $_FILES['profilePhoto']['error'] === 0) {
         $ext = pathinfo($_FILES['profilePhoto']['name'], PATHINFO_EXTENSION);
         $profile_photo_name = 'profile_' . uniqid() . '.' . $ext;
-        move_uploaded_file($_FILES['profilePhoto']['tmp_name'], "../uploads/user/$profile_photo_name");
+        move_uploaded_file($_FILES['profilePhoto']['tmp_name'], __DIR__ . "/../uploads/user/$profile_photo_name");
     } else {
       $profile_photo_name = $_POST['current_profile'] ?? null;
     }
@@ -79,7 +79,7 @@ $country = trim((string)($_POST['country'] ?? ''));
     if (!empty($_FILES['coverPhoto']['name']) && $_FILES['coverPhoto']['error'] === 0) {
         $ext = pathinfo($_FILES['coverPhoto']['name'], PATHINFO_EXTENSION);
         $cover_photo_name = 'cover_' . uniqid() . '.' . $ext;
-        move_uploaded_file($_FILES['coverPhoto']['tmp_name'], "../uploads/user/$cover_photo_name");
+        move_uploaded_file($_FILES['coverPhoto']['tmp_name'], __DIR__ . "/../uploads/user/$cover_photo_name");
     } else {
       $cover_photo_name = $_POST['current_cover'] ?? null;
     }
