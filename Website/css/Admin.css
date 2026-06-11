@@ -974,13 +974,15 @@ body {
   border-radius: 10px;
   padding: 10px 18px;
   font-weight: 800;
-  background: linear-gradient(135deg, #0f766e, #0ea5a4);
+  background: #1abc9c;
   border: none;
   color: #fff;
-  box-shadow: 0 8px 18px rgba(13, 148, 136, 0.26);
+  box-shadow: 0 4px 10px rgba(26,188,156,0.3);
+  transition: all 0.2s;
 }
 
 #admin-post-submit:hover {
+  background: #16a085;
   transform: translateY(-1px);
 }
 
@@ -1226,17 +1228,18 @@ body {
 }
 
 .assign-actions .primary {
-  background: #2563eb;
+  background: #1abc9c;
   color: #fff;
-  border: 1px solid #1d4ed8;
+  border: 1px solid #16a085;
   padding: 9px 14px;
   border-radius: 10px;
   font-weight: 800;
   cursor: pointer;
-  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.22);
+  box-shadow: 0 4px 10px rgba(26,188,156,0.3);
+  transition: all 0.2s;
 }
 
-.assign-actions .primary:hover { background: #1d4ed8; }
+.assign-actions .primary:hover { background: #16a085; transform: translateY(-1px); }
 
 .assign-actions .secondary {
   background: #f3f4f6;
@@ -2323,12 +2326,19 @@ h4 {
   border: none;
   border-radius: 5px;
   font-size: 1em;
+  font-weight: 700;
   cursor: pointer;
   margin-bottom: 2px;
-  transition: background 0.13s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 10px rgba(26,188,156,0.3);
 }
 .add-btn:hover {
   background: #16a085;
+  transform: translateY(-1px);
 }
 .table-actions-bar {
   margin-bottom: 7px;
@@ -2396,8 +2406,7 @@ h4 {
   gap: 12px;
 }
 
-.btn-process-all,
-.btn-export-report {
+.btn-process-all {
   border: none;
   border-radius: 8px;
   padding: 10px 18px;
@@ -2408,29 +2417,17 @@ h4 {
   gap: 8px;
   font-size: 1em;
   transition: transform 0.12s ease, box-shadow 0.15s ease, filter 0.15s ease;
-}
-
-.btn-process-all {
   background: linear-gradient(135deg, #10b981, #0f8b6c);
   color: #fff;
   box-shadow: 0 10px 20px rgba(15, 139, 108, 0.22);
 }
 
-.btn-export-report {
-  background: #f4f6fb;
-  color: #1f2f46;
-  border: 1px solid #dce3f1;
-  box-shadow: 0 10px 20px rgba(64, 87, 140, 0.12);
-}
-
-.btn-process-all:hover,
-.btn-export-report:hover {
+.btn-process-all:hover {
   transform: translateY(-1px);
   filter: brightness(1.05);
 }
 
-.btn-process-all:active,
-.btn-export-report:active {
+.btn-process-all:active {
   transform: translateY(0);
 }
 
@@ -2441,36 +2438,7 @@ h4 {
   justify-content: flex-end;
 }
 
-.btn-export-donations {
-  border: none;
-  border-radius: 10px;
-  padding: 10px 18px;
-  font-weight: 700;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.98em;
-  color: #fff;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  box-shadow: 0 10px 22px rgba(29, 78, 216, 0.26);
-  transition: transform 0.12s ease, box-shadow 0.15s ease, filter 0.15s ease;
-}
-
-.btn-export-donations:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
-}
-
-.btn-export-donations:active {
-  transform: translateY(0);
-}
-
-.btn-export-donations:disabled {
-  opacity: 0.72;
-  cursor: not-allowed;
-  filter: none;
-}
+/* Eliminated .btn-export-donations as it uses .add-btn now */
 
 /* Analytics Widgets (Missing Section) */
 .analytics-widgets {
@@ -2932,6 +2900,25 @@ h4 {
   background: #ffecee;
   color: #b4232f;
 }
+
+.post-category-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.post-category-badge.cat-alert          { background: #ffecee; color: #b4232f; }
+.post-category-badge.cat-missing_person { background: #fff7ed; color: #c2410c; }
+.post-category-badge.cat-criminal_found { background: #e9fff3; color: #0f6b44; }
+.post-category-badge.cat-disaster       { background: #fff9e8; color: #9a6b00; }
+.post-category-badge.cat-mission        { background: #eef2ff; color: #4338ca; }
+.post-category-badge.cat-general        { background: #f3f4f6; color: #4b5563; }
 
 #post-control .post-group-row {
   background: #f8fbff;
@@ -3412,14 +3399,19 @@ h4 {
   border-top: 1px solid #e9eef7;
 }
 .profile-modal__btn {
+  padding: 8px 16px;
   border: none;
   border-radius: 8px;
-  padding: 9px 14px;
-  cursor: pointer;
+  font-size: 13px;
   font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
+
 .profile-modal__btn.secondary { background: #eef2fb; color: #23324f; }
-.profile-modal__btn.primary { background: #2a4c85; color: #fff; }
+.profile-modal__btn.secondary:hover { background: #e2e8f0; }
+.profile-modal__btn.primary { background: #1abc9c; color: #fff; box-shadow: 0 4px 10px rgba(26,188,156,0.3); }
+.profile-modal__btn.primary:hover { background: #16a085; transform: translateY(-1px); }
 .profile-modal__btn.success { background: #0f8b6c; color: #fff; }
 .profile-modal__input {
   width: 100%;

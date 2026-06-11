@@ -729,6 +729,13 @@ document.addEventListener('click', function (event) {
     return raw.charAt(0).toUpperCase() + raw.slice(1);
   }
 
+  const _catBadgeMap = { alert:'🔴 Alert', missing_person:'🟡 Missing Person', criminal_found:'🟢 Criminal Found', disaster:'🟠 Disaster', mission:'🔵 Mission', general:'⚪ General' };
+  function categoryBadge(value) {
+    const key = String(value || 'general').trim().toLowerCase();
+    const label = _catBadgeMap[key] || '⚪ General';
+    return `<span class="post-category-badge cat-${escapeHtml(key)}">${label}</span>`;
+  }
+
   function normalizeRoleKey(value) {
     const raw = String(value || '').trim().toLowerCase().replace(/[\s-]+/g, '_');
     if (!raw) return 'user';
@@ -780,7 +787,7 @@ document.addEventListener('click', function (event) {
               data-media-json='${escapeHtml(row.media_json || '')}' data-media-type="${escapeHtml(row.media_type || '')}" data-status="${escapeHtml((row.status || 'pending').toLowerCase())}" data-share-facebook="${escapeHtml(row.share_facebook || 0)}"
               data-share-anonymous="${escapeHtml(row.share_anonymous || 0)}" data-is-share="${escapeHtml(row.is_share || 0)}" data-shared-post-id="${escapeHtml(row.shared_post_id || '')}" data-shared-payload='${escapeHtml(row.shared_payload || '')}' data-report-status="${escapeHtml(reportStatus)}">
             <td>${escapeHtml(postIdText)}</td>
-            <td>${escapeHtml(titleCase(row.category || 'general'))}</td>
+            <td>${categoryBadge(row.category)}</td>
             <td>${escapeHtml(row.author_name || 'Unknown')}</td>
             <td>${escapeHtml(titleCase(row.author_role || 'user'))}</td>
             <td>${yesNoBadge(row.share_facebook || 0)}</td>
@@ -1197,7 +1204,7 @@ document.addEventListener('click', function (event) {
         <tr>
           <td>#${Number(row.id || 0)}</td>
           <td class="admin-post-message-cell">${escapeHtml(row.text || '')}</td>
-          <td>${escapeHtml(row.category || 'general')}</td>
+          <td>${categoryBadge(row.category)}</td>
           <td>${Number(row.likes_count || 0)}</td>
           <td>${Number(row.comments_count || 0)}</td>
           <td>${shareHtml}</td>
