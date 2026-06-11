@@ -5007,32 +5007,30 @@ async function checkFireDetectorStatus() {
 setInterval(checkFireDetectorStatus, 3000);
 setTimeout(checkFireDetectorStatus, 500);
 
-async function toggleFireDetector() {
+async function scanForFireNow() {
   const btn = document.getElementById('fire-detector-toggle-btn');
   if (!btn) return;
   
-  const current = btn.dataset.currentStatus;
-  const action = current === 'online' ? 'stop' : 'start';
-  
+  const originalHtml = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Toggling...';
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Scanning cameras...';
   
   try {
-    const res = await fetch('../Php/toggle_fire_detector.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: action })
+    const res = await fetch('../Php/python_scan_fire_now.php', {
+      method: 'POST'
     });
     const data = await res.json();
     if (data.success) {
-      checkFireDetectorStatus();
+      alert(`Scan complete. Found ${data.fires_found} fire(s).`);
+      loadFireAlerts(); // reload the table with new data
     } else {
-      alert('Error toggling fire detector: ' + data.error);
+      alert('Error during scan: ' + data.error);
     }
   } catch(err) {
-     alert('Failed to connect to server.');
+     alert('Failed to connect to Python Server.');
   } finally {
      btn.disabled = false;
+     btn.innerHTML = originalHtml;
   }
 }
 
@@ -5757,7 +5755,9 @@ function confirmAiSource(sourceType) {
 
   async function loadFireAlerts() {
     try {
-      tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Loading fire alerts...</td></tr>';
+      if (cachedFireAlerts.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Loading fire alerts...</td></tr>';
+      }
       const res = await fetch('../Php/admin_fetch_fire_alerts.php', { cache: 'no-store' });
       const json = await res.json();
       if (!json?.success) throw new Error(json?.error || 'Failed to load fire alerts');
@@ -5868,6 +5868,7 @@ function confirmAiSource(sourceType) {
   });
 
   loadFireAlerts();
+  // Manual scan is now used instead of background polling.
 })();
 
 // End of Admin.js

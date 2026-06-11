@@ -73,14 +73,14 @@ def detect_fire(frame):
 
     return False, "0%", frame
 
-CONSECUTIVE_DETECTIONS_REQUIRED = 5  # fire must appear in this many consecutive checks
+CONSECUTIVE_DETECTIONS_REQUIRED = 1  # trigger immediately for real-time detection
 
 def process_feed(feed):
     feed_id = feed.get('feed_id')
     video_path = feed.get('video_path')
 
-    # 5 minute cooldown per camera to prevent snapshot spam
-    if feed_id in alerted_feeds and (time.time() - alerted_feeds[feed_id] < 300):
+    # 10 second cooldown per camera to prevent snapshot spam, but still near real-time
+    if feed_id in alerted_feeds and (time.time() - alerted_feeds[feed_id] < 10):
         return
 
     path_to_check = None
@@ -124,17 +124,13 @@ def process_feed(feed):
             is_fire, conf, out_frame = detect_fire(frame)
 
         if is_fire:
-            count = pending_detections.get(feed_id, 0) + 1
-            pending_detections[feed_id] = count
-            if count >= CONSECUTIVE_DETECTIONS_REQUIRED:
-                pending_detections.pop(feed_id, None)
-                trigger_alert(feed_id, out_frame, conf)
-        else:
-            # Reset streak — one clean frame breaks the detection chain
-            pending_detections.pop(feed_id, None)
-
+            # For manual scan, no consecutive detections needed, just trigger
+            trigger_alert(feed_id, out_frame, conf)
+            return True
+        return False
     except Exception as e:
         logger.error(f"Error processing feed {feed_id}: {e}")
+        return False
 
 def trigger_alert(feed_id, frame, confidence):
     filename = f"fire_{feed_id}_{int(time.time())}.jpg"
@@ -171,23 +167,17 @@ def trigger_alert(feed_id, frame, confidence):
     except Exception as e:
         logger.error(f"HTTP Error triggering alert: {e}")
 
-def fire_detector_loop():
-    logger.info("Starting Fire Detector background loop...")
-    global FIRE_DETECTOR_ENABLED
-    while True:
-        if FIRE_DETECTOR_ENABLED:
-            try:
-                res = requests.get(FETCH_URL, timeout=5)
-                data = res.json()
-                if data.get('success'):
-                    feeds = data.get('feeds', [])
-                    for feed in feeds:
-                        process_feed(feed)
-            except Exception as e:
-                pass # Silently retry on next tick
-            
-        time.sleep(5) # Poll every 5 seconds
-
-def start_fire_detector():
-    t = threading.Thread(target=fire_detector_loop, daemon=True)
-    t.start()
+def run_fire_scan_once():
+    logger.info("Running manual Fire Detector scan...")
+    fires_found = 0
+    try:
+        res = requests.get(FETCH_URL, timeout=5)
+        data = res.json()
+        if data.get('success'):
+            feeds = data.get('feeds', [])
+            for feed in feeds:
+                if process_feed(feed):
+                    fires_found += 1
+    except Exception as e:
+        logger.error(f"Error in manual fire scan: {e}")
+    return fires_found

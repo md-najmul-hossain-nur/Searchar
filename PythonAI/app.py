@@ -291,28 +291,13 @@ def search_cctv():
     matches = sorted(matches, key=lambda x: x['confidence'], reverse=True)
     return jsonify({'success': True, 'matches': matches})
 
-from fire_detector import set_fire_detector_enabled, get_fire_detector_status
+from fire_detector import run_fire_scan_once
 
-@app.route('/api/fire_detect/status', methods=['GET'])
-def get_fire_status():
-    return jsonify({'success': True, 'status': 'online' if get_fire_detector_status() else 'offline'})
-
-@app.route('/api/fire_detect/start', methods=['POST'])
-def start_fire_detect():
-    set_fire_detector_enabled(True)
-    return jsonify({'success': True, 'status': 'online'})
-
-@app.route('/api/fire_detect/stop', methods=['POST'])
-def stop_fire_detect():
-    set_fire_detector_enabled(False)
-    return jsonify({'success': True, 'status': 'offline'})
+@app.route('/api/fire_detect/scan_now', methods=['POST'])
+def scan_fire_now():
+    fires_found = run_fire_scan_once()
+    return jsonify({'success': True, 'fires_found': fires_found})
 
 if __name__ == '__main__':
     print("Starting SearchAR Python AI Engine...")
-    try:
-        from fire_detector import start_fire_detector
-        start_fire_detector()
-    except Exception as e:
-        print(f"Fire detector failed to start: {e}")
-        
     app.run(host='127.0.0.1', port=5001, debug=False)

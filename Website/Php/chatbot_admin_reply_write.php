@@ -21,7 +21,7 @@ try {
     $data = json_decode((string)$raw, true);
 
     $sessionToken = trim((string)($data['session_token'] ?? ''));
-    $replyText = trim((string)($data['reply_text'] ?? ''));
+    $replyText = trim((string)($data['reply_text'] ?? $data['reply'] ?? ''));
 
     if ($sessionToken === '' || $replyText === '') {
         http_response_code(400);

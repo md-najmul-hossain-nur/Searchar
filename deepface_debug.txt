@@ -1,1 +1,0 @@
-Exception: OpenCV(4.13.0) D:\a\opencv-python\opencv-python\opencv\modules\core\src\alloc.cpp:73: error: (-4:Insufficient memory) Failed to allocate 193320960 bytes in function 'cv::OutOfMemoryError'
