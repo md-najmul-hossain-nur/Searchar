@@ -402,7 +402,7 @@ function buildApprovedPostElement(row) {
   const isAnonymous = Number(row?.share_anonymous || 0) === 1;
 
   const textHtml = postText ? `<p>${escapeWithLineBreaks(postText)}</p>` : '';
-  const catLabels = { alert:'🔴 Alert', missing_person:'🟡 Missing Person', criminal_found:'🟢 Criminal Found', disaster:'🟠 Disaster', mission:'🔵 Missing Person', general:'⚪ General' };
+  const catLabels = { alert:'🔴 Alert', missing_person:'🟡 Missing Person', criminal_found:'🟢 Criminal Found', disaster:'🟠 Disaster', mission:'🟡 Missing Person', general:'⚪ General' };
   const catKey = category.toLowerCase();
   const badgeHtml = `<span class="post-category-badge cat-${escapeHtml(catKey)}">${catLabels[catKey] || '⚪ General'}</span>`;
   let mediaHtml = '';

@@ -534,7 +534,7 @@
     const isAnonymous = Number(row?.share_anonymous || 0) === 1;
     const defaultCommentMode = 'normal';
 
-    const catLabels = { alert:'🔴 Alert', missing_person:'🟡 Missing Person', criminal_found:'🟢 Criminal Found', disaster:'🟠 Disaster', mission:'🔵 Missing Person', general:'⚪ General' };
+    const catLabels = { alert:'🔴 Alert', missing_person:'🟡 Missing Person', criminal_found:'🟢 Criminal Found', disaster:'🟠 Disaster', mission:'🟡 Missing Person', general:'⚪ General' };
     const catKey = String(row?.category || 'general').toLowerCase();
     const badgeLabel = catLabels[catKey] || '⚪ General';
     const badgeHtml = `<span class="post-category-badge cat-${escapeHtml(catKey)}">${badgeLabel}</span>`;

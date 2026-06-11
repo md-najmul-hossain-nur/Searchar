@@ -263,7 +263,7 @@ try {
         'missing_person' => 'Missing Person',
         'criminal_found' => 'Criminal Found',
         'disaster' => 'Disaster',
-        'mission' => 'Mission',
+        'mission' => 'Missing Person',
         default => ucfirst(str_replace('_', ' ', $categoryRaw)),
       };
 

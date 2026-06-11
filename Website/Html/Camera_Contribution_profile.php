@@ -210,7 +210,7 @@ try {
 
               <?php
                 $postCategory = (string)($post['category'] ?? 'general');
-                $catLabels = ['alert'=>'🔴 Alert', 'missing_person'=>'🟡 Missing Person', 'criminal_found'=>'🟢 Criminal Found', 'disaster'=>'🟠 Disaster', 'mission'=>'🔵 Missing Person', 'general'=>'⚪ General'];
+                $catLabels = ['alert'=>'🔴 Alert', 'missing_person'=>'🟡 Missing Person', 'criminal_found'=>'🟢 Criminal Found', 'disaster'=>'🟠 Disaster', 'mission'=>'🟡 Missing Person', 'general'=>'⚪ General'];
                 $catKey = strtolower($postCategory);
                 $badgeLabel = $catLabels[$catKey] ?? '⚪ General';
               ?>
