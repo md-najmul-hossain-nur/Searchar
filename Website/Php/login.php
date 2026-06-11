@@ -102,7 +102,7 @@ try {
     $_SESSION['active_roles'][$foundRole] = $_SESSION['user_id'];
 
     if ($foundRole === 'admin') {
-        $_SESSION['admin_role'] = $foundUser['role'] ?? 'sub_admin';
+        $_SESSION['admin_role'] = 'admin';
     }
     $home_page = $roleTableMap[$foundRole]['home'];
     header("Location: $home_page?login=success");

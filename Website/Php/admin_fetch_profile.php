@@ -11,7 +11,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
 echo json_encode([
     'success' => true,
-    'admin_role' => $_SESSION['admin_role'] ?? 'sub_admin',
+    'admin_role' => 'admin',
     'admin_id' => $_SESSION['user_id']
 ]);
 ?>
