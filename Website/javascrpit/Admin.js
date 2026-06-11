@@ -4648,6 +4648,13 @@ function openAddVolunteerModal() {
 
   refreshCommentTemplates();
   refreshLogs();
+
+  setInterval(() => {
+    if (isSectionActive() && !isAutoRefreshPaused()) {
+      refreshLogs();
+    }
+  }, 3000);
+
 })();
 
 (function () {
@@ -5746,6 +5753,8 @@ function confirmAiSource(sourceType) {
     }
   }
 
+  let cachedFireAlerts = [];
+
   async function loadFireAlerts() {
     try {
       tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Loading fire alerts...</td></tr>';
@@ -5753,40 +5762,75 @@ function confirmAiSource(sourceType) {
       const json = await res.json();
       if (!json?.success) throw new Error(json?.error || 'Failed to load fire alerts');
       
-      const rows = json.rows || [];
-      if (rows.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #6b7280;">No recent fire alerts.</td></tr>';
-        return;
-      }
-      
-      tableBody.innerHTML = rows.map(r => `
-        <tr>
-            <td><strong>#FD-${esc(r.alert_id)}</strong></td>
-            <td>${esc(r.feed_label || `Camera ${r.feed_id}`)}</td>
-            <td>${esc(r.camera_location || 'Unknown Location')}</td>
-            <td>${formatTime(r.created_at)}</td>
-            <td><span style="background: #fee2e2; color: #b91c1c; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 12px;">${esc(r.confidence)}</span></td>
-            <td>
-              ${r.snapshot_url 
-                ? `<button class="ghost" style="padding: 4px 8px; font-size: 12px;" onclick="window.open('${esc(r.snapshot_url)}', '_blank')"><i class="fa-solid fa-image"></i> View Frame</button>`
-                : `<span style="color:#9ca3af; font-size: 12px;">No Image</span>`
-              }
-            </td>
-            <td>${statusBadge(r.status)}</td>
-            <td style="display: flex; gap: 8px; flex-wrap: wrap; border: none; padding-bottom: 12px;">
-                ${r.status === 'new' ? `
-                <button class="danger-btn btn-sm" onclick="window.updateFireStatus(${r.alert_id}, 'call_fire_station', this)"><i class="fa-solid fa-phone-volume"></i> Call Fire Station</button>
-                <button class="add-btn btn-sm" onclick="window.updateFireStatus(${r.alert_id}, 'dispatch_police', this)"><i class="fa-solid fa-shield-halved"></i> Notify Police</button>
-                <button class="ghost btn-sm" onclick="window.updateFireStatus(${r.alert_id}, 'notify_camera_man', this)"><i class="fa-solid fa-camera"></i> Notify Camera Man</button>
-                <button class="ghost btn-sm" onclick="window.updateFireStatus(${r.alert_id}, 'dismiss', this)"><i class="fa-solid fa-xmark"></i> Dismiss</button>
-                ` : `<span style="color:#6b7280; font-size: 13px; font-style: italic;">Action Taken</span>`}
-            </td>
-        </tr>
-      `).join('');
+      cachedFireAlerts = json.rows || [];
+      renderFireAlerts();
     } catch (e) {
       console.error(e);
       tableBody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: red;">Error: ${esc(e.message)}</td></tr>`;
     }
+  }
+
+  function renderFireAlerts() {
+    const textFilter = (document.getElementById('fire-filter-text')?.value || '').toLowerCase();
+    const statusFilter = (document.getElementById('fire-filter-status')?.value || '').toLowerCase();
+
+    let filtered = cachedFireAlerts;
+
+    if (textFilter) {
+      filtered = filtered.filter(r => 
+        (r.feed_label && r.feed_label.toLowerCase().includes(textFilter)) ||
+        (r.camera_location && r.camera_location.toLowerCase().includes(textFilter)) ||
+        (r.feed_id && String(r.feed_id).includes(textFilter))
+      );
+    }
+
+    if (statusFilter) {
+      filtered = filtered.filter(r => (r.status || '').toLowerCase() === statusFilter);
+    }
+
+    if (filtered.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #6b7280;">No recent fire alerts.</td></tr>';
+      return;
+    }
+    
+    tableBody.innerHTML = filtered.map(r => `
+      <tr>
+          <td><strong>#FD-${esc(r.alert_id)}</strong></td>
+          <td>${esc(r.feed_label || `Camera ${r.feed_id}`)}</td>
+          <td>${esc(r.camera_location || 'Unknown Location')}</td>
+          <td>${formatTime(r.created_at)}</td>
+          <td><span style="background: #fee2e2; color: #b91c1c; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 12px;">${esc(r.confidence)}</span></td>
+          <td>
+            ${r.snapshot_url 
+              ? `<button class="ghost" style="padding: 4px 8px; font-size: 12px;" onclick="window.open('${esc(r.snapshot_url)}', '_blank')"><i class="fa-solid fa-image"></i> View Frame</button>`
+              : `<span style="color:#9ca3af; font-size: 12px;">No Image</span>`
+            }
+          </td>
+          <td>${statusBadge(r.status)}</td>
+          <td style="display: flex; gap: 8px; flex-wrap: wrap; border: none; padding-bottom: 12px;">
+              ${r.status === 'new' ? `
+              <button class="danger-btn btn-sm" onclick="window.updateFireStatus(${r.alert_id}, 'call_fire_station', this)"><i class="fa-solid fa-phone-volume"></i> Call Fire Station</button>
+              <button class="add-btn btn-sm" onclick="window.updateFireStatus(${r.alert_id}, 'dispatch_police', this)"><i class="fa-solid fa-shield-halved"></i> Notify Police</button>
+              <button class="ghost btn-sm" onclick="window.updateFireStatus(${r.alert_id}, 'notify_camera_man', this)"><i class="fa-solid fa-camera"></i> Notify Camera Man</button>
+              <button class="ghost btn-sm" onclick="window.updateFireStatus(${r.alert_id}, 'dismiss', this)"><i class="fa-solid fa-xmark"></i> Dismiss</button>
+              ` : `<span style="color:#6b7280; font-size: 13px; font-style: italic;">Action Taken</span>`}
+          </td>
+      </tr>
+    `).join('');
+  }
+
+  const fireFilterTextEl = document.getElementById('fire-filter-text');
+  const fireFilterStatusEl = document.getElementById('fire-filter-status');
+  const fireFilterResetEl = document.getElementById('fire-filter-reset');
+
+  if (fireFilterTextEl) fireFilterTextEl.addEventListener('input', renderFireAlerts);
+  if (fireFilterStatusEl) fireFilterStatusEl.addEventListener('change', renderFireAlerts);
+  if (fireFilterResetEl) {
+    fireFilterResetEl.addEventListener('click', () => {
+      if (fireFilterTextEl) fireFilterTextEl.value = '';
+      if (fireFilterStatusEl) fireFilterStatusEl.value = '';
+      renderFireAlerts();
+    });
   }
 
   window.updateFireStatus = async function (alertId, action, btn) {
