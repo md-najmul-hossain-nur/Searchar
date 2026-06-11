@@ -208,6 +208,14 @@ try {
                 </div>
               </div>
 
+              <?php
+                $postCategory = (string)($post['category'] ?? 'general');
+                $catLabels = ['alert'=>'🔴 Alert', 'missing_person'=>'🟡 Missing Person', 'criminal_found'=>'🟢 Criminal Found', 'disaster'=>'🟠 Disaster', 'mission'=>'🔵 Mission', 'general'=>'⚪ General'];
+                $catKey = strtolower($postCategory);
+                $badgeLabel = $catLabels[$catKey] ?? '⚪ General';
+              ?>
+              <span class="post-category-badge cat-<?= e($catKey) ?>"><?= e($badgeLabel) ?></span>
+
               <?php if ($postText !== ''): ?>
                 <p><?= nl2br(e($postText)) ?></p>
               <?php endif; ?>
@@ -287,7 +295,7 @@ try {
   <label class="category-option">
     <input type="radio" name="category" value="mission" checked>
     <img src="../Images/mission-icon.gif" alt="Mission Icon" class="category-icon" />
-    Mission Person
+    Missing Person
   </label>
   <label class="category-option">
     <input type="radio" name="category" value="disaster">

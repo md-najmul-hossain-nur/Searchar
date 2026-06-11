@@ -745,7 +745,7 @@ try {
   <label class="category-option">
     <input type="radio" name="category" value="mission" checked>
     <img src="../Images/mission-icon.gif" alt="Mission Icon" class="category-icon" />
-    Mission Person
+    Missing Person
   </label>
   <label class="category-option">
     <input type="radio" name="category" value="disaster">
@@ -802,7 +802,7 @@ try {
   <nav class="post-filter-bar" aria-label="Post Category Filters">
     <button class="filter-btn active" type="button" onclick="filterPosts('all')">All</button>
     <button class="filter-btn" type="button" onclick="filterPosts('mission')">
-      <img src="../Images/mission-icon.gif" alt="Mission Icon" class="filter-icon" /> Mission Person
+      <img src="../Images/mission-icon.gif" alt="Mission Icon" class="filter-icon" /> Missing Person
     </button>
     <button class="filter-btn" type="button" onclick="filterPosts('disaster')">
       <img src="../Images/disaster-icon.gif" alt="Disaster Icon" class="filter-icon" /> Disaster
@@ -850,6 +850,13 @@ try {
           <small class="post-time" data-created-at="<?= e((string)($post['created_at'] ?? '')) ?>"><?= e(timeAgo((string)($post['created_at'] ?? ''))) ?></small>
         </div>
       </div>
+
+      <?php
+        $catLabels = ['alert'=>'🔴 Alert', 'missing_person'=>'🟡 Missing Person', 'criminal_found'=>'🟢 Criminal Found', 'disaster'=>'🟠 Disaster', 'mission'=>'🔵 Mission', 'general'=>'⚪ General'];
+        $catKey = strtolower($postCategory);
+        $badgeLabel = $catLabels[$catKey] ?? '⚪ General';
+      ?>
+      <span class="post-category-badge cat-<?= e($catKey) ?>"><?= e($badgeLabel) ?></span>
 
       <?php if ($postText !== ''): ?>
         <p><?= nl2br(e($postText)) ?></p>
