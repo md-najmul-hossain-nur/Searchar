@@ -290,4 +290,10 @@ def search_cctv():
 
 if __name__ == '__main__':
     print("Starting SearchAR Python AI Engine...")
+    try:
+        from fire_detector import start_fire_detector
+        start_fire_detector()
+    except Exception as e:
+        print(f"Fire detector failed to start: {e}")
+        
     app.run(host='127.0.0.1', port=5001, debug=False)

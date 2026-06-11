@@ -2217,11 +2217,11 @@ body.mission-modal-open {
   background: #c0392b;
 }
 
-.advert .ad-card-slider {
+.ad-card-slider {
   padding-top: 10px;
 }
 
-.advert .ad-slider-container {
+.ad-slider-container {
   width: 100% !important;
   max-height: none !important;
   aspect-ratio: 16/9;
@@ -2233,17 +2233,18 @@ body.mission-modal-open {
   background: #ffffff;
 }
 
-.advert .ad-slider-track {
-  display: flex;
-  width: 400%;
-  height: 100%;
-  animation: adSlideImages 16s infinite;
+.ad-slider-track {
+  display: flex !important;
+  width: 400% !important;
+  height: 100% !important;
+  animation: adSlideImages 16s infinite linear !important;
 }
 
-.advert .ad-slider-track img {
-  width: 25%;
-  height: 100%;
-  object-fit: cover;
+.ad-slider-track img {
+  width: 25% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  flex-shrink: 0 !important;
 }
 
 @keyframes adSlideImages {

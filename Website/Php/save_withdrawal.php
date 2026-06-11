@@ -54,18 +54,7 @@ try {
     }
     $totalEarned += ($acc / 3600) * 40;
   }
-  $wchk = $pdo->prepare("SELECT COALESCE(SUM(amount),0) FROM withdrawal_requests WHERE contributor_id = :cid AND status = 'approved'");
-  $wchk->execute([':cid' => $userId]);
-  $totalApproved = (float)$wchk->fetchColumn();
-  $available = max(0.0, $totalEarned - $totalApproved);
-
-  if ($amount > $available) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'insufficient_balance', 'message' => 'Amount exceeds available balance.']);
-    exit();
-  }
-
-  // Ensure table exists
+  // Ensure table exists before querying it
   $pdo->exec("CREATE TABLE IF NOT EXISTS withdrawal_requests (
     id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     contributor_id INT UNSIGNED NOT NULL,
@@ -76,6 +65,19 @@ try {
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     processed_at DATETIME DEFAULT NULL
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+  $wchk = $pdo->prepare("SELECT COALESCE(SUM(amount),0) FROM withdrawal_requests WHERE contributor_id = :cid AND status IN ('approved', 'pending')");
+  $wchk->execute([':cid' => $userId]);
+  $totalDeducted = (float)$wchk->fetchColumn();
+  $available = max(0.0, $totalEarned - $totalDeducted);
+
+  if ($amount > $available) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'insufficient_balance', 'message' => 'Amount exceeds available balance.']);
+    exit();
+  }
+
+
 
   $stmt = $pdo->prepare('INSERT INTO withdrawal_requests (contributor_id, method, account_number, amount, status) VALUES (:cid, :method, :account, :amount, :status)');
   $stmt->execute([

@@ -4926,28 +4926,45 @@ function openAddVolunteerModal() {
     'review',
     'reports',
     'chat-management',
-    'chatbot-logs'
+    'chatbot-logs',
+    'fire-detection'
   ];
 })();
 
 // AI Investigation Search Logic
 async function checkAIEngineStatus() {
   const statusEl = document.getElementById('ai-engine-status');
-  if (!statusEl) return;
+  const fireStatusEl = document.getElementById('fire-engine-status');
+  
   try {
     const res = await fetch('../Php/check_python_ai.php', { credentials: 'same-origin', cache: 'no-store' });
     const data = await res.json();
     if (data.success && data.status === 'online') {
-      statusEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> Status: Online';
-      statusEl.style.background = '#e8f5e9';
-      statusEl.style.color = '#2e7d32';
+      if (statusEl) {
+        statusEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> Status: Online';
+        statusEl.style.background = '#e8f5e9';
+        statusEl.style.color = '#2e7d32';
+      }
+      if (fireStatusEl) {
+        fireStatusEl.innerHTML = '<i class="fa-solid fa-fire-flame-curved"></i> Detector: Online';
+        fireStatusEl.style.background = '#e8f5e9';
+        fireStatusEl.style.color = '#2e7d32';
+      }
     } else {
-      statusEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Status: Offline';
-      statusEl.style.background = '#ffebee';
-      statusEl.style.color = '#d32f2f';
+      if (statusEl) {
+        statusEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Status: Offline';
+        statusEl.style.background = '#ffebee';
+        statusEl.style.color = '#d32f2f';
+      }
+      if (fireStatusEl) {
+        fireStatusEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Detector: Offline';
+        fireStatusEl.style.background = '#ffebee';
+        fireStatusEl.style.color = '#d32f2f';
+      }
     }
   } catch (err) {
-    statusEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Status: Error';
+    if (statusEl) statusEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Status: Error';
+    if (fireStatusEl) fireStatusEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Detector: Error';
   }
 }
 setInterval(checkAIEngineStatus, 3000);
@@ -5604,6 +5621,122 @@ function confirmAiSource(sourceType) {
   }
   closeAiConfirmModal();
 }
+
+// --------------------------------------------------------
+// Fire Detection Automation
+// --------------------------------------------------------
+(function () {
+  const tableBody = document.getElementById('fire-table-body');
+  if (!tableBody) return;
+
+  function esc(val) {
+    if (val === null || val === undefined) return '';
+    return String(val)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function formatTime(isoStr) {
+    if (!isoStr) return '';
+    const d = new Date(isoStr);
+    return d.toLocaleString('en-US', {
+      month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true
+    });
+  }
+
+  function statusBadge(statusRaw) {
+    switch (statusRaw) {
+      case 'new': return '<span class="status-pending" style="color: #b91c1c; background: #fee2e2;">New Alert</span>';
+      case 'police_dispatched': return '<span class="status-actioned" style="color: #15803d; background: #ecfdf3;">Police Dispatched</span>';
+      case 'fire_station_called': return '<span class="status-actioned" style="color: #15803d; background: #ecfdf3;">Fire Station Called</span>';
+      case 'camera_man_notified': return '<span class="status-under_review" style="color: #c2410c; background: #fff7ed;">Cameraman Notified</span>';
+      case 'dismissed': return '<span class="status-closed" style="color: #4b5563; background: #f3f4f6;">Dismissed</span>';
+      default: return `<span class="status-pending">${esc(statusRaw)}</span>`;
+    }
+  }
+
+  async function loadFireAlerts() {
+    try {
+      tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Loading fire alerts...</td></tr>';
+      const res = await fetch('../Php/admin_fetch_fire_alerts.php', { cache: 'no-store' });
+      const json = await res.json();
+      if (!json?.success) throw new Error(json?.error || 'Failed to load fire alerts');
+      
+      const rows = json.rows || [];
+      if (rows.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #6b7280;">No recent fire alerts.</td></tr>';
+        return;
+      }
+      
+      tableBody.innerHTML = rows.map(r => `
+        <tr>
+            <td><strong>#FD-${esc(r.alert_id)}</strong></td>
+            <td>${esc(r.feed_label || `Camera ${r.feed_id}`)}</td>
+            <td>${esc(r.camera_location || 'Unknown Location')}</td>
+            <td>${formatTime(r.created_at)}</td>
+            <td><span style="background: #fee2e2; color: #b91c1c; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 12px;">${esc(r.confidence)}</span></td>
+            <td>
+              ${r.snapshot_url 
+                ? `<button class="ghost" style="padding: 4px 8px; font-size: 12px;" onclick="window.open('${esc(r.snapshot_url)}', '_blank')"><i class="fa-solid fa-image"></i> View Frame</button>`
+                : `<span style="color:#9ca3af; font-size: 12px;">No Image</span>`
+              }
+            </td>
+            <td>${statusBadge(r.status)}</td>
+            <td style="display: flex; gap: 8px; flex-wrap: wrap; border: none; padding-bottom: 12px;">
+                ${r.status === 'new' ? `
+                <button class="danger-btn btn-sm" onclick="window.updateFireStatus(${r.alert_id}, 'call_fire_station', this)"><i class="fa-solid fa-phone-volume"></i> Call Fire Station</button>
+                <button class="add-btn btn-sm" onclick="window.updateFireStatus(${r.alert_id}, 'dispatch_police', this)"><i class="fa-solid fa-shield-halved"></i> Notify Police</button>
+                <button class="ghost btn-sm" onclick="window.updateFireStatus(${r.alert_id}, 'notify_camera_man', this)"><i class="fa-solid fa-camera"></i> Notify Camera Man</button>
+                <button class="ghost btn-sm" onclick="window.updateFireStatus(${r.alert_id}, 'dismiss', this)"><i class="fa-solid fa-xmark"></i> Dismiss</button>
+                ` : `<span style="color:#6b7280; font-size: 13px; font-style: italic;">Action Taken</span>`}
+            </td>
+        </tr>
+      `).join('');
+    } catch (e) {
+      console.error(e);
+      tableBody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: red;">Error: ${esc(e.message)}</td></tr>`;
+    }
+  }
+
+  window.updateFireStatus = async function (alertId, action, btn) {
+    if (!confirm('Are you sure you want to perform this action?')) return;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+    btn.disabled = true;
+
+    try {
+      const fd = new FormData();
+      fd.append('alert_id', alertId);
+      fd.append('action', action);
+
+      const res = await fetch('../Php/admin_action_fire_alert.php', { method: 'POST', body: fd });
+      const json = await res.json();
+      
+      if (!json?.success) throw new Error(json?.error || 'Update failed');
+      
+      loadFireAlerts();
+      if (action === 'call_fire_station') {
+        alert('Action recorded: Please call the local fire station immediately.');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error: ' + e.message);
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    }
+  };
+
+  document.addEventListener('admin:refresh-section', function (event) {
+    if (event.detail?.sectionId === 'fire-detection') {
+      loadFireAlerts();
+    }
+  });
+
+  loadFireAlerts();
+})();
 
 // End of Admin.js
 
