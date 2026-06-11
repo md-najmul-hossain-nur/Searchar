@@ -1,14 +1,6 @@
--- ============================================================
--- SearchAR Database Schema - Full Deployment Script
--- Run: mysql -u root -p < db_schema_dump.sql
--- ============================================================
-
-CREATE DATABASE IF NOT EXISTS `searchar` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `searchar`;
-
-SET FOREIGN_KEY_CHECKS=0;
-
-CREATE TABLE IF NOT EXISTS `admin_chat_messages` (
+﻿/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `admin_chat_messages` (
   `message_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `participant_role` varchar(20) NOT NULL,
   `participant_id` int(10) unsigned NOT NULL,
@@ -23,8 +15,10 @@ CREATE TABLE IF NOT EXISTS `admin_chat_messages` (
   KEY `idx_admin_chat_created` (`created_at`),
   KEY `idx_admin_chat_admin_unread` (`is_read_by_admin`,`participant_role`,`participant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-CREATE TABLE IF NOT EXISTS `admin_logs` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `admin_logs` (
   `log_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `admin_id` int(10) unsigned NOT NULL,
   `action_type` varchar(100) NOT NULL,
@@ -33,8 +27,10 @@ CREATE TABLE IF NOT EXISTS `admin_logs` (
   PRIMARY KEY (`log_id`),
   KEY `idx_admin_logs_admin_id` (`admin_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `admins` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `admins` (
   `admin_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `full_name` varchar(150) NOT NULL,
   `email` varchar(255) NOT NULL,
@@ -45,22 +41,26 @@ CREATE TABLE IF NOT EXISTS `admins` (
   UNIQUE KEY `uq_admins_email` (`email`),
   UNIQUE KEY `uq_admins_mobile` (`mobile`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `ai_post_matches` (
-  `match_id`            INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `report_id`           INT UNSIGNED DEFAULT NULL COMMENT 'FK -> missing_person_reports.report_id',
-  `post_id`             INT UNSIGNED DEFAULT NULL COMMENT 'FK -> posts.id',
-  `camera_feed_id`      INT UNSIGNED DEFAULT NULL COMMENT 'FK -> camera_cctv_feeds.id',
-  `match_status`        VARCHAR(50) NOT NULL DEFAULT 'pending',
-  `ai_confidence_score` DECIMAL(5,2) DEFAULT NULL,
-  `matched_at`          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ai_post_matches` (
+  `match_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `report_id` int(10) unsigned DEFAULT NULL COMMENT 'FK -> missing_person_reports.report_id',
+  `post_id` int(10) unsigned DEFAULT NULL COMMENT 'FK -> posts.id',
+  `camera_feed_id` int(10) unsigned DEFAULT NULL COMMENT 'FK -> camera_cctv_feeds.id',
+  `match_status` varchar(50) NOT NULL DEFAULT 'pending',
+  `ai_confidence_score` decimal(5,2) DEFAULT NULL,
+  `matched_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`match_id`),
-  INDEX `idx_report`  (`report_id`),
-  INDEX `idx_post`    (`post_id`),
-  INDEX `idx_camera`  (`camera_feed_id`)
+  KEY `idx_report` (`report_id`),
+  KEY `idx_post` (`post_id`),
+  KEY `idx_camera` (`camera_feed_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `auth_users` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `auth_users` (
   `auth_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `email` varchar(255) DEFAULT NULL,
   `full_name` varchar(100) DEFAULT NULL,
@@ -73,8 +73,10 @@ CREATE TABLE IF NOT EXISTS `auth_users` (
   KEY `idx_auth_provider_id` (`provider_id`),
   KEY `idx_auth_provider` (`provider`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `camera_cctv_feeds` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `camera_cctv_feeds` (
   `feed_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `camera_id` int(10) unsigned NOT NULL,
   `feed_label` varchar(150) NOT NULL,
@@ -99,8 +101,10 @@ CREATE TABLE IF NOT EXISTS `camera_cctv_feeds` (
   KEY `idx_camera_active` (`camera_id`,`is_active`),
   KEY `idx_camera_created` (`camera_id`,`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `camera_contributors` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `camera_contributors` (
   `camera_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `full_name` varchar(150) NOT NULL,
   `email` varchar(255) NOT NULL,
@@ -126,8 +130,10 @@ CREATE TABLE IF NOT EXISTS `camera_contributors` (
   UNIQUE KEY `uq_camera_nid` (`nid_number`),
   KEY `idx_camera_created_at` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `chat_broadcasts` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `chat_broadcasts` (
   `broadcast_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `sender_role` varchar(80) NOT NULL DEFAULT 'admin',
   `sender_id` int(10) unsigned NOT NULL DEFAULT 0,
@@ -139,8 +145,10 @@ CREATE TABLE IF NOT EXISTS `chat_broadcasts` (
   KEY `idx_chat_broadcasts_target` (`target_role`),
   KEY `idx_chat_broadcasts_created` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `chat_messages` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `chat_messages` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `sender_role` varchar(20) NOT NULL,
   `sender_id` int(11) NOT NULL DEFAULT 0,
@@ -151,8 +159,10 @@ CREATE TABLE IF NOT EXISTS `chat_messages` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `chatbot_admin_replies` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `chatbot_admin_replies` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `session_token` varchar(128) NOT NULL,
   `reply_text` text NOT NULL,
@@ -163,8 +173,10 @@ CREATE TABLE IF NOT EXISTS `chatbot_admin_replies` (
   KEY `idx_chatbot_admin_replies_session` (`session_token`),
   KEY `idx_chatbot_admin_replies_delivered` (`is_delivered`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `chatbot_comment_templates` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `chatbot_comment_templates` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `comment_text` varchar(300) NOT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
@@ -174,9 +186,12 @@ CREATE TABLE IF NOT EXISTS `chatbot_comment_templates` (
   UNIQUE KEY `uq_chatbot_comment_templates_text` (`comment_text`),
   KEY `idx_chatbot_comment_templates_active` (`is_active`),
   KEY `idx_chatbot_comment_templates_sort` (`sort_order`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `chatbot_logs` (
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+INSERT INTO `chatbot_comment_templates` VALUES (1,'Thanks for your message. Our team is checking now.',1,1,'2026-06-11 17:36:05'),(2,'Your report has been received and forwarded to the support team.',1,2,'2026-06-11 17:36:05'),(3,'Please share location and time details for faster action.',1,3,'2026-06-11 17:36:05'),(4,'We could not verify this yet. Please provide a clear photo or reference.',1,4,'2026-06-11 17:36:05'),(5,'This issue has been noted and marked for follow-up.',1,5,'2026-06-11 17:36:05'),(6,'In an emergency, please call 999 immediately.',1,6,'2026-06-11 17:36:05');
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `chatbot_logs` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `question` text NOT NULL,
   `reply` text NOT NULL,
@@ -187,8 +202,10 @@ CREATE TABLE IF NOT EXISTS `chatbot_logs` (
   PRIMARY KEY (`id`),
   KEY `idx_chatbot_logs_created_at` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `comment_reports` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `comment_reports` (
   `report_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `comment_id` bigint(20) unsigned NOT NULL,
   `post_id` int(10) unsigned NOT NULL,
@@ -211,8 +228,10 @@ CREATE TABLE IF NOT EXISTS `comment_reports` (
   KEY `idx_comment_reports_status` (`status`),
   KEY `idx_comment_reports_created` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `conversations` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `conversations` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned NOT NULL,
   `role` varchar(80) NOT NULL DEFAULT 'user',
@@ -224,8 +243,10 @@ CREATE TABLE IF NOT EXISTS `conversations` (
   KEY `idx_user` (`user_id`),
   KEY `idx_role` (`role`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `crime_reports` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `crime_reports` (
   `crime_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `case_ref` varchar(80) NOT NULL,
   `source_type` varchar(40) NOT NULL DEFAULT 'missing_person',
@@ -252,8 +273,10 @@ CREATE TABLE IF NOT EXISTS `crime_reports` (
   KEY `idx_crime_reports_source` (`source_type`,`source_ref_id`),
   KEY `idx_crime_reports_submitted` (`submitted_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `donations` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `donations` (
   `donation_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `donor_name` varchar(150) DEFAULT NULL,
   `donor_email` varchar(255) DEFAULT NULL,
@@ -267,8 +290,10 @@ CREATE TABLE IF NOT EXISTS `donations` (
   PRIMARY KEY (`donation_id`),
   KEY `idx_donations_date` (`date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `fire_alerts` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `fire_alerts` (
   `alert_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `feed_id` bigint(20) unsigned NOT NULL,
   `confidence` varchar(50) NOT NULL,
@@ -279,8 +304,10 @@ CREATE TABLE IF NOT EXISTS `fire_alerts` (
   PRIMARY KEY (`alert_id`),
   KEY `feed_id` (`feed_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `messages` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `messages` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `sender_role` varchar(40) NOT NULL,
   `sender_id` int(10) unsigned NOT NULL,
@@ -294,8 +321,10 @@ CREATE TABLE IF NOT EXISTS `messages` (
   KEY `idx_messages_sender` (`sender_role`,`sender_id`),
   KEY `idx_messages_created` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-CREATE TABLE IF NOT EXISTS `missing_person_reports` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `missing_person_reports` (
   `report_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `reporter_user_id` int(10) unsigned DEFAULT NULL,
   `full_name` varchar(150) NOT NULL,
@@ -320,8 +349,10 @@ CREATE TABLE IF NOT EXISTS `missing_person_reports` (
   KEY `idx_missing_status` (`status`),
   KEY `idx_missing_created_at` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `password_resets` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `password_resets` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `email` varchar(255) NOT NULL,
   `code` varchar(10) NOT NULL,
@@ -331,8 +362,10 @@ CREATE TABLE IF NOT EXISTS `password_resets` (
   KEY `idx_password_resets_email` (`email`),
   KEY `idx_password_resets_code` (`code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `policemen` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `policemen` (
   `police_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `full_name` varchar(150) NOT NULL,
   `email` varchar(255) NOT NULL,
@@ -351,9 +384,6 @@ CREATE TABLE IF NOT EXISTS `policemen` (
   `latitude` decimal(10,7) DEFAULT NULL,
   `longitude` decimal(10,7) DEFAULT NULL,
   `password_hash` varchar(255) NOT NULL,
-  `badge_id` varchar(100) NOT NULL,
-  `designation` varchar(120) NOT NULL,
-  `station` varchar(120) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `chat_status` enum('online','offline') DEFAULT 'offline',
   `chat_last_seen` datetime DEFAULT NULL,
@@ -361,11 +391,12 @@ CREATE TABLE IF NOT EXISTS `policemen` (
   UNIQUE KEY `uq_policemen_email` (`email`),
   UNIQUE KEY `uq_policemen_mobile` (`mobile`),
   UNIQUE KEY `uq_policemen_nid` (`nid_number`),
-  UNIQUE KEY `uq_policemen_badge` (`badge_id`),
   KEY `idx_policemen_created_at` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `post_comments` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `post_comments` (
   `comment_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `post_id` int(10) unsigned NOT NULL,
   `parent_comment_id` bigint(20) unsigned DEFAULT NULL,
@@ -379,8 +410,10 @@ CREATE TABLE IF NOT EXISTS `post_comments` (
   KEY `idx_post_comments_parent` (`parent_comment_id`),
   KEY `idx_post_comments_actor` (`actor_role`,`actor_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `post_likes` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `post_likes` (
   `like_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `post_id` int(10) unsigned NOT NULL,
   `actor_role` varchar(50) NOT NULL,
@@ -391,8 +424,10 @@ CREATE TABLE IF NOT EXISTS `post_likes` (
   KEY `idx_post_likes_post` (`post_id`),
   KEY `idx_post_likes_actor` (`actor_role`,`actor_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `post_reports` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `post_reports` (
   `report_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `post_id` int(10) unsigned NOT NULL,
   `post_author_role` varchar(50) DEFAULT NULL,
@@ -413,8 +448,10 @@ CREATE TABLE IF NOT EXISTS `post_reports` (
   KEY `idx_post_reports_status` (`status`),
   KEY `idx_post_reports_created` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `posts` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `posts` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `case_id` int(11) NOT NULL DEFAULT 1,
   `author_role` varchar(50) NOT NULL,
@@ -444,8 +481,10 @@ CREATE TABLE IF NOT EXISTS `posts` (
   KEY `idx_posts_report_closed_at` (`report_closed_at`),
   KEY `idx_posts_created` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `rescue_stories` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `rescue_stories` (
   `story_id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) DEFAULT NULL,
   `author_name` varchar(150) NOT NULL,
@@ -455,8 +494,10 @@ CREATE TABLE IF NOT EXISTS `rescue_stories` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`story_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-CREATE TABLE IF NOT EXISTS `signup_blacklist` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `signup_blacklist` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `entity` varchar(60) NOT NULL,
   `email` varchar(255) DEFAULT NULL,
@@ -470,8 +511,10 @@ CREATE TABLE IF NOT EXISTS `signup_blacklist` (
   KEY `idx_blacklist_mobile` (`mobile`),
   KEY `idx_blacklist_nid` (`nid_number`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `traffic_logs` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `traffic_logs` (
   `traffic_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `referrer` varchar(255) DEFAULT NULL,
   `source` varchar(255) DEFAULT NULL,
@@ -480,8 +523,10 @@ CREATE TABLE IF NOT EXISTS `traffic_logs` (
   KEY `idx_traffic_created` (`created_at`),
   KEY `idx_traffic_referrer` (`referrer`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `user_combo_roles` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `user_combo_roles` (
   `combo_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned NOT NULL,
   `volunteer_id` int(10) unsigned NOT NULL,
@@ -495,8 +540,10 @@ CREATE TABLE IF NOT EXISTS `user_combo_roles` (
   UNIQUE KEY `uq_user_combo_volunteer` (`volunteer_id`),
   KEY `idx_user_combo_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `user_notifications` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `user_notifications` (
   `notification_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `recipient_entity` varchar(60) NOT NULL,
   `recipient_id` int(10) unsigned NOT NULL,
@@ -511,9 +558,12 @@ CREATE TABLE IF NOT EXISTS `user_notifications` (
   KEY `idx_recipient` (`recipient_entity`,`recipient_id`),
   KEY `idx_notification_target_post` (`target_post_id`),
   KEY `idx_notification_created` (`created_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `users` (
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+INSERT INTO `user_notifications` VALUES (1,'user',1,'Admin Reminder','Welcome to SEARCHAR. Please complete your profile (photo, cover, date of birth, gender and address) from Edit Profile.',NULL,'warning',0,NULL,'2026-06-11 11:37:04');
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `users` (
   `user_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `full_name` varchar(150) NOT NULL,
   `email` varchar(255) DEFAULT NULL,
@@ -535,9 +585,12 @@ CREATE TABLE IF NOT EXISTS `users` (
   UNIQUE KEY `uq_users_email` (`email`),
   UNIQUE KEY `uq_users_mobile` (`mobile`),
   KEY `idx_users_created_at` (`created_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `volunteer_applications` (
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+INSERT INTO `users` VALUES (1,'Najmul Hossain Nur','najmulhosainnur5@gmail.com',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'$2y$10$fHVouOb1xwOJ17Sxa3.gIeOhVTKgMk4bwGKHSU6Qt7Hp0U8Vg.Tcu','2026-06-11 11:37:04');
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `volunteer_applications` (
   `application_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned NOT NULL,
   `full_name` varchar(150) NOT NULL,
@@ -559,8 +612,10 @@ CREATE TABLE IF NOT EXISTS `volunteer_applications` (
   KEY `idx_volunteer_application_status` (`status`),
   KEY `idx_volunteer_application_created` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `volunteer_missions` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `volunteer_missions` (
   `mission_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `volunteer_id` int(10) unsigned NOT NULL,
   `mission_title` varchar(190) NOT NULL,
@@ -581,8 +636,10 @@ CREATE TABLE IF NOT EXISTS `volunteer_missions` (
   KEY `idx_vm_response` (`response_status`),
   KEY `idx_vm_source_notification` (`source_notification_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `volunteers` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `volunteers` (
   `volunteer_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `full_name` varchar(150) NOT NULL,
   `email` varchar(255) NOT NULL,
@@ -612,8 +669,10 @@ CREATE TABLE IF NOT EXISTS `volunteers` (
   UNIQUE KEY `uq_volunteers_nid` (`nid_number`),
   KEY `idx_volunteers_created_at` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `withdraw_requests` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `withdraw_requests` (
   `withdraw_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `requester_name` varchar(150) NOT NULL,
   `amount` decimal(12,2) NOT NULL DEFAULT 0.00,
@@ -626,8 +685,10 @@ CREATE TABLE IF NOT EXISTS `withdraw_requests` (
   KEY `idx_withdraw_status` (`status`),
   KEY `idx_withdraw_request_date` (`request_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `withdrawal_requests` (
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `withdrawal_requests` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `contributor_id` int(10) unsigned NOT NULL,
   `method` varchar(60) NOT NULL,
@@ -639,5 +700,4 @@ CREATE TABLE IF NOT EXISTS `withdrawal_requests` (
   `tx_id` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-SET FOREIGN_KEY_CHECKS=1;
+/*!40101 SET character_set_client = @saved_cs_client */;

@@ -379,9 +379,6 @@
                     <thead>
                         <tr>
                             <th>Name</th>
-                            <th>Badge ID</th>
-                            <th>Role</th>
-                            <th>Zone</th>
                             <th>Status</th>
                             <th>Action</th>
                         </tr>
@@ -1211,21 +1208,7 @@
                             <option value="Other">Other</option>
                         </select></div>
                 </div>
-                <div class="profile-modal__row">
-                    <div class="profile-modal__label">Badge ID</div>
-                    <div class="profile-modal__value"><input type="text" id="add-officer-badge"
-                            class="profile-modal__input" placeholder="Badge ID"></div>
-                </div>
-                <div class="profile-modal__row">
-                    <div class="profile-modal__label">Designation</div>
-                    <div class="profile-modal__value"><input type="text" id="add-officer-designation"
-                            class="profile-modal__input" placeholder="Designation"></div>
-                </div>
-                <div class="profile-modal__row">
-                    <div class="profile-modal__label">Station</div>
-                    <div class="profile-modal__value"><input type="text" id="add-officer-station"
-                            class="profile-modal__input" placeholder="Station"></div>
-                </div>
+
                 <div class="profile-modal__row">
                     <div class="profile-modal__label">City</div>
                     <div class="profile-modal__value"><input type="text" id="add-officer-city"
@@ -1372,15 +1355,13 @@
                 nid_number: (document.getElementById('add-officer-nid')?.value || '').trim(),
                 date_of_birth: (document.getElementById('add-officer-dob')?.value || '').trim(),
                 gender: (document.getElementById('add-officer-gender')?.value || '').trim(),
-                badge_id: (document.getElementById('add-officer-badge')?.value || '').trim(),
-                designation: (document.getElementById('add-officer-designation')?.value || '').trim(),
-                station: (document.getElementById('add-officer-station')?.value || '').trim(),
+
                 city: (document.getElementById('add-officer-city')?.value || '').trim(),
                 country: (document.getElementById('add-officer-country')?.value || '').trim(),
                 password: (document.getElementById('add-officer-password')?.value || '').trim()
             };
 
-            if (!payload.full_name || !payload.email || !payload.mobile || !payload.nid_number || !payload.date_of_birth || !payload.gender || !payload.badge_id || !payload.designation || !payload.station || !payload.password) {
+            if (!payload.full_name || !payload.email || !payload.mobile || !payload.nid_number || !payload.date_of_birth || !payload.gender || !payload.password) {
                 alert('Please fill all required fields.');
                 return;
             }
@@ -1553,7 +1534,7 @@
             users: ['full_name', 'email', 'mobile', 'date_of_birth', 'gender', 'street', 'city', 'postal_code', 'country'],
             volunteers: ['full_name', 'email', 'mobile', 'date_of_birth', 'gender', 'street', 'city', 'postal_code', 'country', 'occupation', 'availability'],
             camera_contributors: ['full_name', 'email', 'mobile', 'date_of_birth', 'gender', 'street', 'city', 'postal_code', 'country', 'camera_type', 'payment_number'],
-            policemen: ['full_name', 'email', 'mobile', 'date_of_birth', 'gender', 'street', 'city', 'postal_code', 'country', 'badge_id', 'designation', 'station']
+            policemen: ['full_name', 'email', 'mobile', 'date_of_birth', 'gender', 'street', 'city', 'postal_code', 'country']
         };
 
         let currentProfile = null;
@@ -1590,10 +1571,7 @@
                 last_active: 'Last Active',
                 total_missions: 'Total Missions',
                 rank: 'Rank',
-                camera_id: 'Camera ID',
-                badge_id: 'Badge ID',
-                designation: 'Designation',
-                station: 'Station',
+
                 status: 'Status',
                 media_path: 'Media Path',
                 media_json: 'Media Files',
@@ -2585,9 +2563,7 @@
                 const entity = 'policemen';
                 const recordId = r.police_id || '';
                 const name = r.full_name || r.name || 'N/A';
-                const badge = r.badge_id || 'N/A';
-                const designation = r.designation || 'Officer';
-                const station = r.station || r.city || 'N/A';
+
                 const statusClass = (r.status || 'active').toLowerCase() === 'inactive' ? 'status-pending' : 'status-active';
                 const statusText = (r.status || 'Active');
                 const warnedByAdmin = Boolean(r.warned_by_admin);
@@ -2597,9 +2573,6 @@
                     __id: r.police_id || '',
                     ...r,
                     full_name: name,
-                    badge_id: badge,
-                    designation,
-                    station,
                     status: statusText,
                     email: r.email || '',
                     mobile: r.mobile || ''
@@ -2607,9 +2580,6 @@
                 return `
           <tr>
             <td>${name}</td>
-            <td>${badge}</td>
-            <td>${designation}</td>
-            <td>${station}</td>
             <td><span class="${statusClass}">${statusText}</span></td>
             <td class="actions-cell">
               <div class="actions-wrap">

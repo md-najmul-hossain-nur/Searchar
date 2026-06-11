@@ -194,7 +194,7 @@ function showForm() {
         </div>
         <div class="mb-3">
           <label for="mobile" class="form-label">Mobile Number </label>
-          <input type="tel" class="form-control" id="mobile" name="mobile" maxlength="11" minlength="11" placeholder="e.g. 017xxxxxxxx" required>
+          <input type="tel" class="form-control" id="mobile" name="mobile" maxlength="11" minlength="11" pattern="[0-9]{11}" title="Mobile number must be exactly 11 digits" oninput="this.value=this.value.replace(/[^0-9]/g,'');" placeholder="e.g. 017xxxxxxxx" required>
         </div>
         <div class="mb-3">
           <label for="nid" class="form-label">NID Number </label>
@@ -248,7 +248,7 @@ function showForm() {
         <input type="hidden" id="longitude" name="longitude">
         <button type="button" class="map-select-btn"
                 onclick="selectLocationFromMap()">
-          📍 Select location from map
+          Select location from map
         </button>
         <div class="mb-3">
           <label for="password" class="form-label">Password </label>
@@ -258,23 +258,7 @@ function showForm() {
           <label for="confirm_password" class="form-label">Confirm Password </label>
           <input type="password" class="form-control" id="confirm_password" name="confirm_password" minlength="6" required>
         </div>
-        <h5 class="form-section-title">Authority Details</h5>
-        <div class="mb-3">
-          <label for="badge_id" class="form-label">Badge ID / Police ID Number </label>
-          <input type="text" class="form-control" id="badge_id" name="badge_id" required>
-        </div>
-        <div class="mb-3">
-          <label for="designation" class="form-label">Designation </label>
-          <select class="form-select" id="designation" name="designation" required>
-            <option value="">-- Select Designation --</option>
-            <option value="policeman">Policeman</option>
-            <option value="fire_service">Fire Service</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label for="station" class="form-label">Station Name </label>
-          <input type="text" class="form-control" id="station" name="station" placeholder="e.g. Dhanmondi Police Station" required>
-        </div>
+
         <div class="form-check mb-3">
           <input class="form-check-input" type="checkbox" id="terms" required>
           <label class="form-check-label" for="terms">
@@ -300,7 +284,7 @@ function showForm() {
           </div>
           <div class="mb-3">
             <label for="mobile" class="form-label">Mobile Number </label>
-            <input type="tel" class="form-control" id="mobile" name="mobile" maxlength="11" minlength="11" placeholder="e.g. 017xxxxxxxx" required>
+            <input type="tel" class="form-control" id="mobile" name="mobile" maxlength="11" minlength="11" pattern="[0-9]{11}" title="Mobile number must be exactly 11 digits" oninput="this.value=this.value.replace(/[^0-9]/g,'');" placeholder="e.g. 017xxxxxxxx" required>
           </div>
           <div class="mb-3">
             <label for="nid" class="form-label">NID Number </label>
@@ -357,15 +341,7 @@ function showForm() {
                   style="margin-bottom: 15px;">
             Select location from map
           </button>
-          <div id="mapModal" class="map-modal" style="display:none;">
-            <div class="map-modal-content" style="background:#fff; padding:15px; border-radius:8px; position:relative;">
-              <span class="map-close" onclick="closeMapModal()"
-                    style="position:absolute; top:8px; right:12px; cursor:pointer; font-size:20px;">&times;</span>
-              <div id="map" style="width:100%;height:320px; margin-bottom:10px;"></div>
-              <button id="currentLocationBtn" type="button" class="btn btn-secondary" onclick="getCurrentLocation()">Use Current Location</button>
-              <button id="saveLocationBtn" type="button" class="btn btn-success" onclick="saveMapLocation()">Save Location</button>
-            </div>
-          </div>
+
           <div class="mb-3">
             <label for="password" class="form-label">Password </label>
             <input type="password" class="form-control" id="password" name="password" minlength="6" required>
@@ -399,7 +375,7 @@ function showForm() {
         </div>
         <div class="mb-3">
           <label for="mobile" class="form-label">Mobile Number </label>
-          <input type="tel" class="form-control" id="mobile" name="mobile" maxlength="11" minlength="11" placeholder="e.g. 017xxxxxxxx" required>
+          <input type="tel" class="form-control" id="mobile" name="mobile" maxlength="11" minlength="11" pattern="[0-9]{11}" title="Mobile number must be exactly 11 digits" oninput="this.value=this.value.replace(/[^0-9]/g,'');" placeholder="e.g. 017xxxxxxxx" required>
         </div>
         <div class="mb-3">
           <label for="nid" class="form-label">NID Number </label>
@@ -453,7 +429,7 @@ function showForm() {
         <input type="hidden" id="longitude" name="longitude">
         <button type="button" class="map-select-btn"
                 onclick="selectLocationFromMap()">
-          📍 Select location from map
+          Select location from map
         </button>
         <div class="mb-3">
           <label for="password" class="form-label">Password </label>
@@ -524,14 +500,15 @@ function ensureMapModal() {
 
   const modal = document.createElement('div');
   modal.id = 'mapModal';
-  modal.style.cssText = 'display:none;position:fixed;background:rgba(0,0,0,0.55);z-index:9999;overflow:hidden;border-radius:1.5rem;flex-direction:column;align-items:stretch;';
+  modal.style.cssText = 'display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;';
   modal.innerHTML = `
-    <div style="position:relative;flex:1;display:flex;flex-direction:column;padding:12px 12px 10px;">
-      <span id="mapModalClose" style="position:absolute;top:8px;right:12px;cursor:pointer;font-size:24px;color:#fff;z-index:2;line-height:1;">&times;</span>
-      <div id="map" style="flex:1;width:100%;min-height:0;border-radius:8px;margin-top:4px;"></div>
-      <div style="display:flex;gap:8px;margin-top:8px;flex-shrink:0;">
-        <button id="currentLocationBtn" type="button" onclick="getCurrentLocation()">📍 Use Current Location</button>
-        <button id="saveLocationBtn" type="button" onclick="saveMapLocation()">✔ Save Location</button>
+    <div style="background:#fff;width:90%;max-width:600px;border-radius:12px;padding:20px;display:flex;flex-direction:column;box-shadow:0 10px 30px rgba(0,0,0,0.3);position:relative;">
+      <h3 style="margin-top:0;margin-bottom:15px;font-size:18px;color:#333;">Select Your Location</h3>
+      <span id="mapModalClose" style="position:absolute;top:15px;right:20px;cursor:pointer;font-size:24px;color:#888;line-height:1;">&times;</span>
+      <div id="map" style="width:100%;height:350px;border-radius:8px;background:#f0f0f0;"></div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:15px;">
+        <button id="currentLocationBtn" type="button" onclick="getCurrentLocation()" style="background:#f3f4f6;color:#333;border:none;padding:10px 15px;border-radius:6px;cursor:pointer;font-weight:600;display:flex;align-items:center;gap:5px;">Use Current Location</button>
+        <button id="saveLocationBtn" type="button" onclick="saveMapLocation()" style="background:#007bff;color:#fff;border:none;padding:10px 15px;border-radius:6px;cursor:pointer;font-weight:600;">Save Location</button>
       </div>
     </div>
   `;
@@ -544,19 +521,6 @@ function ensureMapModal() {
 function selectLocationFromMap() {
   ensureMapModal();
   const modal = document.getElementById('mapModal');
-
-  const formCard = document.querySelector('.col.sign-up .form.sign-up');
-  if (formCard) {
-    const r = formCard.getBoundingClientRect();
-    Object.assign(modal.style, {
-      top:    r.top    + 'px',
-      left:   r.left   + 'px',
-      width:  r.width  + 'px',
-      height: r.height + 'px',
-    });
-  } else {
-    Object.assign(modal.style, { top:'0', left:'0', width:'100%', height:'100vh', borderRadius:'0' });
-  }
 
   modal.style.display = 'flex';
 

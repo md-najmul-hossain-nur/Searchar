@@ -44,15 +44,14 @@ try {
     // Required fields
     $required = [
         'fullname', 'email', 'mobile', 'nid', 'dob',
-        'gender', 'password', 'confirm_password',
-        'badge_id', 'designation', 'station'
+        'gender', 'password', 'confirm_password'
     ];
     foreach ($required as $k) {
         if (empty($_POST[$k])) throw new Exception("Missing field: $k");
     }
 
     $email  = $_POST['email'];
-    $mobile = $_POST['mobile'];
+    $mobile = preg_replace('/\D/', '', $_POST['mobile'] ?? '');
     $nid    = preg_replace('/\D/', '', (string)($_POST['nid'] ?? ''));
 
     // NID: 10–17 digits only
@@ -61,7 +60,7 @@ try {
     }
 
     // Mobile: exactly 11 digits
-    if (!preg_match('/^[0-9]{11}$/', preg_replace('/\D/', '', $mobile))) {
+    if (!preg_match('/^[0-9]{11}$/', $mobile)) {
         throw new Exception("Mobile number must be exactly 11 digits.");
     }
 
@@ -114,8 +113,8 @@ try {
     $stmt = $pdo->prepare("INSERT INTO policemen
         (full_name,email,mobile,nid_number,nid_photo,profile_photo,cover_photo,
         date_of_birth,gender,street,city,postal_code,country,latitude,longitude,
-        password_hash,badge_id,designation,station)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+        password_hash)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
     $stmt->execute([
         $_POST['fullname'],
@@ -133,10 +132,7 @@ try {
         $addr['country'],
         $addr['latitude'],
         $addr['longitude'],
-        $password_hash,
-        $_POST['badge_id'],
-        $_POST['designation'],
-        $_POST['station']
+        $password_hash
     ]);
 
     echo "<script>

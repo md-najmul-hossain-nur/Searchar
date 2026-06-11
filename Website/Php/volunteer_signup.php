@@ -42,7 +42,7 @@ try {
     }
 
     $email  = $_POST['email'];
-    $mobile = $_POST['mobile'];
+    $mobile = preg_replace('/\D/', '', $_POST['mobile'] ?? '');
     $nid    = preg_replace('/\D/', '', (string)($_POST['nid'] ?? ''));
 
     // NID: 10–17 digits only
@@ -51,7 +51,7 @@ try {
     }
 
     // Mobile: exactly 11 digits
-    if (!preg_match('/^[0-9]{11}$/', preg_replace('/\D/', '', $mobile))) {
+    if (!preg_match('/^[0-9]{11}$/', $mobile)) {
         throw new Exception("Mobile number must be exactly 11 digits.");
     }
 

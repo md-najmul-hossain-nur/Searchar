@@ -41,7 +41,7 @@ try {
         'policemen' => [
             'table' => 'policemen',
             'id_col' => 'police_id',
-            'allowed' => ['full_name', 'email', 'mobile', 'gender', 'street', 'city', 'postal_code', 'country', 'badge_id', 'designation', 'station']
+            'allowed' => ['full_name', 'email', 'mobile', 'gender', 'street', 'city', 'postal_code', 'country']
         ],
     ];
 

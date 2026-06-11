@@ -19,14 +19,12 @@ try {
     $nidNumber = trim((string)($payload['nid_number'] ?? ''));
     $dob = trim((string)($payload['date_of_birth'] ?? ''));
     $gender = trim((string)($payload['gender'] ?? ''));
-    $badgeId = trim((string)($payload['badge_id'] ?? ''));
-    $designation = trim((string)($payload['designation'] ?? ''));
-    $station = trim((string)($payload['station'] ?? ''));
+
     $city = trim((string)($payload['city'] ?? ''));
     $country = trim((string)($payload['country'] ?? ''));
     $password = (string)($payload['password'] ?? '');
 
-    if ($fullName === '' || $email === '' || $mobile === '' || $nidNumber === '' || $dob === '' || $gender === '' || $badgeId === '' || $designation === '' || $station === '' || $password === '') {
+    if ($fullName === '' || $email === '' || $mobile === '' || $nidNumber === '' || $dob === '' || $gender === '' || $password === '') {
         throw new RuntimeException('Missing required fields');
     }
 
@@ -49,12 +47,11 @@ try {
         }
     }
 
-    $exists = $pdo->prepare('SELECT 1 FROM policemen WHERE email = :email OR mobile = :mobile OR nid_number = :nid OR badge_id = :badge LIMIT 1');
+    $exists = $pdo->prepare('SELECT 1 FROM policemen WHERE email = :email OR mobile = :mobile OR nid_number = :nid LIMIT 1');
     $exists->execute([
         ':email' => $email,
         ':mobile' => $mobile,
-        ':nid' => $nidNumber,
-        ':badge' => $badgeId,
+        ':nid' => $nidNumber
     ]);
     if ($exists->fetch()) {
         throw new RuntimeException('Email, Mobile, NID or Badge ID already exists');
@@ -66,9 +63,9 @@ try {
     $nidPhoto = 'admin_manual_nid_placeholder.png';
 
     $stmt = $pdo->prepare('INSERT INTO policemen
-        (full_name, email, mobile, nid_number, nid_photo, profile_photo, cover_photo, date_of_birth, gender, street, city, postal_code, country, latitude, longitude, password_hash, badge_id, designation, station)
+        (full_name, email, mobile, nid_number, nid_photo, profile_photo, cover_photo, date_of_birth, gender, street, city, postal_code, country, latitude, longitude, password_hash)
         VALUES
-        (:full_name, :email, :mobile, :nid_number, :nid_photo, NULL, NULL, :dob, :gender, NULL, :city, NULL, :country, NULL, NULL, :password_hash, :badge_id, :designation, :station)');
+        (:full_name, :email, :mobile, :nid_number, :nid_photo, NULL, NULL, :dob, :gender, NULL, :city, NULL, :country, NULL, NULL, :password_hash)');
 
     $stmt->execute([
         ':full_name' => $fullName,
@@ -81,9 +78,7 @@ try {
         ':city' => $city !== '' ? $city : null,
         ':country' => $country !== '' ? $country : null,
         ':password_hash' => $passwordHash,
-        ':badge_id' => $badgeId,
-        ':designation' => $designation,
-        ':station' => $station,
+
     ]);
 
     echo json_encode(['success' => true, 'police_id' => (int)$pdo->lastInsertId()]);

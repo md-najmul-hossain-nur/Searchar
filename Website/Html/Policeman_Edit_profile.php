@@ -25,9 +25,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $country = trim($_POST['country'] ?? '');
     $latitude = $_POST['latitude'] ?? null;
     $longitude = $_POST['longitude'] ?? null;
-    $badge_id = trim($_POST['badge_id'] ?? '');
-    $designation = trim($_POST['designation'] ?? '');
-    $station = trim($_POST['station'] ?? '');
+
+
+
 
     // Defaults: keep existing if not uploading
     $profile_photo_name = $_POST['current_profile'] ?? null;
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Update policemen
-    $stmt = $pdo->prepare("UPDATE policemen SET full_name = ?, email = ?, mobile = ?, bio = ?, profile_photo = ?, cover_photo = ?, date_of_birth = ?, gender = ?, street = ?, city = ?, postal_code = ?, country = ?, latitude = ?, longitude = ?, badge_id = ?, designation = ?, station = ? WHERE police_id = ?");
+    $stmt = $pdo->prepare("UPDATE policemen SET full_name = ?, email = ?, mobile = ?, bio = ?, profile_photo = ?, cover_photo = ?, date_of_birth = ?, gender = ?, street = ?, city = ?, postal_code = ?, country = ?, latitude = ?, longitude = ? WHERE police_id = ?");
     $stmt->execute([
         $full_name,
         $email,
@@ -75,9 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $country,
         $latitude,
         $longitude,
-        $badge_id,
-        $designation,
-        $station,
+
         $user_id
     ]);
 
@@ -169,15 +167,7 @@ if (!$user) {
       <label for="phone">Phone Number</label>
       <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" value="<?= e($user['mobile'] ?? '') ?>" pattern="[0-9]{6,15}" required>
 
-      <!-- Badge/Designation/Station -->
-      <label for="badge_id">Badge ID</label>
-      <input type="text" id="badge_id" name="badge_id" value="<?= e($user['badge_id'] ?? '') ?>">
 
-      <label for="designation">Designation</label>
-      <input type="text" id="designation" name="designation" value="<?= e($user['designation'] ?? '') ?>">
-
-      <label for="station">Station</label>
-      <input type="text" id="station" name="station" value="<?= e($user['station'] ?? '') ?>">
 
       <!-- Date of birth & Gender -->
       <label for="date_of_birth">Date of Birth</label>

@@ -11,7 +11,7 @@ if (empty($_SESSION['role']) || !in_array($_SESSION['role'], ['police', 'policem
 $user_id = (int) $_SESSION['user_id'];
 
 try {
-  $sql = "SELECT police_id AS id, full_name, email, mobile, profile_photo, cover_photo, bio, date_of_birth, gender, street, city, country, badge_id, designation, station FROM policemen WHERE police_id = :id LIMIT 1";
+  $sql = "SELECT police_id AS id, full_name, email, mobile, profile_photo, cover_photo, bio, date_of_birth, gender, street, city, country FROM policemen WHERE police_id = :id LIMIT 1";
   $stmt = $pdo->prepare($sql);
   $stmt->execute(['id' => $user_id]);
   $user = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
@@ -118,23 +118,11 @@ try {
             </p>
 
         <ul class="info-list">
-    <!-- Badge ID -->
-    <li>
-      <span class="icon">&#127991;&#65039;</span>
-        <?= !empty($user['badge_id']) ? e($user['badge_id']) : 'Badge not set' ?>
-    </li>
 
-    <!-- Designation -->
-    <li>
-      <span class="icon">&#128188;</span>
-        <?= !empty($user['designation']) ? e($user['designation']) : 'Designation not set' ?>
-    </li>
 
-    <!-- Station -->
-    <li>
-      <span class="icon">&#127979;</span>
-        <?= !empty($user['station']) ? e($user['station']) : 'Station not set' ?>
-    </li>
+
+
+
 
     <!-- Email -->
     <li>

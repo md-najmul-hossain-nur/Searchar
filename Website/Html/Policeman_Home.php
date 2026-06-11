@@ -19,7 +19,7 @@ if (empty($_SESSION['role']) || $_SESSION['role'] !== 'police' || empty($_SESSIO
 $user_id = (int) $_SESSION['user_id'];
 
 try {
-  $sql = "SELECT police_id AS id, full_name, email, mobile, profile_photo, cover_photo, bio, badge_id, designation, station FROM policemen WHERE police_id = :id LIMIT 1";
+  $sql = "SELECT police_id AS id, full_name, email, mobile, profile_photo, cover_photo, bio FROM policemen WHERE police_id = :id LIMIT 1";
   $stmt = $pdo->prepare($sql);
   $stmt->execute(['id' => $user_id]);
   $user = $stmt->fetch(PDO::FETCH_ASSOC);

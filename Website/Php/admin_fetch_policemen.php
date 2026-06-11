@@ -74,9 +74,9 @@ try {
             'longitude'      => $coords['lon'],
             'lat'            => $coords['lat'],
             'lon'            => $coords['lon'],
-            'badge_id'       => pickField($row, ['badge_id'], ''),
-            'designation'    => pickField($row, ['designation'], 'Officer'),
-            'station'        => pickField($row, ['station', 'city'], ''),
+
+
+
             'status'         => pickField($row, ['status'], 'Active'),
             'created_at'     => pickField($row, ['created_at'], ''),
             'warned_by_admin'=> isset($warnedMap[$recordId]),
