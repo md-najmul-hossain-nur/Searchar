@@ -204,7 +204,7 @@ def search_cctv():
         fps = cap.get(cv2.CAP_PROP_FPS)
         if fps <= 0: fps = 30
         
-        frame_interval = int(fps * 2) # Check 1 frame every 2 seconds
+        frame_interval = max(1, int(fps / 2)) # Check 2 frames every second
         
         frame_count = 0
         found_in_video = False

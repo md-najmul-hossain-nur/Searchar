@@ -782,7 +782,7 @@ try {
         <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">Video</button>
       </label>
     </div>
-    <p class="post-media-hint">You can select up to 5 photos in one post.</p>
+
 
 
     <!-- Media Preview (optional preview for uploaded file) -->

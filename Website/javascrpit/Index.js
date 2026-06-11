@@ -374,42 +374,42 @@ function setupAchievementsCarousel() {
 
   const fallbackAchievements = [
     {
-      img: '../Images/demo.jpg',
+      img: '../Images/index_demo/download (13).jpg',
       title: 'Case #A-102 Solved',
       desc: 'AI match + volunteer tip helped locate a missing student within 18 hours.',
       donated: 72,
       amount: '$4,200 funded'
     },
     {
-      img: '../Images/help.jpg',
+      img: '../Images/index_demo/download (18).jpg',
       title: 'Rapid Response Milestone',
       desc: 'Average emergency verification time reduced by 41% through coordinated alerts.',
       donated: 64,
       amount: '41% faster response'
     },
     {
-      img: '../Images/together.jpg',
+      img: '../Images/index_demo/download (21).jpg',
       title: 'Community Patrol Success',
       desc: 'Cross-zone volunteer coverage solved 9 high-priority incidents this month.',
       donated: 58,
       amount: '9 cases this month'
     },
     {
-      img: '../Images/missing.jpeg',
+      img: '../Images/index_demo/download (3).jpg',
       title: 'Case #B-227 Reunited',
       desc: 'Anonymous CCTV evidence helped investigators close the case in 2 days.',
       donated: 83,
       amount: 'Closed in 48 hours'
     },
     {
-      img: '../Images/demo.jpg',
+      img: '../Images/index_demo/download (4).jpg',
       title: 'Volunteer Achievement Badge',
       desc: 'Top field team received achievement badges after completing 120 verified actions.',
       donated: 76,
       amount: '120 verified actions'
     },
     {
-      img: '../Images/help.jpg',
+      img: '../Images/index_demo/download (5).jpg',
       title: 'Camera Network Impact',
       desc: 'New camera contributors increased active evidence coverage in critical zones.',
       donated: 69,

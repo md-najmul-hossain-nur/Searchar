@@ -100,13 +100,15 @@ try {
   </header>
   <div class="cover-photo">
     <img src="<?= !empty($user['cover_photo']) ? '../uploads/police/' . e($user['cover_photo']) : '../Images/default-cover.gif' ?>" alt="Cover" class="cover-img">
-    <div class="profile-pic-container">
-      <img class="profile-pic" src="<?= !empty($user['profile_photo']) ? '../uploads/police/' . e($user['profile_photo']) : '../Images/demo_pic/profile.jpg' ?>" alt="Profile">
-    </div>
   </div>
   <div class="main-content">
     <div class="left-panel">
-  <div class="card user-info" style="position: relative;">
+      <div class="profile-pic-container">
+        <div class="profile-pic-wrapper">
+          <img class="profile-pic" src="<?= !empty($user['profile_photo']) ? '../uploads/police/' . e($user['profile_photo']) : '../Images/demo_pic/profile.jpg' ?>" alt="Profile">
+        </div>
+      </div>
+      <div class="card user-info" style="position: relative;">
         <button class="edit-btn" title="Profile Setting" onclick="location.href='../Html/Policeman_Edit_profile.php?police_id=<?= $user_id ?>'"><img src="../Images/settings.gif" alt="" aria-hidden="true"> Profile Setting</button>
      <h2><?= e($user['full_name'] ?? 'Officer Name') ?></h2>
             <div class="divider"></div>
@@ -331,7 +333,7 @@ try {
         <button type="button" class="post-media-btn" onclick="document.getElementById('videoUpload').click()">Video</button>
       </label>
     </div>
-    <p class="post-media-hint">You can select up to 5 photos in one post.</p>
+
 
 
     <!-- Media Preview (optional preview for uploaded file) -->

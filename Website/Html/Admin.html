@@ -82,9 +82,6 @@
                 <li data-section="withdraw">
                     <span class="icon"><i class="fa-solid fa-money-bill-transfer"></i></span> Withdraw Control
                 </li>
-                <li data-section="sensitive-submissions">
-                    <span class="icon"><i class="fa-solid fa-user-secret"></i></span> Sensitive Submissions
-                </li>
             </ul>
 
         </div>
@@ -532,7 +529,8 @@
                 <div class="admin-post-grid">
                     <div class="admin-post-field admin-post-field--message">
                         <label for="admin-post-text"><i class="fa-solid fa-pen-to-square"></i> Post Message</label>
-                        <textarea id="admin-post-text" placeholder="Write your official admin update here..."></textarea>
+                        <textarea id="admin-post-text"
+                            placeholder="Write your official admin update here..."></textarea>
                     </div>
 
                     <div class="admin-post-field admin-post-field--media">
@@ -894,38 +892,12 @@
                 <div class="widget">Pending Requests: <span id="withdraw-pending-count">0</span></div>
             </div>
             <div class="withdraw-actions">
-                <button class="add-btn btn-light-green btn-export-report"><i class="fa-solid fa-file-export"></i> Export Report</button>
+                <button class="add-btn btn-light-green btn-export-report"><i class="fa-solid fa-file-export"></i> Export
+                    Report</button>
             </div>
         </div>
 
-        <div id="sensitive-submissions" class="main-section">
-            <h2>Sensitive Submissions</h2>
-            <div class="filters-bar" id="sensitive-filters">
-                <input id="sensitive-filter-text" type="text" placeholder="Search submissions">
-                <select id="sensitive-filter-status">
-                    <option value="">Status</option>
-                    <option value="pending">Pending</option>
-                    <option value="reviewed">Reviewed</option>
-                </select>
-                <button type="button" id="sensitive-filter-reset" class="ghost">Reset</button>
-            </div>
-            <div class="section-table-block">
-                <table class="styled-table">
-                    <thead>
-                        <tr>
-                            <th>Submission ID</th>
-                            <th>Date</th>
-                            <th>Details</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="sensitive-table-body">
-                        <tr><td colspan="5">Loading sensitive submissions...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+
 
         <div id="broadcast" class="main-section">
             <div class="broadcast-header">
@@ -1079,7 +1051,8 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2 style="margin-bottom: 0;">Fire Detection Alerts</h2>
                 <div style="display: flex; align-items: center; gap: 15px;">
-                    <div id="fire-engine-status" style="font-weight: bold; font-size: 14px; padding: 5px 10px; border-radius: 5px; background: #e8f5e9; color: #2e7d32;">
+                    <div id="fire-engine-status"
+                        style="font-weight: bold; font-size: 14px; padding: 5px 10px; border-radius: 5px; background: #e8f5e9; color: #2e7d32;">
                         <i class="fa-solid fa-circle-check"></i> Model: Active
                     </div>
                 </div>
@@ -1279,11 +1252,15 @@
     </div>
 
     <!-- Match Details Modal -->
-    <div id="matchDetailsModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.52); z-index:4300; align-items:center; justify-content:center; padding:16px;">
-        <div style="width:min(900px,96vw); max-height:88vh; overflow:auto; background:#fff; border-radius:12px; box-shadow:0 14px 32px rgba(0,0,0,.25); padding:20px;">
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #e5e7eb; padding-bottom:10px;">
+    <div id="matchDetailsModal"
+        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.52); z-index:4300; align-items:center; justify-content:center; padding:16px;">
+        <div
+            style="width:min(900px,96vw); max-height:88vh; overflow:auto; background:#fff; border-radius:12px; box-shadow:0 14px 32px rgba(0,0,0,.25); padding:20px;">
+            <div
+                style="display:flex; align-items:center; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #e5e7eb; padding-bottom:10px;">
                 <h3 style="margin:0; color:#1f2937; font-size:1.25rem;">AI Match Details</h3>
-                <button type="button" onclick="closeMatchDetailsModal()" style="border:none; background:#f3f4f6; width:32px; height:32px; border-radius:7px; cursor:pointer; font-size:18px;">&times;</button>
+                <button type="button" onclick="closeMatchDetailsModal()"
+                    style="border:none; background:#f3f4f6; width:32px; height:32px; border-radius:7px; cursor:pointer; font-size:18px;">&times;</button>
             </div>
             <div id="matchDetailsContent">
                 Loading...

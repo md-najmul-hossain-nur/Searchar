@@ -1,4 +1,4 @@
-﻿/* Reset/normalize */
+/* Reset/normalize */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
@@ -144,16 +144,20 @@ body {
 
 /* Profile Photo */
 .profile-pic-container {
-  position: absolute;
-  left: 18%;
-  top: 55%;
-  transform: translate(-50%, -50%);
+  display: flex;
+  justify-content: center;
+  margin-top: -100px; /* Overlaps the cover photo */
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 2;
+}
+
+.profile-pic-wrapper {
   background: #f75c3c;
   padding: 10px;
   border-radius: 10px;
-  margin-top: 250PX;
   box-shadow: 0 2px 15px rgba(0,0,0,0.12);
-  margin-bottom: 50PX;
+  display: inline-block;
 }
 
 .profile-pic {
@@ -161,6 +165,7 @@ body {
   height: 200px;
   object-fit: cover;
   border-radius: 8px;
+  display: block;
 }
 
 /* Main Content Layout */
@@ -169,7 +174,7 @@ body {
   width: 100%;
   justify-content: center;
   align-items: flex-start;
-  margin-top: 150px; /* Adjusted for navbar height */
+  margin-top: 0; /* Remove the huge gap */
   gap: 32px;
 }
 

@@ -1,0 +1,49 @@
+Array
+(
+    [media_images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => test1.jpg
+                    [1] => test2.jpg
+                )
+
+            [full_path] => Array
+                (
+                    [0] => test1.jpg
+                    [1] => test2.jpg
+                )
+
+            [type] => Array
+                (
+                    [0] => image/jpeg
+                    [1] => image/jpeg
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp\tmp\php6557.tmp
+                    [1] => C:\xampp\tmp\php6558.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                    [1] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 4
+                    [1] => 4
+                )
+
+        )
+
+)
+
+Array
+(
+    [text] => Test multiple images
+    [category] => general
+)

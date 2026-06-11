@@ -1874,23 +1874,14 @@ body.volunteer-apply-open .notifications-drawer {
 
 /* Post Image - Glassy Border */
 .post-img {
-  max-width: 800px;
-  max-height: 400px;
   width: 100%;
-  height: auto;
-  object-fit: cover;
-  border-radius: 12px;
+  max-height: 500px;
+  object-fit: contain;
+  background-color: #f0f2f5;
+  border-radius: 8px;
   margin: 10px auto;
   display: block;
-
-  /* Glassy border */
-  border: 8px solid rgba(255, 255, 255, 0.4);
-  background-clip: padding-box; /* Keep background inside border */
-
-  /* Soft glow for glass look */
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.15),
-    0 0 15px rgba(255, 255, 255, 0.4) inset;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .post-image-grid {

@@ -341,7 +341,7 @@ try {
       </label>
     </div>
 
-    <p class="post-media-hint">You can select up to 5 photos in one post.</p>
+
 
     <!-- Media Preview -->
     <div id="mediaPreview" class="post-media-preview"></div>
