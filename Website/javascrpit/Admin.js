@@ -729,7 +729,7 @@ document.addEventListener('click', function (event) {
     return raw.charAt(0).toUpperCase() + raw.slice(1);
   }
 
-  const _catBadgeMap = { alert:'🔴 Alert', missing_person:'🟡 Missing Person', criminal_found:'🟢 Criminal Found', disaster:'🟠 Disaster', mission:'🔵 Mission', general:'⚪ General' };
+  const _catBadgeMap = { alert:'🔴 Alert', missing_person:'🟡 Missing Person', criminal_found:'🟢 Criminal Found', disaster:'🟠 Disaster', mission:'🔵 Missing Person', general:'⚪ General' };
   function categoryBadge(value) {
     const key = String(value || 'general').trim().toLowerCase();
     const label = _catBadgeMap[key] || '⚪ General';
