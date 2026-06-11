@@ -144,20 +144,17 @@ body {
 
 /* Profile Photo */
 .profile-pic-container {
-  display: flex;
-  justify-content: center;
-  margin-top: -100px; /* Overlaps the cover photo */
-  margin-bottom: 20px;
-  position: relative;
-  z-index: 2;
-}
-
-.profile-pic-wrapper {
+  position: absolute;
+  left: 18%;
+  top: 55%;
+  transform: translate(-50%, -50%);
   background: #f75c3c;
   padding: 10px;
   border-radius: 10px;
+  margin-top: 250PX;
   box-shadow: 0 2px 15px rgba(0,0,0,0.12);
-  display: inline-block;
+  margin-bottom: 50PX;
+  z-index: 2;
 }
 
 .profile-pic {
@@ -165,7 +162,6 @@ body {
   height: 200px;
   object-fit: cover;
   border-radius: 8px;
-  display: block;
 }
 
 /* Main Content Layout */
@@ -174,7 +170,7 @@ body {
   width: 100%;
   justify-content: center;
   align-items: flex-start;
-  margin-top: 0; /* Remove the huge gap */
+  margin-top: 150px;
   gap: 32px;
 }
 

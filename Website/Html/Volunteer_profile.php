@@ -2,6 +2,12 @@
 session_start();
 require_once __DIR__ . '/../Php/db.php';
 
+// Restore session if multi-role logged in
+if (isset($_SESSION['active_roles']['volunteer'])) {
+    $_SESSION['role'] = 'volunteer';
+    $_SESSION['user_id'] = $_SESSION['active_roles']['volunteer'];
+}
+
 // 1. Authentication check
 if (empty($_SESSION['role']) || $_SESSION['role'] !== 'volunteer' || empty($_SESSION['user_id'])) {
     header('Location: ../Html/login.html');

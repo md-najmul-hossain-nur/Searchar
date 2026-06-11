@@ -3,6 +3,12 @@ declare(strict_types=1);
 session_start();
 require_once __DIR__ . '/../Php/db.php';
 
+// Restore session if multi-role logged in
+if (isset($_SESSION['active_roles']['contributor'])) {
+    $_SESSION['role'] = 'contributor';
+    $_SESSION['user_id'] = $_SESSION['active_roles']['contributor'];
+}
+
 if (empty($_SESSION['role']) || !in_array($_SESSION['role'], ['contributor', 'camera_contributor', 'camera'], true) || empty($_SESSION['user_id'])) {
   header('Location: ../Html/login.html');
   exit();
