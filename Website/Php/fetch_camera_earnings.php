@@ -135,7 +135,7 @@ try {
     }
 
     $pendingCount = 0;
-    $totalApproved = 0.0;
+    $totalDeducted = 0.0;
     $lastWithdrawal = null;
 
     if ($withdrawTable) {
@@ -146,8 +146,12 @@ try {
         foreach ($wrows as $row) {
             $status = strtolower((string)($row['status'] ?? 'pending'));
             $amount = (float)($row['amount'] ?? 0);
+            
+            if ($status === 'approved' || $status === 'pending') {
+                $totalDeducted += $amount;
+            }
+            
             if ($status === 'approved') {
-                $totalApproved += $amount;
                 if ($lastWithdrawal === null) {
                     $lastWithdrawal = (string)($row['created_at'] ?? '');
                 }
@@ -157,7 +161,7 @@ try {
         }
     }
 
-    $available = max(0, $totalEarned - $totalApproved);
+    $available = max(0, $totalEarned - $totalDeducted);
 
     echo json_encode([
         'success' => true,

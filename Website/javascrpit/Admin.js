@@ -5740,3 +5740,50 @@ function confirmAiSource(sourceType) {
 
 // End of Admin.js
 
+// Sensitive Submissions logic
+(function() {
+  const tableBody = document.getElementById('sensitive-table-body');
+  
+  async function loadSensitiveSubmissions() {
+    if (!tableBody) return;
+    tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Loading...</td></tr>';
+    try {
+      const res = await fetch('../Php/admin_fetch_sensitive_submissions.php', { cache: 'no-store' });
+      const json = await res.json();
+      if (!json || !json.success) throw new Error(json?.error || 'Failed to fetch sensitive submissions');
+      
+      const rows = Array.isArray(json.data) ? json.data : [];
+      if (rows.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No sensitive submissions found.</td></tr>';
+        return;
+      }
+      
+      tableBody.innerHTML = rows.map(row => {
+        const date = new Date(row.created_at).toLocaleString();
+        const esc = str => String(str || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const content = esc(row.content).substring(0, 50) + (row.content?.length > 50 ? '...' : '');
+        const badgeClass = row.status === 'reviewed' ? 'status-approved' : 'status-pending';
+        return `
+          <tr>
+            <td>#${row.id}</td>
+            <td>${date}</td>
+            <td title="${esc(row.content)}">${content}</td>
+            <td><span class="${badgeClass}">${esc(row.status)}</span></td>
+            <td>
+              <button class="ghost" onclick="alert('Viewing submission #${row.id}\\n\\n${esc(row.content)}')">View</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    } catch (e) {
+      console.error(e);
+      tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: red;">Error: ${e.message}</td></tr>`;
+    }
+  }
+
+  document.addEventListener('admin:section-activated', function (event) {
+    if (event.detail?.sectionId === 'sensitive-submissions') {
+      loadSensitiveSubmissions();
+    }
+  });
+})();

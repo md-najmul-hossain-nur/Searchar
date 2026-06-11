@@ -40,7 +40,7 @@ $newStatus = $action === 'approve' ? 'approved' : 'rejected';
 
 try {
     // support both common table names used by different endpoints
-    $tableCandidates = ['withdraw_requests', 'withdrawal_requests'];
+    $tableCandidates = ['withdrawal_requests', 'withdraw_requests'];
     $tableName = null;
     foreach ($tableCandidates as $t) {
         if (tableExists($pdo, $t)) {

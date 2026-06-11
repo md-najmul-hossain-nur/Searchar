@@ -82,6 +82,9 @@
                 <li data-section="withdraw">
                     <span class="icon"><i class="fa-solid fa-money-bill-transfer"></i></span> Withdraw Control
                 </li>
+                <li data-section="sensitive-submissions">
+                    <span class="icon"><i class="fa-solid fa-user-secret"></i></span> Sensitive Submissions
+                </li>
             </ul>
 
         </div>
@@ -891,7 +894,36 @@
                 <div class="widget">Pending Requests: <span id="withdraw-pending-count">0</span></div>
             </div>
             <div class="withdraw-actions">
-                <button class="add-btn btn-light-green"><i class="fa-solid fa-file-export"></i> Export Report</button>
+                <button class="add-btn btn-light-green btn-export-report"><i class="fa-solid fa-file-export"></i> Export Report</button>
+            </div>
+        </div>
+
+        <div id="sensitive-submissions" class="main-section">
+            <h2>Sensitive Submissions</h2>
+            <div class="filters-bar" id="sensitive-filters">
+                <input id="sensitive-filter-text" type="text" placeholder="Search submissions">
+                <select id="sensitive-filter-status">
+                    <option value="">Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="reviewed">Reviewed</option>
+                </select>
+                <button type="button" id="sensitive-filter-reset" class="ghost">Reset</button>
+            </div>
+            <div class="section-table-block">
+                <table class="styled-table">
+                    <thead>
+                        <tr>
+                            <th>Submission ID</th>
+                            <th>Date</th>
+                            <th>Details</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sensitive-table-body">
+                        <tr><td colspan="5">Loading sensitive submissions...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 

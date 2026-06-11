@@ -246,29 +246,60 @@ try {
     }
 
     $withdraws = [];
-    if (tableExists($pdo, 'withdraw_requests')) {
+    $withdrawTable = null;
+    foreach (['withdrawal_requests', 'withdraw_requests'] as $t) {
+        if (tableExists($pdo, $t)) {
+            $withdrawTable = $t;
+            break;
+        }
+    }
+
+    if ($withdrawTable) {
         $idColumn = null;
-        if (columnExists($pdo, 'withdraw_requests', 'withdraw_id')) {
+        if (columnExists($pdo, $withdrawTable, 'withdraw_id')) {
             $idColumn = 'withdraw_id';
-        } elseif (columnExists($pdo, 'withdraw_requests', 'id')) {
+        } elseif (columnExists($pdo, $withdrawTable, 'id')) {
             $idColumn = 'id';
         }
 
         $dateColumn = 'request_date';
-        if (!columnExists($pdo, 'withdraw_requests', 'request_date') && columnExists($pdo, 'withdraw_requests', 'created_at')) {
+        if (!columnExists($pdo, $withdrawTable, 'request_date') && columnExists($pdo, $withdrawTable, 'created_at')) {
             $dateColumn = 'created_at';
         }
 
+        $hasRequesterName = columnExists($pdo, $withdrawTable, 'requester_name');
+        $hasContributorId = columnExists($pdo, $withdrawTable, 'contributor_id');
+        $hasTxId = columnExists($pdo, $withdrawTable, 'tx_id');
+
         $selectParts = [];
         if ($idColumn !== null) {
-            $selectParts[] = "{$idColumn} AS request_id";
+            $selectParts[] = "w.{$idColumn} AS request_id";
         }
-        $selectParts[] = 'requester_name';
-        $selectParts[] = 'amount';
-        $selectParts[] = 'status';
-        $selectParts[] = "{$dateColumn} AS request_date";
+        
+        if ($hasRequesterName) {
+            $selectParts[] = 'w.requester_name';
+        } elseif ($hasContributorId && tableExists($pdo, 'camera_contributors')) {
+            $selectParts[] = 'COALESCE(cc.full_name, CONCAT("Contributor #", w.contributor_id)) AS requester_name';
+        } else {
+            $selectParts[] = '"Unknown" AS requester_name';
+        }
+        
+        $selectParts[] = 'w.amount';
+        $selectParts[] = 'w.status';
+        $selectParts[] = "w.{$dateColumn} AS request_date";
+        
+        if ($hasTxId) {
+            $selectParts[] = 'w.tx_id';
+        } else {
+            $selectParts[] = 'NULL AS tx_id';
+        }
 
-        $sql = 'SELECT ' . implode(', ', $selectParts) . " FROM withdraw_requests ORDER BY {$dateColumn} DESC LIMIT 100";
+        $join = '';
+        if (!$hasRequesterName && $hasContributorId && tableExists($pdo, 'camera_contributors')) {
+            $join = ' LEFT JOIN camera_contributors cc ON cc.contributor_id = w.contributor_id ';
+        }
+
+        $sql = 'SELECT ' . implode(', ', $selectParts) . " FROM {$withdrawTable} w {$join} ORDER BY w.{$dateColumn} DESC LIMIT 100";
         $stmt = $pdo->query($sql);
         $withdraws = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }

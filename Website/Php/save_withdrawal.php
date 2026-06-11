@@ -63,7 +63,8 @@ try {
     amount DECIMAL(10,2) NOT NULL,
     status VARCHAR(30) NOT NULL DEFAULT 'pending',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    processed_at DATETIME DEFAULT NULL
+    processed_at DATETIME DEFAULT NULL,
+    tx_id VARCHAR(100) DEFAULT NULL
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
   $wchk = $pdo->prepare("SELECT COALESCE(SUM(amount),0) FROM withdrawal_requests WHERE contributor_id = :cid AND status IN ('approved', 'pending')");
