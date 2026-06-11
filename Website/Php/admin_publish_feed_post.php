@@ -162,6 +162,7 @@ try {
         require_once __DIR__ . '/facebook_share.php';
         $postRow = [
             'text' => $text,
+            'category' => $category,
             'media_type' => $mediaType,
             'media_path' => $mediaPath,
             'media_json' => $mediaJson

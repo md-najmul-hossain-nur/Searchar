@@ -278,7 +278,62 @@ try {
 
     $postId = (int)$pdo->lastInsertId();
 
-
+    // Post to Facebook if requested
+    $fb_post_id = null;
+    if ($share_fb === 1) {
+        $envFile = __DIR__ . '/../Fb Post/.env';
+        $fbPageId = null;
+        $fbToken = null;
+        $fbApiVersion = 'v18.0';
+        if (file_exists($envFile)) {
+            foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+                if (str_starts_with($line, 'PAGE_ID=')) $fbPageId = trim(substr($line, 8));
+                elseif (str_starts_with($line, 'PAGE_ACCESS_TOKEN=')) $fbToken = trim(substr($line, 18));
+                elseif (str_starts_with($line, 'FACEBOOK_API_VERSION=')) $fbApiVersion = trim(substr($line, 21));
+            }
+        }
+        if ($fbPageId && $fbToken) {
+            $baseUrl = "https://graph.facebook.com/{$fbApiVersion}/{$fbPageId}";
+            $postMessage = $text ?: '';
+            try {
+                if ($media_type === 'image' && $media_path) {
+                    $imageUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . '/' . $media_path;
+                    $ch = curl_init("{$baseUrl}/photos");
+                    curl_setopt_array($ch, [
+                        CURLOPT_POST => true,
+                        CURLOPT_RETURNTRANSFER => true,
+                        CURLOPT_POSTFIELDS => ['url' => $imageUrl, 'caption' => $postMessage, 'access_token' => $fbToken],
+                    ]);
+                    $fbResp = json_decode(curl_exec($ch), true);
+                    curl_close($ch);
+                    $fb_post_id = $fbResp['post_id'] ?? $fbResp['id'] ?? null;
+                } elseif ($media_type === 'video' && $media_path) {
+                    $videoUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . '/' . $media_path;
+                    $ch = curl_init("{$baseUrl}/videos");
+                    curl_setopt_array($ch, [
+                        CURLOPT_POST => true,
+                        CURLOPT_RETURNTRANSFER => true,
+                        CURLOPT_POSTFIELDS => ['file_url' => $videoUrl, 'description' => $postMessage, 'access_token' => $fbToken],
+                    ]);
+                    $fbResp = json_decode(curl_exec($ch), true);
+                    curl_close($ch);
+                    $fb_post_id = $fbResp['id'] ?? null;
+                } else {
+                    $ch = curl_init("{$baseUrl}/feed");
+                    curl_setopt_array($ch, [
+                        CURLOPT_POST => true,
+                        CURLOPT_RETURNTRANSFER => true,
+                        CURLOPT_POSTFIELDS => ['message' => $postMessage, 'access_token' => $fbToken],
+                    ]);
+                    $fbResp = json_decode(curl_exec($ch), true);
+                    curl_close($ch);
+                    $fb_post_id = $fbResp['id'] ?? null;
+                }
+            } catch (\Throwable $fbEx) {
+                // FB posting failure is non-fatal; post is already saved locally
+            }
+        }
+    }
 
     // Notify the author that the post is submitted and waiting for admin review
     $pdo->exec("CREATE TABLE IF NOT EXISTS user_notifications (

@@ -402,6 +402,9 @@ function buildApprovedPostElement(row) {
   const isAnonymous = Number(row?.share_anonymous || 0) === 1;
 
   const textHtml = postText ? `<p>${escapeWithLineBreaks(postText)}</p>` : '';
+  const catLabels = { alert:'🔴 Alert', missing_person:'🟡 Missing Person', criminal_found:'🟢 Criminal Found', disaster:'🟠 Disaster', mission:'🔵 Mission', general:'⚪ General' };
+  const catKey = category.toLowerCase();
+  const badgeHtml = `<span class="post-category-badge cat-${escapeHtml(catKey)}">${catLabels[catKey] || '⚪ General'}</span>`;
   let mediaHtml = '';
 
   if (imageUrls.length > 1) {
@@ -436,6 +439,7 @@ function buildApprovedPostElement(row) {
         <small class="post-time" data-created-at="${escapeHtml(createdAt)}">${escapeHtml(timeAgo)}</small>
       </div>
     </div>
+    ${badgeHtml}
     ${textHtml}
     ${mediaHtml}
     <div class="post-actions">

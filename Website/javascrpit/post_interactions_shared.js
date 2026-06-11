@@ -534,6 +534,11 @@
     const isAnonymous = Number(row?.share_anonymous || 0) === 1;
     const defaultCommentMode = 'normal';
 
+    const catLabels = { alert:'🔴 Alert', missing_person:'🟡 Missing Person', criminal_found:'🟢 Criminal Found', disaster:'🟠 Disaster', mission:'🔵 Mission', general:'⚪ General' };
+    const catKey = String(row?.category || 'general').toLowerCase();
+    const badgeLabel = catLabels[catKey] || '⚪ General';
+    const badgeHtml = `<span class="post-category-badge cat-${escapeHtml(catKey)}">${badgeLabel}</span>`;
+
     const imageUrls = extractImageUrls(row);
     const mediaType = String(row?.media_type || '').toLowerCase();
     const mediaPath = normalizeAssetPath(row?.media_path || '');
@@ -565,6 +570,7 @@
             <small class="post-time" data-created-at="${escapeHtml(createdAt)}">${timeAgoLabel}</small>
           </div>
         </div>
+        ${badgeHtml}
         ${textHtml}
         ${mediaHtml}
         <div class="post-actions">

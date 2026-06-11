@@ -77,7 +77,18 @@ function publishPostToFacebook(array $postRow, array $facebookConfig): array
     }
 
     $message = trim((string)($postRow['text'] ?? ''));
-    $footer = "\n\nPublished by SearcharPageAPI";
+    $categoryLabels = [
+        'alert'           => '🔴 ALERT',
+        'missing_person'  => '🟡 MISSING PERSON',
+        'criminal_found'  => '🟢 CRIMINAL FOUND',
+        'disaster'        => '🟠 DISASTER',
+        'mission'         => '🔵 MISSION',
+        'general'         => '⚪ GENERAL',
+    ];
+    $cat = strtolower(trim((string)($postRow['category'] ?? 'general')));
+    $categoryLabel = $categoryLabels[$cat] ?? '⚪ GENERAL';
+    $header = "【 {$categoryLabel} 】\n\n";
+    $footer = '';
     $mediaUpload = resolveFacebookMediaUpload($postRow);
 
     $endpoint = 'feed';
@@ -89,16 +100,16 @@ function publishPostToFacebook(array $postRow, array $facebookConfig): array
         if ($message === '') {
             $message = 'New post from Searchar';
         }
-        $payload['message'] = $message . $footer;
+        $payload['message'] = $header . $message . $footer;
     } elseif ($mediaUpload['type'] === 'image') {
         $endpoint = 'photos';
-        $payload['caption'] = $message . $footer;
+        $payload['caption'] = $header . $message . $footer;
         $payload['source'] = function_exists('curl_file_create')
             ? curl_file_create($mediaUpload['path'])
             : new CURLFile($mediaUpload['path']);
     } elseif ($mediaUpload['type'] === 'video') {
         $endpoint = 'videos';
-        $payload['description'] = $message . $footer;
+        $payload['description'] = $header . $message . $footer;
         $payload['source'] = function_exists('curl_file_create')
             ? curl_file_create($mediaUpload['path'])
             : new CURLFile($mediaUpload['path']);
