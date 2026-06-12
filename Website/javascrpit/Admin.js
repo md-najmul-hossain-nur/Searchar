@@ -798,7 +798,7 @@ document.addEventListener('click', function (event) {
               <button class="view-profile-btn" data-post-details="1">View Details</button>
               <button class="ghost" data-post-send-crime="1" ${isReported ? 'disabled' : ''}>${isReported ? 'Reported' : 'Make Report'}</button>
               <button class="approve-btn" data-post-action="approve" ${statusClass(row.status) !== 'status-pending' ? 'disabled' : ''}>Approve</button>
-              ${Number(row.share_facebook || 0) === 1 ? `<button class="approve-btn" style="background:#1877f2; color:#ffffff;" data-post-action="approve_share" ${statusClass(row.status) === 'status-rejected' ? 'disabled' : ''}><i class="fa-brands fa-facebook"></i> Share FB</button>` : ''}
+              <button class="approve-btn" style="background:#1877f2; color:#ffffff;" data-post-action="approve_share" ${statusClass(row.status) === 'status-rejected' ? 'disabled' : ''}><i class="fa-brands fa-facebook"></i> Share FB</button>
               <button class="reject-btn" data-post-action="reject" ${statusClass(row.status) !== 'status-pending' ? 'disabled' : ''}>Reject</button>
             </td>
           </tr>
@@ -5277,62 +5277,7 @@ async function confirmAiMatch(btn, sourceType) {
     confirmedTable.appendChild(tr);
 
     // After confirming, immediately open the match details modal as requested
-    openMatchDetailsModal(caseId, sourceType, targetImgSrc, matchImgSrc, encodeURIComponent(detailsHtml), reporter);
-
-    window.openMatchDetailsModal = function (caseId, sourceType, targetImg, matchImg, encodedDetails, reporter) {
-      const modal = document.getElementById('matchDetailsModal');
-      const content = document.getElementById('matchDetailsContent');
-      if (!modal || !content) return;
-
-      const detailsHtml = decodeURIComponent(encodedDetails).replace(new RegExp('<button[^>]*>.*?</button>', 'ig'), '');
-
-      let extraInfo = '';
-      if (sourceType === 'Website Post') {
-        extraInfo = `
-            <div style="margin-top:15px; padding:10px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px;">
-                <h4 style="margin:0 0 5px; color:#166534;">Related Post Information</h4>
-                <p style="margin:0; font-size:14px; color:#15803d;">This match was found in a user-submitted post on the website.</p>
-                <div style="margin-top:10px;">
-                    <a href="#" style="color:#166534; font-weight:600; text-decoration:underline;" onclick="closeMatchDetailsModal(); showSection('post-control'); return false;"><i class="fa-solid fa-arrow-right-to-bracket"></i> View in Post Control</a>
-                </div>
-            </div>`;
-      } else if (sourceType.toLowerCase().includes('cctv') || sourceType.toLowerCase().includes('camera')) {
-        extraInfo = `
-            <div style="margin-top:15px; padding:10px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px;">
-                <h4 style="margin:0 0 5px; color:#1e40af;">Related Camera Feed Information</h4>
-                <p style="margin:0; font-size:14px; color:#1d4ed8;">This match was identified via an active CCTV/Camera feed.</p>
-                <div style="margin-top:10px;">
-                    <a href="#" style="color:#1e40af; font-weight:600; text-decoration:underline;" onclick="closeMatchDetailsModal(); showSection('cctv'); return false;"><i class="fa-solid fa-arrow-right-to-bracket"></i> View in Camera Video Submissions</a>
-                </div>
-            </div>`;
-      }
-
-      content.innerHTML = `
-        <div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">
-            <div style="flex:1; min-width:250px;">
-                <h4 style="margin-top:0;">Target Image (Case ${caseId})</h4>
-                <img src="${targetImg}" style="width:100%; max-width:300px; border-radius:8px; border:2px solid #e5e7eb;">
-                <p style="margin-top:10px;"><strong>Original Reporter:</strong> ${reporter}</p>
-            </div>
-            <div style="flex:1; min-width:250px;">
-                <h4 style="margin-top:0;">Matched Image (${sourceType})</h4>
-                <img src="${matchImg}" style="width:100%; max-width:300px; border-radius:8px; border:2px solid #22c55e;">
-                <div style="margin-top:10px; background:#f9fafb; padding:10px; border-radius:6px;">
-                    <strong>Match Details:</strong><br>
-                    ${detailsHtml}
-                </div>
-            </div>
-        </div>
-        ${extraInfo}
-    `;
-
-      modal.style.display = 'flex';
-    };
-
-    window.closeMatchDetailsModal = function () {
-      const modal = document.getElementById('matchDetailsModal');
-      if (modal) modal.style.display = 'none';
-    };
+    window.openMatchDetailsModal(caseId, sourceType, targetImgSrc, matchImgSrc, encodeURIComponent(detailsHtml), reporter);
     confirmedTable.prepend(tr);
 
     localStorage.setItem('confirmedAiMatchesV3', confirmedTable.innerHTML);
@@ -5359,6 +5304,61 @@ async function confirmAiMatch(btn, sourceType) {
     btn.disabled = false;
   }
 }
+
+window.openMatchDetailsModal = function (caseId, sourceType, targetImg, matchImg, encodedDetails, reporter) {
+  const modal = document.getElementById('matchDetailsModal');
+  const content = document.getElementById('matchDetailsContent');
+  if (!modal || !content) return;
+
+  const detailsHtml = decodeURIComponent(encodedDetails).replace(new RegExp('<button[^>]*>.*?</button>', 'ig'), '');
+
+  let extraInfo = '';
+  if (sourceType === 'Website Post') {
+    extraInfo = `
+        <div style="margin-top:15px; padding:10px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px;">
+            <h4 style="margin:0 0 5px; color:#166534;">Related Post Information</h4>
+            <p style="margin:0; font-size:14px; color:#15803d;">This match was found in a user-submitted post on the website.</p>
+            <div style="margin-top:10px;">
+                <a href="#" style="color:#166534; font-weight:600; text-decoration:underline;" onclick="closeMatchDetailsModal(); showSection('post-control'); return false;"><i class="fa-solid fa-arrow-right-to-bracket"></i> View in Post Control</a>
+            </div>
+        </div>`;
+  } else if (sourceType.toLowerCase().includes('cctv') || sourceType.toLowerCase().includes('camera')) {
+    extraInfo = `
+        <div style="margin-top:15px; padding:10px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px;">
+            <h4 style="margin:0 0 5px; color:#1e40af;">Related Camera Feed Information</h4>
+            <p style="margin:0; font-size:14px; color:#1d4ed8;">This match was identified via an active CCTV/Camera feed.</p>
+            <div style="margin-top:10px;">
+                <a href="#" style="color:#1e40af; font-weight:600; text-decoration:underline;" onclick="closeMatchDetailsModal(); showSection('cctv'); return false;"><i class="fa-solid fa-arrow-right-to-bracket"></i> View in Camera Video Submissions</a>
+            </div>
+        </div>`;
+  }
+
+  content.innerHTML = `
+    <div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">
+        <div style="flex:1; min-width:250px;">
+            <h4 style="margin-top:0;">Target Image (Case ${caseId})</h4>
+            <img src="${targetImg}" style="width:100%; max-width:300px; border-radius:8px; border:2px solid #e5e7eb;">
+            <p style="margin-top:10px;"><strong>Original Reporter:</strong> ${reporter}</p>
+        </div>
+        <div style="flex:1; min-width:250px;">
+            <h4 style="margin-top:0;">Matched Image (${sourceType})</h4>
+            <img src="${matchImg}" style="width:100%; max-width:300px; border-radius:8px; border:2px solid #22c55e;">
+            <div style="margin-top:10px; background:#f9fafb; padding:10px; border-radius:6px;">
+                <strong>Match Details:</strong><br>
+                ${detailsHtml}
+            </div>
+        </div>
+    </div>
+    ${extraInfo}
+`;
+
+  modal.style.display = 'flex';
+};
+
+window.closeMatchDetailsModal = function () {
+  const modal = document.getElementById('matchDetailsModal');
+  if (modal) modal.style.display = 'none';
+};
 
 function loadConfirmedMatches() {
   let saved = localStorage.getItem('confirmedAiMatchesV3');
@@ -5671,14 +5671,7 @@ async function startPythonAISearch(caseId, targetImage, searchType) {
       }
     }
 
-    if (searchType === 'posts') {
-      setTimeout(() => {
-        const cctvBtn = document.querySelector(`#investigation-row-${caseId} button:nth-child(2)`);
-        if (cctvBtn && confirm("Posts search finished. Start CCTV search now?")) {
-          cctvBtn.click();
-        }
-      }, 1000);
-    }
+
 
   } catch (err) {
     if (statusEl) {

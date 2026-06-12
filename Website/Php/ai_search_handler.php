@@ -12,6 +12,9 @@ if (empty($action) || empty($targetImage)) {
     exit();
 }
 
+// Release session lock so XAMPP doesn't hang while waiting for the AI response
+session_write_close();
+
 // Convert relative target image path to absolute server path
 // Assumes targetImage is like "../uploads/cases/image.jpg"
 $baseDir = realpath(__DIR__ . '/../');

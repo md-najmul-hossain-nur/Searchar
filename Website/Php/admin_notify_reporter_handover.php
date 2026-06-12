@@ -29,8 +29,18 @@ try {
     $mail->Port       = 465;
 
     $mail->setFrom('searchar04@gmail.com', 'Searchar Admin');
-    // For demo purposes, we send the handover mail to the user's email
-    $mail->addAddress('najmulhosainnur555@gmail.com');
+    // Fetch all policemen emails
+    $stmt = $pdo->query("SELECT email FROM policemen WHERE email IS NOT NULL AND email != ''");
+    $policemen = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    if (count($policemen) > 0) {
+        foreach ($policemen as $p) {
+            $mail->addAddress($p['email']);
+        }
+    } else {
+        // Fallback if no policemen are found
+        $mail->addAddress('najmulhosainnur555@gmail.com');
+    }
 
     $mail->isHTML(true);
     $mail->Subject = "Update on your reported case #{$caseId}";

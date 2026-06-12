@@ -17,19 +17,32 @@ try {
     $reporterName = 'Unknown Reporter';
     $matchedPostId = 'P-' . rand(1000, 9999);
 
-    if (strpos($caseId, 'MP-') === 0) {
-        $stmt = $pdo->prepare("SELECT reporter_name FROM missing_reports WHERE missing_id = ?");
-        $stmt->execute([$caseId]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($row && !empty($row['reporter_name'])) {
-            $reporterName = $row['reporter_name'];
-        }
-    } elseif (strpos($caseId, 'CR-') === 0) {
-        $stmt = $pdo->prepare("SELECT reporter_name FROM crime_reports WHERE crime_id = ?");
-        $stmt->execute([$caseId]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($row && !empty($row['reporter_name'])) {
-            $reporterName = $row['reporter_name'];
+    $numericId = (int) preg_replace('/[^0-9]/', '', $caseId);
+
+    // 1. First, check and update crime_reports by EXACT case_ref match
+    $stmt = $pdo->prepare("SELECT reporter_name, report_type, source_ref_id FROM crime_reports WHERE case_ref = ?");
+    $stmt->execute([$caseId]);
+    $crimeRow = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    $updatedCrime = false;
+    if ($crimeRow) {
+        $pdo->prepare("UPDATE crime_reports SET status = 'closed', closed_at = NOW() WHERE case_ref = ?")->execute([$caseId]);
+        $reporterName = !empty($crimeRow['reporter_name']) ? $crimeRow['reporter_name'] : 'Unknown Reporter';
+        $updatedCrime = true;
+    }
+
+    // 2. Check and update missing_person_reports using the extracted numeric ID
+    if ($numericId > 0) {
+        $stmt = $pdo->prepare("SELECT reporter_name FROM missing_person_reports WHERE report_id = ?");
+        $stmt->execute([$numericId]);
+        $mpRow = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($mpRow) {
+            $pdo->prepare("UPDATE missing_person_reports SET status = 'resolved', resolved_at = NOW() WHERE report_id = ?")->execute([$numericId]);
+            // Use this reporter name if crime_reports didn't have one
+            if (!$updatedCrime) {
+                $reporterName = !empty($mpRow['reporter_name']) ? $mpRow['reporter_name'] : 'Unknown Reporter';
+            }
         }
     }
 

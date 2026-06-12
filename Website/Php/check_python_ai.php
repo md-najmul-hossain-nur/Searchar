@@ -1,5 +1,6 @@
 <?php
 session_start();
+session_write_close(); // Prevent session lock
 header('Content-Type: application/json; charset=utf-8');
 
 $host = '127.0.0.1';

@@ -1,11 +1,13 @@
 <?php
 session_start();
+session_write_close(); // Prevent session lock
 header('Content-Type: application/json; charset=utf-8');
 
 $input = json_decode(file_get_contents('php://input'), true);
 $action = $input['action'] ?? 'status';
 
-$url = 'http://127.0.0.1:5001/api/fire_detect/' . $action;
+// Using port 5002 for the dedicated fire_detector.py engine
+$url = 'http://127.0.0.1:5002/api/fire_detect/' . $action;
 $ch = curl_init($url);
 if ($action !== 'status') {
     curl_setopt($ch, CURLOPT_POST, true);
