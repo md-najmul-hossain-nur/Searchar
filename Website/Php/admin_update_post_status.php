@@ -411,7 +411,7 @@ try {
         'skipped' => true,
     ];
 
-    $shareRequested = (int)($postRow['share_facebook'] ?? 0) === 1 || $action === 'approve_share';
+    $shareRequested = $action === 'approve_share';
     $shareAnonymous = (int)($postRow['share_anonymous'] ?? 0) === 1;
     
     if ($action === 'approve_share' && isset($_POST['custom_caption'])) {
