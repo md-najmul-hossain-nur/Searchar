@@ -650,7 +650,7 @@ document.addEventListener('click', function (event) {
           } else if (fb.attempted && !fb.shared) {
             alert('Facebook share attempted but failed: ' + (fb.error || fb.message || 'Unknown error'));
           } else if (fb.skipped) {
-            // intentionally skipped (missing config or anonymous); no alert
+            alert('Facebook share was skipped because the post is anonymous or already shared.');
           }
         }
       } catch (e) {
@@ -729,7 +729,7 @@ document.addEventListener('click', function (event) {
     return raw.charAt(0).toUpperCase() + raw.slice(1);
   }
 
-  const _catBadgeMap = { alert:'🔴 Alert', missing_person:'🟡 Missing Person', criminal_found:'🟢 Criminal Found', disaster:'🟠 Disaster', mission:'🟡 Missing Person', general:'⚪ General' };
+  const _catBadgeMap = { alert: '🔴 Alert', missing_person: '🟡 Missing Person', criminal_found: '🟢 Criminal Found', disaster: '🟠 Disaster', mission: '🟡 Missing Person', general: '⚪ General' };
   function categoryBadge(value) {
     const key = String(value || 'general').trim().toLowerCase();
     const label = _catBadgeMap[key] || '⚪ General';
@@ -798,7 +798,7 @@ document.addEventListener('click', function (event) {
               <button class="view-profile-btn" data-post-details="1">View Details</button>
               <button class="ghost" data-post-send-crime="1" ${isReported ? 'disabled' : ''}>${isReported ? 'Reported' : 'Make Report'}</button>
               <button class="approve-btn" data-post-action="approve" ${statusClass(row.status) !== 'status-pending' ? 'disabled' : ''}>Approve</button>
-              <button class="approve-btn" style="background:#1877f2; color:#ffffff;" data-post-action="approve_share" ${statusClass(row.status) === 'status-rejected' ? 'disabled' : ''}><i class="fa-brands fa-facebook"></i> Share FB</button>
+              <button class="approve-btn" style="background:#1877f2; color:#ffffff;" data-post-action="approve_share" ${statusClass(row.status) === 'status-rejected' || row.is_share == 1 || row.share_anonymous == 1 ? 'disabled' : ''}><i class="fa-brands fa-facebook"></i> ${row.is_share == 1 ? 'Shared FB' : (row.share_anonymous == 1 ? 'No Share (Anon)' : 'Share FB')}</button>
               <button class="reject-btn" data-post-action="reject" ${statusClass(row.status) !== 'status-pending' ? 'disabled' : ''}>Reject</button>
             </td>
           </tr>
@@ -4941,7 +4941,7 @@ function openAddVolunteerModal() {
 // AI Investigation Search Logic
 async function checkAIEngineStatus() {
   const statusEl = document.getElementById('ai-engine-status');
-  
+
   try {
     const res = await fetch('../Php/check_python_ai.php', { credentials: 'same-origin', cache: 'no-store' });
     const data = await res.json();
@@ -4998,7 +4998,7 @@ async function checkFireDetectorStatus() {
         fireToggleBtn.disabled = false;
       }
     } else {
-       if (fireStatusEl) fireStatusEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Detector: Error';
+      if (fireStatusEl) fireStatusEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Detector: Error';
     }
   } catch (err) {
     if (fireStatusEl) fireStatusEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Detector: Error';
@@ -5010,11 +5010,11 @@ setTimeout(checkFireDetectorStatus, 500);
 async function scanForFireNow() {
   const btn = document.getElementById('fire-detector-toggle-btn');
   if (!btn) return;
-  
+
   const originalHtml = btn.innerHTML;
   btn.disabled = true;
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Scanning cameras...';
-  
+
   try {
     const res = await fetch('../Php/python_scan_fire_now.php', {
       method: 'POST'
@@ -5026,11 +5026,11 @@ async function scanForFireNow() {
     } else {
       alert('Error during scan: ' + data.error);
     }
-  } catch(err) {
-     alert('Failed to connect to Python Server.');
+  } catch (err) {
+    alert('Failed to connect to Python Server.');
   } finally {
-     btn.disabled = false;
-     btn.innerHTML = originalHtml;
+    btn.disabled = false;
+    btn.innerHTML = originalHtml;
   }
 }
 
@@ -5754,7 +5754,7 @@ function confirmAiSource(sourceType) {
       const res = await fetch('../Php/admin_fetch_fire_alerts.php', { cache: 'no-store' });
       const json = await res.json();
       if (!json?.success) throw new Error(json?.error || 'Failed to load fire alerts');
-      
+
       cachedFireAlerts = json.rows || [];
       renderFireAlerts();
     } catch (e) {
@@ -5770,7 +5770,7 @@ function confirmAiSource(sourceType) {
     let filtered = cachedFireAlerts;
 
     if (textFilter) {
-      filtered = filtered.filter(r => 
+      filtered = filtered.filter(r =>
         (r.feed_label && r.feed_label.toLowerCase().includes(textFilter)) ||
         (r.camera_location && r.camera_location.toLowerCase().includes(textFilter)) ||
         (r.feed_id && String(r.feed_id).includes(textFilter))
@@ -5785,7 +5785,7 @@ function confirmAiSource(sourceType) {
       tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #6b7280;">No recent fire alerts.</td></tr>';
       return;
     }
-    
+
     tableBody.innerHTML = filtered.map(r => `
       <tr>
           <td><strong>#FD-${esc(r.alert_id)}</strong></td>
@@ -5794,10 +5794,10 @@ function confirmAiSource(sourceType) {
           <td>${formatTime(r.created_at)}</td>
           <td><span style="background: #fee2e2; color: #b91c1c; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 12px;">${esc(r.confidence)}</span></td>
           <td>
-            ${r.snapshot_url 
-              ? `<button class="ghost" style="padding: 4px 8px; font-size: 12px;" onclick="window.open('${esc(r.snapshot_url)}', '_blank')"><i class="fa-solid fa-image"></i> View Frame</button>`
-              : `<span style="color:#9ca3af; font-size: 12px;">No Image</span>`
-            }
+            ${r.snapshot_url
+        ? `<button class="ghost" style="padding: 4px 8px; font-size: 12px;" onclick="window.open('${esc(r.snapshot_url)}', '_blank')"><i class="fa-solid fa-image"></i> View Frame</button>`
+        : `<span style="color:#9ca3af; font-size: 12px;">No Image</span>`
+      }
           </td>
           <td>${statusBadge(r.status)}</td>
           <td style="display: flex; gap: 8px; flex-wrap: wrap; border: none; padding-bottom: 12px;">
@@ -5839,9 +5839,9 @@ function confirmAiSource(sourceType) {
 
       const res = await fetch('../Php/admin_action_fire_alert.php', { method: 'POST', body: fd });
       const json = await res.json();
-      
+
       if (!json?.success) throw new Error(json?.error || 'Update failed');
-      
+
       loadFireAlerts();
       if (action === 'call_fire_station') {
         alert('Action recorded: Please call the local fire station immediately.');
@@ -5867,9 +5867,9 @@ function confirmAiSource(sourceType) {
 // End of Admin.js
 
 // Sensitive Submissions logic
-(function() {
+(function () {
   const tableBody = document.getElementById('sensitive-table-body');
-  
+
   async function loadSensitiveSubmissions() {
     if (!tableBody) return;
     tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Loading...</td></tr>';
@@ -5877,13 +5877,13 @@ function confirmAiSource(sourceType) {
       const res = await fetch('../Php/admin_fetch_sensitive_submissions.php', { cache: 'no-store' });
       const json = await res.json();
       if (!json || !json.success) throw new Error(json?.error || 'Failed to fetch sensitive submissions');
-      
+
       const rows = Array.isArray(json.data) ? json.data : [];
       if (rows.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No sensitive submissions found.</td></tr>';
         return;
       }
-      
+
       tableBody.innerHTML = rows.map(row => {
         const date = new Date(row.created_at).toLocaleString();
         const esc = str => String(str || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');

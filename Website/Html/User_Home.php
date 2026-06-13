@@ -743,7 +743,7 @@ try {
 
 <div class="category-toggle">
   <label class="category-option">
-    <input type="radio" name="category" value="mission" checked>
+    <input type="radio" name="category" value="missing_person" checked>
     <img src="../Images/mission-icon.gif" alt="Mission Icon" class="category-icon" />
     Missing Person
   </label>

@@ -24,7 +24,7 @@ $user_id = (int) $_SESSION['user_id'];
 // Collect and validate inputs
 $text = trim((string) ($_POST['text'] ?? ''));
 $category = trim((string) ($_POST['category'] ?? 'general'));
-$allowedCats = ['mission','disaster','general'];
+$allowedCats = ['alert', 'missing_person', 'criminal_found', 'disaster', 'mission', 'general'];
 if ($category === '' || !in_array($category, $allowedCats, true)) {
     $category = 'general';
 }
